@@ -1,0 +1,29 @@
+[project]
+name = "vnl_experiments"
+version = "0.1.0"
+description = "Experiments with rodent imitation."
+authors = [
+    { name="Emil Wärnberg", email="ewarnberg@fas.harvard.edu" }
+]
+
+dependencies = [
+    "flax>=0.12.4",
+    "jax[cuda12]",
+    "ml_collections",
+    "orbax-checkpoint",
+    "jaxtyping",
+    "numpy",
+    "wandb",
+    "nnx_ppo",
+    "vnl-playground",
+]
+
+[project.optional-dependencies]
+dev = ["brax"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["nnx_ppo"]
