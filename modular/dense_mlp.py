@@ -31,10 +31,11 @@ env_config = default_config()
 env_config.naconmax = 64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
-env_config.reward_terms["limb_pos_exp_scale"] = 0.05
-env_config.solver = "cg"
-env_config.iterations = 6
-env_config.ls_iterations = 6
+env_config.reward_terms["limb_pos_exp_scale"] = 0.015
+env_config.reward_terms["joint_exp_scale"] = 0.1
+env_config.solver = "newton"
+env_config.iterations = 50
+env_config.ls_iterations = 50
 env_config.sim_dt = 0.001
 #env_config.naconmax = 32 * 2048
 #env_config.njmax = 256
@@ -148,7 +149,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp", "Modular"),
-    notes="Back to CG solver, but lower dt and higher njmax.",
+    notes="Split reward falloffs.",
 )
 
 # Train with wandb callbacks
