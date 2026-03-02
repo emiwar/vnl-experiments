@@ -11,7 +11,6 @@ import numpy as np
 from flax import nnx
 import wandb
 from ml_collections import config_dict
-import vnl_playground
 
 from vnl_playground.tasks.rodent.imitation import Imitation, default_config
 
@@ -38,6 +37,7 @@ env_config.reward_terms["joints_vel"]["weight"] = 0.0
 env_config.mujoco_impl = "warp"
 env_config.naconmax = 32 * 2048
 env_config.njmax = 256
+env_config.ctrl_dt = 0.01
 
 net_config = config_dict.create(
     enc_hidden_sizes=[512] * 4,
@@ -49,9 +49,9 @@ net_config = config_dict.create(
     std_scale=1.0,
     normalize_obs=True,
     initalizer_scale=1.0,
-    kl_weight=0.01,
+    kl_weight=0.1,
     latent_min_std=0.01,
-    latent_size=32,
+    latent_size=16,
     latent_ar1_weight=None,
 )
 
@@ -151,7 +151,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp", "EncDec"),
-    notes="Testing LSTM decoder",
+    notes="Recurrent with higher KL weight.",
 )
 
 # Train with wandb callbacks

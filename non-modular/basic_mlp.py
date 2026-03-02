@@ -29,23 +29,24 @@ env_config.reward_terms["joints_vel"]["weight"] = 0.0
 env_config.mujoco_impl = "warp"
 env_config.naconmax = 32 * 2048
 env_config.njmax = 256
+env_config.ctrl_dt = 0.01
 
 net_config = config_dict.create(
-    actor_hidden_sizes=[1024] * 4,
+    actor_hidden_sizes=[512] * 4 + [32] + [512]*4,
     critic_hidden_sizes=[1024] * 2,
     activation="swish",
     entropy_weight=1e-2,
     min_std=1e-1,
     std_scale=1.0,
     normalize_obs=True,
-    initalizer_scale=1.0,
+    initializer_scale=1.0,
 )
 
 config = TrainConfig(
     ppo=PPOConfig(
         n_envs=2048,
         rollout_length=20,
-        total_steps=200_000 * 2048 * 20,  # 200k iterations
+        total_steps=1_000_000_000,
         discounting_factor=0.95,
         normalize_advantages=True,
         learning_rate=1e-4,
@@ -58,15 +59,15 @@ config = TrainConfig(
     ),
     eval=EvalConfig(
         enabled=True,
-        every_steps=100 * 2048 * 20,  # Every 100 iterations
+        every_steps=10_000_000,  # Every 100 iterations
         n_envs=256,
         max_episode_length=500,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     video=VideoConfig(
         enabled=True,
-        every_steps=1000 * 2048 * 20,  # Every 1000 iterations
-        episode_length=1000,
+        every_steps=50_000_000,  # Every 1000 iterations
+        episode_length=2000,
         render_kwargs={
             "height": 480,
             "width": 640,
@@ -102,7 +103,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp"),
-    notes="Using new train_ppo API",
+    notes="Non-variational bottleneck",
 )
 
 # Train with wandb callbacks

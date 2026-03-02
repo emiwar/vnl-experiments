@@ -19,21 +19,23 @@ from vnl_playground.tasks.rodent.imitation import Imitation, default_config
 from nnx_ppo.networks.sampling_layers import NormalTanhSampler
 from nnx_ppo.networks.containers import PPOActorCritic, Sequential, Concat, Flattener
 from nnx_ppo.networks.factories import make_mlp, make_mlp_layers
-from nnx_ppo.networks.variational import AR1VariationalBottleneck
+from nnx_ppo.networks.variational import VariationalBottleneck, AR1VariationalBottleneck
 from nnx_ppo.networks.normalizer import Normalizer
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
+from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
 SEED = 40
 env_config = default_config()
 env_config.solver = "newton"
 env_config.reward_terms["bodies_pos"]["weight"] = 0.0
 env_config.reward_terms["joints_vel"]["weight"] = 0.0
-env_config.mujoco_impl = "warp"
-env_config.naconmax = 16 * 512
+env_config.mujoco_impl = "jax"
+env_config.naconmax = 32 * 2048
 env_config.njmax = 256
+env_config.ctrl_dt = 0.01
 
 net_config = config_dict.create(
     enc_hidden_sizes=[512] * 4,
@@ -47,20 +49,20 @@ net_config = config_dict.create(
     initalizer_scale=1.0,
     kl_weight=0.01,
     latent_min_std=0.01,
-    latent_size=32,
-    latent_ar1_weight=0.1,
+    latent_size=16,
+    latent_ar1_weight=None,
 )
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=512,
+        n_envs=4096,
         rollout_length=20,
-        total_steps=1_000_000_000,
+        total_steps=2_000_000_000,
         discounting_factor=0.95,
         normalize_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=8,
+        n_minibatches=16,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=LoggingLevel.ALL,
@@ -85,6 +87,7 @@ config = TrainConfig(
         },
     ),
     seed=SEED,
+    checkpoint_every_steps=50_000_000,
 )
 
 train_env = Imitation(env_config)
@@ -107,6 +110,7 @@ dec_sizes = (
     + [train_env.action_size * 2]
 )
 
+
 actor = Sequential(
     [
         Concat(
@@ -116,12 +120,11 @@ actor = Sequential(
                     *make_mlp_layers(
                         enc_sizes, rngs, activation, activation_last_layer=False
                     ),
-                    AR1VariationalBottleneck(
+                    VariationalBottleneck(
                         net_config.latent_size,
                         rngs,
                         net_config.kl_weight,
                         net_config.latent_min_std,
-                        net_config.latent_ar1_weight,
                     ),
                 ]
             ),
@@ -130,6 +133,7 @@ actor = Sequential(
         make_mlp(dec_sizes, rngs, activation, activation_last_layer=False),
     ]
 )
+
 critic_sizes = [reference_size + proprio_size] + net_config.critic_hidden_sizes + [1]
 critic = Sequential(
     [
@@ -166,7 +170,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp", "EncDec"),
-    notes="Testing AR1 bottleneck",
+    notes="Testing again with multi-agent code (with single agent). Testing with MJX.",
 )
 
 # Train with wandb callbacks
@@ -176,6 +180,7 @@ result = ppo.train_ppo(
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
+    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}", config),
     eval_env=eval_env,
 )
 

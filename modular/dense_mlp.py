@@ -24,8 +24,20 @@ from nnx_ppo.algorithms.callbacks import wandb_video_fn
 
 SEED = 40
 env_config = default_config()
+#env_config.solver = "newton"
+#env_config.reward_terms["bodies_pos"]["weight"] = 0.0
+#env_config.reward_terms["joints_vel"]["weight"] = 0.0
+#env_config.mujoco_impl = "warp"
 env_config.naconmax = 64*1024
-env_config.njmax = 256
+env_config.njmax = 1024
+env_config.torque_actuators = True
+env_config.reward_terms["limb_pos_exp_scale"] = 0.05
+env_config.solver = "cg"
+env_config.iterations = 6
+env_config.ls_iterations = 6
+env_config.sim_dt = 0.001
+#env_config.naconmax = 32 * 2048
+#env_config.njmax = 256
 
 net_config = config_dict.create(
     actor_hidden_sizes=[1024] * 4,
@@ -35,7 +47,7 @@ net_config = config_dict.create(
     min_std=1e-1,
     std_scale=1.0,
     normalize_obs=True,
-    initializer_scale=1.0,
+    initializer_scale=1.00,
 )
 
 config = TrainConfig(
@@ -50,7 +62,7 @@ config = TrainConfig(
         n_minibatches=1,
         gradient_clipping=1.0,
         weight_decay=None,
-        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS,
+        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     eval=EvalConfig(
@@ -63,7 +75,7 @@ config = TrainConfig(
     video=VideoConfig(
         enabled=True,
         every_steps=10_000_000,
-        episode_length=1000,
+        episode_length=2000,
         render_kwargs={
             "height": 480,
             "width": 640,
@@ -72,6 +84,7 @@ config = TrainConfig(
         },
     ),
     seed=SEED,
+    checkpoint_every_steps=50_000_000,
 )
 
 class CustomFlattenWrapper(RLEnv):
@@ -125,7 +138,7 @@ now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 exp_name = f"Modular-{timestamp}"
 wandb.init(
-    project="nnx-ppo-rodent-imitation",
+    project="nnx-ppo-modular-rodent-imitation",
     config={
         "env": "ModularImitation",
         "SEED": SEED,
@@ -135,7 +148,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp", "Modular"),
-    notes="Trying modular rodent env locally.",
+    notes="Back to CG solver, but lower dt and higher njmax.",
 )
 
 # Train with wandb callbacks
