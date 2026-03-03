@@ -82,6 +82,7 @@ class NerveNetNetwork(PPONetwork):
             actions[k], new_raw_actions[k], loglikelihoods[k] = output.output
             regularization_loss += output.regularization_loss
             metrics[k] = output.metrics
+        loglikelihoods["root"] = jp.zeros(x["root"].shape[0])
 
         #Critic
         value_estimates = {k: jp.squeeze(self.critics[k]((), xx).output, axis=-1) for k,xx in x.items()}
@@ -101,6 +102,6 @@ class NerveNetNetwork(PPONetwork):
     def update_statistics(self, last_rollout, total_steps) -> None:
         flattener = Flattener()
         last_rollout = last_rollout.replace(
-            obs = flattener((), last_rollout.obs).output
+            obs = {k: jax.vmap(lambda o: flattener((), o).output)(o) for k,o in last_rollout.obs.items()}
         )
         self.normalizer.update_statistics(last_rollout, total_steps)
