@@ -15,7 +15,7 @@ class NerveNetNetwork(PPONetwork):
 
     def __init__(self, obs_sizes: Mapping[str, int], action_sizes: Mapping[str, int],
                  hidden_size: int, rngs: nnx.Rngs, entropy_weight: float,
-                 min_std: float):
+                 min_std: float, normalize_obs: bool = True):
         all_modules = obs_sizes.keys()
         self.input_layers = nnx.Dict({k: Dense(os, hidden_size, rngs, nnx.swish) for k,os in obs_sizes.items()})
         self.afferents = nnx.Dict({k: Dense(hidden_size, hidden_size, rngs, nnx.swish) for k in all_modules})
@@ -23,7 +23,7 @@ class NerveNetNetwork(PPONetwork):
         self.motor_layers = nnx.Dict({k: Dense(hidden_size, 2*a, rngs) for k,a in action_sizes.items()})
         self.critics = nnx.Dict({k: Dense(hidden_size, 1, rngs) for k in all_modules})
         self.action_samplers = nnx.Dict({k: NormalTanhSampler(rngs, entropy_weight, min_std) for k in action_sizes.keys()})
-        self.normalizer = Normalizer(obs_sizes)
+        self.normalizer = Normalizer(obs_sizes) if normalize_obs else None
 
     def __call__(self,
                  network_state: tuple[()],
@@ -37,7 +37,8 @@ class NerveNetNetwork(PPONetwork):
         flattener = Flattener()
         x = {k: flattener((), xx).output for k,xx in x.items()}
 
-        x = self.normalizer((), x).output
+        if self.normalizer is not None:
+            x = self.normalizer((), x).output
         
         #Input pass
         x = {k: self.input_layers[k]((), xx).output for k,xx in x.items()}

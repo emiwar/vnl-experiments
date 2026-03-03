@@ -1,0 +1,126 @@
+"""Rodent imitation learning with modular architecture."""
+
+import os
+
+os.environ["MUJOCO_GL"] = "egl"
+os.environ["PYOPENGL_PLATFORM"] = "egl"
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
+
+from datetime import datetime
+import dataclasses
+import jax
+import jax.numpy as jp
+from flax import nnx
+import wandb
+from ml_collections import config_dict
+
+from vnl_playground.tasks.modular_rodent.imitation import ModularImitation, default_config
+
+from nnx_ppo.algorithms import ppo
+from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
+from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
+from nnx_ppo.algorithms.callbacks import wandb_video_fn
+
+from networks.nervenet_style import NerveNetNetwork
+
+SEED = 40
+env_config = default_config()
+env_config.naconmax = 64*1024
+env_config.njmax = 1024
+env_config.torque_actuators = True
+env_config.reward_terms["limb_pos_exp_scale"] = 0.015
+env_config.reward_terms["joint_exp_scale"] = 0.1
+env_config.solver = "newton"
+env_config.iterations = 50
+env_config.ls_iterations = 50
+env_config.sim_dt = 0.002
+
+net_config = config_dict.create(
+    hidden_size=32,
+    entropy_weight=1e-2,
+    min_std=1e-1,
+    normalize_obs=True,
+)
+
+config = TrainConfig(
+    ppo=PPOConfig(
+        n_envs=2048,
+        rollout_length=20,
+        total_steps=500_000_000,
+        discounting_factor=0.95,
+        normalize_advantages=True,
+        learning_rate=1e-4,
+        n_epochs=4,
+        n_minibatches=8,
+        gradient_clipping=1.0,
+        weight_decay=None,
+        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
+        logging_percentiles=(0, 25, 50, 75, 100),
+    ),
+    eval=EvalConfig(
+        enabled=True,
+        every_steps=5_000_000,
+        n_envs=512,
+        max_episode_length=500,
+        logging_percentiles=(0, 25, 50, 75, 100),
+    ),
+    video=VideoConfig(
+        enabled=True,
+        every_steps=10_000_000,
+        episode_length=2000,
+        render_kwargs={
+            "height": 480,
+            "width": 640,
+            "camera": "close_profile",
+            "add_labels": True,
+        },
+    ),
+    seed=SEED,
+    checkpoint_every_steps=50_000_000,
+)
+
+base_env = ModularImitation(env_config)
+train_env = base_env
+eval_env = train_env
+
+# Setup network
+rngs = nnx.Rngs(SEED)
+
+obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k,o in base_env.non_flattened_observation_size.items()}
+nets = NerveNetNetwork(
+    obs_sizes, train_env.action_size, rngs=rngs, **net_config
+)
+
+# Initialize wandb
+now = datetime.now()
+timestamp = now.strftime("%Y%m%d-%H%M%S")
+exp_name = f"Modular-{timestamp}"
+wandb.init(
+    project="nnx-ppo-modular-rodent-imitation",
+    config={
+        "env": "ModularImitation",
+        "SEED": SEED,
+        "config": dataclasses.asdict(config),
+        "net_params": net_config.to_dict(),
+        "env_params": env_config.to_dict(),
+    },
+    name=exp_name,
+    tags=("NerveNet", "warp", "Modular"),
+    notes="First local test of nervenet-like network.",
+)
+
+# Train with wandb callbacks
+result = ppo.train_ppo(
+    train_env,
+    nets,
+    config,
+    log_fn=wandb.log,
+    video_fn=wandb_video_fn(fps=50),
+    eval_env=eval_env,
+)
+
+print(
+    f"Training complete: {result.total_steps} steps, {result.total_iterations} iterations"
+)
+print(f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}")
