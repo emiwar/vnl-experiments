@@ -82,7 +82,8 @@ class NerveNetNetwork(PPONetwork):
             actions[k], new_raw_actions[k], loglikelihoods[k] = output.output
             regularization_loss += output.regularization_loss
             metrics[k] = output.metrics
-        loglikelihoods["root"] = jp.zeros(x["root"].shape[0])
+        # Sum loglikelihoods across all action modules → joint scalar loglikelihood, root excluded
+        loglikelihoods = sum(loglikelihoods.values())
 
         #Critic
         value_estimates = {k: jp.squeeze(self.critics[k]((), xx).output, axis=-1) for k,xx in x.items()}

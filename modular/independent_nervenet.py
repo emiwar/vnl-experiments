@@ -50,6 +50,7 @@ config = TrainConfig(
         total_steps=500_000_000,
         discounting_factor=0.95,
         normalize_advantages=True,
+        combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
         n_minibatches=8,
@@ -95,7 +96,7 @@ nets = NerveNetNetwork(
 # Initialize wandb
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
-exp_name = f"Modular-{timestamp}"
+exp_name = f"CombinedAdvantages-{timestamp}"
 wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config={
@@ -107,7 +108,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="First local test of nervenet-like network.",
+    notes="Local test of combined advantages.",
 )
 
 # Train with wandb callbacks
