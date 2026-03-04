@@ -1,5 +1,5 @@
-from collections.abc import Mapping
-from typing import Optional
+from collections.abc import Mapping, Callable
+from typing import Optional, Union
 
 import jax
 import jax.numpy as jp
@@ -13,16 +13,26 @@ from nnx_ppo.networks.normalizer import Normalizer
 
 class NerveNetNetwork(PPONetwork):
 
-    def __init__(self, obs_sizes: Mapping[str, int], action_sizes: Mapping[str, int],
-                 hidden_size: int, rngs: nnx.Rngs, entropy_weight: float,
-                 min_std: float, normalize_obs: bool = True):
+    def __init__(self,
+                 obs_sizes: Mapping[str, int],
+                 action_sizes: Mapping[str, int],
+                 hidden_size: int,
+                 rngs: nnx.Rngs,
+                 entropy_weight: float = 0.01,
+                 min_std: float = 0.1,
+                 motor_scale: float = 1.0,
+                 normalize_obs: bool = True,
+                 activation: Union[str, Callable] = nnx.swish):
+        if isinstance(activation, str):
+            activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[activation]
         all_modules = obs_sizes.keys()
-        self.input_layers = nnx.Dict({k: Dense(os, hidden_size, rngs, nnx.swish) for k,os in obs_sizes.items()})
-        self.afferents = nnx.Dict({k: Dense(hidden_size, hidden_size, rngs, nnx.swish) for k in all_modules})
-        self.efferents = nnx.Dict({k: Dense(hidden_size, hidden_size, rngs, nnx.swish) for k in all_modules})
+        self.input_layers = nnx.Dict({k: Dense(os, hidden_size, rngs, activation) for k,os in obs_sizes.items()})
+        self.afferents = nnx.Dict({k: Dense(hidden_size, hidden_size, rngs, activation) for k in all_modules})
+        self.efferents = nnx.Dict({k: Dense(hidden_size, hidden_size, rngs, activation) for k in all_modules})
         self.motor_layers = nnx.Dict({k: Dense(hidden_size, 2*a, rngs) for k,a in action_sizes.items()})
         self.critics = nnx.Dict({k: Dense(hidden_size, 1, rngs) for k in all_modules})
         self.action_samplers = nnx.Dict({k: NormalTanhSampler(rngs, entropy_weight, min_std) for k in action_sizes.keys()})
+        self.motor_scale = motor_scale
         self.normalizer = Normalizer(obs_sizes) if normalize_obs else None
 
     def __call__(self,
@@ -71,7 +81,7 @@ class NerveNetNetwork(PPONetwork):
         x["foot_R"] += self.efferents["foot_R"]((), x["leg_R"]).output
 
         #Motor
-        motor = {k: ml((), x[k]).output for k,ml in self.motor_layers.items()}
+        motor = {k: ml((), x[k]).output * self.motor_scale for k,ml in self.motor_layers.items()}
         actions = {}
         new_raw_actions = {}
         loglikelihoods = {}
