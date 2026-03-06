@@ -44,18 +44,16 @@ from nnx_ppo.networks.containers import Flattener
 
 
 class FlatObsMultiRewardWrapper(RLEnv):
-    """Flattens obs and unwraps flat action → dict action; keeps reward as dict."""
+    """Flattens obs; actions are a dict passed directly to the env; keeps reward as dict."""
 
     def __init__(self, base_env: RLEnv) -> None:
         self.base_env = base_env
-        null_action = self.base_env.null_action()
-        _, self.unwrap_action = jax.flatten_util.ravel_pytree(null_action)
 
     def reset(self, rng) -> EnvState:
         return self._flatten_obs(self.base_env.reset(rng))
 
-    def step(self, state: EnvState, action: jax.Array) -> EnvState:
-        return self._flatten_obs(self.base_env.step(state, self.unwrap_action(action)))
+    def step(self, state: EnvState, action) -> EnvState:
+        return self._flatten_obs(self.base_env.step(state, action))
 
     def _flatten_obs(self, state: EnvState) -> EnvState:
         new_obs, _ = jax.flatten_util.ravel_pytree(state.obs)
