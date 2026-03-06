@@ -164,13 +164,21 @@ class NerveNetMLPCriticNetwork(PPONetwork, nnx.Module):
         # --- MLP critic path ---
         # Concatenate normalized per-module obs in insertion order
         critic_input = jp.concatenate([x_norm[k] for k in self.input_layers.keys()], axis=-1)
-        critic_features = self.critic_encoder((), critic_input).output
-        value_estimates = {
-            k: jp.squeeze(self.critic_heads[k]((), critic_features).output, axis=-1)
-            for k in self.critic_heads
+        enc_out = self.critic_encoder(network_state["critic_encoder"], critic_input)
+        critic_features = enc_out.output
+        value_estimates = {}
+        new_head_states = {}
+        for k, head in self.critic_heads.items():
+            head_out = head(network_state["critic_heads"][k], critic_features)
+            value_estimates[k] = jp.squeeze(head_out.output, axis=-1)
+            new_head_states[k] = head_out.next_state
+        network_state = {
+            **network_state,
+            "critic_encoder": enc_out.next_state,
+            "critic_heads": new_head_states,
         }
 
-        return (), PPONetworkOutput(
+        return network_state, PPONetworkOutput(
             actions=actions,
             raw_actions=new_raw_actions,
             loglikelihoods=loglikelihoods,
@@ -179,8 +187,11 @@ class NerveNetMLPCriticNetwork(PPONetwork, nnx.Module):
             metrics=metrics,
         )
 
-    def initialize_state(self, batch_size) -> tuple:
-        return ()
+    def initialize_state(self, batch_size) -> dict:
+        return {
+            "critic_encoder": self.critic_encoder.initialize_state(batch_size),
+            "critic_heads": {k: h.initialize_state(batch_size) for k, h in self.critic_heads.items()},
+        }
 
     def update_statistics(self, last_rollout: Transition, total_steps) -> None:
         if self.normalizer is not None:
