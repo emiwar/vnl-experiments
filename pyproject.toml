@@ -27,3 +27,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = ["nnx_ppo"]
+
+[tool.setuptools.packages.find]
+exclude = ["downloaded_checkpoints*", "checkpoints*", "wandb*"]

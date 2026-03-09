@@ -22,7 +22,7 @@ from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
 
-from networks.nervenet_style import NerveNetNetwork
+from vnl_experiments.networks.nervenet_style import NerveNetNetwork
 
 SEED = 40
 env_config = default_config()
