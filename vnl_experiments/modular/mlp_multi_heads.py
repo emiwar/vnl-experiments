@@ -16,6 +16,7 @@ from datetime import datetime
 import dataclasses
 from typing import Optional
 from collections.abc import Mapping
+import json
 
 import jax
 import jax.flatten_util
@@ -24,7 +25,7 @@ from flax import nnx
 import wandb
 from ml_collections import config_dict
 
-from vnl_playground.tasks.modular_rodent.imitation import ModularImitation, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v2 import ModularImitation_v2, default_config
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState, Transition
@@ -302,7 +303,7 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation(env_config)
+base_env = ModularImitation_v2(env_config)
 train_env = FlatObsMultiRewardWrapper(base_env)
 eval_env = train_env
 
@@ -324,31 +325,41 @@ nets = MLPModularNetwork(
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 exp_name = f"MLPModular-{timestamp}"
-wandb.init(
-    project="nnx-ppo-modular-rodent-imitation",
-    config={
-        "env": "ModularImitation",
+net_config["network_class"] = str(type(nets))
+combined_config = {
+        "env": str(type(base_env)),
         "SEED": SEED,
         "config": dataclasses.asdict(config),
         "net_params": net_config.to_dict(),
         "env_params": env_config.to_dict(),
-        "action_sizes": action_sizes,
-        "reward_keys": reward_keys,
-    },
+    }
+wandb.init(
+    project="nnx-ppo-modular-rodent-imitation",
+    config=combined_config,
     name=exp_name,
     tags=("MLP", "Modular", "MultiHead", "warp"),
-    notes="With checkpointing.",
+    notes="New env.",
 )
 
+
+checkpoint_dir = f"checkpoints/{exp_name}/"
+os.makedirs(checkpoint_dir, exist_ok=True)
+with open(f"{checkpoint_dir}config.json", "w") as f:
+    json.dump(jax.tree.map(str, combined_config), f)
+
+# Train with wandb callbacks
 result = ppo.train_ppo(
     train_env,
     nets,
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
-    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}/", config),
+    checkpoint_fn=make_checkpoint_fn(checkpoint_dir, config),
     eval_env=eval_env,
 )
 
-print(f"Training complete: {result.total_steps} steps, {result.total_iterations} iterations")
+print(
+    f"Training complete: {result.total_steps} steps, {result.total_iterations} iterations"
+)
 print(f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}")
+
