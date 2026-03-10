@@ -21,6 +21,7 @@ from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
+from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
 SEED = 40
 env_config = default_config()
@@ -31,12 +32,16 @@ env_config = default_config()
 env_config.naconmax = 64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
+env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.015
 env_config.reward_terms["joint_exp_scale"] = 0.1
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
-env_config.sim_dt = 0.001
+env_config.sim_dt = 0.002
+env_config.cone = "elliptic"
+env_config.impratio = 10.0
+env_config.tolerance = 1e-10
 #env_config.naconmax = 32 * 2048
 #env_config.njmax = 256
 
@@ -53,14 +58,14 @@ net_config = config_dict.create(
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=2048,
         rollout_length=20,
         total_steps=500_000_000,
         discounting_factor=0.95,
         normalize_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=1,
+        n_minibatches=8,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
@@ -149,7 +154,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "warp", "Modular"),
-    notes="Split reward falloffs.",
+    notes="With checkpointing.",
 )
 
 # Train with wandb callbacks
@@ -159,6 +164,7 @@ result = ppo.train_ppo(
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
+    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}/", config),
     eval_env=eval_env,
 )
 

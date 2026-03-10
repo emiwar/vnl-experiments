@@ -220,7 +220,7 @@ env_config.ls_iterations = 50
 env_config.sim_dt = 0.002
 
 net_config = config_dict.create(
-    hidden_size=32,
+    hidden_size=64,
     critic_hidden_sizes=[1024] * 2,
     entropy_weight=1e-2,
     min_std=1e-1,

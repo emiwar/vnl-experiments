@@ -9,8 +9,8 @@ import os
 
 os.environ["MUJOCO_GL"] = "egl"
 os.environ["PYOPENGL_PLATFORM"] = "egl"
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
+#os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+#os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
 
 from datetime import datetime
 import dataclasses
@@ -30,6 +30,7 @@ from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState, Transition
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
+from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 from nnx_ppo.networks.types import PPONetwork, PPONetworkOutput
 from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.factories import make_mlp
@@ -244,12 +245,13 @@ env_config = default_config()
 env_config.naconmax = 64 * 1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
+env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.015
 env_config.reward_terms["joint_exp_scale"] = 0.1
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
-env_config.sim_dt = 0.001
+env_config.sim_dt = 0.002
 
 net_config = config_dict.create(
     actor_hidden_sizes=[1024] * 2,
@@ -264,7 +266,7 @@ net_config = config_dict.create(
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=2048,
         rollout_length=20,
         total_steps=500_000_000,
         discounting_factor=0.95,
@@ -272,10 +274,10 @@ config = TrainConfig(
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=1,
+        n_minibatches=8,
         gradient_clipping=1.0,
         weight_decay=None,
-        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
+        logging_level=LoggingLevel.LOSSES | LoggingLevel.CRITIC_EXTRA | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     eval=EvalConfig(
@@ -335,7 +337,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("MLP", "Modular", "MultiHead", "warp"),
-    notes="Encoders + per-module heads for both actor and critic.",
+    notes="With checkpointing.",
 )
 
 result = ppo.train_ppo(
@@ -344,6 +346,7 @@ result = ppo.train_ppo(
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
+    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}/", config),
     eval_env=eval_env,
 )
 

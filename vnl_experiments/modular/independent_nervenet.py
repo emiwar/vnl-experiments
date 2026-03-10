@@ -4,8 +4,8 @@ import os
 
 os.environ["MUJOCO_GL"] = "egl"
 os.environ["PYOPENGL_PLATFORM"] = "egl"
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
+#os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+#os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
 
 from datetime import datetime
 import dataclasses
@@ -21,6 +21,7 @@ from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
+from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
 from vnl_experiments.networks.nervenet_style import NerveNetNetwork
 
@@ -29,6 +30,7 @@ env_config = default_config()
 env_config.naconmax = 64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
+env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.015
 env_config.reward_terms["joint_exp_scale"] = 0.1
 env_config.solver = "newton"
@@ -37,10 +39,12 @@ env_config.ls_iterations = 50
 env_config.sim_dt = 0.002
 
 net_config = config_dict.create(
-    hidden_size=32,
+    hidden_size=512,
     entropy_weight=1e-2,
     min_std=1e-1,
+    motor_scale=1.0,
     normalize_obs=True,
+    activation="tanh",   
 )
 
 config = TrainConfig(
@@ -56,7 +60,7 @@ config = TrainConfig(
         n_minibatches=8,
         gradient_clipping=1.0,
         weight_decay=None,
-        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
+        logging_level=LoggingLevel.LOSSES | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS | LoggingLevel.CRITIC_EXTRA,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     eval=EvalConfig(
@@ -96,7 +100,8 @@ nets = NerveNetNetwork(
 # Initialize wandb
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
-exp_name = f"CombinedAdvantages-{timestamp}"
+
+exp_name = f"SummedLogLikeli-{timestamp}"
 wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config={
@@ -108,7 +113,7 @@ wandb.init(
     },
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="Local test of combined advantages.",
+    notes="With checkpointing.",
 )
 
 # Train with wandb callbacks
@@ -118,6 +123,7 @@ result = ppo.train_ppo(
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
+    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}/", config),
     eval_env=eval_env,
 )
 
