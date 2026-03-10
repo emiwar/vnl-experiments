@@ -8,6 +8,8 @@ os.environ["PYOPENGL_PLATFORM"] = "egl"
 #os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
 
 from datetime import datetime
+import json
+
 import dataclasses
 import jax
 import jax.numpy as jp
@@ -15,7 +17,7 @@ from flax import nnx
 import wandb
 from ml_collections import config_dict
 
-from vnl_playground.tasks.modular_rodent.imitation import ModularImitation, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v2 import ModularImitation_v2, default_config
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
@@ -27,7 +29,7 @@ from vnl_experiments.networks.nervenet_style import NerveNetNetwork
 
 SEED = 40
 env_config = default_config()
-env_config.naconmax = 64*1024
+env_config.naconmax = 4096 #64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
@@ -85,7 +87,7 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation(env_config)
+base_env = ModularImitation_v2(env_config)
 train_env = base_env
 eval_env = train_env
 
@@ -102,19 +104,26 @@ now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
 exp_name = f"SummedLogLikeli-{timestamp}"
-wandb.init(
-    project="nnx-ppo-modular-rodent-imitation",
-    config={
-        "env": "ModularImitation",
+net_config["network_class"] = str(type(nets))
+combined_config = {
+        "env": str(type(base_env)),
         "SEED": SEED,
         "config": dataclasses.asdict(config),
         "net_params": net_config.to_dict(),
         "env_params": env_config.to_dict(),
-    },
+    }
+wandb.init(
+    project="nnx-ppo-modular-rodent-imitation",
+    config=combined_config,
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="With checkpointing.",
+    notes="Local test of new version of modular env.",
 )
+
+checkpoint_dir = f"checkpoints/{exp_name}/"
+os.makedirs(checkpoint_dir, exist_ok=True)
+with open(f"{checkpoint_dir}config.json", "w") as f:
+    json.dump(jax.tree.map(str, combined_config), f)
 
 # Train with wandb callbacks
 result = ppo.train_ppo(
@@ -123,7 +132,7 @@ result = ppo.train_ppo(
     config,
     log_fn=wandb.log,
     video_fn=wandb_video_fn(fps=50),
-    checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}/", config),
+    checkpoint_fn=make_checkpoint_fn(checkpoint_dir, config),
     eval_env=eval_env,
 )
 
