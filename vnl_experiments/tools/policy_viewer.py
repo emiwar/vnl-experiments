@@ -4,6 +4,8 @@
 Runs the trained policy on the ModularImitation environment using the
 MuJoCo Warp backend, and displays it in the native MuJoCo passive viewer
 with live per-module reward overlays and an optional ghost reference body.
+A separate Dear PyGui window shows a live tree browser of obs / actions /
+value estimates / metrics.
 
 Usage:
     .venv/bin/python vnl_experiments/tools/policy_viewer.py \\
@@ -23,10 +25,12 @@ Keyboard controls (in the viewer window):
 import argparse
 import os
 import pickle
+import threading
 import time
 
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
+import dearpygui.dearpygui as dpg
 import jax
 import jax.numpy as jp
 import mujoco
@@ -77,8 +81,6 @@ def _key_callback(key: int) -> None:
         _S["speed_idx"] = max(0, _S["speed_idx"] - 1)
     elif key == 46:                     # . — faster
         _S["speed_idx"] = min(len(_SPEEDS) - 1, _S["speed_idx"] + 1)
-
-
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +188,99 @@ def _format_overlay(
 
 
 # ---------------------------------------------------------------------------
+# Dear PyGui inspector panel
+# ---------------------------------------------------------------------------
+
+_panel_data: dict = {}
+_panel_lock = threading.Lock()
+
+
+def _fmt(val) -> str:
+    """Format a numpy scalar or array as a compact string."""
+    if isinstance(val, np.ndarray):
+        if val.ndim == 0 or val.size == 1:
+            v = float(val.flat[0])
+            return "nan" if np.isnan(v) else f"{v:.4f}"
+        elif val.size <= 8:
+            parts = ["nan" if np.isnan(x) else f"{x:.3f}" for x in val.flat]
+            return "[" + "  ".join(parts) + "]"
+        else:
+            parts = ["nan" if np.isnan(x) else f"{x:.3f}" for x in val.flat[:4]]
+            return "[" + "  ".join(parts) + f"  \u2026 ({val.size})]"
+    if isinstance(val, float):
+        return "nan" if np.isnan(val) else f"{val:.4f}"
+    return str(val)
+
+
+def _nest_slashes(d: dict) -> dict:
+    """Expand slash-delimited keys into nested dicts.
+
+    E.g. {"rewards/hand_L": v} → {"rewards": {"hand_L": v}}
+    Recursively applied so values that are dicts are also processed.
+    """
+    out: dict = {}
+    for k, v in d.items():
+        parts = str(k).split("/")
+        node = out
+        for part in parts[:-1]:
+            node = node.setdefault(part, {})
+        leaf_key = parts[-1]
+        node[leaf_key] = _nest_slashes(v) if isinstance(v, dict) else v
+    return out
+
+
+def _build_dpg_tree(parent: str, data: dict, path: str) -> None:
+    """Recursively create tree_node + text items for the given nested dict."""
+    for key, val in data.items():
+        child_path = f"{path}/{key}"
+        if isinstance(val, dict):
+            with dpg.tree_node(
+                label=str(key),
+                tag=f"tn:{child_path}",
+                default_open=False,
+                parent=parent,
+            ):
+                _build_dpg_tree(f"tn:{child_path}", val, child_path)
+        else:
+            dpg.add_text(
+                f"{key}: {_fmt(val)}",
+                tag=f"tx:{child_path}",
+                parent=parent,
+            )
+
+
+def _update_dpg_tree(data: dict, path: str) -> None:
+    """Recursively update text-item values from a new data snapshot."""
+    for key, val in data.items():
+        child_path = f"{path}/{key}"
+        if isinstance(val, dict):
+            _update_dpg_tree(val, child_path)
+        else:
+            dpg.set_value(f"tx:{child_path}", f"{key}: {_fmt(val)}")
+
+
+def _panel_thread(initial_data: dict) -> None:
+    """Dear PyGui event loop — runs in its own thread."""
+    dpg.create_context()
+    dpg.create_viewport(title="VNL Inspector", width=500, height=900)
+    dpg.setup_dearpygui()
+
+    with dpg.window(label="Inspector", tag="main_win"):
+        _build_dpg_tree("main_win", initial_data, "root")
+
+    dpg.set_primary_window("main_win", True)
+    dpg.show_viewport()
+
+    while dpg.is_dearpygui_running():
+        with _panel_lock:
+            snapshot = dict(_panel_data)
+        _update_dpg_tree(snapshot, "root")
+        dpg.render_dearpygui_frame()
+
+    dpg.destroy_context()
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -202,6 +297,10 @@ def main() -> None:
     parser.add_argument(
         "--hidden_size", type=int, default=512,
         help="NerveNet hidden size — must match the checkpoint (default: 512)",
+    )
+    parser.add_argument(
+        "--activation", type=str, default="tanh",
+        help="NerveNet activation function — must match the checkpoint (default: tanh)",
     )
     parser.add_argument(
         "--clip_id", type=int, default=0,
@@ -248,7 +347,8 @@ def main() -> None:
     action_sizes = env.action_size  # dict {module: n_actuators}
 
     network = NerveNetNetwork(
-        obs_sizes, action_sizes, args.hidden_size, rngs=nnx.Rngs(0)
+        obs_sizes, action_sizes, args.hidden_size, rngs=nnx.Rngs(0),
+        activation=args.activation,
     )
 
     # -----------------------------------------------------------------------
@@ -287,7 +387,7 @@ def main() -> None:
         return net_state, out.replace(actions=actions)
 
     _env_step  = jax.jit(env.step)
-    _env_reset = jax.jit(env.reset)#, static_argnames=["clip_idx"])
+    _env_reset = jax.jit(env.reset)
 
     # -----------------------------------------------------------------------
     # CPU model / data for rendering
@@ -322,6 +422,42 @@ def main() -> None:
         mjx.get_data_into(d, m, env_state.data)
 
     _sync_viewer(env_state)
+
+    # -----------------------------------------------------------------------
+    # Inspector panel setup
+    # -----------------------------------------------------------------------
+    # NaN-filled network output template — used between reset and first step.
+    _net_out_nan = jax.tree.map(
+        lambda x: np.full(np.asarray(x).shape, np.nan), net_out_tmp
+    )
+
+    def _make_panel_snapshot(env_s, net_o) -> dict:
+        """Convert current state into a plain nested dict of numpy values."""
+        return {
+            "obs": jax.tree.map(np.asarray, env_s.obs),
+            "env_metrics": _nest_slashes(jax.tree.map(np.asarray, env_s.metrics)),
+            "actions": jax.tree.map(np.asarray, net_o.actions),
+            "values": jax.tree.map(
+                lambda x: float(np.squeeze(np.asarray(x))), net_o.value_estimates
+            ),
+            "net_metrics": _nest_slashes(jax.tree.map(np.asarray, net_o.metrics)),
+        }
+
+    def _push_panel(env_s, net_o=None) -> None:
+        """Write a new snapshot into the shared panel dict."""
+        no = net_o if net_o is not None else _net_out_nan
+        with _panel_lock:
+            _panel_data.update(_make_panel_snapshot(env_s, no))
+
+    # Populate with initial env_state (from reset) + NaN network outputs.
+    _push_panel(env_state)
+    with _panel_lock:
+        initial_snapshot = dict(_panel_data)
+
+    panel_t = threading.Thread(
+        target=_panel_thread, args=(initial_snapshot,), daemon=True
+    )
+    panel_t.start()
 
     # -----------------------------------------------------------------------
     # Viewer
@@ -363,6 +499,7 @@ def main() -> None:
                     _sync_viewer(env_state)
                     if viewer.user_scn is not None:
                         _clear_ghost(viewer.user_scn)
+                    _push_panel(env_state)  # NaN network outputs after reset
                     viewer.sync()
                     continue
 
@@ -374,6 +511,7 @@ def main() -> None:
                     net_state, net_out = _run_network(network, net_state, env_state.obs)
                     env_state = _env_step(env_state, net_out.actions)
                     _sync_viewer(env_state)
+                    _push_panel(env_state, net_out)
 
                     # Auto-reset at episode end
                     if float(env_state.done) > 0.5:
@@ -420,8 +558,6 @@ def main() -> None:
                     remaining = target_dt - elapsed
                     if remaining > 0:
                         time.sleep(remaining)
-    #except KeyboardInterrupt:
-    #    pass
     finally:
         # JAX/Warp GPU contexts and the viewer's background thread prevent
         # normal Python exit; os._exit() terminates all threads immediately.

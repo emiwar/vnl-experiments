@@ -32,7 +32,9 @@ from vnl_experiments.networks.nervenet_style import NerveNetNetwork
 def main() -> None:
     parser = argparse.ArgumentParser(description="Eval a VNL checkpoint")
     parser.add_argument("--checkpoint", required=True)
-    parser.add_argument("--hidden_size", type=int, default=32)
+    parser.add_argument("--hidden_size", type=int, default=512)
+    parser.add_argument("--activation", type=str, default="tanh",
+                        help="Activation function — must match the checkpoint")
     parser.add_argument("--n_envs", type=int, default=64)
     parser.add_argument("--episode_length", type=int, default=500)
     args = parser.parse_args()
@@ -62,7 +64,8 @@ def main() -> None:
         for k, o in env.non_flattened_observation_size.items()
     }
     network = NerveNetNetwork(
-        obs_sizes, env.action_size, args.hidden_size, rngs=nnx.Rngs(0)
+        obs_sizes, env.action_size, args.hidden_size, rngs=nnx.Rngs(0),
+        activation=args.activation,
     )
 
     # -----------------------------------------------------------------------
