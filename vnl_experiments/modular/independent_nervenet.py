@@ -4,7 +4,7 @@ import os
 
 os.environ["MUJOCO_GL"] = "egl"
 os.environ["PYOPENGL_PLATFORM"] = "egl"
-#os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 #os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.5"
 
 from datetime import datetime
@@ -29,7 +29,7 @@ from vnl_experiments.networks.nervenet_style import NerveNetNetwork
 
 SEED = 40
 env_config = default_config()
-env_config.naconmax = 4096 #64*1024
+env_config.naconmax = 64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
