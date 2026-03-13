@@ -17,7 +17,7 @@ from flax import nnx
 import wandb
 from ml_collections import config_dict
 
-from vnl_playground.tasks.modular_rodent.imitation_v2 import ModularImitation_v2, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v3 import ModularImitation_v3, default_config
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
@@ -33,8 +33,8 @@ env_config.naconmax = 64*1024
 env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
-env_config.reward_terms["limb_pos_exp_scale"] = 0.015
-env_config.reward_terms["joint_exp_scale"] = 0.1
+env_config.reward_terms["limb_pos_exp_scale"] = 0.02
+env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
@@ -90,7 +90,7 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation_v2(env_config)
+base_env = ModularImitation_v3(env_config)
 train_env = base_env
 eval_env = train_env
 
@@ -120,7 +120,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="Test of new version of nerve net.",
+    notes="Test of new version of imitation env.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"
