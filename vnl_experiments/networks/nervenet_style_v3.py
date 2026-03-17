@@ -29,6 +29,7 @@ class NerveNetNetwork_v3(PPONetwork):
                  normalize_obs: bool = True,
                  activation: Union[str, Callable] = nnx.swish,
                  critic_scale: float = 1.0,
+                 combine_likelihoods: bool = True,
                  detached_critic: bool = False,
                  detached_critic_hidden_sizes: list[int] = [512, 512]):
         if isinstance(activation, str):
@@ -58,6 +59,7 @@ class NerveNetNetwork_v3(PPONetwork):
         self.motor_scale = motor_scale
         self.critic_scale = critic_scale
         self.normalizer = Normalizer(obs_sizes) if normalize_obs else None
+        self.combine_likelihoods = combine_likelihoods
 
     def __call__(self,
                  network_state: tuple[()],
@@ -126,8 +128,10 @@ class NerveNetNetwork_v3(PPONetwork):
             actions[k], new_raw_actions[k], loglikelihoods[k] = output.output
             regularization_loss += output.regularization_loss
             metrics[k] = output.metrics
-        # Sum loglikelihoods across all action modules → joint scalar loglikelihood, root excluded
-        loglikelihoods = sum(loglikelihoods.values())
+
+        if self.combine_likelihoods:
+            # Sum loglikelihoods across all action modules → joint scalar loglikelihood, root excluded
+            loglikelihoods = sum(loglikelihoods.values())
 
         #Critic
         if self.detached_critic:

@@ -17,10 +17,10 @@ from flax import nnx
 import wandb
 from ml_collections import config_dict
 
-from vnl_playground.tasks.modular_rodent.imitation_v3 import ModularImitation_v3, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4, default_config
 
 from nnx_ppo.algorithms import ppo
-from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState
+from nnx_ppo.algorithms.types import LoggingLevel
 from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoConfig
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
 from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
@@ -48,12 +48,15 @@ net_config = config_dict.create(
     min_std=1e-1,
     motor_scale=1.0,
     normalize_obs=True,
-    activation="tanh",   
+    combine_likelihoods=True,
+    detached_critic=True,
+    detached_critic_hidden_sizes=[512, 512],
+    activation="tanh",
 )
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=2048,
+        n_envs=1024,
         rollout_length=20,
         total_steps=750_000_000,
         discounting_factor=0.95,
@@ -61,7 +64,7 @@ config = TrainConfig(
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=8,
+        n_minibatches=4,
         critic_loss_weight=0.05,
         gradient_clipping=1.0,
         weight_decay=None,
@@ -91,7 +94,7 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation_v3(env_config)
+base_env = ModularImitation_v4(env_config)
 train_env = base_env
 eval_env = train_env
 
@@ -107,7 +110,7 @@ nets = NerveNetNetwork_v3(
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
-exp_name = f"NerveNetv3-{timestamp}"
+exp_name = f"Imitation_v4-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
         "env": str(type(base_env)),
@@ -121,7 +124,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="Test of new version of nervenet.",
+    notes="Test of new imitation env.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"
