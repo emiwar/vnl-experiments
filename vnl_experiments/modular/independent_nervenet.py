@@ -34,7 +34,7 @@ env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.015
-env_config.reward_terms["joint_exp_scale"] = 0.1
+env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
@@ -117,7 +117,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("NerveNet", "warp", "Modular"),
-    notes="Local test of new version of modular env.",
+    notes="Trying a different set of reward params.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

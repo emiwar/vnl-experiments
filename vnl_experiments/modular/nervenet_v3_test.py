@@ -18,6 +18,7 @@ import wandb
 from ml_collections import config_dict
 
 from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4, default_config
+from vnl_playground.tasks.reference_clips import ReferenceClips
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel
@@ -39,11 +40,12 @@ env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
 env_config.sim_dt = 0.002
+env_config.energy_cost = -0.04
 
 net_config = config_dict.create(
-    hidden_size=128,
+    hidden_size=512,
     root_size=512,
-    critic_scale=20.0,
+    critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,
     motor_scale=1.0,
@@ -51,14 +53,14 @@ net_config = config_dict.create(
     combine_likelihoods=True,
     detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
-    activation="tanh",
+    activation="swish",
 )
 
 config = TrainConfig(
     ppo=PPOConfig(
         n_envs=1024,
         rollout_length=20,
-        total_steps=750_000_000,
+        total_steps=500_000_000,
         discounting_factor=0.95,
         normalize_advantages=True,
         combine_advantages=True,
@@ -94,14 +96,17 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation_v4(env_config)
-train_env = base_env
-eval_env = train_env
+clips = ReferenceClips(env_config.reference_data_path,
+                       env_config.clip_length,
+                       env_config.keep_clips_idx)
+train_clips, test_clips = clips.split()
+train_env = ModularImitation_v4(env_config, clips=train_clips)
+eval_env = ModularImitation_v4(env_config, clips=test_clips)
 
 # Setup network
 rngs = nnx.Rngs(SEED)
 
-obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k,o in base_env.non_flattened_observation_size.items()}
+obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k,o in train_env.non_flattened_observation_size.items()}
 nets = NerveNetNetwork_v3(
     obs_sizes, train_env.action_size, rngs=rngs, **net_config
 )
@@ -110,10 +115,10 @@ nets = NerveNetNetwork_v3(
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
-exp_name = f"Imitation_v4-{timestamp}"
+exp_name = f"Imitation_detached_critic_v4-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
-        "env": str(type(base_env)),
+        "env": str(type(train_env)),
         "SEED": SEED,
         "config": dataclasses.asdict(config),
         "net_params": net_config.to_dict(),
@@ -123,8 +128,8 @@ wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config=combined_config,
     name=exp_name,
-    tags=("NerveNet", "warp", "Modular"),
-    notes="Test of new imitation env.",
+    tags=("NerveNet", "warp", "Modular", "train_test_split"),
+    notes="Train-test split.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

@@ -51,7 +51,7 @@ class NerveNetNetwork_v3(PPONetwork):
         if detached_critic:
             total_obs_size = jax.tree.reduce(jp.add, obs_sizes)
             critic_sizes = [total_obs_size, *detached_critic_hidden_sizes, len(all_modules)]
-            self.critic = Sequential(Flattener(), *make_mlp_layers(critic_sizes, rngs, activation, activation_last_layer=False))
+            self.critic = Sequential([Flattener(), *make_mlp_layers(critic_sizes, rngs, activation, activation_last_layer=False)])
         else:
             self.critics = nnx.Dict({k: Dense(hidden_size, 1, rngs, kernel_init=nnx.initializers.zeros) for k in all_modules})
             self.critics["root"] = Dense(root_size, 1, rngs, kernel_init=nnx.initializers.zeros)

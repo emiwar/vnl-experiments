@@ -25,7 +25,8 @@ from flax import nnx
 import wandb
 from ml_collections import config_dict
 
-from vnl_playground.tasks.modular_rodent.imitation_v3 import ModularImitation_v3, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4, default_config
+from vnl_playground.tasks.reference_clips import ReferenceClips
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.types import LoggingLevel, RLEnv, EnvState, Transition
@@ -245,10 +246,14 @@ SEED = 40
 env_config = default_config()
 env_config.naconmax = 64 * 1024
 env_config.njmax = 1024
+env_config.energy_cost = -0.04
+env_config.iterations = 50
+env_config.ls_iterations = 50
+#env_config.sim_dt = 0.002
 
 net_config = config_dict.create(
-    actor_hidden_sizes=[1024] * 2,
-    critic_hidden_sizes=[1024] * 2,
+    actor_hidden_sizes=[32] * 2,
+    critic_hidden_sizes=[512] * 2,
     activation="swish",
     entropy_weight=1e-2,
     min_std=1e-1,
@@ -295,9 +300,15 @@ config = TrainConfig(
     checkpoint_every_steps=50_000_000,
 )
 
-base_env = ModularImitation_v3(env_config)
+clips = ReferenceClips(env_config.reference_data_path,
+                       env_config.clip_length,
+                       env_config.keep_clips_idx)
+train_clips, test_clips = clips.split()
+base_env = ModularImitation_v4(env_config, clips=train_clips)
+eval_env = ModularImitation_v4(env_config, clips=test_clips)
+
 train_env = FlatObsMultiRewardWrapper(base_env)
-eval_env = train_env
+eval_env = FlatObsMultiRewardWrapper(eval_env)
 
 # Determine action sizes and reward keys from a sample reset
 _sample_state = jax.jit(base_env.reset)(jax.random.key(0))
@@ -329,8 +340,8 @@ wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config=combined_config,
     name=exp_name,
-    tags=("MLP", "Modular", "MultiHead", "warp"),
-    notes="New env.",
+    tags=("MLP", "Modular", "MultiHead", "warp", "train_test_split"),
+    notes="Train-test split. Tiny MLP.",
 )
 
 
