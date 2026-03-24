@@ -31,7 +31,7 @@ from vnl_playground.tasks.reference_clips import ReferenceClips
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
-from vnl_experiments.modular.mlp_multi_heads import MLPModularNetwork
+from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 
 # ---------------------------------------------------------------------------
 # Checkpoints — add more here as training completes
@@ -170,12 +170,9 @@ def build_network(net_params: dict, env: ModularImitation_v4, rngs: nnx.Rngs):
 
 
 def _count_params(module) -> int:
-    return sum(
-        x.size
-        for x in jax.tree.leaves(
-            jax.tree.map(lambda x: x.size, nnx.state(module, nnx.Param))
-        )
-    )
+    return sum(jax.tree.leaves(
+        jax.tree.map(lambda x: x.size, nnx.state(module, nnx.Param))
+    ))
 
 
 def get_param_counts(nets, network_class_str: str) -> tuple[int, int]:
