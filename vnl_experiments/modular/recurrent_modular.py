@@ -83,7 +83,7 @@ config = TrainConfig(
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     video=VideoConfig(
-        enabled=False,
+        enabled=True,
         every_steps=10_000_000,
         episode_length=2000,
         render_kwargs={
@@ -131,7 +131,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("Recurrent", "warp", "Modular", "train_test_split"),
-    notes="Local test of recurrent net.",
+    notes="Another test of recurrent net.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

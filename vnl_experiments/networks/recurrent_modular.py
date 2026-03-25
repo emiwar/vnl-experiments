@@ -10,7 +10,7 @@ from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.sampling_layers import NormalTanhSampler
 from nnx_ppo.networks.containers import Sequential, Flattener
 from nnx_ppo.networks.normalizer import Normalizer
-from nnx_ppo.networks.factories import make_mlp_layers
+from nnx_ppo.networks.factories import make_mlp, make_mlp_layers
 
 NON_END_EFFECTORS = ["arm_L", "arm_R", "leg_L", "leg_R", "torso", "head"]
 END_EFFECTORS = ["hand_L", "hand_R", "foot_L", "foot_R"]
@@ -41,7 +41,7 @@ class RecurrentModularNetwork(PPONetwork):
         self.raw_psi = nnx.Dict({k: nnx.Param(rngs.normal(s)) for k,s in module_size.items()})
         self.min_psi = min_psi
         self.max_psi = max_psi
-        self.input_layers = nnx.Dict({k: Dense(os, module_size[k], rngs, activation) for k,os in obs_sizes.items()})
+        self.input_layers = nnx.Dict({k: make_mlp([os, module_size[k], module_size[k]], rngs, activation, False) for k,os in obs_sizes.items()})
         self.afferents = nnx.Dict()
         self.efferents = nnx.Dict()
         for k in NON_END_EFFECTORS:
@@ -79,7 +79,7 @@ class RecurrentModularNetwork(PPONetwork):
             obs_norm = self.normalizer((), obs_flat).output
         
         #Input pass
-        layer_1 = {k: self.input_layers[k]((), xx).output for k,xx in obs_norm.items()}
+        layer_1 = {k: self.input_layers[k]([(), ()], xx).output for k,xx in obs_norm.items()}
 
         module_input = dict()
         h = {k: self.activation(network_state[k]) for k in layer_1.keys()}
@@ -96,7 +96,7 @@ class RecurrentModularNetwork(PPONetwork):
         module_input["head"] = layer_1["head"] + self.efferents["head"](h["root"])
         module_input["torso"] = layer_1["torso"] + self.efferents["torso"](h["root"])
         module_input["root"] = layer_1["root"]
-        module_input["root"] += sum(self.afferents[k](h[k]) for k in ["arm_L", "arm_R", "leg_L", "leg_R", "head", "torso"])/6.0
+        module_input["root"] += sum(self.afferents[k](h[k]) for k in NON_END_EFFECTORS)/len(NON_END_EFFECTORS)
 
         psi = {k: self._psi(k) for k in module_input.keys()}
         new_state = {k: psi[k] * network_state[k] + (1-psi[k])*mi for k,mi in module_input.items()}
