@@ -30,8 +30,13 @@ from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4
 from vnl_playground.tasks.reference_clips import ReferenceClips
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
-from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
-from vnl_experiments.networks.mlp_modular import MLPModularNetwork
+from vnl_experiments.tools.checkpoint_utils import (
+    parse_env_config,
+    parse_net_params,
+    build_network,
+    _count_params,
+    get_param_counts,
+)
 
 # ---------------------------------------------------------------------------
 # Checkpoints — add more here as training completes
@@ -50,141 +55,6 @@ OUTPUT_FILE = "benchmark_results.json"
 
 # Repo root: vnl-experiments/vnl_experiments/tools/ → up 3 levels
 REPO_ROOT = Path(__file__).parent.parent.parent
-
-
-# ---------------------------------------------------------------------------
-# Config parsing
-# ---------------------------------------------------------------------------
-
-def parse_env_config(env_params: dict):
-    """Reconstruct env ConfigDict from the string-valued JSON dict.
-
-    Starts from default_config() and overrides with values from env_params,
-    using the local XML paths (not cluster paths from the checkpoint).
-    """
-    cfg = default_config()
-
-    for field, conv in [
-        ("clip_length", int),
-        ("ctrl_dt", float),
-        ("energy_cost", float),
-        ("impratio", float),
-        ("iterations", int),
-        ("ls_iterations", int),
-        ("max_target_distance", float),
-        ("min_torso_z", float),
-        ("mocap_hz", int),
-        ("naconmax", int),
-        ("njmax", int),
-        ("noslip_iterations", int),
-        ("rescale_factor", float),
-        ("sim_dt", float),
-        ("tolerance", float),
-    ]:
-        if field in env_params:
-            setattr(cfg, field, conv(env_params[field]))
-
-    for field in ["clip_set", "cone", "mujoco_impl", "qvel_init", "solver"]:
-        if field in env_params:
-            setattr(cfg, field, env_params[field])
-
-    for field in ["include_vel", "torque_actuators"]:
-        if field in env_params:
-            setattr(cfg, field, env_params[field] == "True")
-
-    if env_params.get("keep_clips_idx", "None") not in ("None", None):
-        cfg.keep_clips_idx = env_params["keep_clips_idx"]
-
-    if "start_frame_range" in env_params:
-        cfg.start_frame_range = [int(x) for x in env_params["start_frame_range"]]
-
-    if "reward_terms" in env_params:
-        for k, v in env_params["reward_terms"].items():
-            cfg.reward_terms[k] = float(v)
-
-    # Always use local paths — cluster paths from the checkpoint are invalid here
-    default = default_config()
-    cfg.reference_data_path = default.reference_data_path
-    cfg.walker_xml_path = default.walker_xml_path
-    cfg.arena_xml_path = default.arena_xml_path
-
-    return cfg
-
-
-def parse_net_params(net_params: dict) -> dict:
-    """Convert string-valued net_params to proper Python types, skipping network_class."""
-    result = {}
-    for k, v in net_params.items():
-        if k == "network_class":
-            continue
-        if isinstance(v, list):
-            result[k] = [int(x) for x in v]
-        elif v == "True":
-            result[k] = True
-        elif v == "False":
-            result[k] = False
-        elif v == "None":
-            result[k] = None
-        else:
-            try:
-                result[k] = int(v)
-            except (ValueError, TypeError):
-                try:
-                    result[k] = float(v)
-                except (ValueError, TypeError):
-                    result[k] = v
-    return result
-
-
-# ---------------------------------------------------------------------------
-# Network construction and parameter counting
-# ---------------------------------------------------------------------------
-
-def build_network(net_params: dict, env: ModularImitation_v4, rngs: nnx.Rngs):
-    """Instantiate the correct network class from config net_params."""
-    network_class_str = net_params.get("network_class", "")
-    kwargs = parse_net_params(net_params)
-
-    obs_sizes = {
-        k: jp.squeeze(jax.tree.reduce(jp.add, o))
-        for k, o in env.non_flattened_observation_size.items()
-    }
-
-    if "NerveNetNetwork_v3" in network_class_str:
-        return NerveNetNetwork_v3(obs_sizes, env.action_size, rngs=rngs, **kwargs)
-
-    if "MLPModularNetwork" in network_class_str:
-        sample_state = jax.jit(env.reset)(jax.random.key(0))
-        reward_keys = list(sample_state.reward.keys())
-        flat_obs_size = int(jax.tree.reduce(jp.add, env.observation_size))
-        action_sizes = {k: int(v) for k, v in env.action_size.items()}
-        return MLPModularNetwork(
-            obs_size=flat_obs_size,
-            action_sizes=action_sizes,
-            reward_keys=reward_keys,
-            rngs=rngs,
-            **kwargs,
-        )
-
-    raise ValueError(f"Unknown network class: {network_class_str!r}")
-
-
-def _count_params(module) -> int:
-    return sum(jax.tree.leaves(
-        jax.tree.map(lambda x: x.size, nnx.state(module, nnx.Param))
-    ))
-
-
-def get_param_counts(nets, network_class_str: str) -> tuple[int, int]:
-    """Return (n_actor_params, n_critic_params)."""
-    total = _count_params(nets)
-    if "NerveNetNetwork_v3" in network_class_str:
-        n_critic = _count_params(nets.critic)
-    elif "MLPModularNetwork" in network_class_str:
-        n_critic = _count_params(nets.critic_encoder) + _count_params(nets.critic_heads)
-    else:
-        raise ValueError(f"Unknown network class: {network_class_str!r}")
-    return total - n_critic, n_critic
 
 
 # ---------------------------------------------------------------------------
