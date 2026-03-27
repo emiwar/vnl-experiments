@@ -31,7 +31,8 @@ class NerveNetNetwork_v3(PPONetwork):
                  critic_scale: float = 1.0,
                  combine_likelihoods: bool = True,
                  detached_critic: bool = False,
-                 detached_critic_hidden_sizes: list[int] = [512, 512]):
+                 detached_critic_hidden_sizes: list[int] = [512, 512],
+                 reveal_targets: str = "all"):
         if isinstance(activation, str):
             activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[activation]
         all_modules = obs_sizes.keys()
@@ -60,11 +61,13 @@ class NerveNetNetwork_v3(PPONetwork):
         self.critic_scale = critic_scale
         self.normalizer = Normalizer(obs_sizes) if normalize_obs else None
         self.combine_likelihoods = combine_likelihoods
+        self.reveal_targets = reveal_targets
 
     def __call__(self,
                  network_state: tuple[()],
                  obs: Mapping[str, jax.Array],
                  raw_action: Optional[Mapping[str, jax.Array]] = None) -> tuple[tuple[()], PPONetworkOutput]:
+        obs = self._filter_obs(obs)
         assert obs.keys() == self.input_layers.keys()
 
         #Flatten
@@ -163,3 +166,14 @@ class NerveNetNetwork_v3(PPONetwork):
         )
         if self.normalizer is not None:
             self.normalizer.update_statistics(last_rollout, total_steps)
+
+    def _filter_obs(self, obs):
+        if self.reveal_targets != "all":
+            obs = obs.copy()
+            for k,o in obs.items():
+                if k != "root":
+                    obs[k] = o["proprioception"]
+            if self.reveal_targets != "root_only":
+                batch_dim = obs["root"]["current_target"].shape
+                obs["root"] = jp.zeros(batch_dim, 0)
+        return obs

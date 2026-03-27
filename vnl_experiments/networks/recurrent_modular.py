@@ -33,7 +33,8 @@ class RecurrentModularNetwork(PPONetwork):
                  min_psi: float = 0.5,
                  max_psi: float = 0.95,
                  detached_critic: bool = True,
-                 detached_critic_hidden_sizes: list[int] = [512, 512]):
+                 detached_critic_hidden_sizes: list[int] = [512, 512],
+                 reveal_targets: str = "all"):
         if isinstance(activation, str):
             activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[activation]
         module_size = {k: hidden_size for k in obs_sizes.keys()}
@@ -64,11 +65,13 @@ class RecurrentModularNetwork(PPONetwork):
         self.normalizer = Normalizer(obs_sizes) if normalize_obs else None
         self.combine_likelihoods = combine_likelihoods
         self.activation = activation
+        self.reveal_targets = reveal_targets
 
     def __call__(self,
                  network_state: tuple[()],
                  obs: Mapping[str, jax.Array],
                  raw_action: Optional[Mapping[str, jax.Array]] = None) -> tuple[tuple[()], PPONetworkOutput]:
+        obs = self._filter_obs(obs)
         assert obs.keys() == self.input_layers.keys()
 
         #Flatten
@@ -150,9 +153,10 @@ class RecurrentModularNetwork(PPONetwork):
         return new_state
  
     def update_statistics(self, last_rollout, total_steps) -> None:
+        obs = self._filter_obs(last_rollout.obs)
         flattener = Flattener()
         last_rollout = last_rollout.replace(
-            obs = {k: jax.vmap(lambda o: flattener((), o).output)(o) for k,o in last_rollout.obs.items()}
+            obs = {k: jax.vmap(lambda o: flattener((), o).output)(o) for k,o in obs.items()}
         )
         if self.normalizer is not None:
             self.normalizer.update_statistics(last_rollout, total_steps)
@@ -162,3 +166,14 @@ class RecurrentModularNetwork(PPONetwork):
         lam = 0.5*(1.0 + nnx.tanh(raw_psi))
         psi = (1 - lam) * self.min_psi + lam * self.max_psi
         return psi
+
+    def _filter_obs(self, obs):
+        if self.reveal_targets != "all":
+            obs = obs.copy()
+            for k,o in obs.items():
+                if k != "root":
+                    obs[k] = o["proprioception"]
+            if self.reveal_targets != "root_only":
+                batch_dim = obs["root"]["current_target"].shape
+                obs["root"] = jp.zeros(batch_dim, 0)
+        return obs
