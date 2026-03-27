@@ -160,9 +160,10 @@ class NerveNetNetwork_v3(PPONetwork):
             return ()
     
     def update_statistics(self, last_rollout, total_steps) -> None:
+        obs = self._filter_obs(last_rollout.obs)
         flattener = Flattener()
         last_rollout = last_rollout.replace(
-            obs = {k: jax.vmap(lambda o: flattener((), o).output)(o) for k,o in last_rollout.obs.items()}
+            obs = {k: jax.vmap(lambda o: flattener((), o).output)(o) for k,o in obs.items()}
         )
         if self.normalizer is not None:
             self.normalizer.update_statistics(last_rollout, total_steps)
