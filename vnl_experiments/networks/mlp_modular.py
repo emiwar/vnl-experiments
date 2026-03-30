@@ -14,6 +14,7 @@ from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.factories import make_mlp
 from nnx_ppo.networks.sampling_layers import NormalTanhSampler
 from nnx_ppo.networks.normalizer import Normalizer
+from nnx_ppo.networks.containers import Flattener
 
 
 class FlatObsMultiRewardWrapper(RLEnv):
@@ -129,7 +130,8 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
 
         # Filter and flatten obs
         obs_filtered = self._filter_obs(obs)
-        obs_flat, _ = jax.flatten_util.ravel_pytree(obs_filtered)
+        flattener = Flattener()
+        obs_flat = flattener((), obs_filtered).output
 
         # Obs normalization
         if self.preprocessor is not None:
