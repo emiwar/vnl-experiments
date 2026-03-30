@@ -1,6 +1,6 @@
 """MLP-based modular network and env wrapper for multi-module rodent imitation."""
 
-from typing import Optional
+from typing import Optional, Union
 from collections.abc import Mapping
 
 import jax
@@ -71,27 +71,30 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
 
     def __init__(
         self,
-        obs_size: int,
+        obs_sizes: Mapping[str, int],
         action_sizes: Mapping[str, int],
         reward_keys,
         actor_hidden_sizes: list[int],
         critic_hidden_sizes: list[int],
         rngs: nnx.Rngs,
-        activation=nnx.swish,
+        activation: Union[str, callable] = nnx.swish,
         normalize_obs: bool = True,
         entropy_weight: float = 1e-2,
         min_std: float = 1e-1,
         std_scale: float = 1.0,
         initializer_scale: float = 1.0,
+        reveal_targets: str = "all",
     ):
         if isinstance(activation, str):
             activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[activation]
 
+        self.reveal_targets = reveal_targets
+        flat_obs_size = int(sum(obs_sizes.values()))
         kernel_init = nnx.initializers.variance_scaling(initializer_scale, "fan_in", "uniform")
 
         # Actor: shared encoder + per-module heads
         self.actor_encoder = make_mlp(
-            [obs_size] + actor_hidden_sizes, rngs, activation,
+            [flat_obs_size] + actor_hidden_sizes, rngs, activation,
             activation_last_layer=True, kernel_init=kernel_init,
         )
         actor_feature_size = actor_hidden_sizes[-1]
@@ -115,23 +118,27 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
             for k in reward_keys
         })
 
-        self.preprocessor: Optional[Normalizer] = Normalizer(obs_size) if normalize_obs else None
+        self.preprocessor: Optional[Normalizer] = Normalizer(flat_obs_size) if normalize_obs else None
 
     def __call__(
         self,
         network_state: dict,
-        obs: jax.Array,
+        obs: Mapping[str, jax.Array],
         raw_action: Optional[Mapping[str, jax.Array]] = None,
     ) -> tuple[dict, PPONetworkOutput]:
         regularization_loss = jp.array(0.0)
 
+        # Filter and flatten obs
+        obs_filtered = self._filter_obs(obs)
+        obs_flat, _ = jax.flatten_util.ravel_pytree(obs_filtered)
+
         # Obs normalization
         if self.preprocessor is not None:
-            prep_out = self.preprocessor(network_state["preprocessor"], obs)
+            prep_out = self.preprocessor(network_state["preprocessor"], obs_flat)
             obs_proc = prep_out.output
             network_state = {**network_state, "preprocessor": prep_out.next_state}
         else:
-            obs_proc = obs
+            obs_proc = obs_flat
 
         # Shared actor encoder
         enc_out = self.actor_encoder(network_state["actor_encoder"], obs_proc)
@@ -200,4 +207,21 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
 
     def update_statistics(self, last_rollout: Transition, total_steps) -> None:
         if self.preprocessor is not None:
-            self.preprocessor.update_statistics(last_rollout, total_steps)
+            obs_filtered = self._filter_obs(last_rollout.obs)
+            flat_obs = jp.concatenate(
+                [obs_filtered[k] for k in obs_filtered], axis=-1
+            )
+            self.preprocessor.update_statistics(
+                last_rollout.replace(obs=flat_obs), total_steps
+            )
+
+    def _filter_obs(self, obs):
+        if self.reveal_targets != "all":
+            obs = obs.copy()
+            for k, o in obs.items():
+                if k != "root":
+                    obs[k] = o["proprioception"]
+            if self.reveal_targets != "root_only":
+                batch_dim = obs["root"]["current_target"].shape
+                obs["root"] = jp.zeros(batch_dim, 0)
+        return obs

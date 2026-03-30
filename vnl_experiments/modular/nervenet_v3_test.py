@@ -54,6 +54,7 @@ net_config = config_dict.create(
     detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
+    reveal_targets="all",
 )
 
 config = TrainConfig(
@@ -106,7 +107,12 @@ eval_env = ModularImitation_v4(env_config, clips=test_clips)
 # Setup network
 rngs = nnx.Rngs(SEED)
 
-obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k,o in train_env.non_flattened_observation_size.items()}
+if net_config.reveal_targets == "all":
+    obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k, o in train_env.non_flattened_observation_size.items()}
+else:
+    obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"])) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
+    if net_config.reveal_targets == "root_only":
+        obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
 nets = NerveNetNetwork_v3(
     obs_sizes, train_env.action_size, rngs=rngs, **net_config
 )

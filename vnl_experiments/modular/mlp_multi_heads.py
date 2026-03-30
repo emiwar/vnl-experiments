@@ -32,7 +32,7 @@ from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoC
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
 from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
-from vnl_experiments.networks.mlp_modular import FlatObsMultiRewardWrapper, MLPModularNetwork
+from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +57,7 @@ net_config = config_dict.create(
     std_scale=1.0,
     normalize_obs=True,
     initializer_scale=1.0,
+    reveal_targets="all",
 )
 
 config = TrainConfig(
@@ -101,21 +102,25 @@ clips = ReferenceClips(env_config.reference_data_path,
                        env_config.clip_length,
                        env_config.keep_clips_idx)
 train_clips, test_clips = clips.split()
-base_env = ModularImitation_v4(env_config, clips=train_clips)
+train_env = ModularImitation_v4(env_config, clips=train_clips)
 eval_env = ModularImitation_v4(env_config, clips=test_clips)
 
-train_env = FlatObsMultiRewardWrapper(base_env)
-eval_env = FlatObsMultiRewardWrapper(eval_env)
-
 # Determine action sizes and reward keys from a sample reset
-_sample_state = jax.jit(base_env.reset)(jax.random.key(0))
+_sample_state = jax.jit(train_env.reset)(jax.random.key(0))
 reward_keys = list(_sample_state.reward.keys())
 del _sample_state
-action_sizes = {k: int(v) for k, v in base_env.action_size.items()}
+action_sizes = {k: int(v) for k, v in train_env.action_size.items()}
+
+if net_config.reveal_targets == "all":
+    obs_sizes = {k: int(jp.squeeze(jax.tree.reduce(jp.add, o))) for k, o in train_env.non_flattened_observation_size.items()}
+else:
+    obs_sizes = {k: int(jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"]))) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
+    if net_config.reveal_targets == "root_only":
+        obs_sizes["root"] = int(jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"])))
 
 rngs = nnx.Rngs(SEED)
 nets = MLPModularNetwork(
-    obs_size=int(train_env.observation_size),
+    obs_sizes=obs_sizes,
     action_sizes=action_sizes,
     reward_keys=reward_keys,
     rngs=rngs,
@@ -127,7 +132,7 @@ timestamp = now.strftime("%Y%m%d-%H%M%S")
 exp_name = f"MLPModular-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
-        "env": str(type(base_env)),
+        "env": str(type(train_env)),
         "SEED": SEED,
         "config": dataclasses.asdict(config),
         "net_params": net_config.to_dict(),
