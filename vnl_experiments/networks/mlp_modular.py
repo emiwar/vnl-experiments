@@ -209,11 +209,14 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
     def update_statistics(self, last_rollout: Transition, total_steps) -> None:
         if self.preprocessor is not None:
             obs_filtered = self._filter_obs(last_rollout.obs)
-            flat_obs = jp.concatenate(
-                [obs_filtered[k] for k in obs_filtered], axis=-1
-            )
+            flattener = Flattener()
+            obs_per_module = {
+                k: jax.vmap(lambda o: flattener((), o).output)(o)
+                for k, o in obs_filtered.items()
+            }
+            obs_flat = jp.concatenate(list(obs_per_module.values()), axis=-1)
             self.preprocessor.update_statistics(
-                last_rollout.replace(obs=flat_obs), total_steps
+                last_rollout.replace(obs=obs_flat), total_steps
             )
 
     def _filter_obs(self, obs):
