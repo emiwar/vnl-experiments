@@ -43,6 +43,7 @@ from nnx_ppo.algorithms.types import LoggingLevel
 
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
 from vnl_experiments.networks.recurrent_modular import RecurrentModularNetwork
+from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 from vnl_experiments.tools.checkpoint_utils import load_network_from_checkpoint
 
 # ---------------------------------------------------------------------------
@@ -53,22 +54,24 @@ SEED = 40
 
 # Path to the teacher checkpoint (relative to vnl-experiments root).
 TEACHER_CHECKPOINT = (
-    "downloaded_checkpoints/Imitation_detached_critic_v4-20260319-155439"
+    "checkpoints/Imitation_detached_critic_v4-20260319-155439"
 )
 
 # Architecture for the student. Can differ from the teacher's config.
 # Defaults to the same architecture used by the teacher checkpoint above.
 STUDENT_CONFIG = config_dict.create(
-    hidden_size=256,
-    root_size=1024,
-    critic_scale=1.0,
+    #hidden_size=256,
+    #root_size=1024,
+    actor_hidden_sizes = [512, 512],
+    critic_hidden_sizes = [512, 512],
+    #critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,
-    motor_scale=1.0,
+    #motor_scale=1.0,
     normalize_obs=True,
-    combine_likelihoods=True,
-    detached_critic=True,
-    detached_critic_hidden_sizes=[512, 512],
+    #combine_likelihoods=True,
+    #detached_critic=True,
+    #detached_critic_hidden_sizes=[512, 512],
     activation="swish",
     reveal_targets="root_only",
 )
@@ -115,7 +118,6 @@ teacher = load_network_from_checkpoint(
 # ---------------------------------------------------------------------------
 # Student — fresh network, same architecture by default
 # ---------------------------------------------------------------------------
-
 if STUDENT_CONFIG["reveal_targets"] == "all":
     obs_sizes = {
         k: jp.squeeze(jax.tree.reduce(jp.add, o))
@@ -129,7 +131,8 @@ else:
     if STUDENT_CONFIG["reveal_targets"] == "root_only":
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
 
-student = RecurrentModularNetwork(
+
+student = MLPModularNetwork(
     obs_sizes,
     train_env.action_size,
     rngs=nnx.Rngs(SEED + 1),
@@ -142,12 +145,12 @@ student = RecurrentModularNetwork(
 
 config = DistillationTrainConfig(
     distillation=DistillationConfig(
-        n_envs=512,
+        n_envs=1024,
         rollout_length=20,
         total_steps=1_000_000_000,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=2,
+        n_minibatches=4,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=(
@@ -160,7 +163,7 @@ config = DistillationTrainConfig(
     eval=EvalConfig(
         enabled=True,
         every_steps=2_500_000,
-        n_envs=128,
+        n_envs=256,
         max_episode_length=500,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
@@ -202,8 +205,8 @@ wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config=combined_config,
     name=exp_name,
-    tags=("Distillation", "Recurrent", "warp", "Modular", "masked_inputs"),
-    notes="Distillation with masked inputs.",
+    tags=("Distillation", "NerveNet", "warp", "Modular", "masked_inputs"),
+    notes="Distillation with masked inputs, multi-head MLP.",
 )
 
 checkpoint_dir = REPO_ROOT / f"checkpoints/{exp_name}/"

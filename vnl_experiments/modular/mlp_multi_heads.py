@@ -49,7 +49,7 @@ env_config.ls_iterations = 50
 #env_config.sim_dt = 0.002
 
 net_config = config_dict.create(
-    actor_hidden_sizes=[32] * 2,
+    actor_hidden_sizes=[1024] * 4,
     critic_hidden_sizes=[512] * 2,
     activation="swish",
     entropy_weight=1e-2,

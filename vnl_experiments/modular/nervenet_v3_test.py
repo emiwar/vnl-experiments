@@ -43,8 +43,8 @@ env_config.sim_dt = 0.002
 env_config.energy_cost = -0.04
 
 net_config = config_dict.create(
-    hidden_size=512,
-    root_size=512,
+    hidden_size=16,
+    root_size=32,
     critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,

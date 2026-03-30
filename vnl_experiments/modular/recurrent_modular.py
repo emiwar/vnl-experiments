@@ -53,7 +53,7 @@ net_config = config_dict.create(
     combine_likelihoods=True,
     min_psi=0.5,
     max_psi=0.95,
-    detached_critic=True,
+    detached_critic=False,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
     reveal_targets="all",
@@ -137,7 +137,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("Recurrent", "warp", "Modular", "train_test_split"),
-    notes="Another test of recurrent net.",
+    notes="Recurrent net with attached critic.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

@@ -44,11 +44,19 @@ from vnl_experiments.tools.checkpoint_utils import (
 # ---------------------------------------------------------------------------
 
 CHECKPOINTS = [
-    "downloaded_checkpoints/MLPModular-20260320-054435",
-    "downloaded_checkpoints/Imitation_detached_critic_v4-20260319-155439",
-    "downloaded_checkpoints/Imitation_detached_critic_v4-20260319-171039",
-    "downloaded_checkpoints/Imitation_detached_critic_v4-20260320-054423",
-    "downloaded_checkpoints/MLPModular-20260319-153658",
+    "checkpoints/MLPModular-20260328-004410",
+    "checkpoints/Imitation_detached_critic_v4-20260328-004400",
+    "checkpoints/MLPModular-20260324-115039",
+    "checkpoints/Imitation_detached_critic_v4-20260324-115028",
+    "checkpoints/MLPModular-20260324-114821",
+    "checkpoints/Imitation_detached_critic_v4-20260324-114734",
+    "checkpoints/MLPModular-20260324-113127",
+    "checkpoints/Imitation_detached_critic_v4-20260324-113113",
+    "checkpoints/MLPModular-20260320-054435",
+    "checkpoints/Imitation_detached_critic_v4-20260319-155439",
+    "checkpoints/Imitation_detached_critic_v4-20260319-171039",
+    "checkpoints/Imitation_detached_critic_v4-20260320-054423",
+    "checkpoints/MLPModular-20260319-153658",
 ]
 
 OUTPUT_FILE = "benchmark_results.json"
