@@ -73,7 +73,6 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
         self,
         obs_sizes: Mapping[str, int],
         action_sizes: Mapping[str, int],
-        reward_keys,
         actor_hidden_sizes: list[int],
         critic_hidden_sizes: list[int],
         rngs: nnx.Rngs,
@@ -109,13 +108,13 @@ class MLPModularNetwork(PPONetwork, nnx.Module):
 
         # Critic: shared encoder + per-module heads
         self.critic_encoder = make_mlp(
-            [obs_size] + critic_hidden_sizes, rngs, activation,
+            [flat_obs_size] + critic_hidden_sizes, rngs, activation,
             activation_last_layer=True, kernel_init=kernel_init,
         )
         critic_feature_size = critic_hidden_sizes[-1]
         self.critic_heads = nnx.Dict({
             k: Dense(critic_feature_size, 1, rngs, kernel_init=kernel_init)
-            for k in reward_keys
+            for k in obs_sizes.keys()
         })
 
         self.preprocessor: Optional[Normalizer] = Normalizer(flat_obs_size) if normalize_obs else None

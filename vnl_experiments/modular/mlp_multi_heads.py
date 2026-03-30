@@ -105,10 +105,6 @@ train_clips, test_clips = clips.split()
 train_env = ModularImitation_v4(env_config, clips=train_clips)
 eval_env = ModularImitation_v4(env_config, clips=test_clips)
 
-# Determine action sizes and reward keys from a sample reset
-_sample_state = jax.jit(train_env.reset)(jax.random.key(0))
-reward_keys = list(_sample_state.reward.keys())
-del _sample_state
 action_sizes = {k: int(v) for k, v in train_env.action_size.items()}
 
 if net_config.reveal_targets == "all":
@@ -122,7 +118,6 @@ rngs = nnx.Rngs(SEED)
 nets = MLPModularNetwork(
     obs_sizes=obs_sizes,
     action_sizes=action_sizes,
-    reward_keys=reward_keys,
     rngs=rngs,
     **net_config,
 )
