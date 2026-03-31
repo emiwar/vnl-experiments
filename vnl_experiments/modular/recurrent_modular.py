@@ -27,6 +27,7 @@ from nnx_ppo.algorithms.callbacks import wandb_video_fn
 from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
 from vnl_experiments.networks.recurrent_modular import RecurrentModularNetwork
+from vnl_experiments.networks.rnn_modular import RNNModularNetwork
 
 SEED = 40
 env_config = default_config()
@@ -51,9 +52,9 @@ net_config = config_dict.create(
     motor_scale=1.0,
     normalize_obs=True,
     combine_likelihoods=True,
-    min_psi=0.5,
-    max_psi=0.95,
-    detached_critic=False,
+    #min_psi=0.5,
+    #max_psi=0.95,
+    detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
     reveal_targets="all",
@@ -115,7 +116,7 @@ else:
     obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"])) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
     if net_config.reveal_targets == "root_only":
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
-nets = RecurrentModularNetwork(
+nets = RNNModularNetwork(
     obs_sizes, train_env.action_size, rngs=rngs, **net_config
 )
 
@@ -137,7 +138,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("Recurrent", "warp", "Modular", "train_test_split"),
-    notes="Recurrent net with attached critic.",
+    notes="Recurrent net with local recurrence.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"
