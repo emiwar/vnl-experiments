@@ -159,12 +159,18 @@ class RNNModularNetwork(PPONetwork):
             self.normalizer.update_statistics(last_rollout, total_steps)
 
     def _filter_obs(self, obs):
-        if self.reveal_targets != "all":
-            obs = obs.copy()
-            for k,o in obs.items():
-                if k != "root":
-                    obs[k] = o["proprioception"]
-            if self.reveal_targets != "root_only":
-                batch_dim = obs["root"]["current_target"].shape
-                obs["root"] = jp.zeros(batch_dim, 0)
-        return obs
+        if self.reveal_targets == "all":
+            return obs
+        obs = obs.copy()
+        for k,o in obs.items():
+            if k != "root":
+                obs[k] = o["proprioception"]
+        if self.reveal_targets == "none":
+            batch_dim = obs["root"]["current_target"].shape
+            obs["root"] = jp.zeros((batch_dim, 0))
+            return obs
+        elif self.reveal_targets == "root_only":
+            return obs
+        elif self.reveal_targets == "joystick_only":
+            obs["root"] = obs["root"]["future_target"]["pos"]
+            return obs

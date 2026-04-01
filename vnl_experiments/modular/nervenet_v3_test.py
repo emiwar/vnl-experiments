@@ -113,6 +113,8 @@ else:
     obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"])) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
     if net_config.reveal_targets == "root_only":
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
+    elif net_config.reveal_targets == "joystick_only":
+        obs_sizes["root"] = 3
 nets = NerveNetNetwork_v3(
     obs_sizes, train_env.action_size, rngs=rngs, **net_config
 )

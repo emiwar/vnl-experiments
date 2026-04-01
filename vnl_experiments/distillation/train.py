@@ -74,7 +74,7 @@ STUDENT_CONFIG = config_dict.create(
     detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
-    reveal_targets="all",
+    reveal_targets="joystick_only",
 )
 
 # ---------------------------------------------------------------------------
@@ -131,9 +131,11 @@ else:
     }
     if STUDENT_CONFIG["reveal_targets"] == "root_only":
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
+    elif STUDENT_CONFIG["reveal_targets"] == "joystick_only":
+        obs_sizes["root"] = 3
 
 
-student = RNNModularNetwork(
+student = NerveNetNetwork_v3(
     obs_sizes,
     train_env.action_size,
     rngs=nnx.Rngs(SEED + 1),
@@ -207,7 +209,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("Distillation", "NerveNet", "warp", "Modular", "masked_inputs"),
-    notes="Distillation with new version of modular RNN.",
+    notes="Distillation with joystick target (future root pos) only.",
 )
 
 checkpoint_dir = REPO_ROOT / f"checkpoints/{exp_name}/"
