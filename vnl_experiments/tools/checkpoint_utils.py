@@ -19,6 +19,7 @@ from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
 from vnl_experiments.networks.mlp_modular import MLPModularNetwork
+from vnl_experiments.networks.recurrent_modular import RecurrentModularNetwork
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +122,9 @@ def build_network(net_params: dict, env: ModularImitation_v4, rngs: nnx.Rngs):
 
     if "NerveNetNetwork_v3" in network_class_str:
         return NerveNetNetwork_v3(obs_sizes, env.action_size, rngs=rngs, **kwargs)
+
+    if "RecurrentModularNetwork" in network_class_str:
+        return RecurrentModularNetwork(obs_sizes, env.action_size, rngs=rngs, **kwargs)
 
     if "MLPModularNetwork" in network_class_str:
         sample_state = jax.jit(env.reset)(jax.random.key(0))

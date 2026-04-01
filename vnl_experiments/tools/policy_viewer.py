@@ -23,6 +23,7 @@ Keyboard controls (in the viewer window):
 """
 
 import argparse
+import json
 import os
 import pickle
 import threading
@@ -40,9 +41,9 @@ from flax import nnx
 
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
-from vnl_playground.tasks.modular_rodent.imitation import ModularImitation, default_config
+from vnl_playground.tasks.modular_rodent.imitation_v3 import ModularImitation_v3, default_config
 from vnl_playground.tasks.modular_rodent import consts
-from vnl_experiments.networks.nervenet_style import NerveNetNetwork
+from vnl_experiments.networks.nervenet_style_v2 import NerveNetNetwork_v2
 
 # ---------------------------------------------------------------------------
 # Viewer global state (written from key callback, read from main loop)
@@ -281,10 +282,71 @@ def _panel_thread(initial_data: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
+# config.json loading
+# ---------------------------------------------------------------------------
+
+def _parse_value(v):
+    """Recursively parse a string-encoded config value to its Python type."""
+    if v is None:
+        return None
+    if isinstance(v, dict):
+        return {k: _parse_value(w) for k, w in v.items()}
+    if isinstance(v, list):
+        return [_parse_value(w) for w in v]
+    if isinstance(v, str):
+        if v == "True":
+            return True
+        if v == "False":
+            return False
+        try:
+            return int(v)
+        except ValueError:
+            pass
+        try:
+            return float(v)
+        except ValueError:
+            pass
+    return v
+
+
+def _load_run_config(checkpoint_path: str):
+    """Load config.json from the run directory (parent of the step dir).
+
+    Returns (net_params, env_params, raw_cfg) or (None, None, None) if absent.
+    """
+    run_dir = os.path.dirname(os.path.abspath(checkpoint_path))
+    cfg_path = os.path.join(run_dir, "config.json")
+    if not os.path.isfile(cfg_path):
+        return None, None, None
+    with open(cfg_path) as f:
+        raw = json.load(f)
+    net_params = {k: _parse_value(v) for k, v in raw.get("net_params", {}).items()}
+    env_params = {
+        k: _parse_value(v)
+        for k, v in raw.get("env_params", {}).items()
+        if not k.endswith("_path")
+    }
+    return net_params, env_params, raw
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    # Pre-parse just --checkpoint so we can read config.json for defaults.
+    _pre = argparse.ArgumentParser(add_help=False)
+    _pre.add_argument("--checkpoint", default=None)
+    _pre_args, _ = _pre.parse_known_args()
+
+    _net_params, _env_params, _raw_cfg = (None, None, None)
+    if _pre_args.checkpoint:
+        _net_params, _env_params, _raw_cfg = _load_run_config(_pre_args.checkpoint)
+
+    _default_hidden = _net_params.get("hidden_size", 512) if _net_params else 512
+    _default_root = _net_params.get("root_size", 512) if _net_params else 512
+    _default_act    = _net_params.get("activation", "tanh") if _net_params else "tanh"
+
     parser = argparse.ArgumentParser(
         description="VNL checkpoint inspector",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -295,12 +357,16 @@ def main() -> None:
         help="Path to a step checkpoint directory, e.g. downloaded_checkpoints/my_run/step_0000050000",
     )
     parser.add_argument(
-        "--hidden_size", type=int, default=512,
-        help="NerveNet hidden size — must match the checkpoint (default: 512)",
+        "--hidden_size", type=int, default=_default_hidden,
+        help=f"NerveNet hidden size — must match the checkpoint (default: {_default_hidden})",
     )
     parser.add_argument(
-        "--activation", type=str, default="tanh",
-        help="NerveNet activation function — must match the checkpoint (default: tanh)",
+        "--root_size", type=int, default=_default_root,
+        help=f"NerveNet root size — must match the checkpoint (default: {_default_root})",
+    )
+    parser.add_argument(
+        "--activation", type=str, default=_default_act,
+        help=f"NerveNet activation function — must match the checkpoint (default: {_default_act})",
     )
     parser.add_argument(
         "--clip_id", type=int, default=0,
@@ -312,6 +378,32 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Reload config for the final --checkpoint (may differ from pre-parsed one)
+    if args.checkpoint != _pre_args.checkpoint:
+        _net_params, _env_params, _raw_cfg = _load_run_config(args.checkpoint)
+
+    if _raw_cfg is not None:
+        # Validate network and env classes — extract the bare class name from the
+        # repr string "<class 'some.module.ClassName'>" and compare exactly.
+        def _class_name(s: str) -> str:
+            """Extract 'ClassName' from "<class 'a.b.ClassName'>" or return s."""
+            s = str(s)
+            if s.startswith("<class '") and s.endswith("'>"):
+                return s[8:-2].rsplit(".", 1)[-1]
+            return s
+
+        nc = _class_name(_net_params.get("network_class", ""))
+        if nc != "NerveNetNetwork_v2":
+            raise ValueError(
+                f"config.json network_class is '{nc}', expected NerveNetNetwork_v2"
+            )
+        env_cls = _class_name(_raw_cfg.get("env", ""))
+        if env_cls != "ModularImitation_v3":
+            raise ValueError(
+                f"config.json env is '{env_cls}', expected ModularImitation_v3"
+            )
+        print(f"Loaded config.json: hidden_size={args.hidden_size}, activation={args.activation}")
+
     _S["ghost"] = not args.no_ghost
     clip_id: int = args.clip_id
 
@@ -320,18 +412,20 @@ def main() -> None:
     # -----------------------------------------------------------------------
     print("Initialising environment (Warp backend)…")
     config = default_config()
+
+    # Apply non-path env_params from config.json (if present)
+    if _env_params:
+        for _k, _v in _env_params.items():
+            if _k == "reward_terms" and isinstance(_v, dict):
+                config.reward_terms.update(_v)
+            elif hasattr(config, _k):
+                setattr(config, _k, _v)
+
+    # Local-machine memory limits (override any large cluster values)
     config.naconmax = 1024
     config.njmax = 1024
-    config.torque_actuators = True
-    config.reward_terms["root_pos_scale"] = 0.05
-    config.reward_terms["limb_pos_exp_scale"] = 0.015
-    config.reward_terms["joint_exp_scale"] = 0.1
-    config.solver = "newton"
-    config.iterations = 50
-    config.ls_iterations = 50
-    config.sim_dt = 0.002
 
-    env = ModularImitation(config)
+    env = ModularImitation_v3(config)
 
     n_clips: int = int(env.reference_clips.qpos.shape[0])
     n_frames: int = int(config.clip_length)
@@ -346,8 +440,8 @@ def main() -> None:
     }
     action_sizes = env.action_size  # dict {module: n_actuators}
 
-    network = NerveNetNetwork(
-        obs_sizes, action_sizes, args.hidden_size, rngs=nnx.Rngs(0),
+    network = NerveNetNetwork_v2(
+        obs_sizes, action_sizes, args.hidden_size, args.root_size, rngs=nnx.Rngs(0),
         activation=args.activation,
     )
 
