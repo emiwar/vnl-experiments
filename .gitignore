@@ -5,4 +5,5 @@ wandb/
 checkpoints/
 downloaded_checkpoints/
 .pytest_cache/
-
+assets/
+rollouts/

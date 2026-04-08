@@ -93,7 +93,7 @@ def _key_callback(key: int) -> None:
 
 def read_joystick() -> tuple[bool, jp.ndarray, bool]:
     pointer, len = glfw.get_joystick_axes(0)
-    if len == 0:
+    if len < 6:
         return False, jp.zeros(3), False
     axes = np.ctypeslib.as_array(pointer, (len,)).copy()
     pointer, len = glfw.get_joystick_buttons(0)
@@ -280,14 +280,14 @@ def main() -> None:
     rng = jax.random.PRNGKey(0)
     rng, sub = jax.random.split(rng)
     env_state = _env_reset(sub)
-    net_state = network.initialize_state(batch_size=())
+    net_state = network.initialize_state(batch_size=1)
 
     print("JIT-compiling…")
     _net_state_tmp, _net_out_tmp = _run_network(network, net_state, env_state.obs)
     _env_state_tmp = _env_step(env_state, _net_out_tmp.actions, jp.zeros(3))
     rng, sub = jax.random.split(rng)
     env_state = _env_reset(sub)
-    net_state = network.initialize_state(batch_size=())
+    net_state = network.initialize_state(batch_size=1)
     print("Compilation done.")
 
     # -----------------------------------------------------------------------
@@ -343,7 +343,7 @@ def main() -> None:
                     _S["reset"] = False
                     rng, sub = jax.random.split(rng)
                     env_state = _env_reset(sub)
-                    net_state = network.initialize_state(batch_size=())
+                    net_state = network.initialize_state(batch_size=1)
                     _sync_viewer(env_state)
                     viewer.sync()
                     continue
@@ -360,7 +360,7 @@ def main() -> None:
                     if float(env_state.done) > 0.5:
                         rng, sub = jax.random.split(rng)
                         env_state = _env_reset(sub)
-                        net_state = network.initialize_state(batch_size=())
+                        net_state = network.initialize_state(batch_size=1)
 
                 # --- Text overlay ----------------------------------------
                 step_count = int(env_state.info.get("step", 0))

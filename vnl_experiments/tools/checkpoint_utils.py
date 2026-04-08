@@ -20,6 +20,7 @@ from nnx_ppo.algorithms.ppo import new_training_state
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
 from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 from vnl_experiments.networks.recurrent_modular import RecurrentModularNetwork
+from vnl_experiments.networks.rnn_modular import RNNModularNetwork
 
 
 # ---------------------------------------------------------------------------
@@ -120,11 +121,24 @@ def build_network(net_params: dict, env: ModularImitation_v4, rngs: nnx.Rngs):
         for k, o in env.non_flattened_observation_size.items()
     }
 
+    # For reveal_targets="joystick_only", _filter_obs replaces obs["root"] with
+    # obs["root"]["future_target"]["pos"] (a flat 3-vector) before the input
+    # layer sees it.  obs_sizes["root"] must reflect this reduced size.
+    reveal_targets = kwargs.get("reveal_targets", "all")
+    if reveal_targets == "joystick_only":
+        root_obs = env.non_flattened_observation_size.get("root", {})
+        obs_sizes["root"] = int(jp.squeeze(
+            jax.tree.reduce(jp.add, root_obs["future_target"]["pos"])
+        ))
+
     if "NerveNetNetwork_v3" in network_class_str:
         return NerveNetNetwork_v3(obs_sizes, env.action_size, rngs=rngs, **kwargs)
 
     if "RecurrentModularNetwork" in network_class_str:
         return RecurrentModularNetwork(obs_sizes, env.action_size, rngs=rngs, **kwargs)
+    
+    if "RNNModularNetwork" in network_class_str:
+        return RNNModularNetwork(obs_sizes, env.action_size, rngs=rngs, **kwargs)
 
     if "MLPModularNetwork" in network_class_str:
         sample_state = jax.jit(env.reset)(jax.random.key(0))

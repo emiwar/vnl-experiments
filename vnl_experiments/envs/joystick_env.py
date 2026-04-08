@@ -52,13 +52,14 @@ class JoystickEnv(ModularImitation_v4):
         self,
         config=None,
         *,
-        max_speed: float = 1.0,
+        max_speed: float = 0.2,
         max_yaw_rate: float = 3.0,
         time_ahead: float = 0.1,
         current_frac: float = 0.1,
-        min_rearing_z: float = 0.06,
-        max_rearing_z: float = 0.08,
+        min_rearing_z: float = 0.05,
+        max_rearing_z: float = 0.06,
         xaxis_bias: float = 1.0,
+        root_command_style: str = "future_pos_only"
     ) -> None:
         if config is None:
             config = default_config()
@@ -74,6 +75,7 @@ class JoystickEnv(ModularImitation_v4):
         self._min_rearing_z = min_rearing_z
         self._max_rearing_z = max_rearing_z
         self._xaxis_bias = xaxis_bias
+        self.root_command_style = root_command_style
 
     # -------------------------------------------------------------------------
     # Reset / step
@@ -163,11 +165,13 @@ class JoystickEnv(ModularImitation_v4):
     ) -> tuple[dict, dict]:
         """Convert gamepad input to root targets in the current torso frame.
 
-        The joystick positions an imaginary target point in front of the rodent:
-          - xy: stick deflection (x=forward, y=left in torso frame)
-          - z:  RT sets an absolute height above ground; the offset from the
-                current torso height is rotated into the torso frame via
-                torso_xmat.T, consistent with _interpolated_target's to_local().
+        The joystick positions an imaginary target point in the horizontal plane:
+          - xy: stick deflection in the yaw-aligned frame (torso heading projected
+                onto the ground plane, pitch and roll ignored).  The offset is
+                rotated to world frame by yaw only, then to torso-local frame by
+                the full torso_xmat.T.
+          - z:  RT sets an absolute height above ground; converted to a relative
+                offset from the current torso height in the same transform.
 
         xaxis is computed as the direction from a reference point xaxis_bias metres
         behind the rat to the target point.  A larger bias means less aggressive
@@ -180,31 +184,44 @@ class JoystickEnv(ModularImitation_v4):
         stick_y = joystick[1]
         rt = joystick[2]
 
-        # Current torso height (for absolute-z → relative-z conversion)
+        # Current torso pose
         torso_xpos = data.bind(self.mjx_model, self._spec.body("torso")).xpos
         torso_xmat = data.bind(self.mjx_model, self._spec.body("torso")).xmat
 
-        # Absolute height target → local-frame z displacement.
-        # [0, 0, dz] in world frame, rotated into torso frame via torso_xmat.T.
+        # Yaw angle from torso x-axis projected onto the horizontal plane.
+        torso_x_world = torso_xmat[:, 0]
+        yaw = jp.arctan2(torso_x_world[1], torso_x_world[0])
+        cos_yaw, sin_yaw = jp.cos(yaw), jp.sin(yaw)
+
+        # Stick commands in the yaw-aligned horizontal frame (ignores pitch/roll).
+        fwd = (stick_y + jp.abs(stick_x)) * self._max_speed * self._time_ahead
+        lat = -0.5 * stick_x * self._max_speed * self._time_ahead
         target_abs_z = self._min_rearing_z + rt * (self._max_rearing_z - self._min_rearing_z)
-        dz_local = torso_xmat.T @ jp.array([0.0, 0.0, target_abs_z - torso_xpos[2]])
 
-        # Future target point in torso frame: xy from stick, z from height.
-        future_pos = jp.array([
-            stick_y * self._max_speed * self._time_ahead,
-            -stick_x * self._max_speed * self._time_ahead,
-            0.0,
-        ]) + dz_local
-        current_pos = self._current_frac * future_pos
+        # Rotate horizontal offset to world frame (yaw only), include absolute z.
+        delta_world = jp.array([
+            cos_yaw * fwd - sin_yaw * lat,
+            sin_yaw * fwd + cos_yaw * lat,
+            target_abs_z - torso_xpos[2],
+        ])
 
-        # xaxis: direction from xaxis_bias metres behind the rat to the target.
-        # Larger bias → smaller turning angle for same lateral deflection.
-        # z is included naturally, so rearing tilts the commanded heading.
-        future_xaxis = future_pos + jp.array([self._xaxis_bias, 0.0, 0.0])
-        future_xaxis = future_xaxis / jp.linalg.norm(future_xaxis)
+        # Transform to torso-local frame (full rotation, so pitch/roll are
+        # applied here but the commanded xy is purely in the horizontal plane).
+        future_pos = torso_xmat.T @ delta_world
 
-        current_xaxis = jp.array([1.0, 0.0, 0.0])
+        if self.root_command_style == "full_root":
+            current_pos = self._current_frac * future_pos
 
-        cur = {"pos": current_pos, "xaxis": current_xaxis}
-        fut = {"pos": future_pos, "xaxis": future_xaxis}
-        return cur, fut
+            # xaxis: direction from xaxis_bias metres behind the rat to the target.
+            # Larger bias → smaller turning angle for same lateral deflection.
+            # z is included naturally, so rearing tilts the commanded heading.
+            future_xaxis = future_pos + jp.array([self._xaxis_bias, 0.0, 0.0])
+            future_xaxis = future_xaxis / jp.linalg.norm(future_xaxis)
+
+            current_xaxis = jp.array([1.0, 0.0, 0.0])
+
+            cur = {"pos": current_pos, "xaxis": current_xaxis}
+            fut = {"pos": future_pos, "xaxis": future_xaxis}
+            return cur, fut
+        elif self.root_command_style == "future_pos_only":
+            return {}, {"pos": future_pos}
