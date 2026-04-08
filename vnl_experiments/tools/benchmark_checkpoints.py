@@ -44,6 +44,7 @@ from vnl_experiments.tools.checkpoint_utils import (
 # ---------------------------------------------------------------------------
 
 CHECKPOINTS = [
+    "checkpoints/Recurrent-20260331-114919",
     "checkpoints/MLPModular-20260328-004410",
     "checkpoints/Imitation_detached_critic_v4-20260328-004400",
     "checkpoints/MLPModular-20260324-115039",
@@ -98,7 +99,7 @@ def eval_all_clips(
     net_states = networks.initialize_state(n_clips)
 
     def step(env, networks, carry):
-        env_state, net_state, cuml_reward, cuml_hand_err, cuml_foot_err, cuml_root_err, lifespan = carry
+        env_state, net_state, cuml_reward, cuml_hand_err, cuml_foot_err, cuml_root_err, cuml_appendages_err, lifespan = carry
 
         # Prepare obs (flatten for MLP, keep dict for NerveNet)
         if flatten_obs:
@@ -126,9 +127,11 @@ def eval_all_clips(
         hand_err = m["hand_L"]["pos_err"]   # [n_clips]
         foot_err = m["foot_L"]["pos_err"]   # [n_clips]
         root_err = m["root"]["pos_err"]     # [n_clips]
+        appendages_err = m["average_appendage_err"]     # [n_clips]
         cuml_hand_err = cuml_hand_err + jp.where(already_done, 0.0, hand_err)
         cuml_foot_err = cuml_foot_err + jp.where(already_done, 0.0, foot_err)
         cuml_root_err = cuml_root_err + jp.where(already_done, 0.0, root_err)
+        cuml_appendages_err = cuml_appendages_err + jp.where(already_done, 0.0, appendages_err)
 
         # Lifespan: count non-terminated steps
         lifespan = lifespan + jp.where(next_env_state.done.astype(bool), 0.0, 1.0)
@@ -140,6 +143,7 @@ def eval_all_clips(
             cuml_hand_err,
             cuml_foot_err,
             cuml_root_err,
+            cuml_appendages_err,
             lifespan,
         )
 
@@ -158,9 +162,10 @@ def eval_all_clips(
         jp.zeros(n_clips),  # cuml_hand_err
         jp.zeros(n_clips),  # cuml_foot_err
         jp.zeros(n_clips),  # cuml_root_err
+        jp.zeros(n_clips),  # cuml_appendages_err
         jp.zeros(n_clips),  # lifespan
     )
-    _, _, cuml_reward, cuml_hand_err, cuml_foot_err, cuml_root_err, lifespan = step_scan(
+    _, _, cuml_reward, cuml_hand_err, cuml_foot_err, cuml_root_err, cuml_appendages_err, lifespan = step_scan(
         networks, init_carry
     )
 
@@ -171,6 +176,7 @@ def eval_all_clips(
         "hand_L_pos_err_mean_m": cuml_hand_err / safe_lifespan,
         "foot_L_pos_err_mean_m": cuml_foot_err / safe_lifespan,
         "root_pos_err_mean_m": cuml_root_err / safe_lifespan,
+        "appendages_pos_err_mean_m": cuml_appendages_err / safe_lifespan,
     }
 
 
@@ -187,6 +193,7 @@ def _aggregate(clips_list: list[dict]) -> dict:
         "mean_hand_L_pos_err_m": sum(c["hand_L_pos_err_mean_m"] for c in clips_list) / n,
         "mean_foot_L_pos_err_m": sum(c["foot_L_pos_err_mean_m"] for c in clips_list) / n,
         "mean_root_pos_err_m": sum(c["root_pos_err_mean_m"] for c in clips_list) / n,
+        "mean_appendages_pos_err_m": sum(c["appendages_pos_err_mean_m"] for c in clips_list) / n,
     }
 
 
@@ -214,6 +221,7 @@ def evaluate_split(env, networks, clips, clip_length: int, key: jax.Array, flatt
             "hand_L_pos_err_mean_m": arrays["hand_L_pos_err_mean_m"][i],
             "foot_L_pos_err_mean_m": arrays["foot_L_pos_err_mean_m"][i],
             "root_pos_err_mean_m": arrays["root_pos_err_mean_m"][i],
+            "appendages_pos_err_m":  arrays["appendages_pos_err_mean_m"][i],
         })
 
     by_label = defaultdict(list)
