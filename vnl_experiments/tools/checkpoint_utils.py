@@ -141,14 +141,13 @@ def build_network(net_params: dict, env: ModularImitation_v4, rngs: nnx.Rngs):
         return RNNModularNetwork(obs_sizes, env.action_size, rngs=rngs, **kwargs)
 
     if "MLPModularNetwork" in network_class_str:
-        sample_state = jax.jit(env.reset)(jax.random.key(0))
-        reward_keys = list(sample_state.reward.keys())
-        flat_obs_size = int(jax.tree.reduce(jp.add, env.observation_size))
-        action_sizes = {k: int(v) for k, v in env.action_size.items()}
+        #sample_state = jax.jit(env.reset)(jax.random.key(0))
+        #reward_keys = list(sample_state.reward.keys())
+        #flat_obs_size = int(jax.tree.reduce(jp.add, env.observation_size))
+        #action_sizes = {k: int(v) for k, v in env.action_size.items()}
         return MLPModularNetwork(
-            obs_size=flat_obs_size,
-            action_sizes=action_sizes,
-            reward_keys=reward_keys,
+            obs_sizes=obs_sizes,
+            action_sizes=env.action_size,
             rngs=rngs,
             **kwargs,
         )
