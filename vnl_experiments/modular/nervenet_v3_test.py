@@ -39,7 +39,9 @@ env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
-env_config.sim_dt = 0.002
+#env_config.sim_dt = 0.002
+env_config.sim_dt = 0.001
+env_config.ctrl_dt = 0.002
 env_config.energy_cost = -0.04
 
 net_config = config_dict.create(
