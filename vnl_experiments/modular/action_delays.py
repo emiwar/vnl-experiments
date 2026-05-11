@@ -28,10 +28,14 @@ from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
 from vnl_experiments.wrappers.action_delay import ActionDelayWrapper
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
+from vnl_experiments.networks.mlp_modular import MLPModularNetwork
+
+# Switch between "nervenet" and "mlp"
+NETWORK = "nervenet"
 
 SEED = 40
 env_config = default_config()
-env_config.naconmax = 64*1024
+env_config.naconmax = 64*4096
 env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
@@ -47,31 +51,38 @@ env_config.energy_cost = -0.04
 env_config.action_delay = 5
 
 net_config = config_dict.create(
-    hidden_size=256,
-    root_size=256,
-    critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,
-    motor_scale=1.0,
     normalize_obs=True,
-    combine_likelihoods=True,
-    detached_critic=True,
-    detached_critic_hidden_sizes=[512, 512],
     activation="swish",
     reveal_targets="all",
 )
 
+if NETWORK == "nervenet":
+    net_config.hidden_size = 256
+    net_config.root_size = 256
+    net_config.critic_scale = 1.0
+    net_config.motor_scale = 1.0
+    net_config.combine_likelihoods = True
+    net_config.detached_critic = True
+    net_config.detached_critic_hidden_sizes = [512, 512]
+elif NETWORK == "mlp":
+    net_config.actor_hidden_sizes = [1024, 1024]
+    net_config.critic_hidden_sizes = [512, 512]
+else:
+    raise ValueError(f"Unknown NETWORK: {NETWORK!r}")
+
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=4096,
         rollout_length=20,
-        total_steps=250_000,
-        discounting_factor=0.95,
+        total_steps=1_000_000_000,
+        discounting_factor=0.98,
         normalize_advantages=True,
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=4,
+        n_minibatches=8,
         critic_loss_weight=0.05,
         gradient_clipping=1.0,
         weight_decay=None,
@@ -122,15 +133,17 @@ else:
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
     elif net_config.reveal_targets == "joystick_only":
         obs_sizes["root"] = 3
-nets = NerveNetNetwork_v3(
-    obs_sizes, train_env.action_size, rngs=rngs, **net_config
-)
+
+if NETWORK == "nervenet":
+    nets = NerveNetNetwork_v3(obs_sizes, train_env.action_size, rngs=rngs, **net_config)
+elif NETWORK == "mlp":
+    nets = MLPModularNetwork(obs_sizes, train_env.action_size, rngs=rngs, **net_config)
 
 # Initialize wandb
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
-exp_name = f"Modular_delay_{env_config.action_delay}-{timestamp}"
+exp_name = f"{NETWORK}_delay_{env_config.action_delay}-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
         "env": str(type(train_env)),
@@ -143,8 +156,8 @@ wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config=combined_config,
     name=exp_name,
-    tags=("NerveNet", "warp", "Modular", "delay", "train_test_split"),
-    notes="Local test of action delays.",
+    tags=(NETWORK, "warp", "Modular", "delay", "train_test_split"),
+    notes="Comparing NerveNet vs MLP under action delays.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"
