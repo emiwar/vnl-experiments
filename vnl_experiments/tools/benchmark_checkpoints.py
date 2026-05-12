@@ -43,7 +43,11 @@ from vnl_experiments.tools.checkpoint_utils import (
 # Paths are relative to the repo root (vnl-experiments/).
 # ---------------------------------------------------------------------------
 
+'''
 CHECKPOINTS = [
+    "checkpoints/Recurrent-20260416-163937",
+    "checkpoints/Recurrent-20260416-163835",
+    "checkpoints/Recurrent-20260416-163742",
     "checkpoints/Recurrent-20260331-114919",
     "checkpoints/MLPModular-20260328-004410",
     "checkpoints/Imitation_detached_critic_v4-20260328-004400",
@@ -59,8 +63,22 @@ CHECKPOINTS = [
     "checkpoints/Imitation_detached_critic_v4-20260320-054423",
     "checkpoints/MLPModular-20260319-153658",
 ]
+'''
+CHECKPOINTS = [
+    "checkpoints/Modular_delay_0-20260506-103811",
+    "checkpoints/Modular_delay_1-20260506-103008",
+    "checkpoints/Modular_delay_2-20260507-042133",
+    "checkpoints/Modular_delay_5-20260506-102359",
+    "checkpoints/Modular_delay_20-20260506-103538",
+    "checkpoints/mlp_delay_0-20260511-081802",
+    "checkpoints/mlp_delay_1-20260511-082548",
+    "checkpoints/mlp_delay_2-20260511-075918",
+    "checkpoints/mlp_delay_5-20260511-080246",
+    "checkpoints/mlp_delay_10-20260511-101411",
+    "checkpoints/mlp_delay_20-20260511-082700",
+]
 
-OUTPUT_FILE = "benchmark_results.json"
+OUTPUT_FILE = "benchmark_results_delays.json"
 
 # Repo root: vnl-experiments/vnl_experiments/tools/ → up 3 levels
 REPO_ROOT = Path(__file__).parent.parent.parent
@@ -221,7 +239,7 @@ def evaluate_split(env, networks, clips, clip_length: int, key: jax.Array, flatt
             "hand_L_pos_err_mean_m": arrays["hand_L_pos_err_mean_m"][i],
             "foot_L_pos_err_mean_m": arrays["foot_L_pos_err_mean_m"][i],
             "root_pos_err_mean_m": arrays["root_pos_err_mean_m"][i],
-            "appendages_pos_err_m":  arrays["appendages_pos_err_mean_m"][i],
+            "appendages_pos_err_mean_m":  arrays["appendages_pos_err_mean_m"][i],
         })
 
     by_label = defaultdict(list)
