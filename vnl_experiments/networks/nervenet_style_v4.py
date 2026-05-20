@@ -64,6 +64,26 @@ class _Scale(StatefulModule):
         return StatefulModuleOutput(state, x * self.factor, jp.array(0.0), {})
 
 
+class _FlattenObsValues(StatefulModule):
+    """Per-key Flattener for dict observations.
+
+    Input: ``{k: pytree}``. Output: ``{k: [B, -1] array}`` for each key.
+    Playground modular rodent envs hand the network observations whose
+    per-body-module values are themselves small pytrees (proprio /
+    target / etc.). Downstream consumers (``Normalizer``,
+    ``PopulationGraph``) want a flat tensor per key matching the
+    declared ``obs_sizes[k]``.
+
+    Idempotent: if a value is already a flat ``[B, D]`` array, the
+    reshape-and-concat is a no-op.
+    """
+
+    def __call__(self, state, obs, *, context: Context = Context.INFERENCE):
+        flattener = Flattener()
+        out = {k: flattener((), v).output for k, v in obs.items()}
+        return StatefulModuleOutput(state, out, jp.array(0.0), {})
+
+
 class _MotorPlusDetachedCritic(StatefulModule):
     """Runs the population graph (motor outputs) and a separate MLP critic
     on the same input, splits the critic's ``[B, n_modules]`` output by
@@ -239,11 +259,15 @@ class NerveNetNetwork_v4(PPOAdapter):
         else:
             trunk = graph
 
-        inner: StatefulModule
+        # Flatten per-key obs sub-pytrees to flat [B, D] tensors before
+        # anything downstream sees them. Required because Playground
+        # modular envs hand the network nested obs values (proprio /
+        # target / ...) per body module, while Normalizer and the graph
+        # expect flat arrays matching obs_sizes[k].
+        pre_trunk: list[StatefulModule] = [_FlattenObsValues()]
         if normalize_obs:
-            inner = Sequential([Normalizer(dict(obs_sizes)), trunk])
-        else:
-            inner = trunk
+            pre_trunk.append(Normalizer(dict(obs_sizes)))
+        inner: StatefulModule = Sequential([*pre_trunk, trunk])
 
         action_specs = {
             f"motor_{k}": NormalTanhSampler(rngs, entropy_weight, min_std)
@@ -254,8 +278,10 @@ class NerveNetNetwork_v4(PPOAdapter):
         # Expose underlying graph + (optional) normalizer for introspection
         # by checkpoint utilities / logging code.
         self.graph = graph
+        # The Normalizer, if present, is the second entry of `inner.layers`
+        # (after the _FlattenObsValues prepass).
         self.normalizer = (
-            inner.layers[0] if normalize_obs else None  # type: ignore[index]
+            inner.layers[1] if normalize_obs else None  # type: ignore[index]
         )
 
         super().__init__(
