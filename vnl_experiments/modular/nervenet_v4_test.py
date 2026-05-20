@@ -26,34 +26,37 @@ from nnx_ppo.algorithms.config import TrainConfig, PPOConfig, EvalConfig, VideoC
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
 from nnx_ppo.algorithms.checkpointing import make_checkpoint_fn
 
-from vnl_experiments.networks.recurrent_modular import RecurrentModularNetwork
-from vnl_experiments.networks.rnn_modular import RNNModularNetwork
+from vnl_experiments.networks.nervenet_style_v4 import NerveNetNetwork_v4
 
 SEED = 40
 env_config = default_config()
-env_config.naconmax = 64*1024
+env_config.naconmax = 64*4096
 env_config.njmax = 1024
 env_config.torque_actuators = True
 env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.02
 env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
-env_config.iterations = 50
-env_config.ls_iterations = 50
+env_config.iterations = 6
+env_config.ls_iterations = 6
 env_config.sim_dt = 0.002
+env_config.ctrl_dt = 0.01
 env_config.energy_cost = -0.04
+env_config.force_cost = -0.0
+
+env_config.tolerance=1e-6
+env_config.cone="pyramidal"
+env_config.impratio=1.0
 
 net_config = config_dict.create(
-    hidden_size=16,
-    root_size=16,
+    hidden_size=256,
+    root_size=256,
     critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,
     motor_scale=1.0,
     normalize_obs=True,
-    combine_likelihoods=True,
-    #min_psi=0.5,
-    #max_psi=0.95,
+    #combine_likelihoods=True,
     detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
@@ -62,15 +65,15 @@ net_config = config_dict.create(
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=4096,
         rollout_length=20,
-        total_steps=500_000_000,
-        discounting_factor=0.95,
+        total_steps=2_000_000_000,
+        discounting_factor=0.98,
         normalize_advantages=True,
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=4,
+        n_minibatches=16,
         critic_loss_weight=0.05,
         gradient_clipping=1.0,
         weight_decay=None,
@@ -80,14 +83,14 @@ config = TrainConfig(
     eval=EvalConfig(
         enabled=True,
         every_steps=5_000_000,
-        n_envs=512,
-        max_episode_length=500,
+        n_envs=1024,
+        max_episode_length=2500,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     video=VideoConfig(
         enabled=True,
-        every_steps=10_000_000,
-        episode_length=2000,
+        every_steps=20_000_000,
+        episode_length=5000,
         render_kwargs={
             "height": 480,
             "width": 640,
@@ -116,15 +119,17 @@ else:
     obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"])) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
     if net_config.reveal_targets == "root_only":
         obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
-nets = RNNModularNetwork(
-    obs_sizes, train_env.action_size, rngs=rngs, **net_config
+    elif net_config.reveal_targets == "joystick_only":
+        obs_sizes["root"] = 3
+nets = NerveNetNetwork_v4(
+    obs_sizes, train_env.action_size, rngs=rngs, **{k:v for k,v in net_config.items() if k != "reveal_targets"}
 )
 
 # Initialize wandb
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
-exp_name = f"Recurrent-{timestamp}"
+exp_name = f"Imitation_detached_critic_v4-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
         "env": str(type(train_env)),
@@ -137,8 +142,8 @@ wandb.init(
     project="nnx-ppo-modular-rodent-imitation",
     config=combined_config,
     name=exp_name,
-    tags=("Recurrent", "warp", "Modular", "train_test_split"),
-    notes="More recurrent training for comparison.",
+    tags=("NerveNet", "warp", "Modular", "train_test_split"),
+    notes="Trying new nervenet implementation.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

@@ -63,7 +63,6 @@ class _Scale(StatefulModule):
     def __call__(self, state, x, *, context: Context = Context.INFERENCE):
         return StatefulModuleOutput(state, x * self.factor, jp.array(0.0), {})
 
-
 class _FlattenObsValues(StatefulModule):
     """Per-key Flattener for dict observations.
 
@@ -131,7 +130,6 @@ class _MotorPlusDetachedCritic(StatefulModule):
             "graph": self.graph.reset_state(prev_state["graph"]),
             "critic": self.critic.reset_state(prev_state["critic"]),
         }
-
 
 class NerveNetNetwork_v4(PPOAdapter):
     """Modular NerveNet-style PPO network for the rodent body."""

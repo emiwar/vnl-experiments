@@ -57,7 +57,7 @@ from vnl_experiments.tools.checkpoint_utils import load_network_from_checkpoint
 # ---------------------------------------------------------------------------
 
 NETWORK = "nervenet"   # "nervenet" or "mlp"
-DELAY   = 5            # observation delay in steps; 0 = no delay (baseline)
+DELAY   = 2            # observation delay in steps; 0 = no delay (baseline)
 
 SEED = 40
 
@@ -72,7 +72,7 @@ student_config = config_dict.create(
     min_std=1e-1,
     normalize_obs=True,
     activation="swish",
-    reveal_targets="joystick_only",
+    reveal_targets="all",
 )
 
 if NETWORK == "nervenet":
@@ -105,7 +105,8 @@ env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
-env_config.sim_dt = 0.002
+env_config.sim_dt = 0.001
+env_config.ctrl_dt = 0.002
 env_config.energy_cost = -0.04
 
 clips = ReferenceClips(

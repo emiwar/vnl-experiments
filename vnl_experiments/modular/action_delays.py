@@ -31,7 +31,7 @@ from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
 from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 
 # Switch between "nervenet" and "mlp"
-NETWORK = "nervenet"
+NETWORK = "mlp"
 
 SEED = 40
 env_config = default_config()
@@ -48,7 +48,7 @@ env_config.ls_iterations = 50
 env_config.sim_dt = 0.001
 env_config.ctrl_dt = 0.002
 env_config.energy_cost = -0.04
-env_config.action_delay = 5
+env_config.action_delay = 8
 
 net_config = config_dict.create(
     entropy_weight=1e-2,
@@ -109,7 +109,7 @@ config = TrainConfig(
         },
     ),
     seed=SEED,
-    checkpoint_every_steps=50_000_000,
+    checkpoint_every_steps=25_000_000,
 )
 
 clips = ReferenceClips(env_config.reference_data_path,

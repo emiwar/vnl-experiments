@@ -41,12 +41,19 @@ from vnl_experiments.networks.mlp_modular import MLPModularNetwork
 
 SEED = 40
 env_config = default_config()
-env_config.naconmax = 64 * 1024
+env_config.naconmax = 64*4096
 env_config.njmax = 1024
-env_config.energy_cost = -0.04
+env_config.torque_actuators = True
+env_config.reward_terms["root_pos_scale"] = 0.05
+env_config.reward_terms["limb_pos_exp_scale"] = 0.02
+env_config.reward_terms["joint_exp_scale"] = 0.2
+env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
 #env_config.sim_dt = 0.002
+env_config.sim_dt = 0.001
+env_config.ctrl_dt = 0.002
+env_config.energy_cost = -0.04
 
 net_config = config_dict.create(
     actor_hidden_sizes=[1024] * 4,
@@ -62,15 +69,15 @@ net_config = config_dict.create(
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=4096,
         rollout_length=20,
-        total_steps=500_000_000,
-        discounting_factor=0.95,
+        total_steps=1_000_000_000,
+        discounting_factor=0.98,
         normalize_advantages=True,
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=4,
+        n_minibatches=16,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=LoggingLevel.LOSSES | LoggingLevel.CRITIC_EXTRA | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
@@ -85,7 +92,7 @@ config = TrainConfig(
     ),
     video=VideoConfig(
         enabled=True,
-        every_steps=10_000_000,
+        every_steps=25_000_000,
         episode_length=2000,
         render_kwargs={
             "height": 480,
@@ -95,7 +102,7 @@ config = TrainConfig(
         },
     ),
     seed=SEED,
-    checkpoint_every_steps=50_000_000,
+    checkpoint_every_steps=100_000_000,
 )
 
 clips = ReferenceClips(env_config.reference_data_path,
@@ -138,7 +145,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("MLP", "Modular", "MultiHead", "warp", "train_test_split"),
-    notes="Train-test split. Tiny MLP.",
+    notes="Large MLP intended as distillation teacher.",
 )
 
 

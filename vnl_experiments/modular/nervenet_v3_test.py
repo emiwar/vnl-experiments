@@ -37,16 +37,20 @@ env_config.reward_terms["root_pos_scale"] = 0.05
 env_config.reward_terms["limb_pos_exp_scale"] = 0.02
 env_config.reward_terms["joint_exp_scale"] = 0.2
 env_config.solver = "newton"
-env_config.iterations = 50
-env_config.ls_iterations = 50
-#env_config.sim_dt = 0.002
-env_config.sim_dt = 0.001
-env_config.ctrl_dt = 0.002
+env_config.iterations = 6
+env_config.ls_iterations = 6
+env_config.sim_dt = 0.002
+env_config.ctrl_dt = 0.01
 env_config.energy_cost = -0.04
+env_config.force_cost = -0.0
+
+env_config.tolerance=1e-6
+env_config.cone="pyramidal"
+env_config.impratio=1.0
 
 net_config = config_dict.create(
-    hidden_size=16,
-    root_size=32,
+    hidden_size=256,
+    root_size=256,
     critic_scale=1.0,
     entropy_weight=1e-2,
     min_std=1e-1,
@@ -61,15 +65,15 @@ net_config = config_dict.create(
 
 config = TrainConfig(
     ppo=PPOConfig(
-        n_envs=1024,
+        n_envs=2048,
         rollout_length=20,
-        total_steps=500_000_000,
-        discounting_factor=0.95,
+        total_steps=2_000_000_000,
+        discounting_factor=0.98,
         normalize_advantages=True,
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=4,
+        n_minibatches=8,
         critic_loss_weight=0.05,
         gradient_clipping=1.0,
         weight_decay=None,
@@ -80,13 +84,13 @@ config = TrainConfig(
         enabled=True,
         every_steps=5_000_000,
         n_envs=512,
-        max_episode_length=500,
+        max_episode_length=2500,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     video=VideoConfig(
         enabled=True,
-        every_steps=10_000_000,
-        episode_length=2000,
+        every_steps=20_000_000,
+        episode_length=5000,
         render_kwargs={
             "height": 480,
             "width": 640,
@@ -139,7 +143,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("NerveNet", "warp", "Modular", "train_test_split"),
-    notes="Train-test split.",
+    notes="ctrl dt back to 0.01.",
 )
 
 checkpoint_dir = f"checkpoints/{exp_name}/"

@@ -54,27 +54,28 @@ from vnl_experiments.tools.checkpoint_utils import load_network_from_checkpoint
 SEED = 40
 
 # Path to the teacher checkpoint (relative to vnl-experiments root).
-TEACHER_CHECKPOINT = (
-    "checkpoints/Imitation_detached_critic_v4-20260319-155439"
-)
+#TEACHER_CHECKPOINT = (
+#    "checkpoints/Imitation_detached_critic_v4-20260319-155439"
+#)
+TEACHER_CHECKPOINT = "checkpoints/MLPModular-20260507-042541"
 
 # Architecture for the student. Can differ from the teacher's config.
 # Defaults to the same architecture used by the teacher checkpoint above.
 STUDENT_CONFIG = config_dict.create(
     hidden_size=256,
-    root_size=1024,
+    root_size=256,
     #actor_hidden_sizes = [512, 512],
     #critic_hidden_sizes = [512, 512],
     critic_scale=1.0,
     entropy_weight=1e-2,
-    min_std=1e-1,
+    min_std=4e-1,
     motor_scale=1.0,
     normalize_obs=True,
     combine_likelihoods=True,
     detached_critic=True,
     detached_critic_hidden_sizes=[512, 512],
     activation="swish",
-    reveal_targets="joystick_only",
+    reveal_targets="all",
 )
 
 # ---------------------------------------------------------------------------
@@ -148,12 +149,12 @@ student = NerveNetNetwork_v3(
 
 config = DistillationTrainConfig(
     distillation=DistillationConfig(
-        n_envs=1024,
+        n_envs=2048,
         rollout_length=20,
-        total_steps=1_000_000_000,
+        total_steps=250_000_000,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=4,
+        n_minibatches=8,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=(
@@ -166,7 +167,7 @@ config = DistillationTrainConfig(
     eval=EvalConfig(
         enabled=True,
         every_steps=2_500_000,
-        n_envs=256,
+        n_envs=512,
         max_episode_length=500,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
@@ -209,7 +210,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("Distillation", "NerveNet", "warp", "Modular", "masked_inputs"),
-    notes="Distillation with joystick target (future root pos) only.",
+    notes="Distillation with joystick target; high noise",
 )
 
 checkpoint_dir = REPO_ROOT / f"checkpoints/{exp_name}/"

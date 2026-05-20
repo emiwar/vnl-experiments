@@ -164,7 +164,7 @@ def _count_params(module) -> int:
 def get_param_counts(nets, network_class_str: str) -> tuple[int, int]:
     """Return (n_actor_params, n_critic_params)."""
     total = _count_params(nets)
-    if "NerveNetNetwork_v3" in network_class_str:
+    if "NerveNetNetwork_v3" in network_class_str or "RNNModularNetwork" in network_class_str:
         n_critic = _count_params(nets.critic)
     elif "MLPModularNetwork" in network_class_str:
         n_critic = _count_params(nets.critic_encoder) + _count_params(nets.critic_heads)

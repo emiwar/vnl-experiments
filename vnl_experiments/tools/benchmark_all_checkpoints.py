@@ -52,12 +52,15 @@ from vnl_experiments.tools.checkpoint_utils import (
 # ---------------------------------------------------------------------------
 
 RUN_FOLDERS = [
-    "checkpoints/Recurrent-20260416-163835",
-    "checkpoints/MLPModular-20260318-113105",
-    "checkpoints/Imitation_detached_critic_v4-20260319-155439",
+#    "checkpoints/Recurrent-20260416-163835",
+#    "checkpoints/MLPModular-20260318-113105",
+#    "checkpoints/Imitation_detached_critic_v4-20260319-155439",
+#    "checkpoints/MLPModular-20260319-153658",
+    "checkpoints/Imitation_detached_critic_v4-20260430-140703",
+    "checkpoints/Imitation_detached_critic_v4-20260420-173139",
 ]
 
-OUTPUT_FILE = "benchmark_training_curves.json"
+OUTPUT_FILE = "training_curves_short_dt.json"
 
 # Repo root: vnl-experiments/vnl_experiments/tools/ → up 3 levels
 REPO_ROOT = Path(__file__).parent.parent.parent
