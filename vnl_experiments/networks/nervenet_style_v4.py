@@ -23,14 +23,15 @@ checkpoints do not transfer.
 """
 
 from collections.abc import Mapping, Callable
-from typing import Union
+from typing import Any, Optional, Union
 
 import jax.numpy as jp
 from flax import nnx
 
 from nnx_ppo.algorithms.adapter import PPOAdapter
 from nnx_ppo.algorithms.distributions import NormalTanhSampler
-from nnx_ppo.networks.containers import Sequential
+from nnx_ppo.networks.containers import Flattener, Sequential
+from nnx_ppo.networks.factories import make_mlp_layers
 from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.graph import PopulationGraph
 from nnx_ppo.networks.normalizer import Normalizer
@@ -63,7 +64,56 @@ class _Scale(StatefulModule):
         return StatefulModuleOutput(state, x * self.factor, jp.array(0.0), {})
 
 
-class NerveNetNetwork_v3(PPOAdapter):
+class _MotorPlusDetachedCritic(StatefulModule):
+    """Runs the population graph (motor outputs) and a separate MLP critic
+    on the same input, splits the critic's ``[B, n_modules]`` output by
+    module key, and returns a single flat dict combining both. Used to
+    feed ``PPOAdapter`` when ``detached_critic=True``.
+    """
+
+    def __init__(
+        self,
+        graph: StatefulModule,
+        critic: StatefulModule,
+        value_keys: list[str],
+    ):
+        self.graph = graph
+        self.critic = critic
+        self._value_keys = list(value_keys)
+
+    def __call__(self, state, obs, *, context: Context = Context.INFERENCE):
+        graph_out = self.graph(state["graph"], obs, context=context)
+        critic_out = self.critic(state["critic"], obs, context=context)
+        merged = dict(graph_out.output)
+        for i, k in enumerate(self._value_keys):
+            merged[k] = critic_out.output[..., i]
+        return StatefulModuleOutput(
+            next_state={
+                "graph": graph_out.next_state,
+                "critic": critic_out.next_state,
+            },
+            output=merged,
+            regularization_loss=(
+                jp.sum(graph_out.regularization_loss)
+                + jp.sum(critic_out.regularization_loss)
+            ),
+            metrics={"graph": graph_out.metrics, "critic": critic_out.metrics},
+        )
+
+    def initialize_state(self, batch_size: int):
+        return {
+            "graph": self.graph.initialize_state(batch_size),
+            "critic": self.critic.initialize_state(batch_size),
+        }
+
+    def reset_state(self, prev_state):
+        return {
+            "graph": self.graph.reset_state(prev_state["graph"]),
+            "critic": self.critic.reset_state(prev_state["critic"]),
+        }
+
+
+class NerveNetNetwork_v4(PPOAdapter):
     """Modular NerveNet-style PPO network for the rodent body."""
 
     def __init__(
@@ -79,6 +129,8 @@ class NerveNetNetwork_v3(PPOAdapter):
         critic_scale: float = 1.0,
         normalize_obs: bool = True,
         activation: Union[str, Callable] = nnx.swish,
+        detached_critic: bool = False,
+        detached_critic_hidden_sizes: Optional[list[int]] = None,
     ):
         if isinstance(activation, str):
             activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[
@@ -142,31 +194,62 @@ class NerveNetNetwork_v3(PPOAdapter):
             head = head_layers[0] if len(head_layers) == 1 else Sequential(head_layers)
             graph.add_output(f"motor_{k}", source=k, head=head)
 
-        # Per-module value heads — every body module gets one (matches the
-        # legacy "critics" dict).
-        for k in body_modules:
-            out_size = root_size if k == "root" else hidden_size
-            head_layers = [
-                Dense(out_size, 1, rngs, kernel_init=nnx.initializers.zeros)
-            ]
-            if critic_scale != 1.0:
-                head_layers.append(_Scale(critic_scale))
-            head = head_layers[0] if len(head_layers) == 1 else Sequential(head_layers)
-            graph.add_output(f"value_{k}", source=k, head=head)
+        # Per-module value heads. In the default (attached) mode each body
+        # module gets a per-population Dense → 1 head, fed by that
+        # module's hidden state. In detached mode a separate MLP on the
+        # full normalised obs produces all module values; the graph
+        # itself has no value heads.
+        value_keys = [f"value_{k}" for k in body_modules]
+        if not detached_critic:
+            for k in body_modules:
+                out_size = root_size if k == "root" else hidden_size
+                head_layers = [
+                    Dense(out_size, 1, rngs, kernel_init=nnx.initializers.zeros)
+                ]
+                if critic_scale != 1.0:
+                    head_layers.append(_Scale(critic_scale))
+                head = (
+                    head_layers[0]
+                    if len(head_layers) == 1
+                    else Sequential(head_layers)
+                )
+                graph.add_output(f"value_{k}", source=k, head=head)
 
         graph.finalize()
 
+        # Build the trunk that sits behind the (optional) Normalizer.
+        # Attached: the graph alone already emits motor_* and value_*.
+        # Detached: pair the graph (motor_* only) with a separate MLP
+        # whose output is split into one value per body module.
+        trunk: StatefulModule
+        if detached_critic:
+            hidden_layers = detached_critic_hidden_sizes or [512, 512]
+            total_obs_size = sum(int(s) for s in obs_sizes.values())
+            critic_sizes = [total_obs_size, *hidden_layers, len(body_modules)]
+            critic_layers: list[StatefulModule] = [Flattener()]
+            critic_layers.extend(
+                make_mlp_layers(
+                    critic_sizes, rngs, activation, activation_last_layer=False
+                )
+            )
+            if critic_scale != 1.0:
+                critic_layers.append(_Scale(critic_scale))
+            critic = Sequential(critic_layers)
+            trunk = _MotorPlusDetachedCritic(graph, critic, value_keys)
+        else:
+            trunk = graph
+
         inner: StatefulModule
         if normalize_obs:
-            inner = Sequential([Normalizer(dict(obs_sizes)), graph])
+            inner = Sequential([Normalizer(dict(obs_sizes)), trunk])
         else:
-            inner = graph
+            inner = trunk
 
         action_specs = {
             f"motor_{k}": NormalTanhSampler(rngs, entropy_weight, min_std)
             for k in action_sizes
         }
-        value_specs = [f"value_{k}" for k in body_modules]
+        value_specs = value_keys
 
         # Expose underlying graph + (optional) normalizer for introspection
         # by checkpoint utilities / logging code.
