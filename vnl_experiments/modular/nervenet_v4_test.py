@@ -116,11 +116,7 @@ rngs = nnx.Rngs(SEED)
 if net_config.reveal_targets == "all":
     obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o)) for k, o in train_env.non_flattened_observation_size.items()}
 else:
-    obs_sizes = {k: jp.squeeze(jax.tree.reduce(jp.add, o["proprioception"])) for k, o in train_env.non_flattened_observation_size.items() if k != "root"}
-    if net_config.reveal_targets == "root_only":
-        obs_sizes["root"] = jp.squeeze(jax.tree.reduce(jp.add, train_env.non_flattened_observation_size["root"]))
-    elif net_config.reveal_targets == "joystick_only":
-        obs_sizes["root"] = 3
+    raise "Unsuppored `reveal_targets`"
 nets = NerveNetNetwork_v4(
     obs_sizes, train_env.action_size, rngs=rngs, **{k:v for k,v in net_config.items() if k != "reveal_targets"}
 )
@@ -129,7 +125,7 @@ nets = NerveNetNetwork_v4(
 now = datetime.now()
 timestamp = now.strftime("%Y%m%d-%H%M%S")
 
-exp_name = f"Imitation_detached_critic_v4-{timestamp}"
+exp_name = f"Imitation_nervenet_v4-{timestamp}"
 net_config["network_class"] = str(type(nets))
 combined_config = {
         "env": str(type(train_env)),
