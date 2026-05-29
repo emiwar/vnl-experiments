@@ -18,8 +18,50 @@ from nnx_ppo.networks.factories import make_mlp
 from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.normalizer import Normalizer
 from nnx_ppo.networks.sampling_layers import NormalTanhSampler
-from nnx_ppo.networks.types import StatefulModule
+from nnx_ppo.networks.types import StatefulModule, StatefulModuleOutput
 from nnx_ppo.networks.utils import Filter, Flattener
+
+
+class JointSamplerBank(StatefulModule):
+    """Collapse a per-key Parallel of samplers into one joint sampler dict.
+
+    Wraps ``Parallel({pop: sampler})``. The Parallel emits
+    ``{pop: {"action": ..., "log_likelihood": ...}}``; this module reshapes
+    that into a *single* sampler dict::
+
+        {"action": {pop: action_pop}, "log_likelihood": sum_pop LL_pop}
+
+    The summed log-likelihood is the joint policy log-probability under
+    the conditional-independence factoring across pops. ``PPOAdapter``
+    then sees one sampler dict (one leaf) and produces a scalar
+    ``loglikelihoods`` field on ``PPONetworkOutput`` — restoring the
+    centralised-actor / joint-clip PPO semantics required for stable
+    training on multi-actuator setups.
+    """
+
+    def __init__(self, samplers: dict[str, StatefulModule]):
+        self.bank = Parallel(samplers)
+
+    def __call__(self, state, x, rollout_extras=None):
+        out = self.bank(state, x, rollout_extras)
+        actions = {k: v["action"] for k, v in out.output.items()}
+        ll = sum(v["log_likelihood"] for v in out.output.values())
+        return StatefulModuleOutput(
+            next_state=out.next_state,
+            output={"action": actions, "log_likelihood": ll},
+            regularization_loss=out.regularization_loss,
+            metrics=out.metrics,
+            rollout_extras=out.rollout_extras,
+        )
+
+    def initialize_state(self, batch_size):
+        return self.bank.initialize_state(batch_size)
+
+    def reset_state(self, prev_state):
+        return self.bank.reset_state(prev_state)
+
+    def update_statistics(self, rollout_extras):
+        self.bank.update_statistics(rollout_extras)
 
 
 def _make_reveal_filter(
@@ -124,7 +166,7 @@ def MLPModularNetwork(
     actor_feature_size = actor_hidden_sizes[-1]
     action_port: StatefulModule = Sequential([
         actor_encoder,
-        Parallel({
+        JointSamplerBank({
             pop: Sequential([
                 Dense(
                     actor_feature_size,
