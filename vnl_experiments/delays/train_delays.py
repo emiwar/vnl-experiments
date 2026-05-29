@@ -58,23 +58,19 @@ def main() -> None:
 
     config = TrainConfig(
         ppo=PPOConfig(
-            n_envs=ppo_params.num_envs,
-            rollout_length=ppo_params.unroll_length
-            * (
-                ppo_params.batch_size
-                * ppo_params.num_minibatches
-                // ppo_params.num_envs
-            ),
+            n_envs=8192,#ppo_params.num_envs*4,
+            rollout_length=ppo_params.unroll_length,
             total_steps=ppo_params.num_timesteps,
             gae_lambda=0.95,
-            discounting_factor=ppo_params.discounting,
+            discounting_factor=0.99,#ppo_params.discounting,
             clip_range=0.3,
             normalize_advantages=True,
-            n_epochs=ppo_params.num_updates_per_batch,
-            learning_rate=ppo_params.learning_rate,
-            n_minibatches=ppo_params.num_minibatches,
-            critic_loss_weight=0.5,
-            logging_level=LoggingLevel.NONE,
+            n_epochs=4,#ppo_params.num_updates_per_batch,
+            learning_rate=1e-4,#ppo_params.learning_rate,
+            n_minibatches=8,#ppo_params.num_minibatches,
+            critic_loss_weight=1.0,#0.5
+            logging_level=LoggingLevel.BASIC | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.CRITIC_EXTRA | LoggingLevel.ACTOR_EXTRA,
+            logging_percentiles=None,
         ),
         eval=EvalConfig(
             enabled=True,
@@ -125,6 +121,7 @@ def main() -> None:
         },
         name=exp_name,
         tags=(args.env, f"delay{args.delay}", f"eff{efference_length}"),
+        notes="Trying yet different training params."
     )
 
     result = ppo.train_ppo(
