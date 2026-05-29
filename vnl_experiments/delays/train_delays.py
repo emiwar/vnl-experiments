@@ -28,7 +28,7 @@ from nnx_ppo.algorithms.config import (
     VideoConfig,
 )
 from nnx_ppo.algorithms.types import LoggingLevel
-from nnx_ppo.wrappers import reward_scaling_wrapper
+from nnx_ppo.wrappers import reward_scaling_wrapper, episode_wrapper
 
 from vnl_experiments.delays import make_delayed_mlp_actor_critic
 
@@ -51,6 +51,7 @@ def main() -> None:
     efference_length = args.efference if args.efference is not None else args.delay
 
     env = mujoco_playground.registry.load(args.env)
+    env = episode_wrapper.EpisodeWrapper(env, 1000)
     ppo_params = (
         mujoco_playground.config.dm_control_suite_params.brax_ppo_config(args.env)
     )
@@ -96,7 +97,7 @@ def main() -> None:
     nets = make_delayed_mlp_actor_critic(
         obs_size=train_env.observation_size,
         action_size=train_env.action_size,
-        actor_hidden_sizes=[32] * 4,
+        actor_hidden_sizes=[64] * 4,
         critic_hidden_sizes=[256] * 5,
         delay_k=args.delay,
         efference_length=efference_length,
