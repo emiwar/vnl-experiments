@@ -42,7 +42,8 @@ from nnx_ppo.algorithms.config import (
 )
 from nnx_ppo.algorithms.types import LoggingLevel
 from nnx_ppo.networks.adapter import PPOAdapter
-from nnx_ppo.networks.containers import Concat, Flattener, Sequential
+from nnx_ppo.networks.containers import Concat, Sequential
+from nnx_ppo.networks.utils import Flattener
 from nnx_ppo.networks.delay import Delay
 from nnx_ppo.networks.factories import make_mlp, make_mlp_layers
 from nnx_ppo.networks.normalizer import Normalizer
@@ -98,7 +99,7 @@ def main() -> None:
         ppo=PPOConfig(
             n_envs=4096,
             rollout_length=20,
-            total_steps=2_000_000_000,
+            total_steps=1_000_000_000,
             discounting_factor=0.95,
             normalize_advantages=True,
             learning_rate=1e-4,
@@ -219,10 +220,17 @@ def main() -> None:
     )
 
     adapter = PPOAdapter(action=actor, value=critic)
+
+    # Pre-flatten `imitation_target` and `proprioception` into one 1D tensor each.
+    pre = Flattener(preserve_levels=1)
     if net_config.normalize_obs:
-        nets = Sequential([Normalizer(obs_size), adapter])
+        normalizer_shape = {
+            "imitation_target": reference_size,
+            "proprioception": proprio_size,
+        }
+        nets = Sequential([pre, Normalizer(normalizer_shape), adapter])
     else:
-        nets = adapter
+        nets = Sequential([pre, adapter])
 
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
@@ -246,7 +254,6 @@ def main() -> None:
               f"delay{args.delay}", f"eff{efference_length}"),
         notes="Rodent imitation + actor-side proprioception delay + efference copy.",
     )
-
     result = ppo.train_ppo(
         train_env,
         nets,
