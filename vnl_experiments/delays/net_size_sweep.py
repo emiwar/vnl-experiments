@@ -46,24 +46,25 @@ NET_SIZES = [
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--env", default="CartpoleSwingup",
-                   help="dm_control_suite env name (e.g. CartpolSwingup).")
+                   help="dm_control_suite env name (e.g. CartpoleSwingup).")
     p.add_argument("--seed", type=int, default=1234)
     return p.parse_args()
 
 def main() -> None:
     args = parse_args()
-
-    env = mujoco_playground.registry.load(args.env)
-    env = episode_wrapper.EpisodeWrapper(env, 500)
+    
     ppo_params = (
         mujoco_playground.config.dm_control_suite_params.brax_ppo_config(args.env)
     )
+    env = mujoco_playground.registry.load(args.env)
+    env = episode_wrapper.EpisodeWrapper(env, ppo_params.episode_length)
+    
     ppo_params.num_evals = 10
 
     config = TrainConfig(
         ppo=PPOConfig(
-            n_envs=2048,#ppo_params.num_envs*4,
-            rollout_length=500,#ppo_params.unroll_length,
+            n_envs=8192,#ppo_params.num_envs*4,
+            rollout_length=ppo_params.unroll_length,
             total_steps=ppo_params.num_timesteps,
             gae_lambda=0.95,
             discounting_factor=0.99,#ppo_params.discounting,
@@ -71,7 +72,7 @@ def main() -> None:
             normalize_advantages=True,
             n_epochs=4,#ppo_params.num_updates_per_batch,
             learning_rate=1e-4,#ppo_params.learning_rate,
-            n_minibatches=4,#ppo_params.num_minibatches,
+            n_minibatches=8,#ppo_params.num_minibatches,
             critic_loss_weight=1.0,#0.5
             logging_level=LoggingLevel.NONE,
             logging_percentiles=None,
@@ -129,7 +130,7 @@ def main() -> None:
                 )
                 final_eval = result.eval_history[-1]
                 reward_mean  = final_eval["episode_reward/mean"]
-                reward_std  = final_eval["episode_reward/mean"]
+                reward_std  = final_eval["episode_reward/std"]
                 n_actor_params = sum(jax.tree.leaves(
                     jax.tree.map(lambda x: x.size, nnx.state(nets[-1].action, nnx.Param))
                 ))
