@@ -57,7 +57,7 @@ def main() -> None:
         mujoco_playground.config.dm_control_suite_params.brax_ppo_config(args.env)
     )
     env = mujoco_playground.registry.load(args.env)
-    env = episode_wrapper.EpisodeWrapper(env, ppo_params.episode_length)
+    
     
     ppo_params.num_evals = 10
 
@@ -93,8 +93,9 @@ def main() -> None:
         seed=args.seed,
     )
 
+    train_env = episode_wrapper.EpisodeWrapper(env, ppo_params.episode_length)
     train_env = reward_scaling_wrapper.RewardScalingWrapper(
-        env, ppo_params.reward_scaling
+        train_env, ppo_params.reward_scaling
     )
     eval_env = env
     
