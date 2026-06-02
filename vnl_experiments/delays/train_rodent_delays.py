@@ -43,7 +43,7 @@ from nnx_ppo.algorithms.config import (
 from nnx_ppo.algorithms.types import LoggingLevel
 from nnx_ppo.networks.adapter import PPOAdapter
 from nnx_ppo.networks.containers import Concat, Sequential
-from nnx_ppo.networks.utils import Flattener
+from nnx_ppo.networks.utils import Filter, Flattener
 from nnx_ppo.networks.delay import Delay
 from nnx_ppo.networks.factories import make_mlp, make_mlp_layers
 from nnx_ppo.networks.normalizer import Normalizer
@@ -142,11 +142,11 @@ def main() -> None:
         net_config.activation
     ]
 
-    reference_size = int(sum(jax.tree.flatten(obs_size["imitation_target"])[0]))
-    proprio_size = int(sum(jax.tree.flatten(obs_size["proprioception"])[0]))
+    task_obs_size = int(sum(jax.tree.flatten(obs_size["state"]["task_obs"])[0]))
+    proprio_size = int(sum(jax.tree.flatten(obs_size["state"]["proprioception"])[0]))
 
     enc_sizes = (
-        [reference_size]
+        [task_obs_size]
         + list(net_config.enc_hidden_sizes)
         + [net_config.latent_size * 2]
     )
@@ -155,7 +155,7 @@ def main() -> None:
         [decoder_in] + list(net_config.dec_hidden_sizes) + [action_size * 2]
     )
     critic_sizes = (
-        [reference_size + proprio_size]
+        [task_obs_size + proprio_size]
         + list(net_config.critic_hidden_sizes)
         + [1]
     )
@@ -199,7 +199,7 @@ def main() -> None:
     actor = Sequential(
         [
             Concat(
-                imitation_target=encoder_branch,
+                task_obs=encoder_branch,
                 proprioception=proprio_branch,
             ),
             EfferenceCopy(
@@ -221,16 +221,25 @@ def main() -> None:
 
     adapter = PPOAdapter(action=actor, value=critic)
 
-    # Pre-flatten `imitation_target` and `proprioception` into one 1D tensor each.
-    pre = Flattener(preserve_levels=1)
+    # The env wraps obs under a top-level "state" key: {state: {task_obs, proprioception}}.
+    # Pre-flatten each inner leaf to 1D (preserve_levels=2 keeps state.<key>),
+    # normalise per inner key, then lift to a flat {task_obs, proprioception}
+    # dict so downstream Concat / Flattener see the simpler structure.
+    pre = Flattener(preserve_levels=2)
+    lift = Filter({
+        "task_obs": ("state", "task_obs"),
+        "proprioception": ("state", "proprioception"),
+    })
     if net_config.normalize_obs:
         normalizer_shape = {
-            "imitation_target": reference_size,
-            "proprioception": proprio_size,
+            "state": {
+                "task_obs": task_obs_size,
+                "proprioception": proprio_size,
+            }
         }
-        nets = Sequential([pre, Normalizer(normalizer_shape), adapter])
+        nets = Sequential([pre, Normalizer(normalizer_shape), lift, adapter])
     else:
-        nets = Sequential([pre, adapter])
+        nets = Sequential([pre, lift, adapter])
 
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
