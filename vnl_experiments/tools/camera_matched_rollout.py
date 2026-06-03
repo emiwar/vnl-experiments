@@ -227,6 +227,46 @@ def convert_camera(cam, name: str = "CalibCamera") -> dict:
 # Rendering
 # ---------------------------------------------------------------------------
 
+def render_reference_poses(
+    env: ModularImitation_v4,
+    h5_path: str,
+    start_frame: int,
+    n_frames: int,
+    camera_kwargs: dict,
+    height: int,
+    width: int,
+) -> list[np.ndarray]:
+    """Render reference mocap poses from H5 with the calibrated camera.
+
+    Args:
+        env: Constructed ModularImitation_v4 environment
+        h5_path: Path to the STAC .h5 file
+        start_frame: First H5 frame index to render
+        n_frames: Number of frames to render
+        camera_kwargs: Dict from convert_camera()
+        height: Output frame height in pixels
+        width: Output frame width in pixels
+
+    Returns:
+        List of uint8 RGB arrays of shape (height, width, 3)
+    """
+    with h5py.File(h5_path, "r") as f:
+        qpos_data = f["qpos"][start_frame:start_frame + n_frames]
+        if "qvel" in f:
+            qvel_data = f["qvel"][start_frame:start_frame + n_frames]
+        else:
+            nv = qpos_data.shape[1] - 1  # rough fallback; mj_forward ignores zeros
+            qvel_data = np.zeros((n_frames, nv), dtype=np.float64)
+
+    trajectory = [
+        types.SimpleNamespace(
+            data=types.SimpleNamespace(qpos=qpos_data[i], qvel=qvel_data[i])
+        )
+        for i in range(n_frames)
+    ]
+    return render_with_calib_camera(env, trajectory, camera_kwargs, height, width)
+
+
 def render_with_calib_camera(
     env: ModularImitation_v4,
     trajectory: list,
@@ -330,6 +370,7 @@ def write_side_by_side_video(
     rollout_frames_list: list[list[np.ndarray]],
     output_path: str,
     fps: int,
+    labels: list[str] | None = None,
 ) -> None:
     """Write a horizontally concatenated comparison video.
 
@@ -340,16 +381,18 @@ def write_side_by_side_video(
         rollout_frames_list: One list of frames per rollout (RGB uint8)
         output_path: Where to write the output .mp4
         fps: Output frame rate
+        labels: Panel labels. Defaults to ["Real", "Rollout 1", ...].
     """
     n_frames = min(len(real_frames), min(len(f) for f in rollout_frames_list))
     h, w = real_frames[0].shape[:2]
     n_panels = 1 + len(rollout_frames_list)
 
+    if labels is None:
+        labels = ["Real"] + [f"Rollout {i + 1}" for i in range(len(rollout_frames_list))]
+
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(output_path, fourcc, fps, (w * n_panels, h))
-
-    labels = ["Real"] + [f"Rollout {i + 1}" for i in range(len(rollout_frames_list))]
 
     for i in range(n_frames):
         panels = [real_frames[i]] + [rf[i] for rf in rollout_frames_list]
@@ -376,6 +419,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--checkpoint", required=True,
                         help="Run directory containing config.json")
+    parser.add_argument("--checkpoint2", default=None,
+                        help="Optional second run directory; adds a third panel to the video")
     parser.add_argument("--calibration", required=True,
                         help="Path to hires_cam{N}_params.mat")
     parser.add_argument("--video", required=True,
@@ -398,6 +443,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--fps", type=int, default=50,
                         help="Recording frame rate (used to convert time↔frames)")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--show_reference", action="store_true",
+                        help="Insert a reference-pose panel between the real video and the rollouts")
+    parser.add_argument("--labels", nargs="+", default=None,
+                        help="Override rollout panel labels (one per rollout panel, left to right)")
     return parser
 
 
@@ -430,67 +479,74 @@ def main() -> None:
         )
 
     # ------------------------------------------------------------------
-    # Environment
+    # Helper: build env + timing constants from a checkpoint config
     # ------------------------------------------------------------------
-    print("Loading environment…")
-    ckpt_dir = Path(args.checkpoint)
-    with open(ckpt_dir / "config.json") as f:
-        cfg_json = json.load(f)
-
-    config = parse_env_config(cfg_json.get("env_params", {}))
-    config.reference_data_path = epath.Path(args.reference_h5)
-    config.clip_length = total_frames   # treat whole file as one clip; clip_set="all" → 1 clip
-    config.start_frame_range = [start_frame, start_frame + 1]
-
-    env = ModularImitation_v4(config)
-
-    # ctrl_dt may be faster than the mocap fps — compute the integer step ratio
-    frame_skip = max(1, round(1.0 / (args.fps * config.ctrl_dt)))
-    n_steps = n_video_frames * frame_skip
-    print(f"ctrl_dt={config.ctrl_dt}s → frame_skip={frame_skip}, n_steps={n_steps}")
+    def make_env_for_checkpoint(ckpt_path: Path):
+        with open(ckpt_path / "config.json") as f:
+            cfg_json = json.load(f)
+        config = parse_env_config(cfg_json.get("env_params", {}))
+        config.reference_data_path = epath.Path(args.reference_h5)
+        config.clip_length = total_frames
+        config.start_frame_range = [start_frame, start_frame + 1]
+        env = ModularImitation_v4(config)
+        frame_skip = max(1, round(1.0 / (args.fps * config.ctrl_dt)))
+        n_steps = n_video_frames * frame_skip
+        print(f"  ctrl_dt={config.ctrl_dt}s → frame_skip={frame_skip}, n_steps={n_steps}")
+        return env, frame_skip, n_steps
 
     # ------------------------------------------------------------------
-    # Network
-    # ------------------------------------------------------------------
-    print(f"Loading checkpoint: {args.checkpoint}")
-    network = load_network_from_checkpoint(ckpt_dir, env, seed=args.seed)
-    network.eval()
-
-    # ------------------------------------------------------------------
-    # Rollouts (reset to current video frame on termination)
+    # Helper: run N rollouts for one network and render them
     # ------------------------------------------------------------------
     rollout_fn = nnx.jit(rollout_video_synced, static_argnums=(0, 2))
+
+    def run_and_render(network, env, n_steps, frame_skip, label_prefix, base_key):
+        network.eval()
+        frames_list = []
+        for i in range(args.n_rollouts):
+            print(f"  {label_prefix} rollout {i + 1}/{args.n_rollouts}…", flush=True)
+            key = jax.random.fold_in(base_key, i)
+            stacked, reset_mask, total_reward = rollout_fn(env, network, n_steps, key)
+            traj = [
+                jax.tree.map(lambda x: x[t], stacked)
+                for t in range(0, n_steps, frame_skip)
+            ]
+            reset_mask_np = np.array(reset_mask)
+            n_resets = int(np.sum(reset_mask_np))
+            print(f"    total reward = {float(total_reward):.2f}  resets = {n_resets}")
+            print(f"  Rendering {label_prefix} rollout {i + 1}/{args.n_rollouts}…", flush=True)
+            frames = render_with_calib_camera(env, traj, camera_kwargs, args.height, args.width)
+            overlay_reset_indicators(frames, reset_mask_np, frame_skip)
+            frames_list.append(frames)
+        return frames_list
+
     base_key = jax.random.key(args.seed)
-    all_trajectories = []
-    all_reset_masks = []
-
-    for i in range(args.n_rollouts):
-        print(f"  Rollout {i + 1}/{args.n_rollouts}…", flush=True)
-        key = jax.random.fold_in(base_key, i)
-        stacked, reset_mask, total_reward = rollout_fn(env, network, n_steps, key)
-        # Subsample every frame_skip-th step to match mocap fps
-        traj = [
-            jax.tree.map(lambda x: x[t], stacked)
-            for t in range(0, n_steps, frame_skip)
-        ]
-        all_trajectories.append(traj)
-        all_reset_masks.append(np.array(reset_mask))
-        n_resets = int(np.sum(reset_mask))
-        print(f"    total reward = {float(total_reward):.2f}  resets = {n_resets}")
-
-    network.train()
 
     # ------------------------------------------------------------------
-    # Render rollouts and overlay reset indicators
+    # Checkpoint 1
     # ------------------------------------------------------------------
-    all_rollout_frames = []
-    for i, (traj, reset_mask) in enumerate(zip(all_trajectories, all_reset_masks)):
-        print(f"  Rendering rollout {i + 1}/{args.n_rollouts}…", flush=True)
-        frames = render_with_calib_camera(
-            env, traj, camera_kwargs, args.height, args.width
+    print(f"Loading checkpoint: {args.checkpoint}")
+    ckpt_dir = Path(args.checkpoint)
+    env1, frame_skip1, n_steps1 = make_env_for_checkpoint(ckpt_dir)
+    network1 = load_network_from_checkpoint(ckpt_dir, env1, seed=args.seed)
+    ckpt1_name = ckpt_dir.name
+    all_rollout_frames = run_and_render(network1, env1, n_steps1, frame_skip1, ckpt1_name, base_key)
+
+    # ------------------------------------------------------------------
+    # Checkpoint 2 (optional)
+    # ------------------------------------------------------------------
+    if args.checkpoint2 is not None:
+        print(f"Loading checkpoint2: {args.checkpoint2}")
+        ckpt2_dir = Path(args.checkpoint2)
+        env2, frame_skip2, n_steps2 = make_env_for_checkpoint(ckpt2_dir)
+        network2 = load_network_from_checkpoint(ckpt2_dir, env2, seed=args.seed)
+        ckpt2_name = ckpt2_dir.name
+        all_rollout_frames += run_and_render(network2, env2, n_steps2, frame_skip2, ckpt2_name, base_key)
+        rollout_labels = (
+            [f"{ckpt1_name} {i+1}" for i in range(args.n_rollouts)]
+            + [f"{ckpt2_name} {i+1}" for i in range(args.n_rollouts)]
         )
-        overlay_reset_indicators(frames, reset_mask, frame_skip)
-        all_rollout_frames.append(frames)
+    else:
+        rollout_labels = [f"Rollout {i+1}" for i in range(args.n_rollouts)]
 
     # ------------------------------------------------------------------
     # Extract real video frames
@@ -502,9 +558,27 @@ def main() -> None:
     )
 
     # ------------------------------------------------------------------
+    # Reference poses (optional)
+    # ------------------------------------------------------------------
+    reference_frames_list = []
+    reference_labels = []
+    if args.show_reference:
+        print("Rendering reference poses…", flush=True)
+        ref_frames = render_reference_poses(
+            env1, args.reference_h5, start_frame, n_video_frames,
+            camera_kwargs, args.height, args.width,
+        )
+        reference_frames_list = [ref_frames]
+        reference_labels = ["Reference pose"]
+
+    # ------------------------------------------------------------------
     # Write output
     # ------------------------------------------------------------------
-    write_side_by_side_video(real_frames, all_rollout_frames, args.output, args.fps)
+    if args.labels is not None:
+        rollout_labels = args.labels
+    labels = ["Real"] + reference_labels + rollout_labels
+    middle_frames = reference_frames_list + all_rollout_frames
+    write_side_by_side_video(real_frames, middle_frames, args.output, args.fps, labels=labels)
 
 
 if __name__ == "__main__":
