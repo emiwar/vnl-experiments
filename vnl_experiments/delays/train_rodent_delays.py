@@ -21,6 +21,7 @@ os.environ["PYOPENGL_PLATFORM"] = "egl"
 
 import argparse
 import dataclasses
+import json
 from datetime import datetime
 
 import jax
@@ -247,6 +248,20 @@ def main() -> None:
         f"RodentEncDec_delay{args.delay}_eff{efference_length}"
         f"-{timestamp}{suffix}"
     )
+
+    ckpt_dir = f"checkpoints/{exp_name}"
+    os.makedirs(ckpt_dir, exist_ok=True)
+    with open(os.path.join(ckpt_dir, "config.json"), "w") as _f:
+        json.dump({
+            "env_params": env_config.to_dict(),
+            "net_params": {
+                **net_config.to_dict(),
+                "delay_k": args.delay,
+                "efference_length": efference_length,
+                "network_class": "RodentEncDecDelays",
+            },
+        }, _f, indent=2)
+
     wandb.init(
         project=args.wandb_project,
         config={
@@ -269,7 +284,7 @@ def main() -> None:
         config,
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
-        checkpoint_fn=make_checkpoint_fn(f"checkpoints/{exp_name}", config),
+        checkpoint_fn=make_checkpoint_fn(ckpt_dir, config),
         eval_env=eval_env,
     )
 
