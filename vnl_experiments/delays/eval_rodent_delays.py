@@ -35,6 +35,7 @@ from flax import nnx
 from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
 
+from etils import epath
 from vnl_playground.tasks.rodent.imitation import Imitation, default_config
 
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
@@ -168,7 +169,7 @@ def parse_imitation_env_config(env_params: dict, reference_h5: str, total_frames
                     pass
 
     # Eval overrides
-    cfg.reference_data_path = reference_h5
+    cfg.reference_data_path = epath.Path(reference_h5)
     cfg.clip_length = total_frames
     cfg.start_frame_range = [0, 1]
     # Reduce pre-allocation sizes — single env only needs a fraction
