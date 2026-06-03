@@ -23,6 +23,8 @@ os.environ["PYOPENGL_PLATFORM"] = "egl"
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 os.environ.setdefault("XLA_PYTHON_CLIENT_MEM_FRACTION", "0.7")
 
+import scipy.io as spio
+import types as _types
 import cv2
 import h5py
 import jax
@@ -30,6 +32,7 @@ import jax.numpy as jp
 import mujoco
 import numpy as np
 from flax import nnx
+from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
 
 from vnl_playground.tasks.rodent.imitation import Imitation, default_config
@@ -47,11 +50,6 @@ from nnx_ppo.networks.utils import Filter, Flattener
 from nnx_ppo.networks.variational import VariationalBottleneck
 
 from vnl_experiments.delays.efference_copy import EfferenceCopy
-from vnl_experiments.tools.camera_matched_rollout import (
-    convert_camera,
-    load_camera_calibration,
-    render_with_calib_camera,
-)
 
 # ---------------------------------------------------------------------------
 # Hard-coded settings — edit before running
@@ -71,6 +69,56 @@ OUTPUT_DIR = "eval_delays"
 VIDEO_HEIGHT = 1200
 VIDEO_WIDTH = 1920
 FPS = 50
+
+# ---------------------------------------------------------------------------
+# Camera calibration and rendering
+# (Inlined from tools/camera_matched_rollout.py to avoid its import chain)
+# ---------------------------------------------------------------------------
+
+_DANNCE_IMAGE_HEIGHT = 1200
+
+
+def load_camera_calibration(mat_path: str):
+    mat = spio.loadmat(mat_path, squeeze_me=True)
+    return _types.SimpleNamespace(
+        K=mat["K"], r=mat["r"], t=mat["t"],
+        RDistort=mat["RDistort"], TDistort=mat["TDistort"],
+    )
+
+
+def convert_camera(cam, name: str = "CalibCamera") -> dict:
+    rot = R.from_matrix(cam.r.T)
+    eul = rot.as_euler("zyx")
+    eul[2] += np.pi
+    quat = R.from_euler("zyx", eul).as_quat()
+    quat = quat[np.array([3, 0, 1, 2])]
+    quat[0] *= -1
+    fovy = 2 * np.arctan(_DANNCE_IMAGE_HEIGHT / (2 * cam.K[1, 1])) / (2 * np.pi) * 360
+    pos = (-cam.t.reshape(1, 3) @ cam.r.T / 1000).squeeze()
+    return {"name": name, "pos": pos, "quat": quat, "fovy": fovy}
+
+
+def render_with_calib_camera(env, trajectory: list, camera_kwargs: dict,
+                              height: int, width: int) -> list:
+    spec = env._spec.copy()
+    cam = spec.worldbody.add_camera()
+    cam.name = camera_kwargs["name"]
+    cam.pos = np.array(camera_kwargs["pos"])
+    cam.quat = np.array(camera_kwargs["quat"])
+    cam.fovy = float(camera_kwargs["fovy"])
+    mj_model = spec.compile()
+    mj_model.vis.global_.offwidth = width
+    mj_model.vis.global_.offheight = height
+    mj_data = mujoco.MjData(mj_model)
+    renderer = mujoco.Renderer(mj_model, height=height, width=width)
+    frames = []
+    for state in trajectory:
+        mj_data.qpos = np.array(state.data.qpos)
+        mj_data.qvel = np.array(state.data.qvel)
+        mujoco.mj_forward(mj_model, mj_data)
+        renderer.update_scene(mj_data, camera=camera_kwargs["name"])
+        frames.append(renderer.render().copy())
+    return frames
 
 
 # ---------------------------------------------------------------------------

@@ -260,7 +260,7 @@ def main() -> None:
                 "efference_length": efference_length,
                 "network_class": "RodentEncDecDelays",
             },
-        }, _f, indent=2)
+        }, _f, indent=2, default=str)
 
     wandb.init(
         project=args.wandb_project,
