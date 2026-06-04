@@ -57,7 +57,17 @@ from vnl_experiments.delays.efference_copy import EfferenceCopy
 # ---------------------------------------------------------------------------
 
 CHECKPOINTS = [
-    # "checkpoints/RodentEncDec_delay0_eff0-20260601-123456",
+    "checkpoints/RodentEncDec_delay0_eff0-20260603-083745",
+    "checkpoints/RodentEncDec_delay1_eff1-20260603-083843",
+    "checkpoints/RodentEncDec_delay2_eff2-20260603-084107",
+    "checkpoints/RodentEncDec_delay3_eff3-20260603-084626",
+    "checkpoints/RodentEncDec_delay4_eff4-20260603-084640",
+    "checkpoints/RodentEncDec_delay5_eff5-20260603-084658",
+    "checkpoints/RodentEncDec_delay6_eff6-20260603-084705",
+    "checkpoints/RodentEncDec_delay7_eff7-20260603-084705",
+    "checkpoints/RodentEncDec_delay8_eff8-20260603-084925",
+    "checkpoints/RodentEncDec_delay9_eff9-20260603-085005",
+    "checkpoints/RodentEncDec_delay10_eff10-20260603-085005",
 ]
 
 # Reference session directory. Must contain:
@@ -344,6 +354,9 @@ def _slim(env_state) -> SlimState:
             qpos=env_state.data.qpos,
             qvel=env_state.data.qvel,
             time=env_state.data.time,
+            mocap_pos=env_state.data.mocap_pos,
+            mocap_quat=env_state.data.mocap_quat,
+            xfrc_applied=env_state.data.xfrc_applied,
         ),
         done=env_state.done,
         info=env_state.info,
@@ -374,14 +387,14 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
 
         obs_batched = jax.tree.map(lambda x: x[None], env_state.obs)
         net_state_batched = jax.tree.map(lambda x: x[None], net_state)
-        next_net_state, network_output = networks(net_state_batched, obs_batched)
-        next_net_state = jax.tree.map(lambda x: x[0], next_net_state)
-        action = jax.tree.map(lambda x: x[0], network_output.actions)
+        result = networks(net_state_batched, obs_batched)
+        next_net_state = jax.tree.map(lambda x: x[0], result.next_state)
+        action = jax.tree.map(lambda x: x[0], result.output.actions)
 
         next_env_state = env.step(env_state, action)
 
         reset_happened = next_env_state.done.astype(bool)
-        current_frame = next_env_state.metrics["current_frame"]
+        current_frame = next_env_state.metrics["current_frame"].astype(jp.int32)
 
         def do_reset(rng):
             return env.reset(rng, clip_idx=jp.array(0), start_frame=current_frame)
@@ -483,21 +496,34 @@ def render_video(
     output_path: Path,
     fps: int,
 ) -> None:
-    traj = [
-        jax.tree.map(lambda x: x[t], stacked_states)
-        for t in tqdm(range(0, n_steps, frame_skip), desc="  Building traj", leave=False)
-    ]
+    n_frames = len(range(0, n_steps, frame_skip))
+    print(f"  Rendering {n_frames} frames at {VIDEO_WIDTH}x{VIDEO_HEIGHT}…", flush=True)
 
-    print(f"  Rendering {len(traj)} frames at {VIDEO_WIDTH}x{VIDEO_HEIGHT}…", flush=True)
-    frames = render_with_calib_camera(env, traj, camera_kwargs, VIDEO_HEIGHT, VIDEO_WIDTH)
+    spec = env._spec.copy()
+    cam = spec.worldbody.add_camera()
+    cam.name = camera_kwargs["name"]
+    cam.pos = np.array(camera_kwargs["pos"])
+    cam.quat = np.array(camera_kwargs["quat"])
+    cam.fovy = float(camera_kwargs["fovy"])
+    mj_model = spec.compile()
+    mj_model.vis.global_.offwidth = VIDEO_WIDTH
+    mj_model.vis.global_.offheight = VIDEO_HEIGHT
+    mj_data = mujoco.MjData(mj_model)
+    renderer = mujoco.Renderer(mj_model, height=VIDEO_HEIGHT, width=VIDEO_WIDTH)
 
     os.makedirs(output_path.parent, exist_ok=True)
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(
-        str(output_path), fourcc, fps, (VIDEO_WIDTH, VIDEO_HEIGHT)
-    )
-    for frame in tqdm(frames, desc="  Writing video", leave=False):
+    writer = cv2.VideoWriter(str(output_path), fourcc, fps, (VIDEO_WIDTH, VIDEO_HEIGHT))
+
+    for t in tqdm(range(0, n_steps, frame_skip), desc="  Rendering", leave=False):
+        state = jax.tree.map(lambda x: x[t], stacked_states)
+        mj_data.qpos = np.array(state.data.qpos)
+        mj_data.qvel = np.array(state.data.qvel)
+        mujoco.mj_forward(mj_model, mj_data)
+        renderer.update_scene(mj_data, camera=camera_kwargs["name"])
+        frame = renderer.render()
         writer.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+
     writer.release()
     print(f"  Saved {output_path}")
 
