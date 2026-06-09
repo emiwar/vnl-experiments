@@ -51,8 +51,8 @@ env_config.solver = "newton"
 env_config.iterations = 50
 env_config.ls_iterations = 50
 #env_config.sim_dt = 0.002
-env_config.sim_dt = 0.001
-env_config.ctrl_dt = 0.002
+env_config.sim_dt = 0.002
+env_config.ctrl_dt = 0.01
 env_config.energy_cost = -0.04
 
 net_config = config_dict.create(
@@ -70,14 +70,14 @@ net_config = config_dict.create(
 config = TrainConfig(
     ppo=PPOConfig(
         n_envs=4096,
-        rollout_length=20,
+        rollout_length=128,
         total_steps=1_000_000_000,
-        discounting_factor=0.98,
+        discounting_factor=0.95,
         normalize_advantages=True,
         combine_advantages=True,
         learning_rate=1e-4,
         n_epochs=4,
-        n_minibatches=16,
+        n_minibatches=4,
         gradient_clipping=1.0,
         weight_decay=None,
         logging_level=LoggingLevel.LOSSES | LoggingLevel.CRITIC_EXTRA | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
@@ -145,7 +145,7 @@ wandb.init(
     config=combined_config,
     name=exp_name,
     tags=("MLP", "Modular", "MultiHead", "warp", "train_test_split"),
-    notes="Large MLP intended as distillation teacher.",
+    notes="Testing longer rollout lengths.",
 )
 
 

@@ -31,16 +31,15 @@ from nnx_ppo.wrappers import reward_scaling_wrapper, episode_wrapper
 
 from vnl_experiments.delays import make_delayed_mlp_actor_critic
 
-DELAYS = [0, 2, 5, 10]
+DELAYS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 NET_SIZES = [
+    [16]*2,
     [32]*2,
     [32]*4,
-    [64]*2,
     [64]*4,
-    [128]*2,
     [128]*4,
-    [256]*2,
     [256]*4,
+    [512]*4,
 ]
 
 def parse_args() -> argparse.Namespace:
@@ -65,7 +64,7 @@ def main() -> None:
         ppo=PPOConfig(
             n_envs=8192,#ppo_params.num_envs*4,
             rollout_length=ppo_params.unroll_length,
-            total_steps=ppo_params.num_timesteps,
+            total_steps=2*ppo_params.num_timesteps,
             gae_lambda=0.95,
             discounting_factor=0.99,#ppo_params.discounting,
             clip_range=0.3,
@@ -84,12 +83,7 @@ def main() -> None:
             max_episode_length=ppo_params.episode_length,
             logging_percentiles=None,
         ),
-        video=VideoConfig(
-            enabled=False,
-            every_steps=ppo_params.num_timesteps // 10,
-            episode_length=ppo_params.episode_length,
-            render_kwargs={"height": 240, "width": 320},
-        ),
+        video=VideoConfig(enabled=False),
         seed=args.seed,
     )
 
@@ -98,7 +92,7 @@ def main() -> None:
         train_env, ppo_params.reward_scaling
     )
     eval_env = env
-    
+    print(args.env)
     print(config)
 
     print("delay,net_size,n_actor_params,reward_mean,reward_std")

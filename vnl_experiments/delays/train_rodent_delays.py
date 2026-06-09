@@ -90,9 +90,9 @@ def main() -> None:
         std_scale=1.0,
         normalize_obs=True,
         initializer_scale=1.0,
-        kl_weight=0.01,
+        kl_weight=0.001,
         latent_min_std=0.01,
-        latent_size=16,
+        latent_size=32,
         latent_ar1_weight=None,
     )
 
@@ -100,23 +100,23 @@ def main() -> None:
         ppo=PPOConfig(
             n_envs=4096,
             rollout_length=20,
-            total_steps=1_000_000_000,
+            total_steps=600_000_000,
             discounting_factor=0.95,
             normalize_advantages=True,
             learning_rate=1e-4,
             n_epochs=4,
-            n_minibatches=16,
+            n_minibatches=8,
             gradient_clipping=1.0,
             weight_decay=None,
-            logging_level=LoggingLevel.ALL,
+            logging_level=LoggingLevel.BASIC,
             logging_percentiles=(0, 25, 50, 75, 100),
         ),
         eval=EvalConfig(
             enabled=True,
             every_steps=10_000_000,
-            n_envs=512,
-            max_episode_length=500,
-            logging_percentiles=(0, 25, 50, 75, 100),
+            n_envs=1024,
+            max_episode_length=1000,
+            logging_percentiles=None,#(0, 25, 50, 75, 100),
         ),
         video=VideoConfig(
             enabled=True,
@@ -276,7 +276,7 @@ def main() -> None:
         name=exp_name,
         tags=("MLP", "warp", "EncDec",
               f"delay{args.delay}", f"eff{efference_length}"),
-        notes="Rodent imitation + actor-side proprioception delay + efference copy.",
+        notes="More long delay runs.",
     )
     result = ppo.train_ppo(
         train_env,

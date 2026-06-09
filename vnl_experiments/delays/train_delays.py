@@ -51,7 +51,7 @@ def main() -> None:
     efference_length = args.efference if args.efference is not None else args.delay
 
     env = mujoco_playground.registry.load(args.env)
-    env = episode_wrapper.EpisodeWrapper(env, 1000)
+
     ppo_params = (
         mujoco_playground.config.dm_control_suite_params.brax_ppo_config(args.env)
     )
@@ -61,7 +61,7 @@ def main() -> None:
         ppo=PPOConfig(
             n_envs=8192,#ppo_params.num_envs*4,
             rollout_length=ppo_params.unroll_length,
-            total_steps=ppo_params.num_timesteps,
+            total_steps=ppo_params.num_timesteps*4, #Delays might be slower to train
             gae_lambda=0.95,
             discounting_factor=0.99,#ppo_params.discounting,
             clip_range=0.3,
@@ -88,16 +88,17 @@ def main() -> None:
         ),
         seed=args.seed,
     )
-
+    
+    train_env = episode_wrapper.EpisodeWrapper(env, 1000)
     train_env = reward_scaling_wrapper.RewardScalingWrapper(
-        env, ppo_params.reward_scaling
+        train_env, ppo_params.reward_scaling
     )
     eval_env = env
     rngs = nnx.Rngs(args.seed)
     nets = make_delayed_mlp_actor_critic(
         obs_size=train_env.observation_size,
         action_size=train_env.action_size,
-        actor_hidden_sizes=[64] * 4,
+        actor_hidden_sizes=[256] * 4,
         critic_hidden_sizes=[256] * 5,
         delay_k=args.delay,
         efference_length=efference_length,
@@ -122,7 +123,7 @@ def main() -> None:
         },
         name=exp_name,
         tags=(args.env, f"delay{args.delay}", f"eff{efference_length}"),
-        notes="Trying yet different training params."
+        notes="Actor size [256]*4."
     )
 
     result = ppo.train_ppo(

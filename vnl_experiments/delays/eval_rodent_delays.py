@@ -390,7 +390,6 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
         result = networks(net_state_batched, obs_batched)
         next_net_state = jax.tree.map(lambda x: x[0], result.next_state)
         action = jax.tree.map(lambda x: x[0], result.output.actions)
-
         next_env_state = env.step(env_state, action)
 
         reset_happened = next_env_state.done.astype(bool)
