@@ -52,11 +52,12 @@ from nnx_ppo.networks.sampling_layers import NormalTanhSampler
 from nnx_ppo.networks.variational import VariationalBottleneck
 
 from vnl_experiments.delays.efference_copy import EfferenceCopy
+from vnl_experiments.envs.absolute_imitation import AbsoluteImitation
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--delay", type=int, default=5,
+    p.add_argument("--delay", type=int, default=0,
                    help="Proprioception delay in steps. 0 = no delay.")
     p.add_argument("--efference", type=int, default=None,
                    help="Efference-copy queue length. Defaults to --delay.")
@@ -94,6 +95,7 @@ def main() -> None:
         latent_min_std=0.01,
         latent_size=32,
         latent_ar1_weight=None,
+        body_target_frame="current_root",
     )
 
     config = TrainConfig(
@@ -133,7 +135,7 @@ def main() -> None:
         checkpoint_every_steps=50_000_000,
     )
 
-    train_env = Imitation(env_config)
+    train_env = AbsoluteImitation(env_config)
     eval_env = train_env
     obs_size = train_env.non_flattened_observation_size
     action_size = train_env.action_size
@@ -265,7 +267,7 @@ def main() -> None:
     wandb.init(
         project=args.wandb_project,
         config={
-            "env": "StandardImitation",
+            "env": "AbsoluteImitation",
             "delay_k": args.delay,
             "efference_length": efference_length,
             "seed": seed,
