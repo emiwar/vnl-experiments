@@ -16,6 +16,7 @@ decoder input. ``--delay 0`` and ``--efference 0`` reproduce the baseline.
 
 import os
 
+
 os.environ["MUJOCO_GL"] = "egl"
 os.environ["PYOPENGL_PLATFORM"] = "egl"
 
@@ -31,6 +32,7 @@ from flax import nnx
 from ml_collections import config_dict
 
 from vnl_playground.tasks.rodent.imitation import Imitation, default_config
+from vnl_playground.tasks.reference_clips import ReferenceClips
 
 from nnx_ppo.algorithms import ppo
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
@@ -95,7 +97,7 @@ def main() -> None:
         latent_min_std=0.01,
         latent_size=32,
         latent_ar1_weight=None,
-        body_target_frame="current_root",
+        body_target_frame="reference_root",
     )
 
     config = TrainConfig(
@@ -110,7 +112,7 @@ def main() -> None:
             n_minibatches=8,
             gradient_clipping=1.0,
             weight_decay=None,
-            logging_level=LoggingLevel.BASIC,
+            logging_level=LoggingLevel.BASIC | LoggingLevel.THROUGHPUT,
             logging_percentiles=(0, 25, 50, 75, 100),
         ),
         eval=EvalConfig(
@@ -135,7 +137,14 @@ def main() -> None:
         checkpoint_every_steps=50_000_000,
     )
 
-    train_env = AbsoluteImitation(env_config)
+
+    clips = ReferenceClips(env_config.reference_data_path,
+                       env_config.clip_length,
+                       env_config.keep_clips_idx)
+    train_clips, test_clips = clips.split()
+    train_env = AbsoluteImitation(env_config, clips=train_clips)
+    eval_env = AbsoluteImitation(env_config, clips=test_clips)
+    
     eval_env = train_env
     obs_size = train_env.non_flattened_observation_size
     action_size = train_env.action_size
@@ -276,9 +285,9 @@ def main() -> None:
             "env_params": env_config.to_dict(),
         },
         name=exp_name,
-        tags=("MLP", "warp", "EncDec",
+        tags=("MLP", "warp", "EncDec", "TrainEvalSplit",
               f"delay{args.delay}", f"eff{efference_length}"),
-        notes="More long delay runs.",
+        notes="Train-eval split",
     )
     result = ppo.train_ppo(
         train_env,
