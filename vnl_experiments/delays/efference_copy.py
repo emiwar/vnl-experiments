@@ -60,6 +60,13 @@ class EfferenceCopy(StatefulModule):
         queue_length: Number of recent actions to keep. ``0`` short-circuits
             to a pure pass-through (no queue, no concat) so the same wrapper
             can be used for the no-efference baseline.
+        inject_key: Output routing for the queue. ``None`` (default) keeps the
+            original behaviour: ``obs`` is a tensor and the flattened queue is
+            concatenated onto its last axis. When set to a string, ``obs`` is
+            treated as a **dict** and the (unflattened, newest-first
+            ``[B, L, *leaf]``) queue is inserted under that key, so the inner
+            module can access it by name rather than by index slicing. With
+            ``queue_length == 0`` the dict passes through unchanged (no key).
     """
 
     def __init__(
@@ -67,6 +74,7 @@ class EfferenceCopy(StatefulModule):
         inner: StatefulModule,
         sample_action: Any,
         queue_length: int,
+        inject_key: str | None = None,
     ):
         if queue_length < 0:
             raise ValueError(
@@ -74,6 +82,7 @@ class EfferenceCopy(StatefulModule):
             )
         self.inner = inner
         self.queue_length = queue_length
+        self.inject_key = inject_key
         leaves, self._treedef = jax.tree_util.tree_flatten(sample_action)
         self._leaf_shapes = tuple(leaf.shape for leaf in leaves)
         self._leaf_dtypes = tuple(leaf.dtype for leaf in leaves)
@@ -127,8 +136,13 @@ class EfferenceCopy(StatefulModule):
             )
 
         queue = state["queue"]
-        queue_flat = _flatten_queue(queue)
-        augmented = jp.concatenate([obs, queue_flat], axis=-1)
+        if self.inject_key is None:
+            queue_flat = _flatten_queue(queue)
+            augmented = jp.concatenate([obs, queue_flat], axis=-1)
+        else:
+            # Dict mode: hand the queue to the inner module under a named key
+            # instead of flattening it into the observation tensor.
+            augmented = {**obs, self.inject_key: queue}
 
         inner_out = self.inner(state["inner"], augmented, inner_extras)
 
