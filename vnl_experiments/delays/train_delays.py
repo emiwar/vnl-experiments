@@ -70,7 +70,7 @@ def main() -> None:
             learning_rate=1e-4,#ppo_params.learning_rate,
             n_minibatches=8,#ppo_params.num_minibatches,
             critic_loss_weight=1.0,#0.5
-            logging_level=LoggingLevel.BASIC | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.CRITIC_EXTRA | LoggingLevel.ACTOR_EXTRA,
+            logging_level=LoggingLevel.BASIC | LoggingLevel.ROLLOUT_STATS | LoggingLevel.CRITIC_EXTRA | LoggingLevel.ACTOR_EXTRA,
             logging_percentiles=None,
         ),
         eval=EvalConfig(
@@ -142,7 +142,7 @@ def main() -> None:
     if result.eval_history:
         print(
             "Final eval reward: "
-            f"{result.eval_history[-1].get('episode_reward_mean', 'N/A')}"
+            f"{result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
         )
 
 

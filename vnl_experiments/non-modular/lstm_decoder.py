@@ -166,4 +166,4 @@ result = ppo.train_ppo(
 
 print(f"Training complete: {result.total_steps} steps, {result.total_iterations} iterations")
 if result.eval_history:
-    print(f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}")
+    print(f"Final eval reward: {result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}")

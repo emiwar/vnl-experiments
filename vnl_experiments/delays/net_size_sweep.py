@@ -124,8 +124,8 @@ def main() -> None:
                     eval_env=eval_env,
                 )
                 final_eval = result.eval_history[-1]
-                reward_mean  = final_eval["episode_reward/mean"]
-                reward_std  = final_eval["episode_reward/std"]
+                reward_mean  = final_eval["eval/episode_reward/mean"]
+                reward_std  = final_eval["eval/episode_reward/std"]
                 n_actor_params = sum(jax.tree.leaves(
                     jax.tree.map(lambda x: x.size, nnx.state(nets[-1].action, nnx.Param))
                 ))

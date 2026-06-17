@@ -306,7 +306,7 @@ def main() -> None:
     if result.eval_history:
         print(
             "Final eval reward: "
-            f"{result.eval_history[-1].get('episode_reward_mean', 'N/A')}"
+            f"{result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
         )
 
 

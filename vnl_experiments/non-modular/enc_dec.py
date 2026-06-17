@@ -189,5 +189,5 @@ print(
 )
 if result.eval_history:
     print(
-        f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}"
+        f"Final eval reward: {result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
     )

@@ -119,7 +119,7 @@ def main() -> None:
             logging_level=(
                 LoggingLevel.BASIC
                 | LoggingLevel.THROUGHPUT
-                | LoggingLevel.TRAINING_ENV_METRICS
+                | LoggingLevel.ENV_METRICS | LoggingLevel.NETWORK_METRICS
             ),
             logging_percentiles=(0, 25, 50, 75, 100),
         ),
@@ -128,7 +128,7 @@ def main() -> None:
             every_steps=10_000_000,
             n_envs=1024,
             max_episode_length=1000,
-            logging_level=LoggingLevel.BASIC | LoggingLevel.TRAINING_ENV_METRICS,
+            logging_level=LoggingLevel.BASIC | LoggingLevel.ENV_METRICS | LoggingLevel.NETWORK_METRICS,
             logging_percentiles=None,#(0, 25, 50, 75, 100),
         ),
         video=VideoConfig(
@@ -329,7 +329,7 @@ def main() -> None:
     if result.eval_history:
         print(
             "Final eval reward: "
-            f"{result.eval_history[-1].get('episode_reward_mean', 'N/A')}"
+            f"{result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
         )
 
 

@@ -65,7 +65,7 @@ config = TrainConfig(
         critic_loss_weight=0.05,
         gradient_clipping=1.0,
         weight_decay=None,
-        logging_level=LoggingLevel.LOSSES | LoggingLevel.CRITIC_EXTRA | LoggingLevel.TRAIN_ROLLOUT_STATS | LoggingLevel.TRAINING_ENV_METRICS,
+        logging_level=LoggingLevel.LOSSES | LoggingLevel.CRITIC_EXTRA | LoggingLevel.ROLLOUT_STATS | LoggingLevel.ENV_METRICS | LoggingLevel.NETWORK_METRICS,
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
     eval=EvalConfig(
@@ -184,4 +184,4 @@ result = ppo.train_ppo(
 print(
     f"Training complete: {result.total_steps} steps, {result.total_iterations} iterations"
 )
-print(f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}")
+print(f"Final eval reward: {result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}")

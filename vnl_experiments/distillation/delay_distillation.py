@@ -180,8 +180,8 @@ config = DistillationTrainConfig(
         weight_decay=None,
         logging_level=(
             LoggingLevel.LOSSES
-            | LoggingLevel.TRAIN_ROLLOUT_STATS
-            | LoggingLevel.TRAINING_ENV_METRICS
+            | LoggingLevel.ROLLOUT_STATS
+            | LoggingLevel.ENV_METRICS | LoggingLevel.NETWORK_METRICS
         ),
         logging_percentiles=(0, 25, 50, 75, 100),
     ),
@@ -296,4 +296,4 @@ print(
     f"Training complete: {result.total_steps} steps, "
     f"{result.total_iterations} iterations"
 )
-print(f"Final eval reward: {result.eval_history[-1].get('episode_reward_mean', 'N/A')}")
+print(f"Final eval reward: {result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}")
