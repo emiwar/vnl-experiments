@@ -1,0 +1,44 @@
+======================================================================
+Group condition='efference'  (n=22)
+======================================================================
+  git_commit          : ['1cd5838f55449417b0aa477b8452a1fbdd77f392']
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+
+======================================================================
+Group condition='no_efference'  (n=13)
+======================================================================
+  git_commit          : ['1cd5838f55449417b0aa477b8452a1fbdd77f392']
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+
+======================================================================
+All runs  (n=35)
+======================================================================
+  git_commit          : ['1cd5838f55449417b0aa477b8452a1fbdd77f392']
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]

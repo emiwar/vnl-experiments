@@ -1,0 +1,64 @@
+"""Consistent plotting style across all analysis figures.
+
+Every ``plot.py`` should call :func:`apply_style` once at the top, and use
+:data:`CONDITION_STYLE` (via :func:`color_for` / :func:`marker_for`) so that a
+given experimental condition keeps the same colour and marker in every figure.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+_STYLE_FILE = Path(__file__).with_name("vnl.mplstyle")
+
+# 1 control step = 10 ms (ctrl_dt = 0.01 s). Used for the secondary ms axis.
+CTRL_DT_MS = 10
+
+# Canonical colour + marker per condition. Keep these stable so figures across
+# different questions are directly comparable. Colours are the matplotlib cycle
+# colours already used in the original delay-sweep plot.
+CONDITION_STYLE: dict[str, dict[str, str]] = {
+    "efference": {"color": "C1", "marker": "o", "label": "With efference copy"},
+    "no_efference": {"color": "C0", "marker": "s", "label": "No efference copy"},
+    "forward_model": {"color": "C2", "marker": "^", "label": "Explicit forward model"},
+    "efference_larger": {"color": "C3", "marker": "D", "label": "Efference, larger decoder"},
+    "efference_deeper": {"color": "C4", "marker": "v", "label": "Efference, deeper decoder"},
+}
+
+
+def apply_style() -> None:
+    """Apply the shared seaborn theme + matplotlib style. Call once per script."""
+    sns.set_theme(style="ticks")
+    plt.style.use(str(_STYLE_FILE))
+
+
+def color_for(condition: str) -> str:
+    return CONDITION_STYLE.get(condition, {}).get("color", "C7")
+
+
+def marker_for(condition: str) -> str:
+    return CONDITION_STYLE.get(condition, {}).get("marker", "o")
+
+
+def label_for(condition: str) -> str:
+    return CONDITION_STYLE.get(condition, {}).get("label", condition)
+
+
+def add_ms_axis(ax, max_x: float):
+    """Add a top x-axis expressing the bottom 'delay (steps)' axis in milliseconds.
+
+    Returns the twin axis. Mirrors the bottom axis limits and converts tick labels
+    using :data:`CTRL_DT_MS`.
+    """
+    ax2 = ax.twiny()
+    ticks = ax.get_xticks()
+    ticks = ticks[(ticks >= 0) & (ticks <= max_x * 1.1)]
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticks(ticks)
+    ax2.set_xticklabels([f"{int(t * CTRL_DT_MS)}" for t in ticks])
+    ax2.set_xlabel("Observation delay (ms)")
+    sns.despine(ax=ax2, top=False, right=True, left=True, bottom=True)
+    return ax2

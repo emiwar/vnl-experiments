@@ -36,7 +36,7 @@ from scipy.spatial.transform import Rotation as R
 from tqdm import tqdm
 
 from etils import epath
-from vnl_playground.tasks.rodent.imitation import Imitation, default_config
+from vnl_experiments.envs.absolute_imitation import AbsoluteImitation, default_config
 
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
@@ -57,17 +57,20 @@ from vnl_experiments.delays.efference_copy import EfferenceCopy
 # ---------------------------------------------------------------------------
 
 CHECKPOINTS = [
-    "checkpoints/RodentEncDec_delay0_eff0-20260603-083745",
-    "checkpoints/RodentEncDec_delay1_eff1-20260603-083843",
-    "checkpoints/RodentEncDec_delay2_eff2-20260603-084107",
-    "checkpoints/RodentEncDec_delay3_eff3-20260603-084626",
-    "checkpoints/RodentEncDec_delay4_eff4-20260603-084640",
-    "checkpoints/RodentEncDec_delay5_eff5-20260603-084658",
-    "checkpoints/RodentEncDec_delay6_eff6-20260603-084705",
-    "checkpoints/RodentEncDec_delay7_eff7-20260603-084705",
-    "checkpoints/RodentEncDec_delay8_eff8-20260603-084925",
-    "checkpoints/RodentEncDec_delay9_eff9-20260603-085005",
-    "checkpoints/RodentEncDec_delay10_eff10-20260603-085005",
+#    "downloaded_checkpoints/RodentEncDec_delay0_eff0-20260601-105420",
+    "downloaded_checkpoints/RodentEncDec_delay0_eff0-20260603-083745",
+    "downloaded_checkpoints/RodentEncDec_delay10_eff10-20260611-120848",
+#    "checkpoints/RodentEncDec_delay0_eff0-20260603-083745",
+#    "checkpoints/RodentEncDec_delay1_eff1-20260603-083843",
+#    "checkpoints/RodentEncDec_delay2_eff2-20260603-084107",
+#    "checkpoints/RodentEncDec_delay3_eff3-20260603-084626",
+#    "checkpoints/RodentEncDec_delay4_eff4-20260603-084640",
+#    "checkpoints/RodentEncDec_delay5_eff5-20260603-084658",
+#    "checkpoints/RodentEncDec_delay6_eff6-20260603-084705",
+#    "checkpoints/RodentEncDec_delay7_eff7-20260603-084705",
+#    "checkpoints/RodentEncDec_delay8_eff8-20260603-084925",
+#    "checkpoints/RodentEncDec_delay9_eff9-20260603-085005",
+#    "checkpoints/RodentEncDec_delay10_eff10-20260603-085005",
 ]
 
 # Reference session directory. Must contain:
@@ -155,7 +158,8 @@ def parse_imitation_env_config(env_params: dict, reference_h5: str, total_frames
         if field in env_params:
             setattr(cfg, field, conv(env_params[field]))
 
-    for field in ["solver", "mujoco_impl", "clip_set", "qvel_init"]:
+    for field in ["solver", "mujoco_impl", "clip_set", "qvel_init",
+                  "body_target_frame"]:
         if field in env_params:
             setattr(cfg, field, env_params[field])
 
@@ -221,7 +225,7 @@ def _parse_net_params(raw: dict) -> dict:
     return result
 
 
-def build_delay_network(net_params: dict, env: Imitation, rngs: nnx.Rngs):
+def build_delay_network(net_params: dict, env: AbsoluteImitation, rngs: nnx.Rngs):
     """Reconstruct the enc-dec delay network from saved net_params."""
     p = _parse_net_params({k: v for k, v in net_params.items()
                            if k != "network_class"})
@@ -312,7 +316,7 @@ def build_delay_network(net_params: dict, env: Imitation, rngs: nnx.Rngs):
 # Checkpoint loading
 # ---------------------------------------------------------------------------
 
-def load_delays_checkpoint(ckpt_dir: "str | Path", env: Imitation, seed: int = 0):
+def load_delays_checkpoint(ckpt_dir: "str | Path", env: AbsoluteImitation, seed: int = 0):
     """Load network weights from a delays checkpoint directory."""
     ckpt_dir = Path(ckpt_dir)
     with open(ckpt_dir / "config.json") as f:
@@ -367,8 +371,18 @@ def _slim(env_state) -> SlimState:
 def rollout_collect_stats(env, networks, n_steps: int, key):
     """Video-synced rollout that also collects per-step error metrics.
 
-    Resets to the current reference frame on episode termination so the
-    reference target stays synchronised with the rollout.
+    On episode termination the env is reset to the reference frame dictated by
+    a *deterministic global schedule* (``floor(step * ctrl_dt * mocap_hz)``)
+    rather than to the env's own (possibly stalled) ``current_frame``. This
+    keeps the rendered rollout locked to the reference timeline so it can be
+    placed side-by-side with the real-rodent video without drift: step ``k``
+    always depicts reference frame ``floor(k * ctrl_dt * mocap_hz)``.
+
+    Using the env's ``current_frame`` instead would freeze the timeline if a
+    frame is un-trackable: a 1-step episode advances time by only
+    ``ctrl_dt*mocap_hz`` (< 1 frame), so ``floor`` never increments and every
+    subsequent reset returns to the same frame — desyncing the video. The
+    global schedule advances regardless, so resets can never stall it.
 
     Returns:
         stacked_states: SlimState with leading dim n_steps
@@ -382,8 +396,11 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
     net_state = networks.initialize_state(1)
     net_state = jax.tree.map(lambda x: x[0], net_state)
 
+    # Reference frames advanced per control step (0.5 for ctrl_dt=0.01, 50 Hz).
+    frames_per_step = float(env._config.ctrl_dt * env._config.mocap_hz)
+
     def step_fn(networks, carry):
-        env_state, net_state, rng = carry
+        env_state, net_state, rng, step = carry
 
         obs_batched = jax.tree.map(lambda x: x[None], env_state.obs)
         net_state_batched = jax.tree.map(lambda x: x[None], net_state)
@@ -393,10 +410,21 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
         next_env_state = env.step(env_state, action)
 
         reset_happened = next_env_state.done.astype(bool)
-        current_frame = next_env_state.metrics["current_frame"].astype(jp.int32)
+
+        # Capture reward/metrics from the post-step, pre-reset state so they
+        # reflect the policy's actual tracking rather than the reset pose.
+        step_reward = sum(jax.tree.leaves(next_env_state.reward))
+        root_err = next_env_state.metrics["root_pos_distance"]
+        end_eff_err = next_env_state.metrics["body_errors/end_eff_total"]
+
+        # Reset to the scheduled reference frame for the *next* rollout step,
+        # so the rendered timeline stays aligned with the reference video.
+        scheduled_frame = jp.floor(
+            (step + 1).astype(jp.float32) * frames_per_step
+        ).astype(jp.int32)
 
         def do_reset(rng):
-            return env.reset(rng, clip_idx=jp.array(0), start_frame=current_frame)
+            return env.reset(rng, clip_idx=jp.array(0), start_frame=scheduled_frame)
 
         next_env_state = jax.lax.cond(
             reset_happened, do_reset, lambda rng: next_env_state, rng
@@ -407,11 +435,7 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
 
         (new_rng,) = jax.random.split(rng, 1)
 
-        step_reward = sum(jax.tree.leaves(next_env_state.reward))
-        root_err = next_env_state.metrics["root_pos_distance"]
-        end_eff_err = next_env_state.metrics["body_errors/end_eff_total"]
-
-        return (next_env_state, next_net_state, new_rng), (
+        return (next_env_state, next_net_state, new_rng, step + 1), (
             _slim(env_state),
             reset_happened,
             step_reward,
@@ -426,7 +450,7 @@ def rollout_collect_stats(env, networks, n_steps: int, key):
         length=n_steps,
     )
 
-    init_carry = (env_state, net_state, key2)
+    init_carry = (env_state, net_state, key2, jp.array(0, jp.int32))
     _, (stacked_states, reset_mask, per_step_reward, root_errors, end_eff_errors) = (
         scan_fn(networks, init_carry)
     )
@@ -596,7 +620,7 @@ def main() -> None:
         # Build env
         print("  Building environment…", flush=True)
         env_cfg = parse_imitation_env_config(env_params, reference_h5, total_frames)
-        env = Imitation(env_cfg)
+        env = AbsoluteImitation(env_cfg)
 
         # Load network
         print("  Loading checkpoint…", flush=True)

@@ -1,0 +1,15 @@
+======================================================================
+All runs  (n=33)
+======================================================================
+  git_commit          : ['546437641064f2c18793e24dd96a84bccd1a9088']
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  fm_hidden_sizes     : [(512, 512, 512, 512)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
