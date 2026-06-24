@@ -1,0 +1,19 @@
+# Shared matplotlib style for vnl-experiments analysis figures.
+# Loaded by vnl_experiments.wandb_utils.style.apply_style().
+figure.figsize: 5, 3.5
+figure.dpi: 150
+savefig.dpi: 150
+savefig.bbox: tight
+
+axes.titlesize: 11
+axes.labelsize: 10
+xtick.labelsize: 9
+ytick.labelsize: 9
+legend.fontsize: 8
+legend.frameon: False
+
+lines.linewidth: 1.8
+lines.markersize: 4
+
+axes.spines.top: False
+axes.spines.right: False

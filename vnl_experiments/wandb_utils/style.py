@@ -26,6 +26,7 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "forward_model": {"color": "C2", "marker": "^", "label": "Explicit forward model"},
     "efference_larger": {"color": "C3", "marker": "D", "label": "Efference, larger decoder"},
     "efference_deeper": {"color": "C4", "marker": "v", "label": "Efference, deeper decoder"},
+    "efference_trunc": {"color": "C5", "marker": "P", "label": "Efference, truncated buffer"},
 }
 
 
