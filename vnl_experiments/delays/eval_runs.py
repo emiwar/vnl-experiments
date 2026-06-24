@@ -205,9 +205,6 @@ def parse_env_config(env_params: dict, default_config_fn):
                 except (KeyError, TypeError, ValueError):
                     pass
 
-    # Single-env eval needs only a fraction of the training pre-allocation.
-    cfg.naconmax = min(int(cfg.naconmax), 4096)
-    cfg.njmax = min(int(cfg.njmax), 256)
     cfg.start_frame_range = [0, 1]
 
     # Always use the local XML paths (cluster paths in the checkpoint are stale).
