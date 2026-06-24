@@ -92,3 +92,13 @@ dcgsgytz	RodentForwardModel_delay7_eff7-20260619-033456	AbsoluteImitation
 4spnzcd6	RodentForwardModel_delay8_eff8-20260619-033515	AbsoluteImitation
 zu36pzzv	RodentForwardModel_delay90_eff90-20260619-041422	AbsoluteImitation
 3h12kbno	RodentForwardModel_delay9_eff9-20260619-033655	AbsoluteImitation
+# Manually added 2026-06-24 (finished today; not yet in any analysis CSV).
+# NB: --populate rewrites this file from the analyses and would drop these rows.
+# o49pypx0 and xyktrkun had a wrong `env` config field; per run notes they
+# actually used base Imitation, so env_class is set accordingly here.
+cwuwoywj	RodentEncDec_delay0_eff0-20260624-070609	AbsoluteImitation
+2f08y5is	RodentEncDec_delay0_eff0-20260624-070620	AbsoluteImitation
+o49pypx0	RodentEncDec_delay0_eff0-20260624-070654	Imitation
+vxltbpnq	RodentEncDec_delay10_eff10-20260624-070609	AbsoluteImitation
+xyktrkun	RodentEncDec_delay10_eff10-20260624-070705	Imitation
+u5ery6jx	RodentEncDec_delay10_eff10-20260624-071312	AbsoluteImitation

@@ -35,6 +35,7 @@ os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
 import argparse
 import csv
+import gc
 import glob
 import json
 import pickle
@@ -638,17 +639,23 @@ def main() -> None:
         try:
             result = evaluate_run(wid, wn, env_class_hint, ckpt_dir,
                                   args.new_eval_h5, args.seed, args.limit_clips)
+            if result is None:
+                missing.append(wn)
+                continue
+            with open(out_path, "w") as f:
+                json.dump(result, f, indent=2)
+            print(f"  wrote {out_path}")
+            evaluated.append(wn)
         except Exception as e:  # noqa: BLE001 — keep the batch going
             warnings.warn(f"Eval failed for {wn} ({wid}): {e!r}")
             missing.append(wn)
-            continue
-        if result is None:
-            missing.append(wn)
-            continue
-        with open(out_path, "w") as f:
-            json.dump(result, f, indent=2)
-        print(f"  wrote {out_path}")
-        evaluated.append(wn)
+        finally:
+            # Each run has a unique (static) env + network, so its compiled
+            # executables — which bake the env's reference-clip arrays in as
+            # constants — are never reused. Without eviction they accumulate
+            # across runs until the GPU OOMs. Clear per run; nothing is lost.
+            jax.clear_caches()
+            gc.collect()
 
     print(f"\n=== Summary ===")
     print(f"  evaluated:        {len(evaluated)}")
