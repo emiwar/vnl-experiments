@@ -38,6 +38,7 @@ import csv
 import gc
 import glob
 import json
+import math
 import pickle
 import warnings
 from pathlib import Path
@@ -389,11 +390,16 @@ def param_counts(nets, network_class: str) -> dict:
 # Deterministic per-clip rollout
 # ---------------------------------------------------------------------------
 
-def _rollout(env, networks, n_clips: int, clip_length: int, key):
+def _rollout(env, networks, n_clips: int, n_steps: int, key):
     """One latched episode per clip (reset at frame 0). Returns raw per-clip arrays.
 
-    All accumulators are masked by the pre-step ``done`` flag, so contributions
-    after termination (and any post-termination NaNs) are dropped.
+    ``n_steps`` is the number of *env steps* to scan. It must be large enough to
+    traverse the whole reference clip: each env step advances the reference by
+    ``ctrl_dt * mocap_hz`` frames (0.5 at the defaults), so covering a
+    ``clip_length``-frame clip needs ``clip_length / (ctrl_dt * mocap_hz)`` steps
+    — about twice ``clip_length``. All accumulators are masked by the pre-step
+    ``done`` flag, so contributions after termination (and any post-termination
+    NaNs) are dropped.
     """
     keys = jax.random.split(key, n_clips)
     clip_ids = jp.arange(n_clips)
@@ -437,7 +443,7 @@ def _rollout(env, networks, n_clips: int, clip_length: int, key):
         functools.partial(step, env),
         in_axes=(nnx.StateAxes({...: nnx.Carry}), nnx.Carry),
         out_axes=nnx.Carry,
-        length=clip_length,
+        length=n_steps,
     )
     init_carry = (
         env_states, net_states,
@@ -467,13 +473,13 @@ def _flatten_net_metrics(net_accum: dict, denom: np.ndarray) -> dict:
     return out
 
 
-def eval_dataset(env, networks, n_clips: int, clip_length: int, ctrl_dt: float,
+def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
                  key, limit_clips: int | None) -> dict:
     n = n_clips if limit_clips is None else min(n_clips, limit_clips)
     eval_jit = nnx.jit(_rollout, static_argnums=(0, 2, 3))
     networks.eval()
     cuml_reward, lifespan, env_accum, net_accum = eval_jit(
-        env, networks, n, clip_length, key
+        env, networks, n, n_steps, key
     )
     networks.train()
 
@@ -505,6 +511,7 @@ def eval_dataset(env, networks, n_clips: int, clip_length: int, ctrl_dt: float,
 
     return {
         "n_clips": int(n),
+        "n_steps": int(n_steps),
         "episode_reward": _mean_std(cuml_reward),
         "reward_terms": reward_terms,
         "lifespan_steps": _mean_std(lifespan),
@@ -536,6 +543,13 @@ def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
     base_cfg = parse_env_config(env_params, default_fn)
     clip_length = int(base_cfg.clip_length)
     ctrl_dt = float(base_cfg.ctrl_dt)
+    mocap_hz = int(base_cfg.mocap_hz)
+    # Env steps needed to traverse a clip: clip_length is in *mocap frames* and
+    # each env step advances the reference by ctrl_dt*mocap_hz frames.
+    frames_per_step = ctrl_dt * mocap_hz
+
+    def steps_for(clip_len_frames: int) -> int:
+        return int(math.ceil(clip_len_frames / frames_per_step)) + 2
 
     # Datasets: train/test split of the run's reference data + the new eval set.
     all_clips = ReferenceClips(
@@ -581,10 +595,12 @@ def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
     for name, clips, cfg, clen in datasets_spec:
         env = train_env if clips is train_clips else _make_env(env_cls, cfg, clips)
         n_clips = int(clips.qpos.shape[0])
+        n_steps = steps_for(clen)
         key, sub = jax.random.split(key)
-        print(f"    [{name}] {min(n_clips, limit_clips or n_clips)} clips x {clen} steps")
+        print(f"    [{name}] {min(n_clips, limit_clips or n_clips)} clips "
+              f"x {n_steps} env steps ({clen} mocap frames)")
         result["datasets"][name] = eval_dataset(
-            env, nets, n_clips, clen, ctrl_dt, sub, limit_clips
+            env, nets, n_clips, n_steps, ctrl_dt, sub, limit_clips
         )
     return result
 
