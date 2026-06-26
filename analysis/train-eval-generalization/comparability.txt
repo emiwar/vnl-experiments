@@ -1,0 +1,59 @@
+======================================================================
+Group condition='efference'  (n=66)
+======================================================================
+  git_commit          : ['1cd5838f']
+  body_target_frame   : ['reference_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='efference_deeper'  (n=21)
+======================================================================
+  git_commit          : ['54643764']
+  body_target_frame   : ['reference_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='efference_larger'  (n=21)
+======================================================================
+  git_commit          : ['54643764']
+  body_target_frame   : ['reference_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='no_efference'  (n=39)
+======================================================================
+  git_commit          : ['1cd5838f']
+  body_target_frame   : ['reference_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+All runs  (n=147)
+======================================================================
+  git_commit          : ['1cd5838f', '54643764']  *** VARIES ***
+  body_target_frame   : ['reference_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
