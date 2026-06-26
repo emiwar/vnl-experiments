@@ -14,7 +14,7 @@ dependencies = [
     "jaxtyping",
     "numpy",
     "wandb",
-    "nnx_ppo",
+    "nnx-ppo==0.3.0-dev",
     "vnl-playground",
 ]
 
