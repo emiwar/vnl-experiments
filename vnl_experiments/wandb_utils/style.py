@@ -27,6 +27,10 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "efference_larger": {"color": "C3", "marker": "D", "label": "Efference, larger decoder"},
     "efference_deeper": {"color": "C4", "marker": "v", "label": "Efference, deeper decoder"},
     "efference_trunc": {"color": "C5", "marker": "P", "label": "Efference, truncated buffer"},
+    # Imitation-target representation question (git f315e336).
+    "absolute_reference": {"color": "C1", "marker": "o", "label": "Absolute, reference-root frame"},
+    "absolute_current": {"color": "C2", "marker": "^", "label": "Absolute, current-root frame"},
+    "relative": {"color": "C0", "marker": "s", "label": "Relative (baseline Imitation)"},
 }
 
 

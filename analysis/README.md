@@ -114,3 +114,42 @@ cp -r analysis/_template analysis/<question-slug>
 
 Then edit `extract.py` (project, tags, conditions, columns), run it, inspect
 `comparability.txt`, edit `plot.py`, and write `report.md`.
+
+## 8. The extra evaluation datasets (`eval_results/`)
+
+Besides the training-time WandB metrics, checkpoints can be **re-evaluated offline** with
+[`vnl_experiments/delays/eval_runs.py`](../vnl_experiments/delays/eval_runs.py). For each run
+it rolls out the deterministic policy on **three datasets** and writes one JSON per run to
+[`eval_results/`](../eval_results/) (keyed by `wandb_id`):
+
+- **`train`** — the 80% training split (same clips the policy trained on);
+- **`old_eval`** — the held-out 20% split (unseen clips, *same* 250-frame / 5 s length);
+- **`new_eval`** — a separate set of 32 fresh, longer clips (1500 frames / 30 s).
+
+Each JSON carries, per dataset: `episode_reward`, `lifespan_steps`, per-reason
+`termination_rate` (incl. `survived`), per-step `errors`, and network `net_metrics` (e.g.
+`fm_pred_mse`), plus hierarchical `param_counts`. These are a **second local data source**:
+`extract.py` may join them (by `wandb_id`) with the WandB invariants and the committed
+`condition` labels — still the only stage that touches data. Worked examples:
+[`train-eval-generalization/`](train-eval-generalization/) and
+[`forward-model-new-eval/`](forward-model-new-eval/).
+
+**Gotchas (read before using these):**
+
+- **Two clocks.** `clip_length` is in **mocap frames @ 50 Hz** (250 → 5 s, 1500 → 30 s), but
+  the policy runs at the **control rate** `ctrl_dt = 0.01 s` (100 Hz). The eval scans the full
+  clip in `ceil(frames / (ctrl_dt·mocap_hz)) + 2` control steps — **502** (train/old) and
+  **3002** (new_eval). `lifespan_steps` and delays are in control steps (1 step = 10 ms).
+- **Raw reward is comparable *within* a dataset, not *across*.** Cumulative `episode_reward`
+  scales with clip length (~6× bigger on new_eval), so only compare conditions on the *same*
+  dataset with raw reward/lifetime. For cross-dataset comparisons use **length-fair** metrics:
+  `reward_per_step` = reward / lifespan, and the per-second **`hazard_rate`** =
+  `(1 − survived) / mean-alive-time` (failure terminations only; end-of-clip truncations are
+  censored, not events — verified `survived + failure-reasons == 1`). Prefer `hazard_rate` over
+  a raw survival fraction across datasets: survival fraction penalises longer clips for simply
+  having more chances to fail, whereas the hazard is clip-length-invariant.
+- **`new_eval` is noisy** — only 32 clips, single seed per cell. Read its curves for trend, not
+  point values.
+- The same comparability protocol (§4) still applies; additionally sanity-check that the
+  restored `checkpoint_step` and `clip_length`/rollout horizons came out as expected (the eval
+  script and the example `extract.py`s print these).

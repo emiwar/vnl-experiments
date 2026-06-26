@@ -1,0 +1,47 @@
+======================================================================
+Group condition='absolute_current'  (n=6)
+======================================================================
+  git_commit          : ['f315e336']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='absolute_reference'  (n=6)
+======================================================================
+  git_commit          : ['f315e336']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='relative'  (n=6)
+======================================================================
+  git_commit          : ['f315e336']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+All runs  (n=18)
+======================================================================
+  git_commit          : ['f315e336']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
