@@ -31,6 +31,10 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "absolute_reference": {"color": "C1", "marker": "o", "label": "Absolute, reference-root frame"},
     "absolute_current": {"color": "C2", "marker": "^", "label": "Absolute, current-root frame"},
     "relative": {"color": "C0", "marker": "s", "label": "Relative (baseline Imitation)"},
+    # nnx-ppo update / seed reproducibility check.
+    "baseline": {"color": "C0", "marker": "o", "label": "Original (old nnx-ppo, seed 42)"},
+    "new_seed": {"color": "C1", "marker": "s", "label": "New nnx-ppo, seed 43"},
+    "new_code_old_seed": {"color": "C3", "marker": "X", "label": "New nnx-ppo, seed 42 (test)"},
 }
 
 

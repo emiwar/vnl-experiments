@@ -1,0 +1,63 @@
+======================================================================
+Group condition='baseline'  (n=22)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+  git_short           : ['1cd5838f']
+  seed                : [42]
+
+======================================================================
+Group condition='new_code_old_seed'  (n=1)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+  git_short           : ['714cc735']
+  seed                : [42]
+
+======================================================================
+Group condition='new_seed'  (n=22)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+  git_short           : ['714cc735']
+  seed                : [43]
+
+======================================================================
+All runs  (n=45)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  n_envs              : [4096]
+  total_steps         : [600000000]
+  actual_step         : [600064000]
+  git_short           : ['1cd5838f', '714cc735']  *** VARIES ***
+  seed                : [42, 43]  *** VARIES ***
