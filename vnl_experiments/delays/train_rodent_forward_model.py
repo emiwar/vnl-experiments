@@ -66,6 +66,11 @@ def parse_args() -> argparse.Namespace:
                    help="Efference-copy queue length. Defaults to --delay.")
     p.add_argument("--fm-loss-weight", type=float, default=1.0,
                    help="Weight on the self-supervised forward-model L2 loss.")
+    p.add_argument("--detach-prediction", action=argparse.BooleanOptionalAction,
+                   default=True,
+                   help="Detach the prediction before the decoder (forward-model "
+                        "behavior). Use --no-detach-prediction to train the "
+                        "predictor with policy gradients (architecture ablation).")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--wandb-project", default="nnx-ppo-rodent-delays")
     p.add_argument("--exp-name-suffix", default="")
@@ -235,6 +240,7 @@ def main() -> None:
                     proprio_size=proprio_size,
                     delay_steps=args.delay,
                     loss_weight=args.fm_loss_weight,
+                    detach_prediction=args.detach_prediction,
                 ),
                 sample_action=jp.zeros(action_size),
                 queue_length=efference_length,
@@ -276,9 +282,10 @@ def main() -> None:
 
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
+    detach_token = "" if args.detach_prediction else "_nodetach"
     exp_name = (
         f"RodentForwardModel_delay{args.delay}_eff{efference_length}"
-        f"-{timestamp}{suffix}"
+        f"{detach_token}-{timestamp}{suffix}"
     )
 
     ckpt_dir = f"checkpoints/{exp_name}"
@@ -291,6 +298,7 @@ def main() -> None:
                 "delay_k": args.delay,
                 "efference_length": efference_length,
                 "fm_loss_weight": args.fm_loss_weight,
+                "detach_prediction": args.detach_prediction,
                 "network_class": "RodentForwardModel",
             },
         }, _f, indent=2, default=str)
@@ -302,6 +310,7 @@ def main() -> None:
             "delay_k": args.delay,
             "efference_length": efference_length,
             "fm_loss_weight": args.fm_loss_weight,
+            "detach_prediction": args.detach_prediction,
             "seed": seed,
             "config": dataclasses.asdict(config),
             "net_params": net_config.to_dict(),
@@ -309,7 +318,8 @@ def main() -> None:
         },
         name=exp_name,
         tags=("MLP", "warp", "ForwardModel", "TrainEvalSplit",
-              f"delay{args.delay}", f"eff{efference_length}"),
+              f"delay{args.delay}", f"eff{efference_length}",
+              *(() if args.detach_prediction else ("nodetach",))),
         notes="Trying explicit forward model locally",
     )
     result = ppo.train_ppo(

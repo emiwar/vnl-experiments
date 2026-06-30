@@ -13,11 +13,25 @@ to the privileged critic). Two ``stop_gradient`` s keep the two learning signals
 disjoint:
 
 * ``stop_gradient`` on the prediction *before* the decoder — the policy / actor
-  gradient never reaches the predictor.
+  gradient never reaches the predictor. This one is **conditional** on
+  ``detach_prediction`` (default ``True``); set it ``False`` to train the
+  predictor with the policy gradient (see the ablation note below).
 * ``stop_gradient`` on the predictor's *inputs* (delayed proprioception + the
   flattened action buffer) and on the L2 *target* — during loss replay the
   action queue carries decoder-parameter dependence through BPTT, so detaching
-  the inputs and target ensures the L2 updates **only** the predictor.
+  the inputs and target ensures the L2 updates **only** the predictor. These two
+  are always on, independent of ``detach_prediction``.
+
+The ``detach_prediction`` flag, combined with ``loss_weight``, separates the
+contribution of the *architecture* from that of the *forward loss*:
+
+* ``detach_prediction=True``, ``loss_weight>0`` — the forward model: the
+  predictor is shaped only by the L2 prediction objective.
+* ``detach_prediction=False``, ``loss_weight=0`` — architecture-only ablation:
+  the predictor is an ordinary policy layer, shaped purely by the policy
+  gradient. Comparing the two isolates the value of the forward loss itself.
+* ``detach_prediction=True``, ``loss_weight=0`` — degenerate: the predictor
+  receives no gradient at all and stays frozen at its initialisation.
 
 The module is designed to sit inside an :class:`EfferenceCopy` running in
 ``inject_key`` (dict) mode, so it receives a dict
@@ -62,6 +76,10 @@ class ForwardModel(StatefulModule):
             (``proprio_t -> proprio_t``), a useful capacity diagnostic.
         loss_weight: Scale on the self-supervised L2 loss added to
             ``regularization_loss``.
+        detach_prediction: When ``True`` (default) the prediction is
+            ``stop_gradient`` 'd before the decoder, so the policy gradient never
+            reaches the predictor (the forward model). When ``False`` the policy
+            gradient flows into the predictor's params.
         latent_key: Dict key carrying the task latent (decoder context).
         proprio_key: Dict key carrying the current proprioception.
         efference_key: Dict key carrying the action queue. Absent (or ``None``)
@@ -76,6 +94,7 @@ class ForwardModel(StatefulModule):
         proprio_size: int,
         delay_steps: int,
         loss_weight: float = 1.0,
+        detach_prediction: bool = True,
         latent_key: str = "task_obs",
         proprio_key: str = "proprioception",
         efference_key: str = "efference",
@@ -85,6 +104,7 @@ class ForwardModel(StatefulModule):
         self.decoder = decoder
         self.predictor = predictor
         self.loss_weight = loss_weight
+        self.detach_prediction = detach_prediction
         self.latent_key = latent_key
         self.proprio_key = proprio_key
         self.efference_key = efference_key
@@ -158,11 +178,14 @@ class ForwardModel(StatefulModule):
         target = jax.lax.stop_gradient(proprio_cur)
         fm_loss = jp.mean((p_hat - target) ** 2, axis=-1)
 
-        # Decoder sees the task latent + the detached prediction, so the policy
-        # gradient never flows back into the predictor.
-        dec_in = jp.concatenate(
-            [latent, jax.lax.stop_gradient(p_hat)], axis=-1
+        # Decoder sees the task latent + the prediction. By default the
+        # prediction is detached so the policy gradient never flows back into the
+        # predictor; with detach_prediction=False the predictor is trained by the
+        # policy gradient (architecture-only ablation).
+        p_for_decoder = (
+            jax.lax.stop_gradient(p_hat) if self.detach_prediction else p_hat
         )
+        dec_in = jp.concatenate([latent, p_for_decoder], axis=-1)
         dec_out = self.decoder(state["dec"], dec_in, rollout_extras)
 
         regularization_loss = (

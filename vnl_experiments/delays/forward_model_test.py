@@ -44,13 +44,16 @@ def _make_predictor(rngs, efference_length=L, proprio=PROPRIO, action=ACTION):
     )
 
 
-def _make_fm(rngs, delay_steps=2, efference_length=L, loss_weight=1.0):
+def _make_fm(
+    rngs, delay_steps=2, efference_length=L, loss_weight=1.0, detach_prediction=True
+):
     return ForwardModel(
         decoder=_make_decoder(rngs),
         predictor=_make_predictor(rngs, efference_length=efference_length),
         proprio_size=PROPRIO,
         delay_steps=delay_steps,
         loss_weight=loss_weight,
+        detach_prediction=detach_prediction,
     )
 
 
@@ -156,6 +159,42 @@ class ForwardModelTest(absltest.TestCase):
         predictor_grads = jax.tree.leaves(grads["predictor"])
         self.assertTrue(all(jp.allclose(g, 0.0) for g in predictor_grads))
         self.assertTrue(any(jp.any(g != 0.0) for g in decoder_grads))
+
+    def test_no_detach_lets_policy_train_predictor(self):
+        """With detach_prediction=False the actor objective reaches the
+        predictor (architecture ablation), while still updating the decoder."""
+        rngs = nnx.Rngs(0)
+        fm = _make_fm(rngs, detach_prediction=False)
+        batch = 6
+        state = fm.initialize_state(batch)
+        x = _make_input(batch)
+
+        def policy_loss(model):
+            return jp.sum(model(state, x).output["log_likelihood"])
+
+        grads = nnx.grad(policy_loss)(fm)
+        decoder_grads = jax.tree.leaves(grads["decoder"])
+        predictor_grads = jax.tree.leaves(grads["predictor"])
+        self.assertTrue(any(jp.any(g != 0.0) for g in predictor_grads))
+        self.assertTrue(any(jp.any(g != 0.0) for g in decoder_grads))
+
+    def test_fm_loss_path_unaffected_by_detach_flag(self):
+        """The L2 path (input + target detaches) is independent of the flag:
+        the forward loss still trains only the predictor, not the decoder."""
+        rngs = nnx.Rngs(0)
+        fm = _make_fm(rngs, detach_prediction=False)
+        batch = 6
+        state = fm.initialize_state(batch)
+        x = _make_input(batch)
+
+        def fm_loss(model):
+            return jp.mean(model(state, x).metrics["fm_pred_mse"])
+
+        grads = nnx.grad(fm_loss)(fm)
+        decoder_grads = jax.tree.leaves(grads["decoder"])
+        predictor_grads = jax.tree.leaves(grads["predictor"])
+        self.assertTrue(all(jp.allclose(g, 0.0) for g in decoder_grads))
+        self.assertTrue(any(jp.any(g != 0.0) for g in predictor_grads))
 
     def test_delay_zero_learns_identity(self):
         """delay=0 with no efference => predictor learns proprio_t -> proprio_t.
