@@ -193,6 +193,14 @@ class ForwardModel(StatefulModule):
             + pred_out.regularization_loss
             + self.loss_weight * fm_loss
         )
+
+        metrics = {
+            "fm_pred_mse": fm_loss,
+            "decoder": dec_out.metrics,
+            "predictor": pred_out.metrics,
+        }
+        if self.delay is not None:
+            metrics["delay"] = delay_out.metrics
         return StatefulModuleOutput(
             next_state={
                 "delay": delay_state,
@@ -201,7 +209,7 @@ class ForwardModel(StatefulModule):
             },
             output=dec_out.output,
             regularization_loss=regularization_loss,
-            metrics={"fm_pred_mse": fm_loss, "decoder": dec_out.metrics},
+            metrics=metrics,
             rollout_extras=dec_out.rollout_extras,
         )
 

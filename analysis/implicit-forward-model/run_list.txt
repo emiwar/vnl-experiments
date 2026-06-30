@@ -1,0 +1,18 @@
+# Checkpoints probed for the implicit-forward-model decoding analysis.
+# Columns: checkpoint_name <TAB> condition <TAB> env_class (env_class optional)
+#
+# Matched efference (RodentEncDecDelays) vs forward_model (RodentForwardModel)
+# pairs across a delay sweep. All current_root, latent 32, identical hidden
+# sizes, ~600M steps. delay_k / efference_length come from each config.json and
+# are used to facet the figure; delay-0 is the (now matched) floor. Matched
+# efference/forward_model pairs at every delay: 0, 5, 10, 20.
+#
+# name	condition	env_class
+RodentEncDec_delay0_eff0-20260629-090548	efference	AbsoluteImitation
+RodentEncDec_delay5_eff5-20260623-085807	efference	AbsoluteImitation
+RodentEncDec_delay10_eff10-20260611-120848	efference	AbsoluteImitation
+RodentEncDec_delay20_eff20-20260626-084448	efference	AbsoluteImitation
+RodentForwardModel_delay0_eff0-20260619-032834	forward_model	AbsoluteImitation
+RodentForwardModel_delay5_eff5-20260619-033243	forward_model	AbsoluteImitation
+RodentForwardModel_delay10_eff10-20260619-033822	forward_model	AbsoluteImitation
+RodentForwardModel_delay20_eff20-20260619-034701	forward_model	AbsoluteImitation
