@@ -1,0 +1,54 @@
+======================================================================
+Group condition='fm0_untrained'  (n=4)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+
+======================================================================
+Group condition='forward_model'  (n=23)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+
+======================================================================
+Group condition='forward_model_nnxupdate'  (n=3)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+
+======================================================================
+Group condition='pg_forward_model'  (n=9)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+
+======================================================================
+All runs  (n=39)
+======================================================================
+  env                 : ['AbsoluteImitation']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  body_target_frame   : ['reference_root']
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]

@@ -35,6 +35,9 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "baseline": {"color": "C0", "marker": "o", "label": "Original (old nnx-ppo, seed 42)"},
     "new_seed": {"color": "C1", "marker": "s", "label": "New nnx-ppo, seed 43"},
     "new_code_old_seed": {"color": "C3", "marker": "X", "label": "New nnx-ppo, seed 42 (test)"},
+    # Forward-model loss vs architecture question.
+    "pg_forward_model": {"color": "C4", "marker": "D", "label": "Policy-gradient FM (loss = 0)"},
+    "fm0_untrained": {"color": "C7", "marker": ".", "label": "Untrained predictor (loss = 0, detached)"},
 }
 
 
