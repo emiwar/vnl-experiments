@@ -3,6 +3,10 @@ RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0
 RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::current_proprio,delta,0.6065150766374438,0.5575253284280275,1.0,54687,23992,277
 RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::current_proprio,delta,0.5313984090467423,0.500934645849276,100.0,49173,18907,277
 RodentEncDec_delay20_eff20-20260626-084448,efference,RodentEncDecDelays,old_eval,20,20,600064000,277,input::current_proprio,delta,0.5575265630293746,0.5181238443790199,100.0,36353,14130,277
+RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0,0,600064000,277,input::delayed_plus_efference,delta,,-inf,1.0,57019,24990,277
+RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::delayed_plus_efference,delta,0.8584810101845035,0.8116652806845353,100.0,54687,23992,467
+RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::delayed_plus_efference,delta,0.8544854107440991,0.8132317930650659,100.0,49173,18907,657
+RodentEncDec_delay20_eff20-20260626-084448,efference,RodentEncDecDelays,old_eval,20,20,600064000,277,input::delayed_plus_efference,delta,0.8305103598812393,0.7642859303889632,100.0,36353,14130,1037
 RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0,0,600064000,277,input::delayed_proprio,delta,,-inf,1.0,57019,24990,277
 RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::delayed_proprio,delta,0.5891834228714782,0.5505709587024966,100.0,54687,23992,277
 RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::delayed_proprio,delta,0.5087064433673147,0.4914855248904304,100.0,49173,18907,277
@@ -114,6 +118,10 @@ RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0
 RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::current_proprio,proprio,0.9999999935084676,0.9999999871338455,1.0,54687,23992,277
 RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::current_proprio,proprio,0.9999999835275977,0.9999999350368893,1.0,49173,18907,277
 RodentEncDec_delay20_eff20-20260626-084448,efference,RodentEncDecDelays,old_eval,20,20,600064000,277,input::current_proprio,proprio,0.9999999942523375,0.9999999894033981,1.0,36353,14130,277
+RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0,0,600064000,277,input::delayed_plus_efference,proprio,0.9999999935650443,0.9999999898799347,1.0,57019,24990,277
+RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::delayed_plus_efference,proprio,0.7104441453190515,0.63653755278709,100.0,54687,23992,467
+RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::delayed_plus_efference,proprio,0.729984451370307,0.6608679944071699,100.0,49173,18907,657
+RodentEncDec_delay20_eff20-20260626-084448,efference,RodentEncDecDelays,old_eval,20,20,600064000,277,input::delayed_plus_efference,proprio,0.6612718779559035,0.5639540611689466,1000.0,36353,14130,1037
 RodentEncDec_delay0_eff0-20260629-090548,efference,RodentEncDecDelays,old_eval,0,0,600064000,277,input::delayed_proprio,proprio,0.9999999935650443,0.9999999898799347,1.0,57019,24990,277
 RodentEncDec_delay5_eff5-20260623-085807,efference,RodentEncDecDelays,old_eval,5,5,600064000,277,input::delayed_proprio,proprio,0.1587660710764549,0.13443362161940464,1000.0,54687,23992,277
 RodentEncDec_delay10_eff10-20260611-120848,efference,RodentEncDecDelays,old_eval,10,10,600064000,277,input::delayed_proprio,proprio,0.08779012076396808,0.07805355793715196,1000.0,49173,18907,277
@@ -225,6 +233,10 @@ RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,
 RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::current_proprio,delta,0.6080319920084578,0.5755539903933378,1000.0,55899,24526,277
 RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::current_proprio,delta,0.5302448702020427,0.49737652235921115,1000.0,51081,21618,277
 RodentForwardModel_delay20_eff20-20260619-034701,forward_model,RodentForwardModel,old_eval,20,20,600064000,277,input::current_proprio,delta,0.5048235097889824,0.4977841130984926,100.0,41503,14896,277
+RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,old_eval,0,0,600064000,277,input::delayed_plus_efference,delta,,-inf,1.0,57068,24990,277
+RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::delayed_plus_efference,delta,0.8518675955496742,0.8274440272466995,100.0,55899,24526,467
+RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::delayed_plus_efference,delta,0.8414508120631945,0.8016060068682092,100.0,51081,21618,657
+RodentForwardModel_delay20_eff20-20260619-034701,forward_model,RodentForwardModel,old_eval,20,20,600064000,277,input::delayed_plus_efference,delta,0.80564229569018,0.7685060142154183,100.0,41503,14896,1037
 RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,old_eval,0,0,600064000,277,input::delayed_proprio,delta,,-inf,1.0,57068,24990,277
 RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::delayed_proprio,delta,0.5905583276477344,0.5554783705235651,100.0,55899,24526,277
 RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::delayed_proprio,delta,0.5242587033741002,0.49751196306930134,100.0,51081,21618,277
@@ -356,6 +368,10 @@ RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,
 RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::current_proprio,proprio,0.9999999901290065,0.9999999818208698,1.0,55899,24526,277
 RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::current_proprio,proprio,0.9999999938005372,0.9999999498093586,1.0,51081,21618,277
 RodentForwardModel_delay20_eff20-20260619-034701,forward_model,RodentForwardModel,old_eval,20,20,600064000,277,input::current_proprio,proprio,0.9999999817364711,0.9999999828992753,1.0,41503,14896,277
+RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,old_eval,0,0,600064000,277,input::delayed_plus_efference,proprio,0.9999999944231577,0.9999999904444876,1.0,57068,24990,277
+RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::delayed_plus_efference,proprio,0.694786748111544,0.6623352224035082,100.0,55899,24526,467
+RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::delayed_plus_efference,proprio,0.7004895171761678,0.6378592126419623,100.0,51081,21618,657
+RodentForwardModel_delay20_eff20-20260619-034701,forward_model,RodentForwardModel,old_eval,20,20,600064000,277,input::delayed_plus_efference,proprio,0.6386967828261874,0.5719928404893342,1000.0,41503,14896,1037
 RodentForwardModel_delay0_eff0-20260619-032834,forward_model,RodentForwardModel,old_eval,0,0,600064000,277,input::delayed_proprio,proprio,0.9999999944231577,0.9999999904444876,1.0,57068,24990,277
 RodentForwardModel_delay5_eff5-20260619-033243,forward_model,RodentForwardModel,old_eval,5,5,600064000,277,input::delayed_proprio,proprio,0.15637185614853788,0.13040184468291083,100.0,55899,24526,277
 RodentForwardModel_delay10_eff10-20260619-033822,forward_model,RodentForwardModel,old_eval,10,10,600064000,277,input::delayed_proprio,proprio,0.10095846863576441,0.08405570255020445,1000.0,51081,21618,277

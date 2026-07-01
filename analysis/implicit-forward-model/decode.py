@@ -89,6 +89,24 @@ def valid_mask(dones: np.ndarray, delay_k: int) -> np.ndarray:
     return alive & warm
 
 
+def efference_queue(actions: np.ndarray, eff: int) -> np.ndarray:
+    """Reconstruct the efference copy from the recorded action leaf.
+
+    At step ``t`` the queue the network sees is the last ``eff`` actions
+    ``[a(t-1), ..., a(t-eff)]`` (zeros before the clip starts, matching
+    ``EfferenceCopy``'s init). Returns ``[T, N, eff*A]`` (empty if ``eff == 0``).
+    Each clip is one contiguous episode from t=0, so a plain time-shift per
+    column is correct. Order within the queue is irrelevant to a linear decoder.
+    """
+    T, N, A = actions.shape
+    if eff <= 0:
+        return np.zeros((T, N, 0), dtype=actions.dtype)
+    q = np.zeros((T, N, eff, A), dtype=actions.dtype)
+    for j in range(1, eff + 1):
+        q[j:, :, j - 1, :] = actions[: T - j]
+    return q.reshape(T, N, eff * A)
+
+
 # ---------------------------------------------------------------------------
 # Ridge regression
 # ---------------------------------------------------------------------------
@@ -182,10 +200,24 @@ def decode_file(path: str | Path, *, seed=0, **kw) -> list[dict]:
     tg = make_targets(target, delay_k)
     mask = valid_mask(dones, delay_k)
 
-    # Network layers + the two reference "input" probes.
+    # Network layers + the reference "input" probes.
     probes = {f"layer::{name}": arr for name, arr in layers.items()}
     probes["input::delayed_proprio"] = tg["delayed"]
     probes["input::current_proprio"] = tg["current"]
+
+    # The actual input to the actor's decoder/predictor: the delayed
+    # proprioception PLUS the efference copy (reconstructed from the recorded
+    # action leaf). Decoding the target from this is the principled "layer 0"
+    # baseline — the best a *linear* readout of the raw forward-model inputs can
+    # do. Any deeper layer that beats it has added genuine (nonlinear / learned)
+    # computation, not just a projection of its inputs.
+    eff = int(attrs["efference_length"])
+    action_leaf = next((arr for name, arr in layers.items()
+                        if name.endswith("5/action")), None)
+    if action_leaf is not None:
+        queue = efference_queue(action_leaf, eff)
+        probes["input::delayed_plus_efference"] = np.concatenate(
+            [tg["delayed"], queue], axis=-1)
 
     targets = {"proprio": tg["current"], "delta": tg["delta"]}
 

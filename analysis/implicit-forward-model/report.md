@@ -30,10 +30,24 @@ and report **held-out** R² (`decode.py`, `extract.py`):
 
 Splits are **by clip** (whole clips to train/test) so within-clip temporal
 autocorrelation can't leak; the ridge penalty is chosen per layer by an inner
-validation split. Two reference probes bound the result: `delayed input`
-(decode from the delayed proprioception alone — the `obs_(t-k) → obs_t`
-baseline) and `current input` (decode from the true current proprioception — a
-ceiling / sanity check).
+validation split. Reference probes bound the result:
+
+- **`input` = [delayed proprioception + efference copy]** — the *actual input* to
+  the actor's decoder/predictor (the efference queue is reconstructed by shifting
+  the recorded action leaf). Decoding the target from this linearly is the
+  principled **"layer-0" baseline**: the best a *linear* readout of the raw
+  forward-model inputs can do. Any deeper layer that beats it has added genuine
+  (nonlinear / learned) computation, not just a re-projection of its inputs. This
+  replaces the earlier delayed-proprioception-*only* baseline, which was
+  misleadingly low because it ignored the efference copy the network receives.
+- **`current input`** — decode from the true current proprioception (ceiling /
+  pipeline sanity, R²≈1).
+
+Two methodological checks (see "Method validity" below) rule out the obvious
+artefacts: the k-shift delayed signal matches the network's own internal `Delay`
+leaf to 3 decimals (delay computed correctly), and the task/encoder pathway
+decodes current proprioception at only R²≈0.02–0.11 (no leakage of current state
+from the imitation target).
 
 ## Dataset & comparability
 
@@ -44,60 +58,93 @@ ceiling / sanity check).
   (efference_length = delay_k), all `current_root`, latent 32, identical hidden
   sizes, ~600 M training steps (see `comparability.txt`). delay-0 is the matched
   floor (no delay → the input already contains the current state).
-- The figure facets by delay; the principled baseline within each delay is the
-  `delayed input` probe (decode the current state from the k-step-old
-  proprioception), not a separate network.
+- The figure facets by delay; within each delay the baseline is the `input`
+  ([delayed proprioception + efference copy]) probe, drawn as the leftmost
+  ("layer-0") point of each line.
 
 ## Figures
 
 ![Actor-pathway decodability, old_eval](figures/actor_pathway_old_eval.png)
 
-Held-out R² for decoding the **current proprioception**, first decoder hidden
-layer, across the delay sweep (efference_length = delay_k):
+Held-out R² for decoding the **current proprioception** across the delay sweep.
+The `input` column is the fair baseline (linear readout of [delayed proprio +
+efference]); `dec-1` is the first decoder hidden layer; `p̂` is the explicit
+predictor's output:
 
-| delay (steps / ms) | delayed-input baseline | efference dec-1 | forward-model dec-1 | forward-model p̂ |
-|---|---|---|---|---|
-| 0 / 0   | 1.00 | 0.79 | 0.83 | 1.00 |
-| 5 / 50  | 0.16 | 0.58 | 0.76 | 0.88 |
-| 10 / 100 | 0.09 | 0.59 | 0.77 | 0.87 |
-| 20 / 200 | 0.06 | 0.51 | 0.69 | 0.82 |
+| delay | delayed-only (old, unfair) | **input = delayed+efference** | efference dec-1 | FM dec-1 | FM p̂ |
+|---|---|---|---|---|---|
+| 0  | 1.00 | 1.00 | 0.79 | 0.83 | 1.00 |
+| 5  | 0.16 | **0.71** | 0.58 | 0.76 | 0.88 |
+| 10 | 0.09 | **0.73** | 0.59 | 0.77 | 0.87 |
+| 20 | 0.06 | **0.66** | 0.51 | 0.69 | 0.82 |
 
 ## Tentative conclusion
 
-**Yes — the standard efference-copy enc-dec network behaves as if it has learned
-an implicit forward model, and the effect strengthens with delay.** As the delay
-grows the *raw* input degrades sharply — the current proprioception is linearly
-recoverable from the k-step-old input at R² = 1.00 → 0.16 → 0.09 → 0.06 for
-delay 0/5/10/20. Yet the implicit network's first decoder hidden layer — which
-sees only the delayed proprioception, the efference copy, and the task latent —
-holds the current state at R² ≈ 0.58–0.59 through delay 5–10 and still 0.51 at
-delay 20. So the **gap over the delayed-input baseline widens with delay** (≈0.4
-→ 0.5 → 0.45 at delay 5/10/20): the harder the delay, the more current-state
-information the network manufactures internally. The only source for it is
-integrating the delayed state with the action history — a forward model.
+**With the fair baseline, the earlier "implicit forward model" claim does not
+hold up — but the explicit one does.** The decisive correction: most of the
+current proprioception is *already linearly* recoverable from the network's raw
+inputs (delayed proprioception + efference copy), at R² ≈ 0.66–0.73 across delays
+5–20. The rodent's dynamics are close enough to locally linear over 50–200 ms
+that a *linear* forward model — delayed state plus recent actions — captures most
+of the current state. The delayed-proprioception-*only* baseline (0.06–0.16) was
+misleadingly low precisely because it discarded the efference copy.
 
-As hypothesised, the **explicit** forward model does it better at every delay:
-its decoder hidden 1 reaches R² ≈ 0.69–0.77 and its dedicated `predictor` is the
-cleanest reconstruction in either network (R² ≈ 0.82–0.88 at delay 5–20, and a
-near-perfect 1.00 identity at delay 0). In the figure the forward-model line
-(green) runs *through the predictor first* and is visibly longer than the
-efference line — the explicit extra computation made literal. Along the decoder,
-decodability then falls toward the action output: the current-state estimate is
-an intermediate, not the policy's output.
+Against that fair bar:
 
-The `delta` panel (current − delayed) reinforces the mechanism. The efference
-decoder decodes the delta as well as or better than the FM decoder at hidden 1,
-because it carries the delayed proprioception explicitly in its input and can
-form the difference directly, whereas the FM decoder receives p̂ ≈ current and
-must re-derive the delayed term; the FM `predictor` decodes the delta best of
-all. (The delta is undefined at delay 0, and its baseline is relatively high
-because proprioception includes velocities that linearly anticipate the
-displacement — so the current-proprioception target is the cleaner readout.)
+- **The implicit efference network shows no evidence of a learned forward
+  model.** No layer exceeds the linear-input baseline; its first decoder layer
+  sits *below* it (0.51–0.59 vs 0.66–0.73) and decodability only declines from
+  there. By linear decodability it builds no better estimate of the current state
+  than its own inputs already afford — if anything it sheds current-state
+  information as it computes the action.
+- **The explicit forward model does build one.** Its `predictor` rises *above*
+  the linear-input baseline — p̂ at R² ≈ 0.81–0.88 vs input 0.64–0.70 (and a
+  near-perfect 1.00 identity at delay 0) — a genuinely better-than-linear,
+  learned reconstruction of the current state, as it is supervised to be. In the
+  figure the green line rises through the predictor above its input point; the
+  orange efference line only falls.
 
-Caveats: one matched run per cell (single seed), one held-out dataset
-(`old_eval`); delay-20 has no FM-vs-efference seed replication yet. Decodability
-shows the current state is *linearly present*, not that the policy *uses* it.
-Worth repeating across seeds and on `new_eval`.
+So the honest answer to the original question is **no for the implicit network
+(at least not beyond the linearly-trivial), yes for the explicit one** — and the
+reason the first analysis looked positive was an unfair baseline.
+
+Important caveats on scope:
+
+- **Metric = *linear* decodability.** The implicit network could compute a
+  nonlinear forward model whose result is no more *linearly* separable than the
+  linear-input baseline; this probe would miss it. The claim is specifically that
+  the implicit net adds no *linearly readable* current-state information beyond
+  its inputs, whereas the explicit predictor does.
+- The decoder's decline toward the output is expected — its objective is the
+  action, not state reconstruction — so "decoder < input" is not itself damning;
+  the diagnostic is whether *any* layer beats the linear-input baseline.
+- One matched run per cell (single seed), one dataset (`old_eval`).
+
+A newly-initialised (untrained) network would sharpen the "learned vs
+architectural" point, but the linear-input baseline already largely settles it:
+the implicit net does not beat a *linear* function of its inputs, so there is
+little learned forward-model computation for an untrained control to fall short
+of. The untrained control remains worthwhile mainly to confirm the explicit
+predictor's >baseline performance is learned (untrained predictor should sit at
+the input baseline).
+
+## Method validity
+
+Two checks rule out the obvious artefacts (both from the committed `data.csv`):
+
+- **Delayed input computed correctly.** The k-shift used for the baseline/delta
+  matches the network's *own* internal `Delay`-layer activation to 3 decimals
+  (R² 0.159 / 0.088 / 0.062 at delay 5 / 10 / 20 for both) — we decode from the
+  exact signal the network buffers.
+- **No leakage from the imitation target.** The entire encoder/task pathway
+  decodes current proprioception at only R² ≈ 0.02–0.11 (encoder latent ≈ 0.04),
+  so the high decoder decodability is not the current pose leaking in via the
+  reference target.
+
+The rollout is **one latched episode per clip** (reset once at frame 0, `done`
+latched monotonically, no mid-rollout reset); post-termination steps are masked,
+so the per-clip time-shift used to reconstruct the delayed proprioception and the
+efference queue exactly mirrors the network's own (never-reset) buffers.
 
 ## Recording-API notes (first real use of `with_recording`)
 

@@ -33,24 +33,27 @@ from vnl_experiments.wandb_utils.style import apply_style, color_for, label_for
 HERE = Path(__file__).resolve().parent
 FIGURES = HERE / "figures"
 
-# Shared actor x-axis. Predictor occupies 0..4, decoder 5..9; the efference net
-# only fills the decoder portion. (x, label, regex-on-path-without-"layer::").
+# Shared actor x-axis. x=0 is the network INPUT (delayed proprioception +
+# efference copy) — the "0th layer", and the principled baseline. The forward
+# model then runs its predictor (1..5), and both architectures share the decoder
+# (6..10); the efference net jumps straight from the input to its decoder.
+INPUT_STAGE = (0, "input\n(delayed+\nefference)", r"^input::delayed_plus_efference$")
 PREDICTOR_STAGES = [
-    (0, "pred 1", r"3/action/1/predictor/0$"),
-    (1, "pred 2", r"3/action/1/predictor/1$"),
-    (2, "pred 3", r"3/action/1/predictor/2$"),
-    (3, "pred 4", r"3/action/1/predictor/3$"),
-    (4, "p̂",  r"3/action/1/predictor/4$"),
+    (1, "pred 1", r"3/action/1/predictor/0$"),
+    (2, "pred 2", r"3/action/1/predictor/1$"),
+    (3, "pred 3", r"3/action/1/predictor/2$"),
+    (4, "pred 4", r"3/action/1/predictor/3$"),
+    (5, "p̂",  r"3/action/1/predictor/4$"),
 ]
 DECODER_STAGES = [
-    (5, "dec 1", r"3/action/1/(decoder/)?0$"),
-    (6, "dec 2", r"3/action/1/(decoder/)?1$"),
-    (7, "dec 3", r"3/action/1/(decoder/)?2$"),
-    (8, "dec 4", r"3/action/1/(decoder/)?3$"),
-    (9, "out",   r"3/action/1/(decoder/)?5/action$"),
+    (6, "dec 1", r"3/action/1/(decoder/)?0$"),
+    (7, "dec 2", r"3/action/1/(decoder/)?1$"),
+    (8, "dec 3", r"3/action/1/(decoder/)?2$"),
+    (9, "dec 4", r"3/action/1/(decoder/)?3$"),
+    (10, "out",  r"3/action/1/(decoder/)?5/action$"),
 ]
-XTICKS = [s[0] for s in PREDICTOR_STAGES + DECODER_STAGES]
-XLABELS = [s[1] for s in PREDICTOR_STAGES + DECODER_STAGES]
+XTICKS = [s[0] for s in [INPUT_STAGE] + PREDICTOR_STAGES + DECODER_STAGES]
+XLABELS = [s[1] for s in [INPUT_STAGE] + PREDICTOR_STAGES + DECODER_STAGES]
 
 
 def _r2(sub, target, rx):
@@ -81,7 +84,7 @@ def main() -> None:
         targets = [("proprio", "Decode current proprioception"),
                    ("delta", "Decode delta (current − delayed)")]
         fig, axes = plt.subplots(len(targets), len(delays),
-                                 figsize=(3.2 * len(delays), 6.4),
+                                 figsize=(3.9 * len(delays), 7.2),
                                  sharex=True, sharey="row", squeeze=False)
 
         for r, (target, row_title) in enumerate(targets):
@@ -89,35 +92,34 @@ def main() -> None:
                 ax = axes[r][c]
                 dd = d[d.delay_k == delay]
 
-                # forward model: predictor + decoder as ONE continuous line.
+                # forward model: input -> predictor -> p̂ -> decoder, ONE line.
                 fm = dd[dd.condition == "forward_model"]
                 if not fm.empty:
-                    xs, ys = _line(fm, target, PREDICTOR_STAGES + DECODER_STAGES)
+                    xs, ys = _line(fm, target,
+                                   [INPUT_STAGE] + PREDICTOR_STAGES + DECODER_STAGES)
                     if xs:
                         ax.plot(xs, ys, color=color_for("forward_model"),
                                 marker="o", label=label_for("forward_model"))
-                # efference: decoder portion only.
+                # efference: input -> decoder (no predictor; jumps the gap).
                 ef = dd[dd.condition == "efference"]
                 if not ef.empty:
-                    xs, ys = _line(ef, target, DECODER_STAGES)
+                    xs, ys = _line(ef, target, [INPUT_STAGE] + DECODER_STAGES)
                     if xs:
                         ax.plot(xs, ys, color=color_for("efference"),
                                 marker="s", label=label_for("efference"))
 
-                # references (prefer efference; else forward_model for that delay)
+                # The only reference line is the ceiling (decode from the true
+                # current proprioception); the baseline is now the x=0 INPUT
+                # datapoint on each line (delayed proprioception + efference copy).
                 ref = ef if not ef.empty else fm
-                base = ref[(ref.target == target)
-                           & (ref.probe == "input::delayed_proprio")]["test_r2"]
                 ceil = ref[(ref.target == target)
                            & (ref.probe == "input::current_proprio")]["test_r2"]
-                if len(base):
-                    ax.axhline(base.iloc[0], ls="--", color="0.45",
-                               label="delayed input (baseline)")
                 if len(ceil):
                     ax.axhline(ceil.iloc[0], ls=":", color="0.7",
                                label="current input (ceiling)")
 
                 ax.axhline(0, color="k", lw=0.6)
+                ax.axvline(5.5, color="0.85", lw=0.8, zorder=0)  # input|... | decoder
                 if r == 0:
                     ax.set_title(f"delay = {int(delay)} steps "
                                  f"({int(delay) * 10} ms)")
@@ -127,7 +129,7 @@ def main() -> None:
 
         for ax in axes[-1]:
             ax.set_xticks(XTICKS)
-            ax.set_xticklabels(XLABELS, fontsize=7, rotation=45)
+            ax.set_xticklabels(XLABELS, fontsize=7.5, rotation=45, ha="right")
             ax.set_xlabel("depth along actor")
         # Single shared legend (de-duplicated).
         handles, labels = axes[0][0].get_legend_handles_labels()
