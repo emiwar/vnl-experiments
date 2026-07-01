@@ -53,11 +53,17 @@ from the imitation target).
 
 - Source: local checkpoints in `downloaded_checkpoints/`, re-rolled out offline
   (no WandB). Probed on the held-out RL split `old_eval` (169 clips × 502 steps).
-- Conditions: matched `efference` (RodentEncDecDelays) vs `forward_model`
-  (RodentForwardModel) pairs across a **delay sweep — delay_k = 0, 5, 10, 20**
-  (efference_length = delay_k), all `current_root`, latent 32, identical hidden
-  sizes, ~600 M training steps (see `comparability.txt`). delay-0 is the matched
-  floor (no delay → the input already contains the current state).
+- Conditions: matched `efference` (RodentEncDecDelays), `forward_model`
+  (RodentForwardModel, explicit L2 loss), and `pg_forward_model` (same FM
+  architecture, `fm_loss_weight = 0` / `detach_prediction = False` — predictor
+  trained by the policy gradient) across a **delay sweep — delay_k = 0, 5, 10,
+  20** (efference_length = delay_k), all `current_root`, latent 32, identical
+  hidden sizes, ~600 M training steps (all invariants single-valued except the
+  intended sweep; see `comparability.txt`). delay-0 is the matched floor.
+- The `pg_forward_model` runs are the same checkpoints as the `pg_forward_model`
+  condition in [`forward-loss-vs-architecture`](../forward-loss-vs-architecture/report.md);
+  `detach_prediction`/`fm_loss_weight` affect only gradients, so the forward pass
+  we record is unaffected.
 - The figure facets by delay; within each delay the baseline is the `input`
   ([delayed proprioception + efference copy]) probe, drawn as the leftmost
   ("layer-0") point of each line.
@@ -127,6 +133,66 @@ little learned forward-model computation for an untrained control to fall short
 of. The untrained control remains worthwhile mainly to confirm the explicit
 predictor's >baseline performance is learned (untrained predictor should sit at
 the input baseline).
+
+## Policy-gradient forward model — and consistency with `forward-loss-vs-architecture`
+
+The sibling analysis
+[`forward-loss-vs-architecture`](../forward-loss-vs-architecture/report.md) adds a
+condition (`pg_forward_model`) that keeps the forward-model *architecture* but
+turns the self-supervised L2 loss **off** (`fm_loss_weight = 0`,
+`detach_prediction = False`), so the predictor is trained only by the policy
+gradient. That analysis concludes, from the training-time `fm_pred_mse`, that the
+policy gradient does **not** implicitly learn to predict proprioception (its L2
+stays high, at the untrained-detached floor). Here we test the same runs
+layer-wise (delays 0/5/10/20, same `old_eval`).
+
+![Explicit vs policy-gradient forward model](figures/actor_pathway_pg_old_eval.png)
+
+**The activation analysis agrees, and sharpens the picture.** Decoding the current
+proprioception from the predictor output `p̂`:
+
+| delay | input (delayed+eff) | explicit FM p̂ | **pg FM p̂** |
+|---|---|---|---|
+| 0  | 1.00 | 1.00 | 0.53 |
+| 5  | 0.70 | 0.88 | 0.49 |
+| 10 | 0.70 | 0.87 | 0.53 |
+| 20 | 0.64 | 0.81 | 0.52 |
+
+The explicit predictor rises *above* the linear-input baseline (learned forward
+model); the **policy-gradient predictor falls *below* it** (R² ≈ 0.5 vs input
+≈ 0.7) — it does not merely fail to improve on its inputs, it transforms them into
+a representation that is *less* proprioception-decodable, i.e. it repurposes the
+sub-network for something non-predictive.
+
+**Direct bridge to `fm_pred_mse`.** `fm_pred_mse` is exactly the L2 between `p̂`
+and the (normalised) current proprioception, so it is recomputable from our
+recorded `p̂` and `Normalizer` leaves (`fm_mse_crosscheck.py`) — a no-decoder,
+identity readout:
+
+| condition | delay | recomputed mse | R² (p̂ as-is) | R² (p̂ linearly decoded) |
+|---|---|---|---|---|
+| explicit FM | 5 / 10 / 20 | 0.013 / 0.017 / 0.028 | 0.96 / 0.95 / 0.91 | 0.88 / 0.87 / 0.81 |
+| pg FM | 5 / 10 / 20 | 0.44 / 0.42 / 0.38 | −0.39 / −0.45 / −0.53 | 0.49 / 0.53 / 0.52 |
+
+Our recomputed `fm_pred_mse` reproduces the WandB values (explicit ≈ 0.01–0.03,
+pg ≈ 0.4–0.47 — the same order-of-magnitude gap and close to their eval-time
+means of ≈0.04 vs ≈0.45–0.6), which independently validates both the recording
+pipeline and the sibling analysis. The `p̂-as-is` R² is strongly negative for the
+pg model — its output is a *worse* estimate of the current state than the mean.
+
+**One nuance the activation view adds:** a *linear decode* of the pg predictor's
+`p̂` still recovers R² ≈ 0.5 of the current state, even though `p̂` as-is is
+anti-informative (negative R²). So the pg predictor isn't pure noise — it retains
+a rotated fraction of the state — but that fraction (≈0.5) is still **below** the
+raw-input baseline (≈0.7), so by the decodability criterion it adds nothing: only
+the explicit L2 loss yields a representation that beats a linear readout of the
+inputs. This matches, and gives a mechanistic reading of, the sibling report's
+observation that the pg sub-network "carries short-delay-useful information
+without predicting proprioception" — at short delay the current state is anyway
+~linearly present in the inputs, so the decoder can exploit it directly regardless
+of the predictor. (Our sweep stops at delay 20, where the linear-input baseline is
+still ≈0.7; the sibling analysis' long-delay collapse of `pg_forward_model` — past
+delay ~20 — is beyond the delays recorded here.)
 
 ## Method validity
 

@@ -16,3 +16,11 @@ RodentForwardModel_delay0_eff0-20260619-032834	forward_model	AbsoluteImitation
 RodentForwardModel_delay5_eff5-20260619-033243	forward_model	AbsoluteImitation
 RodentForwardModel_delay10_eff10-20260619-033822	forward_model	AbsoluteImitation
 RodentForwardModel_delay20_eff20-20260619-034701	forward_model	AbsoluteImitation
+# pg_forward_model: same architecture, fm_loss_weight=0 & detach_prediction=False,
+# so the PREDICTOR is trained by the policy gradient, not the self-supervised L2.
+# (detach/loss affect only gradients, not the forward pass, so the standard
+# builder records them correctly.) See analysis/forward-loss-vs-architecture.
+RodentForwardModel_delay0_eff0_nodetach-20260630-083013	pg_forward_model	AbsoluteImitation
+RodentForwardModel_delay5_eff5_nodetach-20260630-083050	pg_forward_model	AbsoluteImitation
+RodentForwardModel_delay10_eff10_nodetach-20260630-083050	pg_forward_model	AbsoluteImitation
+RodentForwardModel_delay20_eff20_nodetach-20260630-083014	pg_forward_model	AbsoluteImitation
