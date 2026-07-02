@@ -62,7 +62,7 @@ from vnl_experiments.envs.absolute_imitation import (
 from nnx_ppo.networks.adapter import PPOAdapter
 
 from vnl_experiments.delays.forward_model import ForwardModel
-# Network reconstruction + checkpoint loading are shared with eval_rodent_delays.py.
+# Network reconstruction + checkpoint loading are shared with eval_videos.py.
 from vnl_experiments.delays.network_builders import build_network, load_network
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -158,7 +158,7 @@ def resolve_env_class(env_class_hint: str, env_params: dict, default: str):
 def parse_env_config(env_params: dict, default_config_fn):
     """Reconstruct an imitation env config, keeping the run's clip_length.
 
-    Mirrors ``eval_rodent_delays.parse_imitation_env_config`` but is env-class
+    Mirrors ``eval_videos.parse_imitation_env_config`` but is env-class
     aware (``body_target_frame`` only applied when the config supports it) and
     does not force the video-eval clip_length/start_frame overrides.
     """

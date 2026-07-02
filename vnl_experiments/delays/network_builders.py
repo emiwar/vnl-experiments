@@ -1,6 +1,6 @@
 """Shared network reconstruction + checkpoint loading for the delays eval scripts.
 
-Both ``eval_rodent_delays.py`` (video rendering) and ``eval_runs.py`` (batch
+Both ``eval_videos.py`` (video rendering) and ``eval_runs.py`` (batch
 metrics) need to rebuild a trained network from its ``config.json`` and restore the
 latest checkpoint. That logic lives here so neither script imports the other.
 

@@ -29,7 +29,7 @@ Consuming the output:
     The env reshapes the flat arrays by ``clip_length``, so a consumer MUST set
         env_config.reference_data_path = "<output>.h5"
         env_config.clip_length        = CLIP_SECONDS * mocap_hz   # 1500
-    Wiring this into eval_rodent_delays.py (iterating all clips) is a separate
+    Wiring this into eval_videos.py (iterating all clips) is a separate
     follow-up.
 
 Run:

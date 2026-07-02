@@ -7,7 +7,7 @@ For each checkpoint in ``CHECKPOINTS``:
     network (enc-dec *or* forward-model) from ``config.json``.
   - Runs one deterministic rollout on each of the first ``N_EVAL_CLIPS`` clips of
     the curated eval dataset (``eval_clips_32x30s.h5``, 30 s / 1500-frame clips).
-  - Writes to ``eval_delays/{checkpoint_name}/``:
+  - Writes to ``eval_videos/{checkpoint_name}/``:
       stats.json   — step, per-clip + overall reward / resets / time-alive / errors
       rollout.h5   — rollout_qpos and reference_qpos (all clips, at video frame rate)
       rollout.mp4  — 1920x1200 Camera-4-matched render with a logistic fade between
@@ -21,7 +21,7 @@ Two behaviour toggles are compile-time constants:
     rodent (no ghost target).
 
 Usage:
-    .venv/bin/python -m vnl_experiments.delays.eval_rodent_delays
+    .venv/bin/python -m vnl_experiments.delays.eval_videos
 """
 
 import gc
@@ -106,7 +106,7 @@ REFERENCE_DIR = "assets/art/2020_12_22_1"
 # The curated eval dataset (32 x 30 s clips; fixed 1500-frame clip length).
 NEW_EVAL_H5 = "assets/art/2020_12_22_1/eval_clips_32x30s.h5"
 
-OUTPUT_DIR = "eval_delays"
+OUTPUT_DIR = "eval_videos"
 VIDEO_HEIGHT = 1200
 VIDEO_WIDTH = 1920
 FPS = 50

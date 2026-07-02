@@ -7,6 +7,6 @@ downloaded_checkpoints/
 .pytest_cache/
 assets/
 rollouts/
-eval_delays/
+eval_videos/
 eval_results/
 eval_results_bad/
