@@ -59,23 +59,11 @@ from vnl_experiments.envs.absolute_imitation import (
     default_config as absolute_default_config,
 )
 
-from nnx_ppo.algorithms.checkpointing import load_checkpoint
-from nnx_ppo.algorithms.ppo import new_training_state
 from nnx_ppo.networks.adapter import PPOAdapter
-from nnx_ppo.networks.containers import Sequential
-from nnx_ppo.networks.factories import make_mlp, make_mlp_layers
-from nnx_ppo.networks.normalizer import Normalizer
-from nnx_ppo.networks.sampling_layers import NormalTanhSampler
-from nnx_ppo.networks.utils import Filter, Flattener, Map
-from nnx_ppo.networks.variational import VariationalBottleneck
 
-from vnl_experiments.delays.efference_copy import EfferenceCopy
 from vnl_experiments.delays.forward_model import ForwardModel
-# Reuse the enc-dec builder and the env-param coercion verbatim.
-from vnl_experiments.delays.eval_rodent_delays import (
-    build_delay_network,
-    _parse_net_params,
-)
+# Network reconstruction + checkpoint loading are shared with eval_rodent_delays.py.
+from vnl_experiments.delays.network_builders import build_network, load_network
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RUN_LIST = Path(__file__).resolve().parent / "eval_runs.txt"
@@ -215,127 +203,6 @@ def parse_env_config(env_params: dict, default_config_fn):
     cfg.walker_xml_path = default.walker_xml_path
     cfg.arena_xml_path = default.arena_xml_path
     return cfg
-
-
-# ---------------------------------------------------------------------------
-# Network construction
-# ---------------------------------------------------------------------------
-
-def build_forward_model_network(net_params: dict, env, rngs: nnx.Rngs):
-    """Reconstruct the explicit-forward-model network (mirrors the train script)."""
-    p = _parse_net_params({k: v for k, v in net_params.items() if k != "network_class"})
-
-    obs_size = env.non_flattened_observation_size
-    task_obs_size = int(sum(jax.tree.flatten(obs_size["state"]["task_obs"])[0]))
-    proprio_size = int(sum(jax.tree.flatten(obs_size["state"]["proprioception"])[0]))
-    action_size = env.action_size
-
-    delay_k = int(p.get("delay_k", 0))
-    efference_length = int(p.get("efference_length", delay_k))
-    fm_loss_weight = float(p.get("fm_loss_weight", 1.0))
-
-    enc_hidden = list(p.get("enc_hidden_sizes", [512] * 4))
-    dec_hidden = list(p.get("dec_hidden_sizes", [512] * 4))
-    fm_hidden = list(p.get("fm_hidden_sizes", [512] * 4))
-    critic_hidden = list(p.get("critic_hidden_sizes", [1024] * 2))
-    latent_size = int(p.get("latent_size", 32))
-    kl_weight = float(p.get("kl_weight", 0.001))
-    latent_min_std = float(p.get("latent_min_std", 0.01))
-    entropy_weight = float(p.get("entropy_weight", 1e-2))
-    min_std = float(p.get("min_std", 1e-1))
-    std_scale = float(p.get("std_scale", 1.0))
-    normalize_obs = bool(p.get("normalize_obs", True))
-    activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[
-        str(p.get("activation", "swish"))
-    ]
-
-    enc_sizes = [task_obs_size] + enc_hidden + [latent_size * 2]
-    decoder_in = latent_size + proprio_size
-    dec_sizes = [decoder_in] + dec_hidden + [action_size * 2]
-    predictor_sizes = (
-        [proprio_size + efference_length * action_size] + fm_hidden + [proprio_size]
-    )
-    critic_sizes = [task_obs_size + proprio_size] + critic_hidden + [1]
-
-    encoder_branch = Sequential([
-        Flattener(),
-        *make_mlp_layers(enc_sizes, rngs, activation, activation_last_layer=False),
-        VariationalBottleneck(latent_size, rngs, kl_weight, latent_min_std),
-    ])
-    decoder = Sequential([
-        *make_mlp_layers(dec_sizes, rngs, activation, activation_last_layer=False),
-        NormalTanhSampler(rngs, entropy_weight=entropy_weight,
-                          min_std=min_std, std_scale=std_scale),
-    ])
-    predictor = make_mlp(predictor_sizes, rngs, activation, activation_last_layer=False)
-
-    actor = Sequential([
-        Map(task_obs=encoder_branch, proprioception=Flattener()),
-        EfferenceCopy(
-            inner=ForwardModel(
-                decoder=decoder, predictor=predictor, proprio_size=proprio_size,
-                delay_steps=delay_k, loss_weight=fm_loss_weight,
-            ),
-            sample_action=jp.zeros(action_size),
-            queue_length=efference_length,
-            inject_key="efference",
-        ),
-    ])
-    critic = Sequential([
-        Flattener(),
-        *make_mlp_layers(critic_sizes, rngs, activation, activation_last_layer=False),
-    ])
-    adapter = PPOAdapter(action=actor, value=critic)
-
-    pre = Flattener(preserve_levels=2)
-    lift = Filter({
-        "task_obs": ("state", "task_obs"),
-        "proprioception": ("state", "proprioception"),
-    })
-    if normalize_obs:
-        normalizer_shape = {"state": {
-            "task_obs": task_obs_size, "proprioception": proprio_size}}
-        return Sequential([pre, Normalizer(normalizer_shape), lift, adapter])
-    return Sequential([pre, lift, adapter])
-
-
-def build_network(net_params: dict, env, rngs: nnx.Rngs):
-    """Dispatch on ``network_class``. Returns None for unknown classes."""
-    network_class = str(net_params.get("network_class", ""))
-    if "RodentEncDecDelays" in network_class:
-        return build_delay_network(net_params, env, rngs)
-    if "RodentForwardModel" in network_class:
-        return build_forward_model_network(net_params, env, rngs)
-    warnings.warn(
-        f"Unknown network_class {network_class!r}; add a builder for it. Skipping."
-    )
-    return None
-
-
-def load_network(ckpt_dir: Path, net_params: dict, env, seed: int):
-    """Build the network, restore the latest step, return (nets, step) or None."""
-    step_dirs = sorted(ckpt_dir.glob("step_*/"))
-    if not step_dirs:
-        warnings.warn(f"No step_* directory in {ckpt_dir}; skipping.")
-        return None
-    step_dir = step_dirs[-1]
-
-    nets = build_network(net_params, env, nnx.Rngs(seed))
-    if nets is None:
-        return None
-
-    with open(step_dir / "metadata.pkl", "rb") as f:
-        meta = pickle.load(f)
-    ppo_cfg = meta.get("config")
-    ppo_cfg = ppo_cfg.ppo if ppo_cfg is not None else None
-    ts = new_training_state(
-        env, nets, n_envs=1, seed=seed,
-        learning_rate=ppo_cfg.learning_rate if ppo_cfg else 1e-4,
-        gradient_clipping=ppo_cfg.gradient_clipping if ppo_cfg else 1.0,
-        weight_decay=ppo_cfg.weight_decay if ppo_cfg else None,
-    )
-    ckpt = load_checkpoint(str(step_dir), ts.networks, ts.optimizer)
-    return ts.networks, int(ckpt["step"])
 
 
 # ---------------------------------------------------------------------------
