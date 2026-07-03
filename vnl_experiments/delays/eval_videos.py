@@ -74,15 +74,18 @@ from vnl_experiments.delays.network_builders import build_network, load_network
 #     normalizer) that build_delay_network no longer reproduces; not supported.
 CHECKPOINTS = [
     "downloaded_checkpoints/RodentEncDec_delay0_eff0-20260629-090548",
+    "downloaded_checkpoints/RodentEncDec_delay2_eff2-20260629-091309",
     "downloaded_checkpoints/RodentEncDec_delay5_eff5-20260623-085807",
     "downloaded_checkpoints/RodentEncDec_delay10_eff10-20260611-120848",
     "downloaded_checkpoints/RodentEncDec_delay10_eff10-20260629-094431",
     "downloaded_checkpoints/RodentEncDec_delay20_eff20-20260626-084448",
     "downloaded_checkpoints/RodentForwardModel_delay0_eff0-20260619-032834",
+    "downloaded_checkpoints/RodentForwardModel_delay2_eff2-20260702-092315",
     "downloaded_checkpoints/RodentForwardModel_delay5_eff5-20260619-033243",
     "downloaded_checkpoints/RodentForwardModel_delay10_eff10-20260619-033822",
     "downloaded_checkpoints/RodentForwardModel_delay20_eff20-20260619-034701",
     "downloaded_checkpoints/RodentForwardModel_delay0_eff0_nodetach-20260630-083013",
+    "downloaded_checkpoints/RodentForwardModel_delay2_eff2_nodetach-20260630-083037",
     "downloaded_checkpoints/RodentForwardModel_delay5_eff5_nodetach-20260630-083050",
     "downloaded_checkpoints/RodentForwardModel_delay10_eff10_nodetach-20260630-083050",
     "downloaded_checkpoints/RodentForwardModel_delay20_eff20_nodetach-20260630-083014",
@@ -163,14 +166,29 @@ def build_render_model(env, camera_kwargs: dict) -> mujoco.MjModel:
 # Environment config parsing
 # ---------------------------------------------------------------------------
 
+_ENV_CLASSES = {
+    "Imitation": (Imitation, imitation_default_config),
+    "AbsoluteImitation": (AbsoluteImitation, absolute_default_config),
+}
+
+# Per-checkpoint authoritative env config, keyed by checkpoint directory name.
+# Escape hatch for runs whose config.json env fields are unreliable (e.g. the
+# f315e336 target-representation runs, whose config wrongly records the env class
+# and/or body_target_frame — the true values live on WandB). Each value may set
+# "env_class" and/or "body_target_frame". Empty by default.
+ENV_OVERRIDES: dict = {}
+
+
 def resolve_env_class(env_params: dict):
     """Pick the env class from the saved config.
 
-    ``AbsoluteImitation`` writes a ``body_target_frame`` field; base ``Imitation``
-    does not. Returns ``(EnvClass, default_config_fn)``. Both share obs
-    keys/shapes, so the network builders are unaffected by the choice.
+    ``AbsoluteImitation`` writes a ``body_target_frame`` of ``current_root`` or
+    ``reference_root``; base ``Imitation`` does not (some buggy configs record
+    ``"neither"`` — treated as base ``Imitation``). Returns
+    ``(EnvClass, default_config_fn)``. Both share obs keys/shapes, so the network
+    builders are unaffected by the choice.
     """
-    if "body_target_frame" in env_params:
+    if env_params.get("body_target_frame") in ("current_root", "reference_root"):
         return AbsoluteImitation, absolute_default_config
     return Imitation, imitation_default_config
 
@@ -549,14 +567,22 @@ def main() -> None:
             print(f"  ctrl_dt={ctrl_dt}s  frames/step={frames_per_step}  "
                   f"n_steps={n_steps}  frame_skip={frame_skip}")
 
-            env_class, default_config_fn = resolve_env_class(env_params)
+            override = ENV_OVERRIDES.get(ckpt_name, {})
+            if override.get("env_class"):
+                env_class, default_config_fn = _ENV_CLASSES[override["env_class"]]
+            else:
+                env_class, default_config_fn = resolve_env_class(env_params)
             print(f"  env_class={env_class.__name__}  "
-                  f"network_class={net_params.get('network_class')}")
+                  f"network_class={net_params.get('network_class')}"
+                  + (f"  [override: {override}]" if override else ""))
 
             print("  Building environment…", flush=True)
             env_cfg = parse_imitation_env_config(
                 env_params, NEW_EVAL_H5, clip_length, default_config_fn
             )
+            if override.get("body_target_frame") and env_class is AbsoluteImitation:
+                with env_cfg.ignore_type():
+                    env_cfg.body_target_frame = override["body_target_frame"]
             env = env_class(env_cfg)
 
             print("  Loading checkpoint…", flush=True)
