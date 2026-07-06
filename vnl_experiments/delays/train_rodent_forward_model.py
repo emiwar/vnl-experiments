@@ -90,6 +90,11 @@ def main() -> None:
     env_config.naconmax = 32 * 4096
     env_config.njmax = 256
     env_config.ctrl_dt = 0.01
+    # NOTE: body_target_frame is consumed by the *environment* (AbsoluteImitation),
+    # not the network. It must live on env_config to take effect; setting it on
+    # net_config is inert (only logged to WandB net_params, never read). See the
+    # "reference-representation bug" note in analysis/README.md.
+    env_config.body_target_frame = "reference_root"
 
     net_config = config_dict.create(
         enc_hidden_sizes=[512] * 4,
@@ -106,7 +111,6 @@ def main() -> None:
         latent_min_std=0.01,
         latent_size=32,
         latent_ar1_weight=None,
-        body_target_frame="reference_root",
     )
 
     config = TrainConfig(

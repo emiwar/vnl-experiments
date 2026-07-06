@@ -9,6 +9,20 @@ Shared code lives in the package: [`vnl_experiments/wandb_utils/`](../vnl_experi
 (`fetch`, `comparability`, `style`). Don't duplicate fetch/style logic in a question
 folder — add it to `wandb_utils` if it's reusable.
 
+> **⚠️ Known data bug — `body_target_frame` (discovered 2026-07-06).**
+> `body_target_frame` is consumed **only by the environment** (`AbsoluteImitation`),
+> so the authoritative value is **`config["env_params"]["body_target_frame"]`**.
+> The value that also appears under **`config["net_params"]["body_target_frame"]` is
+> INERT** — the training scripts (`train_rodent_delays.py`,
+> `train_rodent_forward_model.py`) mistakenly set it on `net_config`, where nothing
+> reads it; it was only logged. As a result **every AbsoluteImitation run to date was
+> trained (and evaluated) with `current_root`**, regardless of the `reference_root`
+> shown in `net_params`. When filtering/labelling runs by frame, **always read
+> `env_params.body_target_frame`, never `net_params`**. The training scripts were fixed
+> on 2026-07-06 (frame now set on `env_config`), so runs after that date are trustworthy
+> on either field. This bug invalidates the reference-root vs current-root comparison in
+> [`imitation-target-representation/`](imitation-target-representation/) (see its report).
+
 ## 1. Layout
 
 One kebab-case folder per question, named after the question:

@@ -1,5 +1,32 @@
 # Imitation-target representation: absolute vs relative, reference- vs current-root frame
 
+> **⚠️ UPDATE 2026-07-06 — Q2 is INVALID (data bug); do not trust the reference-root vs
+> current-root conclusion below.**
+>
+> `body_target_frame` is read only by the *environment* (`AbsoluteImitation`), i.e. from
+> `env_params`. But `train_rodent_delays.py` set it on `net_config`, where it is **inert** —
+> only logged to `net_params`, never used. WandB confirms **all six cohort runs (and in fact
+> every AbsoluteImitation run in the project) trained with `env_params.body_target_frame =
+> current_root`.** The `reference_root` shown for two runs is the inert `net_params` field.
+>
+> `extract.py` derives the condition from that inert `net_params` field
+> ([`extract.py`](extract.py) `condition_for` / `wandb_invariants`), so the two runs labelled
+> **`absolute_reference` (`2f08y5is`, `u5ery6jx`) were actually `current_root`** — identical
+> representation to `absolute_current`. The delay-0 "reference" and "current" runs even share
+> **seed 42** and have **matched training curves** and **identical `train`/`old_eval` metrics**
+> (survival agrees to 10 significant figures on the 673-clip train split). The apparent Q2 gap
+> lives entirely on `new_eval` (32 clips) and is small-sample **evaluation** noise between two
+> near-identical policies — a 6-of-32 (delay 0) and 3-of-32 (delay 10) survival swing — **not a
+> frame effect.** `reference_root` was never actually trained.
+>
+> **What still holds:** **Q1 (relative vs absolute)** is unaffected in substance — but note its
+> "absolute" side is really *two* `current_root` seeds, not one each of two frames. There was
+> **no train/eval frame mismatch**: train and eval both used `current_root` consistently.
+>
+> The training scripts were fixed on 2026-07-06 (frame now set on `env_config`). Answering Q2
+> for real requires new runs with `env_config.body_target_frame = "reference_root"`. Per the
+> static-analysis policy, the figures/CSV below are left as originally computed; read Q2 as void.
+
 ## Question
 Two ablations of how the imitation target is given to the policy, on the standard
 with-efference decoder:
