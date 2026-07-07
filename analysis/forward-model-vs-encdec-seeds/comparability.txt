@@ -1,0 +1,38 @@
+======================================================================
+Group condition='efference'  (n=249)
+======================================================================
+  git_commit          : ['1cd5838f', '54643764', '5ae9fa48', '714cc735', 'f315e336']  *** VARIES ***
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+Group condition='forward_model'  (n=216)
+======================================================================
+  git_commit          : ['54643764', 'd4bd4dc0', 'fe98f563']  *** VARIES ***
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
+
+======================================================================
+All runs  (n=465)
+======================================================================
+  git_commit          : ['1cd5838f', '54643764', '5ae9fa48', '714cc735', 'd4bd4dc0', 'f315e336', 'fe98f563']  *** VARIES ***
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
