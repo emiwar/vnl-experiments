@@ -81,6 +81,9 @@ class ForwardModel(StatefulModule):
             reaches the predictor (the forward model). When ``False`` the policy
             gradient flows into the predictor's params.
         latent_key: Dict key carrying the task latent (decoder context).
+            ``None`` means there is no task latent (e.g. a flat observation with
+            no task/proprioception split); the decoder then sees only the
+            predicted proprioception.
         proprio_key: Dict key carrying the current proprioception.
         efference_key: Dict key carrying the action queue. Absent (or ``None``)
             means no efference — the predictor sees the delayed proprioception
@@ -95,7 +98,7 @@ class ForwardModel(StatefulModule):
         delay_steps: int,
         loss_weight: float = 1.0,
         detach_prediction: bool = True,
-        latent_key: str = "task_obs",
+        latent_key: str | None = "task_obs",
         proprio_key: str = "proprioception",
         efference_key: str = "efference",
     ):
@@ -150,7 +153,7 @@ class ForwardModel(StatefulModule):
         x: Any,
         rollout_extras: Any = None,
     ) -> StatefulModuleOutput:
-        latent = x[self.latent_key]
+        latent = x[self.latent_key] if self.latent_key is not None else None
         proprio_cur = x[self.proprio_key]
         queue = x.get(self.efference_key)
 
@@ -178,14 +181,18 @@ class ForwardModel(StatefulModule):
         target = jax.lax.stop_gradient(proprio_cur)
         fm_loss = jp.mean((p_hat - target) ** 2, axis=-1)
 
-        # Decoder sees the task latent + the prediction. By default the
-        # prediction is detached so the policy gradient never flows back into the
-        # predictor; with detach_prediction=False the predictor is trained by the
-        # policy gradient (architecture-only ablation).
+        # Decoder sees the task latent (when present) + the prediction. By
+        # default the prediction is detached so the policy gradient never flows
+        # back into the predictor; with detach_prediction=False the predictor is
+        # trained by the policy gradient (architecture-only ablation).
         p_for_decoder = (
             jax.lax.stop_gradient(p_hat) if self.detach_prediction else p_hat
         )
-        dec_in = jp.concatenate([latent, p_for_decoder], axis=-1)
+        dec_in = (
+            jp.concatenate([latent, p_for_decoder], axis=-1)
+            if latent is not None
+            else p_for_decoder
+        )
         dec_out = self.decoder(state["dec"], dec_in, rollout_extras)
 
         regularization_loss = (
