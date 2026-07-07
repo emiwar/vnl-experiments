@@ -1,0 +1,64 @@
+======================================================================
+Group condition='pos_efference'  (n=8)
+======================================================================
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  seed                : [42]
+  clip_length         : [250]
+  actual_step         : [600064000]
+
+======================================================================
+Group condition='pos_forward_model'  (n=8)
+======================================================================
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  seed                : [42]
+  clip_length         : [250]
+  actual_step         : [600064000]
+
+======================================================================
+Group condition='torque_efference'  (n=7)
+======================================================================
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  seed                : [42]
+  clip_length         : [250]
+  actual_step         : [600064000]
+
+======================================================================
+Group condition='torque_forward_model'  (n=6)
+======================================================================
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  seed                : [42]
+  clip_length         : [250]
+  actual_step         : [600064000]
+
+======================================================================
+All runs  (n=29)
+======================================================================
+  body_target_frame   : ['current_root']
+  latent_size         : [32]
+  kl_weight           : [0.001]
+  enc_hidden_sizes    : [(512, 512, 512, 512)]
+  dec_hidden_sizes    : [(512, 512, 512, 512)]
+  critic_hidden_sizes : [(1024, 1024)]
+  seed                : [42]
+  clip_length         : [250]
+  actual_step         : [600064000]
