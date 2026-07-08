@@ -53,14 +53,21 @@ HERE = Path(__file__).resolve().parent
 PROJECT = "emiwar-team/nnx-ppo-rodent-delays"
 REQUIRE_TAGS = ["TrainEvalSplit"]
 
-POS_DELAYS = {0, 2, 5, 10, 20, 50, 70, 100}
-TORQUE_DELAYS = {0, 2, 5, 10, 20, 50}
+# Every condition includes ALL of its comparable efference-matched runs (no fixed delay grid),
+# up to MAX_DELAY. The efference sweeps are dense (position: the 891cd0d3 coarse sweep plus the
+# b18513ae fine-delay fill-in; torque: the fine 1cd5838f/54643764 sweeps); the position FM
+# sweep only exists at the coarse delays. FM-advantage curves are paired per control mode on
+# whatever delays both networks share (pandas index alignment in plot.py).
+MAX_DELAY = 100
 STD_ARCH = {
     "enc_hidden_sizes": [512] * 4,
     "dec_hidden_sizes": [512] * 4,
     "critic_hidden_sizes": [1024, 1024],
 }
-POS_GIT = "891cd0d3"       # position-control cohort (torque_actuators=False)
+# Position control is confounded with commit; both position-efference commits are the SAME
+# training code (891cd0d3 -> b18513ae changes only analysis artifacts + eval_runs.txt).
+POS_EFF_GITS = {"891cd0d3", "b18513ae"}  # coarse cohort + fine-delay fill-in
+POS_FM_GIT = "891cd0d3"    # position forward-model cohort (coarse delays only)
 CUR_EFF_GIT = "1cd5838f"   # canonical torque efference sweep
 CUR_FM_GIT = "54643764"    # canonical torque forward-model sweep
 
@@ -110,8 +117,11 @@ def condition_of(run):
     delay = c.get("delay_k")
     eff = c.get("efference_length")
 
-    # Common gates: current_root frame held constant, efference-matched, seed 42, std arch.
+    # Common gates: current_root frame held constant, efference-matched, seed 42, std arch,
+    # delay within the swept range.
     if frame != "current_root" or eff != delay or c.get("seed") != 42 or not std_arch(net):
+        return None
+    if delay is None or not (0 <= delay <= MAX_DELAY):
         return None
 
     is_fm = "ForwardModel" in tags
@@ -122,15 +132,11 @@ def condition_of(run):
     g = git8(run)
 
     if as_bool(ta) is False:                       # position control
-        if g != POS_GIT or delay not in POS_DELAYS:
-            return None
-        if fm_ok:
+        if fm_ok and g == POS_FM_GIT:
             return ("pos_forward_model", "position", "forward_model")
-        if is_enc:
+        if is_enc and g in POS_EFF_GITS:
             return ("pos_efference", "position", "efference")
     elif as_bool(ta) is True:                       # torque control (baselines)
-        if delay not in TORQUE_DELAYS:
-            return None
         if is_enc and g == CUR_EFF_GIT:
             return ("torque_efference", "torque", "efference")
         if fm_ok and g == CUR_FM_GIT:

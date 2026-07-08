@@ -262,3 +262,18 @@ ag0ppq7m	RodentForwardModel_delay20_eff20-20260706-171304	AbsoluteImitation
 y9g2f9qe	RodentForwardModel_delay50_eff50-20260706-171304	AbsoluteImitation
 cour9ula	RodentForwardModel_delay70_eff70-20260706-171304	AbsoluteImitation
 d4w728ul	RodentForwardModel_delay100_eff100-20260706-171304	AbsoluteImitation
+# position-control efference fine-delay fill-in (torque_actuators=False, git b18513ae, seed 42) — analysis/position-vs-torque-control
+vqs4c6f6	RodentEncDec_delay3_eff3-20260707-090642	AbsoluteImitation
+wl9tuybw	RodentEncDec_delay4_eff4-20260707-090714	AbsoluteImitation
+95c5q3ct	RodentEncDec_delay6_eff6-20260707-090727	AbsoluteImitation
+5nkfsp9k	RodentEncDec_delay7_eff7-20260707-090730	AbsoluteImitation
+ixcxllws	RodentEncDec_delay8_eff8-20260707-090735	AbsoluteImitation
+lrolo3mu	RodentEncDec_delay9_eff9-20260707-090744	AbsoluteImitation
+nek7c77v	RodentEncDec_delay12_eff12-20260707-090750	AbsoluteImitation
+8di7zd23	RodentEncDec_delay15_eff15-20260707-090757	AbsoluteImitation
+ec0i0481	RodentEncDec_delay25_eff25-20260707-092552	AbsoluteImitation
+nsnfdku1	RodentEncDec_delay30_eff30-20260707-090909	AbsoluteImitation
+wx2sx7a9	RodentEncDec_delay40_eff40-20260707-092552	AbsoluteImitation
+vafxejxs	RodentEncDec_delay60_eff60-20260707-092613	AbsoluteImitation
+vhb10bbx	RodentEncDec_delay80_eff80-20260707-090938	AbsoluteImitation
+uo9l3o1s	RodentEncDec_delay90_eff90-20260707-090935	AbsoluteImitation

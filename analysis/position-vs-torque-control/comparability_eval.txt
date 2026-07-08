@@ -1,5 +1,5 @@
 ======================================================================
-Group condition='pos_efference'  (n=22)
+Group condition='pos_efference'  (n=24)
 ======================================================================
   body_target_frame   : ['current_root']
   latent_size         : [32]
@@ -7,12 +7,11 @@ Group condition='pos_efference'  (n=22)
   enc_hidden_sizes    : [(512, 512, 512, 512)]
   dec_hidden_sizes    : [(512, 512, 512, 512)]
   critic_hidden_sizes : [(1024, 1024)]
-  seed                : [42]
-  clip_length         : [250]
-  actual_step         : [600064000]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
 
 ======================================================================
-Group condition='pos_forward_model'  (n=8)
+Group condition='pos_forward_model'  (n=24)
 ======================================================================
   body_target_frame   : ['current_root']
   latent_size         : [32]
@@ -20,12 +19,11 @@ Group condition='pos_forward_model'  (n=8)
   enc_hidden_sizes    : [(512, 512, 512, 512)]
   dec_hidden_sizes    : [(512, 512, 512, 512)]
   critic_hidden_sizes : [(1024, 1024)]
-  seed                : [42]
-  clip_length         : [250]
-  actual_step         : [600064000]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
 
 ======================================================================
-Group condition='torque_efference'  (n=22)
+Group condition='torque_efference'  (n=66)
 ======================================================================
   body_target_frame   : ['current_root']
   latent_size         : [32]
@@ -33,12 +31,11 @@ Group condition='torque_efference'  (n=22)
   enc_hidden_sizes    : [(512, 512, 512, 512)]
   dec_hidden_sizes    : [(512, 512, 512, 512)]
   critic_hidden_sizes : [(1024, 1024)]
-  seed                : [42]
-  clip_length         : [250]
-  actual_step         : [600064000]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
 
 ======================================================================
-Group condition='torque_forward_model'  (n=23)
+Group condition='torque_forward_model'  (n=69)
 ======================================================================
   body_target_frame   : ['current_root']
   latent_size         : [32]
@@ -46,12 +43,11 @@ Group condition='torque_forward_model'  (n=23)
   enc_hidden_sizes    : [(512, 512, 512, 512)]
   dec_hidden_sizes    : [(512, 512, 512, 512)]
   critic_hidden_sizes : [(1024, 1024)]
-  seed                : [42]
-  clip_length         : [250]
-  actual_step         : [600064000]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
 
 ======================================================================
-All runs  (n=75)
+All runs  (n=183)
 ======================================================================
   body_target_frame   : ['current_root']
   latent_size         : [32]
@@ -59,6 +55,5 @@ All runs  (n=75)
   enc_hidden_sizes    : [(512, 512, 512, 512)]
   dec_hidden_sizes    : [(512, 512, 512, 512)]
   critic_hidden_sizes : [(1024, 1024)]
-  seed                : [42]
-  clip_length         : [250]
-  actual_step         : [600064000]
+  checkpoint_step     : [600064000]
+  clip_length_train   : [250]
