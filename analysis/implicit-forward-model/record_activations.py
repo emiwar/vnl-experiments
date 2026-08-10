@@ -14,10 +14,10 @@ What this script does
 ---------------------
 For each checkpoint in ``run_list.txt`` it rebuilds the env + network from
 ``config.json`` (reusing the verbatim builders in
-``vnl_experiments.delays.eval_runs``), makes the network *recordable*
+``vnl_experiments.delays.evaluation``), makes the network *recordable*
 (:func:`nnx_ppo.networks.recording.with_recording`), and rolls out the
 deterministic policy on the requested datasets — **one latched episode per clip,
-reset at frame 0**, exactly like ``eval_runs._rollout``. Every step it stacks:
+reset at frame 0**, exactly like ``evaluation._rollout``. Every step it stacks:
 
 * ``extract_activations(out.metrics)``  — the per-layer activations, keyed by
   the module's structural path (e.g. ``action/0``, ``action/1/inner/...``);
@@ -57,7 +57,6 @@ import argparse
 import functools
 import gc
 import json
-import math
 from pathlib import Path
 
 import h5py
@@ -67,21 +66,22 @@ import numpy as np
 from flax import nnx
 from jax import tree_util as jtu
 
-from vnl_playground.tasks.reference_clips import ReferenceClips
-
 from nnx_ppo.networks.recording import with_recording, extract_activations
 
-# Reuse the env/network reconstruction verbatim — never duplicate it here.
-from vnl_experiments.delays.eval_runs import (
+# Reuse the env/config/dataset construction verbatim — never duplicate it here.
+# The same module backs eval_runs.py and the training scripts' end-of-training
+# eval, so all three see identical envs, clip splits and rollout horizons.
+from vnl_experiments.delays.evaluation import (
     REPO_ROOT,
     DEFAULT_NEW_EVAL_H5,
-    NEW_EVAL_CLIP_LENGTH,
-    resolve_env_class,
-    parse_env_config,
-    build_network,
-    load_network,
     _make_env,
+    build_datasets,
+    parse_env_config,
+    prepare_eval_config,
+    resolve_env_class,
+    split_clips,
 )
+from vnl_experiments.delays.network_builders import build_network, load_network
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_RUN_LIST = HERE / "run_list.txt"
@@ -160,7 +160,15 @@ def record_rollout(env, networks, clip_ids, n_steps: int, key):
         next_env_state = next_env_state.replace(
             done=jp.logical_or(next_env_state.done, env_state.done).astype(float)
         )
-        ys = (extract_activations(out.metrics), proprio, env_state.done)
+        # Downcast activations to float16 *inside* the scan. They are stored as
+        # float16 anyway, so the values are unchanged, but the stacked
+        # [n_steps, n_clips, Sigma units] buffer on device is halved — which is
+        # what limits --clip-chunk, and therefore how wide the rollout can run.
+        acts = jax.tree.map(
+            lambda x: x.astype(jp.float16) if jp.issubdtype(x.dtype, jp.floating) else x,
+            extract_activations(out.metrics),
+        )
+        ys = (acts, proprio, env_state.done)
         return (next_env_state, out.next_state), ys
 
     step_scan = nnx.scan(
@@ -206,11 +214,6 @@ def _flatten_activations(act_tree) -> dict[str, np.ndarray]:
 # Per-run orchestration
 # ---------------------------------------------------------------------------
 
-def steps_for(clip_len_frames: int, frames_per_step: float, cap: int | None) -> int:
-    n = int(math.ceil(clip_len_frames / frames_per_step)) + 2
-    return n if cap is None else min(n, cap)
-
-
 def record_run(name, condition, env_class_hint, ckpt_dir, datasets, new_eval_h5,
                seed, limit_clips, clip_chunk, max_steps, output_dir, override):
     with open(ckpt_dir / "config.json") as f:
@@ -224,47 +227,36 @@ def record_run(name, condition, env_class_hint, ckpt_dir, datasets, new_eval_h5,
     env_cls, default_fn = resolve_env_class(env_class_hint, env_params,
                                             default="AbsoluteImitation")
     base_cfg = parse_env_config(env_params, default_fn)
-    clip_length = int(base_cfg.clip_length)
-    ctrl_dt = float(base_cfg.ctrl_dt)
-    mocap_hz = int(base_cfg.mocap_hz)
-    frames_per_step = ctrl_dt * mocap_hz
-
-    all_clips = ReferenceClips(
-        base_cfg.reference_data_path, clip_length, base_cfg.keep_clips_idx
-    )
-    train_clips, test_clips = all_clips.split()  # ratio=0.8, seed=0
-    new_clips = ReferenceClips(str(new_eval_h5), NEW_EVAL_CLIP_LENGTH)
-
-    spec = {
-        "train": (train_clips, base_cfg, clip_length),
-        "old_eval": (test_clips, base_cfg, clip_length),
-    }
-    new_cfg = parse_env_config(env_params, default_fn)
-    new_cfg.clip_length = NEW_EVAL_CLIP_LENGTH
-    spec["new_eval"] = (new_clips, new_cfg, NEW_EVAL_CLIP_LENGTH)
 
     # Build + load weights once (train env sizes the obs).
-    train_env = _make_env(env_cls, base_cfg, train_clips)
+    train_clips, test_clips = split_clips(base_cfg)
+    train_env = _make_env(env_cls, prepare_eval_config(base_cfg), train_clips)
     loaded = load_network(ckpt_dir, net_params, train_env, seed)
     if loaded is None:
         print(f"  could not load {name}; skipping.")
         return
     nets, step = loaded
 
+    specs = build_datasets(
+        env_cls, base_cfg, train_clips=train_clips, test_clips=test_clips,
+        train_env=train_env, new_eval_h5=new_eval_h5, names=tuple(datasets),
+        max_steps=max_steps,
+    )
+
     rollout_jit = nnx.jit(record_rollout, static_argnums=(0, 3))
     key = jax.random.key(seed)
 
-    for ds in datasets:
-        clips, cfg, clen = spec[ds]
+    for spec in specs:
+        ds, clen, ctrl_dt = spec.name, spec.clip_length, spec.ctrl_dt
         out_path = output_dir / f"{name}__{ds}.h5"
         if out_path.exists() and not override:
             print(f"  [{ds}] exists, skipping ({out_path.name})")
             continue
 
-        env = train_env if clips is train_clips else _make_env(env_cls, cfg, clips)
-        n_total = int(clips.qpos.shape[0])
-        n_clips = n_total if limit_clips is None else min(n_total, limit_clips)
-        n_steps = steps_for(clen, frames_per_step, max_steps)
+        env = None  # release the previous dataset's env before building the next
+        env = spec.make_env()
+        n_clips = spec.n_clips if limit_clips is None else min(spec.n_clips, limit_clips)
+        n_steps = spec.n_steps
         print(f"  [{ds}] {n_clips} clips x {n_steps} steps "
               f"({clen} frames, chunk={clip_chunk})")
 

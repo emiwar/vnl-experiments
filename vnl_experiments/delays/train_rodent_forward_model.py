@@ -24,6 +24,7 @@ os.environ["PYOPENGL_PLATFORM"] = "egl"
 
 import argparse
 import dataclasses
+import gc
 import json
 from datetime import datetime
 
@@ -53,6 +54,7 @@ from nnx_ppo.networks.normalizer import Normalizer
 from nnx_ppo.networks.sampling_layers import NormalTanhSampler
 from nnx_ppo.networks.variational import VariationalBottleneck
 
+from vnl_experiments.delays import evaluation
 from vnl_experiments.delays.efference_copy import EfferenceCopy
 from vnl_experiments.delays.forward_model import ForwardModel
 from vnl_experiments.envs.absolute_imitation import AbsoluteImitation, default_config
@@ -74,6 +76,16 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--wandb-project", default="nnx-ppo-rodent-delays")
     p.add_argument("--exp-name-suffix", default="")
+    p.add_argument("--total-steps", type=int, default=None,
+                   help="Override the configured total_steps (smoke testing).")
+    p.add_argument("--n-envs", type=int, default=None,
+                   help="Override the configured n_envs (smoke testing).")
+    p.add_argument("--no-video", dest="video", action="store_false",
+                   help="Disable video recording (smoke testing).")
+    p.add_argument("--no-final-eval", dest="final_eval", action="store_false",
+                   help="Skip the end-of-training evaluation.")
+    p.add_argument("--eval-limit-clips", type=int, default=None,
+                   help="Cap clips per split in the final eval (memory knob).")
     return p.parse_args()
 
 
@@ -154,6 +166,12 @@ def main() -> None:
         seed=seed,
         checkpoint_every_steps=50_000_000,
     )
+    if args.n_envs is not None:
+        config = dataclasses.replace(
+            config, ppo=dataclasses.replace(config.ppo, n_envs=args.n_envs))
+    if not args.video:
+        config = dataclasses.replace(
+            config, video=dataclasses.replace(config.video, enabled=False))
 
 
     clips = ReferenceClips(env_config.reference_data_path,
@@ -294,17 +312,20 @@ def main() -> None:
 
     ckpt_dir = f"checkpoints/{exp_name}"
     os.makedirs(ckpt_dir, exist_ok=True)
+    # One source of truth: config.json (for offline reconstruction by
+    # eval_runs.py) and the end-of-training eval's metadata read the same dict.
+    net_params = {
+        **net_config.to_dict(),
+        "delay_k": args.delay,
+        "efference_length": efference_length,
+        "fm_loss_weight": args.fm_loss_weight,
+        "detach_prediction": args.detach_prediction,
+        "network_class": "RodentForwardModel",
+    }
     with open(os.path.join(ckpt_dir, "config.json"), "w") as _f:
         json.dump({
             "env_params": env_config.to_dict(),
-            "net_params": {
-                **net_config.to_dict(),
-                "delay_k": args.delay,
-                "efference_length": efference_length,
-                "fm_loss_weight": args.fm_loss_weight,
-                "detach_prediction": args.detach_prediction,
-                "network_class": "RodentForwardModel",
-            },
+            "net_params": net_params,
         }, _f, indent=2, default=str)
 
     wandb.init(
@@ -326,14 +347,16 @@ def main() -> None:
               *(() if args.detach_prediction else ("nodetach",))),
         notes="Trying explicit forward model locally",
     )
+    ckpt_fn = make_checkpoint_fn(ckpt_dir, config)
     result = ppo.train_ppo(
         train_env,
         nets,
         config,
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
-        checkpoint_fn=make_checkpoint_fn(ckpt_dir, config),
+        checkpoint_fn=ckpt_fn,
         eval_env=eval_env,
+        **({} if args.total_steps is None else {"total_steps": args.total_steps}),
     )
 
     print(
@@ -345,6 +368,34 @@ def main() -> None:
             "Final eval reward: "
             f"{result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
         )
+
+    # train_ppo only checkpoints on the checkpoint_every_steps grid and never
+    # after the loop exits, so save the final weights explicitly. Without this
+    # the end-of-training eval would measure a network that is not on disk and
+    # that eval_runs.py could never reproduce.
+    total_steps = result.total_steps
+    ckpt_fn(result.training_state, total_steps)
+    print(f"Saved final checkpoint at step {total_steps}")
+
+    if args.final_eval:
+        # Release the training state (4096 env states + optimizer moments)
+        # before the eval allocates. `nets` is the same object as
+        # result.training_state.networks, so the trained weights survive.
+        del result
+        jax.clear_caches()
+        gc.collect()
+
+        evaluation.run_final_eval(
+            nets, AbsoluteImitation, env_config,
+            ckpt_dir=ckpt_dir,
+            wandb_id=wandb.run.id, wandb_name=exp_name, step=total_steps,
+            net_params=net_params,
+            train_env=train_env, train_clips=train_clips, test_clips=test_clips,
+            seed=seed, limit_clips=args.eval_limit_clips,
+            summary_fn=wandb.run.summary.update,
+        )
+
+    wandb.finish()
 
 
 if __name__ == "__main__":

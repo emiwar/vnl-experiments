@@ -134,7 +134,11 @@ Then edit `extract.py` (project, tags, conditions, columns), run it, inspect
 Besides the training-time WandB metrics, checkpoints can be **re-evaluated offline** with
 [`vnl_experiments/delays/eval_runs.py`](../vnl_experiments/delays/eval_runs.py). For each run
 it rolls out the deterministic policy on **three datasets** and writes one JSON per run to
-[`eval_results/`](../eval_results/) (keyed by `wandb_id`):
+[`eval_results/`](../eval_results/) (keyed by `wandb_id`). Mind which directory you read:
+the script's default output is `eval_results/` itself, but the current, most complete
+re-evaluation set was collected into **`eval_results/eval_results/`** (with the previous set
+kept in `old_eval_results/`), and the newer `extract.py`s point at the nested dir. The three
+datasets are:
 
 - **`train`** — the 80% training split (same clips the policy trained on);
 - **`old_eval`** — the held-out 20% split (unseen clips, *same* 250-frame / 5 s length);
@@ -164,6 +168,45 @@ Each JSON carries, per dataset: `episode_reward`, `lifespan_steps`, per-reason
   having more chances to fail, whereas the hazard is clip-length-invariant.
 - **`new_eval` is noisy** — only 32 clips, single seed per cell. Read its curves for trend, not
   point values.
+- **The eval is not bit-reproducible.** MuJoCo Warp's GPU physics is nondeterministic, and over
+  a 502-step rollout that amplifies: re-evaluating the *same* checkpoint with the *same* seed
+  moves `episode_reward` by ~1% and can flip individual clips between surviving and
+  terminating. Per-clip quantities are worst hit — every `std`, and `termination_rate` (at 32
+  clips, one clip flipping is 3 percentage points). So don't read a small difference between
+  two eval passes as signal, and don't expect a re-run to diff clean against a committed JSON.
 - The same comparability protocol (§4) still applies; additionally sanity-check that the
   restored `checkpoint_step` and `clip_length`/rollout horizons came out as expected (the eval
   script and the example `extract.py`s print these).
+
+### End-of-training eval (runs from 2026-08-10 onward)
+
+Training runs now evaluate themselves when they finish: `train_rodent_delays.py` and
+`train_rodent_forward_model.py` save a final checkpoint and then run **the same evaluation
+described above** on the just-trained network, through the shared
+[`vnl_experiments/delays/evaluation.py`](../vnl_experiments/delays/evaluation.py). The record
+has an identical schema to the batch output. Two consequences for analyses:
+
+- **The record is written to `{ckpt_dir}/eval.json`**, so it rsyncs back from the cluster
+  along with the checkpoint. Gather these into the flat, `wandb_id`-keyed directory the
+  extract scripts glob over with:
+
+  ```bash
+  ../.venv/bin/python -m vnl_experiments.delays.eval_runs --collect
+  ```
+
+  (target defaults to `eval_results/eval_results/`; `--override` replaces existing files.)
+
+- **The headline numbers are also pushed to the WandB run summary** under `final_eval/…` —
+  e.g. `final_eval/old_eval/episode_reward/mean`,
+  `final_eval/new_eval/termination_rate/survived`,
+  `final_eval/old_eval/net_metrics/3/action/1/fm_pred_mse`, `final_eval/params/total`. For
+  new runs an `extract.py` can read these straight from the run summary via `wandb_utils`,
+  with no local JSON needed. Runs from before this date have no `final_eval/*` keys — fall
+  back to `eval_results/`.
+
+`eval_runs.py` stays the authority for **cross-run** comparisons: it is the only way to
+re-evaluate the whole cohort under one version of the eval code (`--override`). An inline
+`eval.json` is frozen at whatever the eval code looked like when that run finished, so when a
+figure compares runs trained at different times, prefer a single batch re-evaluation over a
+mix of inline records. Note also that crashed, preempted and resumed runs never reach the
+inline eval, so `eval_runs.py` remains the way to fill those gaps.
