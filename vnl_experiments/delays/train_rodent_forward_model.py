@@ -108,8 +108,8 @@ def main() -> None:
     # not the network. It must live on env_config to take effect; setting it on
     # net_config is inert (only logged to WandB net_params, never read). See the
     # "reference-representation bug" note in analysis/README.md.
-    env_config.body_target_frame = "current_root"
-    env_config.torque_actuators = False
+    env_config.body_target_frame = "reference_root"
+    env_config.torque_actuators = True
     env_config.walker_xml_path = consts.RODENT_NO_TAIL_COLLISION_XML
     
     net_config = config_dict.create(
@@ -349,7 +349,7 @@ def main() -> None:
         tags=("MLP", "warp", "ForwardModel", "TrainEvalSplit",
               f"delay{args.delay}", f"eff{efference_length}",
               *(() if args.detach_prediction else ("nodetach",))),
-        notes="No-detach forward model with new XML.",
+        notes="New XML + reference_root.",
     )
     ckpt_fn = make_checkpoint_fn(ckpt_dir, config)
     result = ppo.train_ppo(
