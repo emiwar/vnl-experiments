@@ -22,6 +22,16 @@ folder — add it to `wandb_utils` if it's reusable.
 > on 2026-07-06 (frame now set on `env_config`), so runs after that date are trustworthy
 > on either field. This bug invalidates the reference-root vs current-root comparison in
 > [`imitation-target-representation/`](imitation-target-representation/) (see its report).
+>
+> **Related pitfall — the cluster copy drifts from the committed script.** The rule
+> "read `env_params`, never the script" applies to *every* env knob, not just the frame.
+> The 2026-07-09/07-19 new-XML cohort logged `env_params.body_target_frame =
+> current_root` even though the training script at their recorded commits
+> (`201d6e11`, `0560d402`) says `reference_root`: the working tree on the cluster had
+> been edited (that state was only committed later, as `456fbd7`). WandB stores no
+> `diff.patch` for these runs, so `env_params` / the top-level config is the *only*
+> record of what actually ran. Same for `torque_actuators` and `walker_xml_path`. See
+> [`collision-model-xml/`](collision-model-xml/).
 
 ## 1. Layout
 
