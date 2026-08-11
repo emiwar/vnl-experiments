@@ -32,6 +32,7 @@ import wandb
 from flax import nnx
 from ml_collections import config_dict
 
+from vnl_playground.tasks.rodent import consts
 from vnl_playground.tasks.rodent.imitation import Imitation, default_config
 from vnl_playground.tasks.reference_clips import ReferenceClips
 
@@ -56,7 +57,7 @@ from nnx_ppo.networks.variational import VariationalBottleneck
 
 from vnl_experiments.delays import evaluation
 from vnl_experiments.delays.efference_copy import EfferenceCopy
-from vnl_experiments.envs.absolute_imitation import AbsoluteImitation
+from vnl_experiments.envs.absolute_imitation import AbsoluteImitation, default_config
 
 
 def parse_args() -> argparse.Namespace:
@@ -98,8 +99,10 @@ def main() -> None:
     # not the network. It must live on env_config to take effect; setting it on
     # net_config is inert (only logged to WandB net_params, never read). See the
     # "reference-representation bug" note in analysis/README.md.
-    env_config.body_target_frame = "reference_root"
-
+    env_config.body_target_frame = "current_root"
+    env_config.torque_actuators = True
+    env_config.walker_xml_path = consts.RODENT_NO_TAIL_COLLISION_XML
+    
     net_config = config_dict.create(
         enc_hidden_sizes=[512] * 4,
         dec_hidden_sizes=[512] * 4,
@@ -312,7 +315,7 @@ def main() -> None:
         name=exp_name,
         tags=("MLP", "warp", "EncDec", "TrainEvalSplit",
               f"delay{args.delay}", f"eff{efference_length}"),
-        notes="Train-eval split",
+        notes="Trying different XML.",
     )
     ckpt_fn = make_checkpoint_fn(ckpt_dir, config)
     result = ppo.train_ppo(

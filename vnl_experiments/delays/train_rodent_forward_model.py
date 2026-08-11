@@ -1,3 +1,4 @@
+
 """Train PPO on the rodent imitation task with an explicit forward model.
 
 Run as::
@@ -34,6 +35,7 @@ import wandb
 from flax import nnx
 from ml_collections import config_dict
 
+from vnl_playground.tasks.rodent import consts
 from vnl_playground.tasks.reference_clips import ReferenceClips
 
 from nnx_ppo.algorithms import ppo
@@ -106,8 +108,10 @@ def main() -> None:
     # not the network. It must live on env_config to take effect; setting it on
     # net_config is inert (only logged to WandB net_params, never read). See the
     # "reference-representation bug" note in analysis/README.md.
-    env_config.body_target_frame = "reference_root"
-
+    env_config.body_target_frame = "current_root"
+    env_config.torque_actuators = False
+    env_config.walker_xml_path = consts.RODENT_NO_TAIL_COLLISION_XML
+    
     net_config = config_dict.create(
         enc_hidden_sizes=[512] * 4,
         dec_hidden_sizes=[512] * 4,
@@ -345,7 +349,7 @@ def main() -> None:
         tags=("MLP", "warp", "ForwardModel", "TrainEvalSplit",
               f"delay{args.delay}", f"eff{efference_length}",
               *(() if args.detach_prediction else ("nodetach",))),
-        notes="Trying explicit forward model locally",
+        notes="No-detach forward model with new XML.",
     )
     ckpt_fn = make_checkpoint_fn(ckpt_dir, config)
     result = ppo.train_ppo(

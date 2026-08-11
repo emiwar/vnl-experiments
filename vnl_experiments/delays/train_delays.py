@@ -83,7 +83,7 @@ def main() -> None:
         ppo=PPOConfig(
             n_envs=8192,#ppo_params.num_envs*4,
             rollout_length=ppo_params.unroll_length,
-            total_steps=ppo_params.num_timesteps*4, #Delays might be slower to train
+            total_steps=ppo_params.num_timesteps*8, #Delays might be slower to train
             gae_lambda=0.95,
             discounting_factor=0.99,#ppo_params.discounting,
             clip_range=0.3,
