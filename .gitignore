@@ -10,3 +10,6 @@ rollouts/
 eval_videos/
 eval_results/
 eval_results_bad/
+# The artifact store (§2 of analysis/README.md). Root-anchored so it does not also
+# swallow the vnl_experiments/artifacts/ package that manages it.
+/artifacts/

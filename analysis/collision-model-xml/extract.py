@@ -1,64 +1,56 @@
-"""New (almost-full-collision) vs old (sparse-collision) rodent walker XML.
+"""New (almost-full-collision) walker XML vs the old (very sparse) one.
 
-Run from the repo root::
+Five questions, one dataset:
 
-    ../.venv/bin/python analysis/collision-model-xml/extract.py
-
-This is the ONLY script that talks to WandB. It fetches the relevant runs, assigns a
-``condition``, runs the programmatic comparability check, and writes ``data.csv``,
-``curves.csv`` and ``comparability.txt``.
-
-The question
-------------
-A cohort of runs was trained with ``env_params.walker_xml_path`` pointing at
-``rodent_no_tail_collisions.xml`` ("new" XML: every body except the tail carries a
-collision primitive) instead of the previous default ``rodent.xml`` ("old" XML: only a
-handful of collision geoms -- feet, lower limbs, skull). We ask (1) does performance
-change, (2) is the change the same across network / control conditions, (3) what frame
-was actually used, (4) does convergence speed change, (5) how much slower is it.
+1. how does the new XML perform relative to the old one?
+2. is the difference uniform across networks/conditions, or worse somewhere?
+3. how does ``body_target_frame`` come into it?
+4. is convergence slower?
+5. how much slower is the new XML to simulate?
 
 Cohorts
 -------
-Every included run: ``env == AbsoluteImitation``, ``seed == 42``, standard architecture
-(enc [512]x4, dec [512]x4, critic [1024,1024], latent 32, kl 1e-3), efference-matched
-(``efference_length == delay_k``), finished, ``actual_step == 600,064,000``, clip 250.
+The new-XML runs are confounded with actuator mode -- the new EncDec runs used torque
+control, the new forward-model runs used position control -- so the analysis is built
+from two *internally matched* pairs plus one explicitly-flagged doubly-confounded pair:
 
-The XML axis is paired with a **matched** baseline inside each network/control cell, so
-each pair differs only in the XML (plus the code commit, checked by hand -- see report):
+===========================  ================================================
+``old/new_efference``        EncDec + efference copy, torque, matched
+``old/new_forward_model``    explicit FM (loss 1, detached), position, matched
+``old/new_pg_forward_model`` policy-gradient FM -- **old = torque, new =
+                             position**, shown only to explain the apparent
+                             difference away
+``old_efference_refroot``    the primary old-XML baseline for the EncDec pair:
+                             909e774d, three days before the new cohort, after
+                             the nnx-ppo 0.3.0-dev pin and the logging rename
+===========================  ================================================
 
-  cell "efference"          torque control, efference EncDec
-    old_efference           rodent.xml            git 1cd5838f  (canonical eff sweep)
-    new_efference           no_tail_collisions    git 201d6e11  (2026-07-09)
-    old_efference_refroot   rodent.xml            git 909e774d  (robustness baseline:
-                            same cell but reference_root frame + the *new* logging api,
-                            so it controls for the episode_reward key rename)
+The canonical ``old_efference`` sweep (1cd5838f) predates both of those changes, so it
+is kept as a second, independent baseline rather than the primary one. They agree to
+within 8 reward.
 
-  cell "forward_model"      POSITION control, explicit FM (fm_loss_weight=1, detached)
-    old_forward_model       rodent.xml            git 891cd0d3  (2026-07-06)
-    new_forward_model       no_tail_collisions    git 201d6e11  (2026-07-09)
+On the frame (question 3)
+-------------------------
+Every new-XML run in this selection logs ``env_params.body_target_frame =
+current_root``, although the training script at their recorded commits (``201d6e11``,
+``0560d402``) reads ``reference_root``: the cluster working copy had been edited, a
+state only committed later as ``456fbd7``. WandB stored no ``diff.patch`` for these
+runs, so ``env_params`` is the only record of what actually ran -- which is why this
+script filters on ``env_params.*`` and never on the training script at the run's commit.
+(``ef060b7``, 2026-08-11, has since set ``reference_root`` in both training scripts, so
+runs launched after that date do use it.)
 
-  cell "pg_forward_model"   policy-gradient FM (fm_loss_weight=0, no detach)
-    old_pg_forward_model    rodent.xml, TORQUE    git d4bd4dc0/d33e5bcf
-    new_pg_forward_model    no_tail_collisions, POSITION  git 0560d402 (2026-07-19)
-    NOTE: this pair is *doubly* confounded (XML *and* actuator mode). It is extracted
-    for completeness and plotted separately, never as evidence about the XML alone.
+Data sources
+------------
+Run configs and summaries come from the committed run index; the reward curves and the
+throughput series come from the ``history`` artifacts in the store. Neither touches the
+WandB API, so this script runs offline in a couple of seconds.
 
-Frame
------
-The authoritative frame is ``env_params.body_target_frame`` (the ``net_params`` copy is
-inert -- see analysis/README.md). **Every new-XML run logs ``current_root``**, and the
-post-fix training script no longer writes the key into ``net_params`` at all, so there is
-no conflicting label. The frame is therefore matched (``current_root``) on both sides of
-each primary pair; ``old_efference_refroot`` is the one deliberate exception.
-
-Speed
------
-``throughput/train_sps`` (full PPO iteration: rollout + gradient) and
-``throughput/eval_sps`` (rollout only -- the cleaner probe of physics cost) are recorded
-both as the final summary value and as a median over the run's history. Runs were
-scheduled on a mix of **A100-SXM4-80GB and H200** nodes, which changes throughput by
-~1.6x, so ``gpu`` is extracted and every speed comparison in plot.py is made within one
-GPU model at a matched delay.
+Run it
+------
+    ../.venv/bin/python analysis/collision-model-xml/extract.py           # frozen
+    ../.venv/bin/python analysis/collision-model-xml/extract.py --refresh
+    ../.venv/bin/python analysis/collision-model-xml/extract.py --check
 """
 
 from pathlib import Path
@@ -66,235 +58,245 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from vnl_experiments.wandb_utils import (
-    comparability_report,
-    fetch_runs,
-    git_commit_summary,
-    records_to_df,
-)
+from vnl_experiments.artifacts import Store, get_producer
+from vnl_experiments.wandb_utils import comparability_report, pipeline
 
 HERE = Path(__file__).resolve().parent
-
 PROJECT = "emiwar-team/nnx-ppo-rodent-delays"
-REQUIRE_TAGS = ["TrainEvalSplit"]
+REQUIRES = ["index", "history"]
 
 OLD_XML = "rodent.xml"
 NEW_XML = "rodent_no_tail_collisions.xml"
 
 STD_ARCH = {
-    "enc_hidden_sizes": [512] * 4,
-    "dec_hidden_sizes": [512] * 4,
-    "critic_hidden_sizes": [1024, 1024],
+    "net_params.enc_hidden_sizes": "[512, 512, 512, 512]",
+    "net_params.dec_hidden_sizes": "[512, 512, 512, 512]",
+    "net_params.critic_hidden_sizes": "[1024, 1024]",
 }
 EXPECTED_STEP = 600_064_000
 
-# Metric keys: old-logging first, then the new-logging alias (coalesced left-to-right).
-REWARD_MEAN_KEYS = ["episode_reward/mean", "eval/episode_reward/mean"]
-REWARD_STD_KEYS = ["episode_reward/std", "eval/episode_reward/std"]
-LIFESPAN_KEYS = ["lifespan_mean", "eval/lifespan/mean"]
+REWARD_MEAN_KEYS = ("summary.eval/episode_reward/mean", "summary.episode_reward/mean")
+REWARD_STD_KEYS = ("summary.eval/episode_reward/std", "summary.episode_reward/std")
+LIFESPAN_KEYS = ("summary.eval/lifespan/mean", "summary.lifespan_mean")
+CURVE_KEYS = ("eval/episode_reward/mean", "episode_reward/mean")
 
-# Invariants that must be single-valued WITHIN a condition. The experimental axes
-# (xml, network, control_mode, body_target_frame, delay_k) and git_commit vary by design.
-INVARIANTS = [
-    "env", "seed", "latent_size", "kl_weight", "enc_hidden_sizes", "dec_hidden_sizes",
-    "critic_hidden_sizes", "clip_length", "ctrl_dt", "sim_dt", "solver", "iterations",
-    "ls_iterations", "njmax", "naconmax", "rescale_factor", "mujoco_impl",
-    "n_envs", "total_steps", "actual_step",
-    "walker_xml", "torque_actuators", "body_target_frame", "git_commit",
-]
 
-# Per-condition (xml, torque_actuators, network, fm_loss_weight, detach_prediction,
-# body_target_frame, allowed creation dates).
+# --------------------------------------------------------------------------------------
+# condition selectors
+# --------------------------------------------------------------------------------------
+
+
+def _xml_name(series: pd.Series) -> pd.Series:
+    return series.astype(str).str.rsplit("/", n=1).str[-1]
+
+
+def _base(df: pd.DataFrame) -> pd.Series:
+    """What all seven cells share: standard architecture, the standard 600 M-step
+    budget, seed 42, and efference length tied to the delay."""
+    mask = (
+        (df["env"] == "AbsoluteImitation")
+        & (df["seed"] == 42)
+        & (df["summary._step"] == EXPECTED_STEP)
+        & (df["delay_k"] == df["efference_length"])
+    )
+    for column, value in STD_ARCH.items():
+        mask &= df[column] == value
+    return mask
+
+
+def _cell(xml: str, torque: bool, network: str, frame: str = "current_root",
+          dates: tuple[str, ...] | None = None):
+    """A selector for one (xml, control mode, network, frame) cell.
+
+    ``network`` is derived from the run's tags plus the forward-model knobs rather than
+    read from a config field, because no single field separates the explicit forward
+    model (``fm_loss_weight=1``, detached) from the policy-gradient one
+    (``fm_loss_weight=0``, gradient flowing through the predictor).
+    """
+
+    def selector(df: pd.DataFrame) -> pd.Series:
+        tags = df["tags"].fillna("").str.split(",")
+        is_fm = tags.apply(lambda t: "ForwardModel" in t)
+        is_encdec = tags.apply(lambda t: "EncDec" in t)
+
+        if network == "efference":
+            net_mask = is_encdec & ~is_fm
+        elif network == "forward_model":
+            net_mask = (is_fm & (df["fm_loss_weight"] == 1)
+                        & df["detach_prediction"].fillna(True).astype(bool))
+        elif network == "pg_forward_model":
+            net_mask = (is_fm & (df["fm_loss_weight"] == 0)
+                        & (df["detach_prediction"] == False))  # noqa: E712
+        else:
+            raise ValueError(network)
+
+        mask = (
+            _base(df)
+            & net_mask
+            & (_xml_name(df["env_params.walker_xml_path"]) == xml)
+            & (df["env_params.torque_actuators"] == torque)
+            & (df["env_params.body_target_frame"] == frame)
+        )
+        if dates is not None:
+            mask &= df["created_at"].str[:10].isin(dates)
+        return mask
+
+    return selector
+
+
 CONDITIONS = {
-    "old_efference":         (OLD_XML, True,  "efference",         None, None,  "current_root",   ("2026-06-11", "2026-06-12")),
-    "new_efference":         (NEW_XML, True,  "efference",         None, None,  "current_root",   ("2026-07-09",)),
-    "old_efference_refroot": (OLD_XML, True,  "efference",         None, None,  "reference_root", ("2026-07-06",)),
-    "old_forward_model":     (OLD_XML, False, "forward_model",     1,    True,  "current_root",   None),
-    "new_forward_model":     (NEW_XML, False, "forward_model",     1,    True,  "current_root",   None),
-    "old_pg_forward_model":  (OLD_XML, True,  "pg_forward_model",  0,    False, "current_root",   None),
-    "new_pg_forward_model":  (NEW_XML, False, "pg_forward_model",  0,    False, "current_root",   None),
+    "old_efference":         _cell(OLD_XML, True,  "efference",
+                                   dates=("2026-06-11", "2026-06-12")),
+    "new_efference":         _cell(NEW_XML, True,  "efference", dates=("2026-07-09",)),
+    "old_efference_refroot": _cell(OLD_XML, True,  "efference", frame="reference_root",
+                                   dates=("2026-07-06",)),
+    "old_forward_model":     _cell(OLD_XML, False, "forward_model"),
+    "new_forward_model":     _cell(NEW_XML, False, "forward_model"),
+    "old_pg_forward_model":  _cell(OLD_XML, True,  "pg_forward_model"),
+    "new_pg_forward_model":  _cell(NEW_XML, False, "pg_forward_model"),
 }
 
+# The experimental axes (xml, network, control mode, frame, delay) and git_commit vary by
+# design; everything else must be single-valued within a condition.
+INVARIANTS = [
+    "env", "seed", "net_params.latent_size", "net_params.kl_weight",
+    "net_params.enc_hidden_sizes", "net_params.dec_hidden_sizes",
+    "net_params.critic_hidden_sizes",
+    "env_params.clip_length", "env_params.ctrl_dt", "env_params.sim_dt",
+    "env_params.solver", "env_params.iterations", "env_params.ls_iterations",
+    "env_params.njmax", "env_params.naconmax", "env_params.rescale_factor",
+    "env_params.mujoco_impl",
+    "config.ppo.n_envs", "config.ppo.total_steps", "summary._step",
+    "env_params.walker_xml_path", "env_params.torque_actuators",
+    "env_params.body_target_frame", "git_commit",
+]
 
-def git8(run) -> str:
-    return (((run.metadata or {}).get("git", {}) or {}).get("commit", "") or "")[:8]
+
+# --------------------------------------------------------------------------------------
+# rows
+# --------------------------------------------------------------------------------------
 
 
-def std_arch(net: dict) -> bool:
-    return all(list(net.get(k, [])) == v for k, v in STD_ARCH.items())
+def _network_of(condition: str) -> str:
+    return condition.split("_", 1)[1].replace("efference_refroot", "efference")
 
 
-def coalesce(summary, keys):
-    for k in keys:
-        v = summary.get(k)
-        if v is not None:
-            return v
-    return None
+def history_of(store: Store, wandb_id: str, spec_id: str) -> pd.DataFrame | None:
+    entry = store.lookup("history", wandb_id, spec_id)
+    return None if entry is None else pd.read_csv(store.root / entry.path)
 
 
-def condition_of(run) -> str | None:
-    """Map a run to a condition label, or None to exclude it."""
-    c = run.config
-    net = c.get("net_params", {}) or {}
-    env = c.get("env_params", {}) or {}
-    tags = set(run.tags)
-
-    if c.get("env") != "AbsoluteImitation" or c.get("seed") != 42:
+def median_sps(hist: pd.DataFrame | None, column: str) -> float | None:
+    """Median throughput, dropping the first 10 % of samples (XLA compilation)."""
+    if hist is None or column not in hist or hist[column].dropna().empty:
         return None
-    if not std_arch(net) or c.get("efference_length") != c.get("delay_k"):
-        return None
-    if run.summary.get("_step") != EXPECTED_STEP:
-        return None
-
-    is_fm = "ForwardModel" in tags
-    network = "efference" if (not is_fm and "EncDec" in tags) else None
-    if is_fm:
-        # Canonical explicit FM (trained, detached) vs the policy-gradient FM (loss 0,
-        # gradient flows through the predictor).
-        if c.get("fm_loss_weight") == 1 and c.get("detach_prediction") in (None, True):
-            network = "forward_model"
-        elif c.get("fm_loss_weight") == 0 and c.get("detach_prediction") is False:
-            network = "pg_forward_model"
-    if network is None:
-        return None
-
-    key = (
-        str(env.get("walker_xml_path")).split("/")[-1],
-        env.get("torque_actuators"),
-        network,
-        c.get("fm_loss_weight"),
-        c.get("detach_prediction"),
-        env.get("body_target_frame"),
-    )
-    for name, (*spec, dates) in CONDITIONS.items():
-        if tuple(spec) == key and (dates is None or run.created_at[:10] in dates):
-            return name
-    return None
+    values = hist[column].dropna().to_numpy()
+    return float(np.median(values[max(1, len(values) // 10):]))
 
 
-def record_of(run, cond: str) -> dict:
-    c = run.config
-    net = c.get("net_params", {}) or {}
-    env = c.get("env_params", {}) or {}
-    ppo = (c.get("config") or {}).get("ppo", {}) or {}
-    s = run.summary
-    md = run.metadata or {}
-    xml = str(env.get("walker_xml_path")).split("/")[-1]
-
-    hist = run.history(
-        keys=["throughput/train_sps", "throughput/eval_sps"], samples=400, pandas=True
-    )
-    def med(col):
-        if col not in hist or hist[col].dropna().empty:
-            return None
-        # Drop the first 10% of samples: the first iterations include XLA compilation.
-        v = hist[col].dropna().to_numpy()
-        return float(np.median(v[max(1, len(v) // 10):]))
-
+def build_row(run: pd.Series, hist: pd.DataFrame | None) -> dict:
+    xml = str(run["env_params.walker_xml_path"]).rsplit("/", 1)[-1]
+    notes = run["notes"]
     return {
         # provenance
-        "wandb_id": run.id,
-        "wandb_name": run.name,
+        "wandb_id": run["wandb_id"],
+        "wandb_name": run["wandb_name"],
         "wandb_project": PROJECT,
-        "state": run.state,
-        "git_commit": git8(run),
-        "tags": ",".join(sorted(run.tags)),
-        "notes": (run.notes or "").strip(),
-        "created_at": run.created_at,
+        "state": run["state"],
+        "git_commit": (run["git_commit"] or "")[:8],
+        "tags": run["tags"],
+        "notes": notes.strip() if isinstance(notes, str) else "",
+        "created_at": run["created_at"],
         # experimental axes
-        "condition": cond,
+        "condition": run["condition"],
         "xml": "new" if xml == NEW_XML else "old",
         "walker_xml": xml,
-        "network": CONDITIONS[cond][2],
-        "control_mode": "torque" if env.get("torque_actuators") else "position",
-        "delay_k": c.get("delay_k"),
-        "efference_length": c.get("efference_length"),
+        "network": _network_of(run["condition"]),
+        "control_mode": "torque" if run["env_params.torque_actuators"] else "position",
+        "delay_k": run["delay_k"],
+        "efference_length": run["efference_length"],
         # authoritative frame + fm knobs (sanity)
-        "body_target_frame": env.get("body_target_frame"),
-        "net_params_body_target_frame": net.get("body_target_frame"),
-        "torque_actuators": env.get("torque_actuators"),
-        "fm_loss_weight": c.get("fm_loss_weight"),
-        "detach_prediction": c.get("detach_prediction"),
+        "body_target_frame": run["env_params.body_target_frame"],
+        "net_params_body_target_frame": run.get("net_params.body_target_frame"),
+        "torque_actuators": run["env_params.torque_actuators"],
+        "fm_loss_weight": run.get("fm_loss_weight"),
+        "detach_prediction": run.get("detach_prediction"),
         # invariants
-        "env": c.get("env"),
-        "seed": c.get("seed"),
-        "latent_size": net.get("latent_size"),
-        "kl_weight": net.get("kl_weight"),
-        "enc_hidden_sizes": tuple(net.get("enc_hidden_sizes") or []),
-        "dec_hidden_sizes": tuple(net.get("dec_hidden_sizes") or []),
-        "critic_hidden_sizes": tuple(net.get("critic_hidden_sizes") or []),
-        "clip_length": env.get("clip_length"),
-        "ctrl_dt": env.get("ctrl_dt"),
-        "sim_dt": env.get("sim_dt"),
-        "solver": env.get("solver"),
-        "iterations": env.get("iterations"),
-        "ls_iterations": env.get("ls_iterations"),
-        "njmax": env.get("njmax"),
-        "naconmax": env.get("naconmax"),
-        "rescale_factor": env.get("rescale_factor"),
-        "mujoco_impl": env.get("mujoco_impl"),
-        "n_envs": ppo.get("n_envs"),
-        "total_steps": ppo.get("total_steps"),
-        "actual_step": s.get("_step"),
-        # hardware (speed comparisons are only valid within one GPU model)
-        "gpu": md.get("gpu"),
-        "host": md.get("host"),
+        "env": run["env"],
+        "seed": run["seed"],
+        "latent_size": run["net_params.latent_size"],
+        "kl_weight": run["net_params.kl_weight"],
+        "enc_hidden_sizes": run["net_params.enc_hidden_sizes"],
+        "dec_hidden_sizes": run["net_params.dec_hidden_sizes"],
+        "critic_hidden_sizes": run["net_params.critic_hidden_sizes"],
+        "clip_length": run["env_params.clip_length"],
+        "ctrl_dt": run["env_params.ctrl_dt"],
+        "sim_dt": run["env_params.sim_dt"],
+        "solver": run["env_params.solver"],
+        "iterations": run["env_params.iterations"],
+        "ls_iterations": run["env_params.ls_iterations"],
+        "njmax": run["env_params.njmax"],
+        "naconmax": run["env_params.naconmax"],
+        "rescale_factor": run["env_params.rescale_factor"],
+        "mujoco_impl": run["env_params.mujoco_impl"],
+        "n_envs": run["config.ppo.n_envs"],
+        "total_steps": run["config.ppo.total_steps"],
+        "actual_step": run["summary._step"],
+        # hardware -- speed comparisons are only valid within one GPU model
+        "gpu": run["gpu"],
+        "host": run["host"],
         # metrics
-        "reward_mean": coalesce(s, REWARD_MEAN_KEYS),
-        "reward_std": coalesce(s, REWARD_STD_KEYS),
-        "lifespan_mean": coalesce(s, LIFESPAN_KEYS),
-        "train_sps_final": s.get("throughput/train_sps"),
-        "eval_sps_final": s.get("throughput/eval_sps"),
-        "train_sps_median": med("throughput/train_sps"),
-        "eval_sps_median": med("throughput/eval_sps"),
-        "runtime_s": s.get("_runtime"),
+        "reward_mean": pipeline.first_present(run, *REWARD_MEAN_KEYS),
+        "reward_std": pipeline.first_present(run, *REWARD_STD_KEYS),
+        "lifespan_mean": pipeline.first_present(run, *LIFESPAN_KEYS),
+        "train_sps_final": run.get("summary.throughput/train_sps"),
+        "eval_sps_final": run.get("summary.throughput/eval_sps"),
+        "train_sps_median": median_sps(hist, "throughput/train_sps"),
+        "eval_sps_median": median_sps(hist, "throughput/eval_sps"),
+        "runtime_s": run.get("summary._runtime"),
     }
 
 
-def learning_curve(run, cond: str, delay: int) -> list[dict]:
-    """The run's eval-reward series (eval runs every 10M steps -> ~60 points).
-
-    Uses the *sampled* history endpoint rather than ``scan_history``: the runs log
-    ~7 300 iterations x ~50 keys, and streaming all of that for 80 runs takes hours,
-    whereas the eval series itself is only ~60 points. ``samples`` is set well above
-    the true number of eval points so no sampling actually happens.
-    """
-    key = "eval/episode_reward/mean" if any(
-        k.startswith("eval/episode_reward") for k in run.summary.keys()
-    ) else "episode_reward/mean"
-    hist = run.history(keys=[key], samples=500, pandas=True)
-    if key not in hist:
+def build_curve(run: pd.Series, hist: pd.DataFrame | None) -> list[dict]:
+    """The run's eval-reward series (evaluated every 10 M steps -> ~60 points)."""
+    if hist is None:
         return []
-    hist = hist.dropna(subset=[key])
-    return [
-        {
-            "wandb_id": run.id,
-            "condition": cond,
-            "delay_k": delay,
-            "step": int(row["_step"]),
-            "reward_mean": float(row[key]),
-        }
-        for _, row in hist.iterrows()
-    ]
+    key = next((k for k in CURVE_KEYS if k in hist.columns), None)
+    if key is None:
+        return []
+    return [{"wandb_id": run["wandb_id"], "condition": run["condition"],
+             "delay_k": run["delay_k"], "step": int(row["_step"]),
+             "reward_mean": float(row[key])}
+            for _, row in hist.dropna(subset=[key]).iterrows()]
 
 
 def main() -> None:
-    runs = fetch_runs(PROJECT, finished_only=True, tags=REQUIRE_TAGS)
-    print(f"Fetched {len(runs)} finished runs with tags {REQUIRE_TAGS}")
+    args = pipeline.parse_args(__doc__)
 
-    records, curves = [], []
-    for r in runs:
-        cond = condition_of(r)
-        if cond is None:
-            continue
-        records.append(record_of(r, cond))
-        curves.extend(learning_curve(r, cond, r.config.get("delay_k")))
+    runs = pipeline.resolve_selection(HERE, CONDITIONS, refresh=args.refresh,
+                                      sync=args.sync, project=args.project)
+    pipeline.write_coverage(runs, REQUIRES, HERE)
 
-    df = records_to_df(records)
-    df = df.sort_values(["network", "xml", "delay_k", "wandb_id"]).reset_index(drop=True)
-    curves_df = pd.DataFrame(curves).sort_values(["condition", "delay_k", "step"])
+    store = Store()
+    producer = get_producer("history")
+    spec_id = producer.spec_id(producer.spec())
 
-    print(f"\nCohort ({len(df)} rows):")
+    rows, curves = [], []
+    for _, run in runs.iterrows():
+        hist = history_of(store, run["wandb_id"], spec_id)
+        rows.append(build_row(run, hist))
+        curves.extend(build_curve(run, hist))
+
+    df = pd.DataFrame(rows).sort_values(["network", "xml", "delay_k", "wandb_id"],
+                                        ignore_index=True)
+    curves_df = pd.DataFrame(curves).sort_values(["condition", "delay_k", "step"],
+                                                 ignore_index=True)
+
+    report = comparability_report(runs, invariant_cols=INVARIANTS, group_col="condition")
+    if not args.check:
+        (HERE / "comparability.txt").write_text(report + "\n")
+
+    print("\nCohort:")
     for cond, sub in df.groupby("condition"):
         print(f"  {cond:24s} n={len(sub):2d} delays={sorted(sub['delay_k'])}")
         print(f"  {'':24s} xml={sub['walker_xml'].unique()} "
@@ -303,21 +305,16 @@ def main() -> None:
               f"git={sorted(sub['git_commit'].unique())} "
               f"gpu={sorted(set(sub['gpu'].dropna()))}")
 
-    # The frame question (Q3): assert what the new-XML runs *actually* used.
+    # Question 3 in one table: which frame each XML was actually trained with.
     print("\nbody_target_frame by xml (authoritative env_params value):")
-    print(pd.crosstab(df["xml"], df["body_target_frame"]))
-    print("net_params.body_target_frame (inert copy) values:",
+    print(pd.crosstab(df["xml"], df["body_target_frame"]).to_string())
+    print("net_params.body_target_frame (inert copy):",
           df["net_params_body_target_frame"].unique())
 
-    report = comparability_report(df, invariant_cols=INVARIANTS, group_col="condition")
-    print("\n" + report)
-    print("\ngit commits:", git_commit_summary(df))
-
-    (HERE / "data.csv").write_text(df.to_csv(index=False))
-    (HERE / "curves.csv").write_text(curves_df.to_csv(index=False))
-    (HERE / "comparability.txt").write_text(report + "\n")
-    print(f"\nWrote {len(df)} rows to {HERE / 'data.csv'}")
-    print(f"Wrote {len(curves_df)} rows to {HERE / 'curves.csv'}")
+    ok = pipeline.write_csv(df, HERE / "data.csv", check=args.check)
+    ok &= pipeline.write_csv(curves_df, HERE / "curves.csv", check=args.check)
+    if args.check and not ok:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

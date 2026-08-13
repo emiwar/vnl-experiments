@@ -26,10 +26,24 @@ from vnl_experiments.wandb_utils import (
     apply_style,
     color_for,
     marker_for,
+    provenance,
+    write_figure_manifest,
 )
 
 HERE = Path(__file__).resolve().parent
 FIGURES = HERE / "figures"
+DATA = HERE / "data.csv"
+CURVES = HERE / "curves.csv"
+
+# Filled in by `stamp`; written to figures/manifest.json at the end so every png can be
+# traced to the exact CSV bytes and commit it came from.
+_MANIFEST: dict[str, str] = {}
+
+
+def stamp(fig, name: str, *inputs) -> None:
+    """Add the provenance footer and remember it. Call just before ``savefig``."""
+    _MANIFEST[f"{name}.png"] = provenance(fig, HERE, *(inputs or (DATA,)))
+
 
 NETWORK_LABEL = {
     "efference": "Efference EncDec (torque control)",
@@ -85,6 +99,7 @@ def fig_reward(df: pd.DataFrame) -> None:
         sns.despine(ax=ax)
     axes[0].set_ylabel("Mean episode reward (eval on train clips)")
     fig.tight_layout()
+    stamp(fig, "xml_comparison", DATA)
     fig.savefig(FIGURES / "xml_comparison.png")
     print("Saved", FIGURES / "xml_comparison.png")
 
@@ -122,6 +137,7 @@ def fig_difference(df: pd.DataFrame) -> None:
         ax.legend(loc="lower left", fontsize=8)
         sns.despine(ax=ax)
     fig.tight_layout()
+    stamp(fig, "xml_difference", DATA)
     fig.savefig(FIGURES / "xml_difference.png")
     print("Saved", FIGURES / "xml_difference.png")
 
@@ -148,6 +164,7 @@ def fig_confounded(df: pd.DataFrame) -> None:
     add_ms_axis(ax, df["delay_k"].max())
     sns.despine(ax=ax)
     fig.tight_layout()
+    stamp(fig, "confounded_pg_pair", DATA)
     fig.savefig(FIGURES / "confounded_pg_pair.png")
     print("Saved", FIGURES / "confounded_pg_pair.png")
 
@@ -244,6 +261,7 @@ def fig_convergence(df: pd.DataFrame, curves: pd.DataFrame) -> None:
     sns.despine(ax=ax)
 
     fig.tight_layout()
+    stamp(fig, "convergence", DATA, CURVES)
     fig.savefig(FIGURES / "convergence.png")
     print("Saved", FIGURES / "convergence.png")
     conv.to_csv(FIGURES.parent / "convergence_table.csv", index=False)
@@ -278,6 +296,7 @@ def fig_throughput(df: pd.DataFrame) -> None:
         ax.legend(loc="lower left", fontsize=7)
         sns.despine(ax=ax)
     fig.tight_layout()
+    stamp(fig, "throughput", DATA)
     fig.savefig(FIGURES / "throughput.png")
     print("Saved", FIGURES / "throughput.png")
 
@@ -314,8 +333,8 @@ def print_tables(df: pd.DataFrame) -> None:
 def main() -> None:
     apply_style()
     FIGURES.mkdir(exist_ok=True)
-    df = pd.read_csv(HERE / "data.csv")
-    curves = pd.read_csv(HERE / "curves.csv")
+    df = pd.read_csv(DATA)
+    curves = pd.read_csv(CURVES)
 
     fig_reward(df)
     fig_difference(df)
@@ -323,6 +342,7 @@ def main() -> None:
     fig_convergence(df, curves)
     fig_throughput(df)
     print_tables(df)
+    write_figure_manifest(HERE, _MANIFEST)
 
 
 if __name__ == "__main__":

@@ -181,11 +181,13 @@ Consequences:
   of every primary pair, so it is not a confound here. `old_efference_refroot` is the
   single deliberate exception and it differs from the `current_root` baseline by ≲1 %,
   reproducing the [reference-root-frame](../reference-root-frame/) conclusion.
-- **Bad news for the intent:** there is still no `reference_root` run on the new XML. If
-  `reference_root` is to be the standard going forward, the switch has not actually
-  happened yet in any trained checkpoint — the current committed `456fbd7` sets
-  `current_root` in both training scripts, so the next cluster launch will keep
-  producing `current_root` runs unless that line is changed back.
+- **Bad news for the intent:** none of the 32 new-XML runs in this cohort used
+  `reference_root`, so the switch had not happened in any checkpoint analysed here.
+  It has since: `ef060b7` (2026-08-11) sets `reference_root` in both training scripts —
+  and also flips `train_rodent_forward_model.py` to `torque_actuators = True`, which
+  removes the actuator confound from future forward-model runs. Runs launched after that
+  date do carry the intended frame, and the index already holds 10 finished
+  new-XML × `reference_root` runs that postdate this analysis.
 - The existing evidence says the frame choice is nearly free (≲1 % on old-XML training
   reward, no consistent sign), so adopting `reference_root` should be safe — but that
   evidence is old-XML-only and single-seed, and it has never been tested against the
@@ -290,10 +292,11 @@ new-XML checkpoints is `current_root`, despite the committed script saying other
   has one. The held-out `new_eval` (32 × 30 s clips) is exactly where a more
   collision-prone body should show up, and the training-clip reward used here cannot see
   it. This is the single highest-value follow-up.
-- **A reference_root × new-XML cell**, since that is the intended going-forward config
-  and it has never been trained. Fix `train_rodent_delays.py` / `train_rodent_forward_model.py`
-  back to `reference_root` first (`456fbd7` currently sets `current_root`), and prefer
-  setting these from the CLI so the cluster copy stops drifting from the committed one.
+- **A reference_root × new-XML cell**, since that is the intended going-forward config.
+  `ef060b7` has already made the scripts produce it, and the index shows 10 such finished
+  runs; folding them in is the obvious next refresh of this analysis. Setting these knobs
+  from the CLI rather than by editing the script would stop the cluster copy drifting from
+  the committed one in the first place.
 - **Long-delay new-XML points** (70, 100) and an **actuator-matched new-XML PG-FM**, to
   test whether the delay-50 efference deficit keeps growing and whether it is torque
   control or the efference network that carries it.

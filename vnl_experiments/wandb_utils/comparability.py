@@ -70,7 +70,7 @@ def comparability_report(
                 continue
             vals = _unique(sub[col])
             flag = "  *** VARIES ***" if len(vals) > 1 else ""
-            lines.append(f"  {col:20s}: {vals}{flag}")
+            lines.append(f"  {col:34s}: {vals}{flag}")
 
     if group_col and group_col in df.columns:
         for name, sub in df.groupby(group_col):

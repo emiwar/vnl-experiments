@@ -84,7 +84,7 @@ from vnl_experiments.delays.evaluation import (
 from vnl_experiments.delays.network_builders import build_network, load_network
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_RUN_LIST = HERE / "run_list.txt"
+DEFAULT_RUN_LIST = REPO_ROOT / "analysis" / "implicit-forward-model" / "run_list.txt"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval_results" / "activations"
 
 

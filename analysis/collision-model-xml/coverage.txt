@@ -1,0 +1,19 @@
+Coverage for 82 runs in collision-model-xml
+
+index  (spec_id=-): 82/82
+    new_efference                   6/6   
+    new_forward_model               5/5   
+    new_pg_forward_model           21/21  
+    old_efference                  22/22  
+    old_efference_refroot           6/6   
+    old_forward_model               8/8   
+    old_pg_forward_model           14/14  
+
+history  (spec_id=hist2000-09fea177): 82/82
+    new_efference                   6/6   
+    new_forward_model               5/5   
+    new_pg_forward_model           21/21  
+    old_efference                  22/22  
+    old_efference_refroot           6/6   
+    old_forward_model               8/8   
+    old_pg_forward_model           14/14  

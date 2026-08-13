@@ -521,137 +521,150 @@ def _find_calib_mat(reference_dir: str) -> str:
 # Main
 # ---------------------------------------------------------------------------
 
+def prepare_camera(reference_dir: str = REFERENCE_DIR) -> dict:
+    """Load the Camera-4 calibration once; reusable across runs."""
+    calib_path = _find_calib_mat(reference_dir)
+    cam = load_camera_calibration(calib_path)
+    camera_kwargs = convert_camera(cam, name=CAMERA_NAME)
+    print(f"Camera calibration {calib_path}: fovy={camera_kwargs['fovy']:.2f}deg "
+          f"pos={np.array(camera_kwargs['pos']).round(3)}")
+    return camera_kwargs
+
+
+def render_run(
+    ckpt_dir: Path,
+    out_dir: Path,
+    *,
+    n_clips: int = N_EVAL_CLIPS,
+    fps: int = FPS,
+    auto_reset: bool = AUTO_RESET_ON_TERMINATION,
+    seed: int = SEED,
+    new_eval_h5: str = NEW_EVAL_H5,
+    camera_kwargs: dict | None = None,
+    suffix: str | None = None,
+) -> dict:
+    """Render one checkpoint's rollout to ``out_dir`` and return its stats record.
+
+    Writes ``rollout<suffix>.mp4`` (the video), ``rollout<suffix>.h5`` (rollout +
+    reference qpos at frame rate, for re-rendering or overlays) and
+    ``stats<suffix>.json``. Everything that used to be a module-level constant is a
+    keyword argument, so the artifact store can pin them into a spec; the defaults
+    reproduce the original script's behaviour exactly.
+    """
+    suffix = OUTPUT_SUFFIX if suffix is None else suffix
+    ckpt_dir = Path(ckpt_dir)
+    ckpt_name = ckpt_dir.name
+
+    with h5py.File(new_eval_h5, "r") as f:
+        clip_length = int(f.attrs["n_frames_per_clip"])
+        n_available = int(f.attrs.get("n_clips", f["qpos"].shape[0] // clip_length))
+    n_eval_clips = min(n_clips, n_available)
+
+    if camera_kwargs is None:
+        camera_kwargs = prepare_camera()
+
+    with open(ckpt_dir / "config.json") as f:
+        cfg_json = json.load(f)
+    env_params = cfg_json["env_params"]
+    net_params = cfg_json["net_params"]
+    ctrl_dt = float(env_params.get("ctrl_dt", 0.01))
+    mocap_hz = int(env_params.get("mocap_hz", 50))
+    n_steps = round(clip_length / (ctrl_dt * mocap_hz))
+    frame_skip = max(1, round(1.0 / (fps * ctrl_dt)))
+
+    override = ENV_OVERRIDES.get(ckpt_name, {})
+    if override.get("env_class"):
+        env_class, default_config_fn = _ENV_CLASSES[override["env_class"]]
+    else:
+        env_class, default_config_fn = resolve_env_class(env_params)
+    print(f"  env_class={env_class.__name__} "
+          f"network_class={net_params.get('network_class')} "
+          f"n_steps={n_steps} frame_skip={frame_skip}"
+          + (f"  [override: {override}]" if override else ""))
+
+    env_cfg = parse_imitation_env_config(env_params, new_eval_h5, clip_length,
+                                         default_config_fn)
+    if override.get("body_target_frame") and env_class is AbsoluteImitation:
+        with env_cfg.ignore_type():
+            env_cfg.body_target_frame = override["body_target_frame"]
+    env = env_class(env_cfg)
+
+    loaded = load_network(ckpt_dir, net_params, env, seed=seed)
+    if loaded is None:
+        raise RuntimeError(f"could not load a network from {ckpt_dir}")
+    network, step = loaded
+    network.eval()
+
+    rollout_fn = nnx.jit(rollout_collect_stats, static_argnums=(0, 2, 5))
+    clip_qpos, clip_qvel, per_clip_stats = [], [], []
+    for c in range(n_eval_clips):
+        key = jax.random.key(seed + c)
+        stacked, done_mask, rewards, root_err, ee_err = rollout_fn(
+            env, network, n_steps, key, jp.array(c), auto_reset)
+        clip_qpos.append(np.array(stacked.data.qpos))
+        clip_qvel.append(np.array(stacked.data.qvel))
+        s = compute_stats(np.array(rewards), np.array(root_err), np.array(ee_err),
+                          np.array(done_mask), ctrl_dt, n_steps, auto_reset)
+        s["clip_idx"] = c
+        per_clip_stats.append(s)
+        print(f"    clip {c}: reward={s['total_reward']:.1f}  "
+              f"root_err={s['root_error_mean']:.4f}")
+
+    overall = aggregate_stats(per_clip_stats, auto_reset)
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    stats = {
+        "checkpoint": ckpt_name,
+        "step": step,
+        "network_class": net_params.get("network_class"),
+        "env_class": env_class.__name__,
+        "auto_reset_on_termination": auto_reset,
+        "n_eval_clips": n_eval_clips,
+        "clip_length": clip_length,
+        "ctrl_dt": ctrl_dt,
+        "fps": fps,
+        "overall": overall,
+        "per_clip": per_clip_stats,
+    }
+    with open(out_dir / f"stats{suffix}.json", "w") as f:
+        json.dump(stats, f, indent=2)
+
+    save_h5(out_dir / f"rollout{suffix}.h5", clip_qpos, frame_skip, new_eval_h5,
+            clip_length, n_eval_clips)
+    render_clips_video(env, clip_qpos, clip_qvel, frame_skip, camera_kwargs,
+                       out_dir / f"rollout{suffix}.mp4", fps)
+    return stats
+
+
 def main() -> None:
+    """Batch-render every checkpoint in :data:`CHECKPOINTS` into ``eval_videos/``.
+
+    Kept for the ad-hoc "render this list of checkpoints" workflow. For anything an
+    analysis depends on, prefer the ``video`` artifact kind, which records the render
+    settings and the producing code version alongside the mp4::
+
+        python -m vnl_experiments.artifacts ensure --kind video --runs <runs.csv>
+    """
     if not CHECKPOINTS:
         print("No checkpoints listed in CHECKPOINTS. Edit the script to add paths.")
         return
 
-    # Eval dataset: read the fixed per-clip frame count from the file's metadata.
-    with h5py.File(NEW_EVAL_H5, "r") as f:
-        clip_length = int(f.attrs["n_frames_per_clip"])
-        n_available = int(f.attrs.get("n_clips", f["qpos"].shape[0] // clip_length))
-    n_eval_clips = min(N_EVAL_CLIPS, n_available)
-    print(f"Eval dataset: {NEW_EVAL_H5}  ({n_available} clips x {clip_length} frames); "
-          f"rendering the first {n_eval_clips}.")
-
-    calib_path = _find_calib_mat(REFERENCE_DIR)
-    print(f"Loading Camera 4 calibration: {calib_path}")
-    cam = load_camera_calibration(calib_path)
-    camera_kwargs = convert_camera(cam, name=CAMERA_NAME)
-    print(f"  fovy={camera_kwargs['fovy']:.2f}°  "
-          f"pos={np.array(camera_kwargs['pos']).round(3)}")
-    print(f"  AUTO_RESET_ON_TERMINATION={AUTO_RESET_ON_TERMINATION}")
-
-    rollout_fn = nnx.jit(rollout_collect_stats, static_argnums=(0, 2, 5))
+    camera_kwargs = prepare_camera()
+    print(f"AUTO_RESET_ON_TERMINATION={AUTO_RESET_ON_TERMINATION}")
 
     for ckpt_path in tqdm(CHECKPOINTS, desc="Checkpoints"):
-        print(f"\n=== {ckpt_path} ===")
         ckpt_dir = Path(ckpt_path)
-        ckpt_name = ckpt_dir.name
-
-        config_path = ckpt_dir / "config.json"
-        if not config_path.exists():
-            print(f"  [skip] no config.json at {config_path}")
+        print(f"\n=== {ckpt_path} ===")
+        if not (ckpt_dir / "config.json").exists():
+            print(f"  [skip] no config.json at {ckpt_dir}")
             continue
-
         try:
-            with open(config_path) as f:
-                cfg_json = json.load(f)
-            env_params = cfg_json["env_params"]
-            net_params = cfg_json["net_params"]
-            ctrl_dt = float(env_params.get("ctrl_dt", 0.01))
-            mocap_hz = int(env_params.get("mocap_hz", 50))
-            frames_per_step = ctrl_dt * mocap_hz
-            n_steps = round(clip_length / frames_per_step)
-            frame_skip = max(1, round(1.0 / (FPS * ctrl_dt)))
-            print(f"  ctrl_dt={ctrl_dt}s  frames/step={frames_per_step}  "
-                  f"n_steps={n_steps}  frame_skip={frame_skip}")
-
-            override = ENV_OVERRIDES.get(ckpt_name, {})
-            if override.get("env_class"):
-                env_class, default_config_fn = _ENV_CLASSES[override["env_class"]]
-            else:
-                env_class, default_config_fn = resolve_env_class(env_params)
-            print(f"  env_class={env_class.__name__}  "
-                  f"network_class={net_params.get('network_class')}"
-                  + (f"  [override: {override}]" if override else ""))
-
-            print("  Building environment…", flush=True)
-            env_cfg = parse_imitation_env_config(
-                env_params, NEW_EVAL_H5, clip_length, default_config_fn
-            )
-            if override.get("body_target_frame") and env_class is AbsoluteImitation:
-                with env_cfg.ignore_type():
-                    env_cfg.body_target_frame = override["body_target_frame"]
-            env = env_class(env_cfg)
-
-            print("  Loading checkpoint…", flush=True)
-            loaded = load_network(ckpt_dir, net_params, env, seed=SEED)
-            if loaded is None:
-                print(f"  [skip] could not load network for {ckpt_name}")
-                continue
-            network, step = loaded
-            network.eval()
-            print(f"  step={step}")
-
-            # Per-clip rollouts.
-            clip_qpos, clip_qvel = [], []
-            per_clip_stats = []
-            for c in range(n_eval_clips):
-                key = jax.random.key(SEED + c)
-                stacked, done_mask, rewards, root_err, ee_err = rollout_fn(
-                    env, network, n_steps, key, jp.array(c), AUTO_RESET_ON_TERMINATION
-                )
-                clip_qpos.append(np.array(stacked.data.qpos))
-                clip_qvel.append(np.array(stacked.data.qvel))
-                s = compute_stats(
-                    np.array(rewards), np.array(root_err), np.array(ee_err),
-                    np.array(done_mask), ctrl_dt, n_steps, AUTO_RESET_ON_TERMINATION,
-                )
-                s["clip_idx"] = c
-                per_clip_stats.append(s)
-                if AUTO_RESET_ON_TERMINATION:
-                    print(f"    clip {c}: reward={s['total_reward']:.1f}  "
-                          f"resets={s['n_resets']}  alive={s['avg_time_alive_s']:.1f}s  "
-                          f"root_err={s['root_error_mean']:.4f}")
-                else:
-                    print(f"    clip {c}: reward={s['total_reward']:.1f}  "
-                          f"terminated={s['terminated']}  alive={s['time_alive_s']:.1f}s  "
-                          f"root_err(pre-fail)={s['root_error_mean']:.4f}")
-
-            overall = aggregate_stats(per_clip_stats, AUTO_RESET_ON_TERMINATION)
-
-            out_dir = Path(OUTPUT_DIR) / ckpt_name
-            out_dir.mkdir(parents=True, exist_ok=True)
-
-            stats = {
-                "checkpoint": ckpt_name,
-                "step": step,
-                "network_class": net_params.get("network_class"),
-                "env_class": env_class.__name__,
-                "auto_reset_on_termination": AUTO_RESET_ON_TERMINATION,
-                "n_eval_clips": n_eval_clips,
-                "clip_length": clip_length,
-                "ctrl_dt": ctrl_dt,
-                "overall": overall,
-                "per_clip": per_clip_stats,
-            }
-            stats_path = out_dir / f"stats{OUTPUT_SUFFIX}.json"
-            with open(stats_path, "w") as f:
-                json.dump(stats, f, indent=2)
-            alive = (overall["avg_time_alive_s"] if AUTO_RESET_ON_TERMINATION
-                     else overall["mean_time_alive_s"])
-            print(f"  Saved {stats_path}  "
-                  f"(overall reward={overall['total_reward']:.1f}, "
-                  f"alive={alive:.1f}s)")
-
-            save_h5(out_dir / f"rollout{OUTPUT_SUFFIX}.h5", clip_qpos, frame_skip,
-                    NEW_EVAL_H5, clip_length, n_eval_clips)
-            render_clips_video(env, clip_qpos, clip_qvel, frame_skip,
-                               camera_kwargs, out_dir / f"rollout{OUTPUT_SUFFIX}.mp4", FPS)
-            print(f"  Done → {out_dir}/")
-        except Exception as e:  # noqa: BLE001 — one bad checkpoint must not kill the batch
-            print(f"  [skip] {ckpt_name}: {type(e).__name__}: {e}")
+            render_run(ckpt_dir, Path(OUTPUT_DIR) / ckpt_dir.name,
+                       camera_kwargs=camera_kwargs)
+            print(f"  Done -> {OUTPUT_DIR}/{ckpt_dir.name}/")
+        except Exception as e:  # noqa: BLE001 - one bad checkpoint must not kill the batch
+            print(f"  [skip] {ckpt_dir.name}: {type(e).__name__}: {e}")
         finally:
             # Guard against JIT-cache / device-memory accumulation across runs
             # (each checkpoint bakes its env's reference arrays into the program).

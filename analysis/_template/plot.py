@@ -1,61 +1,66 @@
-"""Plot <QUESTION> from data.csv.
+"""Figures for <question-slug>.
 
-Run from the repo root::
+Reads only the committed CSVs in this folder -- no WandB, no artifact store, no network.
+That separation is what lets a figure be restyled or re-rendered years later, and it is
+why ``data.csv`` is committed rather than regenerated on demand.
 
     ../.venv/bin/python analysis/<question-slug>/plot.py
-
-Reads ONLY data.csv (never the WandB API) and writes figures/. See analysis/README.md §2.
+    VNL_NO_FOOTER=1 ../.venv/bin/python analysis/<question-slug>/plot.py   # for slides
 """
 
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 
-from vnl_experiments.wandb_utils import (
-    add_ms_axis,
+from vnl_experiments.wandb_utils.style import (
     apply_style,
     color_for,
     label_for,
     marker_for,
+    provenance,
+    write_figure_manifest,
 )
 
 HERE = Path(__file__).resolve().parent
 FIGURES = HERE / "figures"
+DATA = HERE / "data.csv"
 
 
-def dedup(df: pd.DataFrame, by, metric: str) -> pd.DataFrame:
-    """Keep the highest-``metric`` row per ``by`` group."""
-    return (
-        df.dropna(subset=[metric])
-        .sort_values(metric, ascending=False)
-        .drop_duplicates(by)
-    )
+def dedup(df: pd.DataFrame, keys: list[str], metric: str) -> pd.DataFrame:
+    """Mean over seeds/repeats so each cell contributes one point."""
+    return (df.groupby(keys, as_index=False)
+              .agg(**{metric: (metric, "mean"), "n": (metric, "size")}))
+
+
+def fig_overview(df: pd.DataFrame) -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(5.5, 4))
+    for condition, group in df.groupby("condition"):
+        points = dedup(group, ["delay_k"], "reward_mean").sort_values("delay_k")
+        ax.plot(points["delay_k"], points["reward_mean"],
+                color=color_for(condition), marker=marker_for(condition),
+                label=label_for(condition))
+    ax.set_xlabel("Observation delay (control steps)")
+    ax.set_ylabel("Episode reward")
+    ax.legend(frameon=False)
+    fig.tight_layout()
+    return fig
 
 
 def main() -> None:
     apply_style()
     FIGURES.mkdir(exist_ok=True)
-    df = pd.read_csv(HERE / "data.csv")
+    df = pd.read_csv(DATA)
 
-    fig, ax = plt.subplots()
-    for cond, sub in df.groupby("condition"):
-        sub = dedup(sub, ["delay_k"], "episode_reward/mean").sort_values("delay_k")
-        ax.plot(
-            sub["delay_k"], sub["episode_reward/mean"],
-            color=color_for(cond), marker=marker_for(cond), label=label_for(cond),
-        )
+    manifest = {}
+    for name, builder in [("overview", fig_overview)]:
+        fig = builder(df)
+        manifest[f"{name}.png"] = provenance(fig, HERE, DATA)
+        fig.savefig(FIGURES / f"{name}.png", dpi=200)
+        plt.close(fig)
+        print(f"wrote figures/{name}.png")
 
-    ax.set_xlabel("Observation delay (steps)")  # TODO
-    ax.set_ylabel("Mean episode reward")        # TODO
-    ax.set_ylim(bottom=0)
-    ax.legend(loc="upper right")
-    sns.despine(ax=ax)
-
-    out = FIGURES / "figure.png"
-    fig.savefig(out)
-    print(f"Saved {out}")
+    write_figure_manifest(HERE, manifest)
 
 
 if __name__ == "__main__":

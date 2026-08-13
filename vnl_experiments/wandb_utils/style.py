@@ -7,6 +7,11 @@ given experimental condition keeps the same colour and marker in every figure.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
+import subprocess
+from datetime import date
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -57,6 +62,47 @@ def marker_for(condition: str) -> str:
 
 def label_for(condition: str) -> str:
     return CONDITION_STYLE.get(condition, {}).get("label", condition)
+
+
+def _short_hash(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()[:8]
+
+
+def _repo_commit() -> str:
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(Path(__file__).resolve().parents[2]),
+             "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=10)
+        return out.stdout.strip() or "unknown"
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
+def provenance(fig, here: Path | str, *inputs: Path | str) -> str:
+    """Stamp a figure with the analysis, its input CSVs' hashes, commit and date.
+
+    So a figure that has escaped into a slide deck can still be traced back to the exact
+    committed data it was built from. Set ``VNL_NO_FOOTER=1`` to suppress the stamp for
+    presentation figures; the returned string is written to ``figures/manifest.json``
+    either way.
+    """
+    here = Path(here)
+    parts = [here.name]
+    parts += [f"{Path(p).name} {_short_hash(Path(p))}" for p in inputs]
+    parts += [f"vnl-experiments {_repo_commit()}", date.today().isoformat()]
+    text = "  ·  ".join(parts)
+    if not os.environ.get("VNL_NO_FOOTER"):
+        fig.text(0.005, 0.004, text, fontsize=4.5, color="0.55", ha="left", va="bottom")
+    return text
+
+
+def write_figure_manifest(here: Path | str, entries: dict[str, str]) -> Path:
+    """Record ``{figure filename: provenance string}`` next to the figures."""
+    path = Path(here) / "figures" / "manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(entries, indent=2, sort_keys=True) + "\n")
+    return path
 
 
 def add_ms_axis(ax, max_x: float):

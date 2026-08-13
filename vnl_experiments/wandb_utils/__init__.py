@@ -22,9 +22,18 @@ from vnl_experiments.wandb_utils.style import (
     color_for,
     label_for,
     marker_for,
+    provenance,
+    write_figure_manifest,
 )
 
+# `index` and `pipeline` are imported as modules rather than re-exported piecemeal:
+# `index.load` / `pipeline.resolve_selection` read better at the call site than bare
+# names, and it keeps the (lazy) wandb import out of plot-only scripts.
+from vnl_experiments.wandb_utils import index, pipeline  # noqa: E402,F401
+
 __all__ = [
+    "index",
+    "pipeline",
     "fetch_runs",
     "run_record",
     "records_to_df",
@@ -37,6 +46,8 @@ __all__ = [
     "color_for",
     "marker_for",
     "label_for",
+    "provenance",
+    "write_figure_manifest",
     "CONDITION_STYLE",
     "CTRL_DT_MS",
 ]
