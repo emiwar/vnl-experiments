@@ -516,6 +516,36 @@ def evaluate_networks(
     return result
 
 
+def latest_checkpoint_step(ckpt_dir) -> int | None:
+    """Step of the newest ``step_*`` checkpoint in ``ckpt_dir``, or None."""
+    steps = []
+    for d in Path(ckpt_dir).glob("step_*"):
+        if d.is_dir():
+            try:
+                steps.append(int(d.name.removeprefix("step_")))
+            except ValueError:
+                continue
+    return max(steps) if steps else None
+
+
+def warn_if_step_not_checkpointed(ckpt_dir, step: int) -> None:
+    """Warn when the newest checkpoint on disk is behind the evaluated weights."""
+    latest = latest_checkpoint_step(ckpt_dir)
+    if latest is None:
+        warnings.warn(
+            f"No checkpoint found in {ckpt_dir}; the eval record at step {step} "
+            f"cannot be reproduced by eval_runs.py."
+        )
+    elif latest != step:
+        warnings.warn(
+            f"Evaluating the in-memory network at step {step}, but the newest "
+            f"checkpoint is step {latest} ({step - latest} steps behind) — "
+            f"total_steps is not a multiple of checkpoint_every_steps. A later "
+            f"eval_runs.py pass will restore step {latest} and so may differ "
+            f"slightly from this record."
+        )
+
+
 def run_final_eval(
     nets,
     env_cls,
@@ -540,10 +570,19 @@ def run_final_eval(
     cluster→laptop rsync; ``eval_runs.py --collect`` gathers these into the flat,
     wandb_id-keyed directory the analyses read.
 
+    This evaluates the **in-memory** network. Training does not write an extra
+    checkpoint when it finishes, so if ``step`` is not on the
+    ``checkpoint_every_steps`` grid the newest checkpoint on disk is slightly
+    behind these weights and a later ``eval_runs.py`` pass would restore that
+    older one instead. In practice total_steps is a multiple of the checkpoint
+    interval and the two coincide; when they don't, we warn and carry on — the
+    discrepancy is a fraction of a percent of training.
+
     **Never raises.** A 600M-step training run must not be lost to a failed
     evaluation, so problems are reported and swallowed. ``summary_fn`` (e.g.
     ``wandb.run.summary.update``) receives :func:`flat_summary` of the record.
     """
+    warn_if_step_not_checkpointed(ckpt_dir, step)
     try:
         record = evaluate_networks(
             nets, env_cls, env_config,

@@ -351,14 +351,13 @@ def main() -> None:
               *(() if args.detach_prediction else ("nodetach",))),
         notes="New XML + reference_root.",
     )
-    ckpt_fn = make_checkpoint_fn(ckpt_dir, config)
     result = ppo.train_ppo(
         train_env,
         nets,
         config,
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
-        checkpoint_fn=ckpt_fn,
+        checkpoint_fn=make_checkpoint_fn(ckpt_dir, config),
         eval_env=eval_env,
         **({} if args.total_steps is None else {"total_steps": args.total_steps}),
     )
@@ -373,13 +372,7 @@ def main() -> None:
             f"{result.eval_history[-1].get('eval/episode_reward/mean', 'N/A')}"
         )
 
-    # train_ppo only checkpoints on the checkpoint_every_steps grid and never
-    # after the loop exits, so save the final weights explicitly. Without this
-    # the end-of-training eval would measure a network that is not on disk and
-    # that eval_runs.py could never reproduce.
     total_steps = result.total_steps
-    ckpt_fn(result.training_state, total_steps)
-    print(f"Saved final checkpoint at step {total_steps}")
 
     if args.final_eval:
         # Release the training state (4096 env states + optimizer moments)

@@ -191,8 +191,8 @@ Each JSON carries, per dataset: `episode_reward`, `lifespan_steps`, per-reason
 ### End-of-training eval (runs from 2026-08-10 onward)
 
 Training runs now evaluate themselves when they finish: `train_rodent_delays.py` and
-`train_rodent_forward_model.py` save a final checkpoint and then run **the same evaluation
-described above** on the just-trained network, through the shared
+`train_rodent_forward_model.py` run **the same evaluation described above** on the
+just-trained (in-memory) network, through the shared
 [`vnl_experiments/delays/evaluation.py`](../vnl_experiments/delays/evaluation.py). The record
 has an identical schema to the batch output. Two consequences for analyses:
 
@@ -213,6 +213,15 @@ has an identical schema to the batch output. Two consequences for analyses:
   new runs an `extract.py` can read these straight from the run summary via `wandb_utils`,
   with no local JSON needed. Runs from before this date have no `final_eval/*` keys — fall
   back to `eval_results/`.
+
+The inline eval measures the **in-memory** network at `total_steps`. Training deliberately
+does *not* write an extra checkpoint when it finishes, so strictly the evaluated weights are
+whatever the last on-grid checkpoint would have been plus any steps since. With
+`total_steps = 600M` and `checkpoint_every_steps = 50M` the two coincide exactly; when they
+don't, the training script warns and names the gap, and the inline record can then differ
+slightly from what a later `eval_runs.py` pass produces (which restores the newest checkpoint
+on disk). The gap is a fraction of a percent of training — smaller than the run-to-run
+nondeterminism above.
 
 `eval_runs.py` stays the authority for **cross-run** comparisons: it is the only way to
 re-evaluate the whole cohort under one version of the eval code (`--override`). An inline
