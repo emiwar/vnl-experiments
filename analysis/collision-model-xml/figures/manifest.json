@@ -1,7 +1,8 @@
 {
-  "confounded_pg_pair.png": "collision-model-xml  \u00b7  data.csv 7f57b6ae  \u00b7  vnl-experiments 0b4de48  \u00b7  2026-08-13",
-  "convergence.png": "collision-model-xml  \u00b7  data.csv 7f57b6ae  \u00b7  curves.csv d8ca6d96  \u00b7  vnl-experiments 0b4de48  \u00b7  2026-08-13",
-  "throughput.png": "collision-model-xml  \u00b7  data.csv 7f57b6ae  \u00b7  vnl-experiments 0b4de48  \u00b7  2026-08-13",
-  "xml_comparison.png": "collision-model-xml  \u00b7  data.csv 7f57b6ae  \u00b7  vnl-experiments 0b4de48  \u00b7  2026-08-13",
-  "xml_difference.png": "collision-model-xml  \u00b7  data.csv 7f57b6ae  \u00b7  vnl-experiments 0b4de48  \u00b7  2026-08-13"
+  "convergence.png": "collision-model-xml  \u00b7  data.csv fd89a556  \u00b7  curves.csv 2f58b926  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14",
+  "decomposition.png": "collision-model-xml  \u00b7  data.csv fd89a556  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14",
+  "offline_eval.png": "collision-model-xml  \u00b7  data_eval.csv 1a943378  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14",
+  "position.png": "collision-model-xml  \u00b7  data.csv fd89a556  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14",
+  "primary.png": "collision-model-xml  \u00b7  data.csv fd89a556  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14",
+  "throughput.png": "collision-model-xml  \u00b7  data.csv fd89a556  \u00b7  vnl-experiments 15a429f  \u00b7  2026-08-14"
 }

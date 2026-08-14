@@ -1,19 +1,46 @@
-Coverage for 82 runs in collision-model-xml
+Coverage for 149 runs in collision-model-xml
 
-index  (spec_id=-): 82/82
-    new_efference                   6/6   
-    new_forward_model               5/5   
-    new_pg_forward_model           21/21  
-    old_efference                  22/22  
-    old_efference_refroot           6/6   
-    old_forward_model               8/8   
-    old_pg_forward_model           14/14  
+index  (spec_id=-): 149/149
+    encdec_new_current              6/6   
+    encdec_new_reference           23/23  
+    encdec_old_current             22/22  
+    encdec_old_reference            6/6   
+    expfm_new_position              5/5   
+    expfm_new_reference            23/23  
+    expfm_old_current              23/23  
+    expfm_old_position              8/8   
+    expfm_old_reference             6/6   
+    pgfm_new_reference             13/13  
+    pgfm_old_current               14/14  
 
-history  (spec_id=hist2000-09fea177): 82/82
-    new_efference                   6/6   
-    new_forward_model               5/5   
-    new_pg_forward_model           21/21  
-    old_efference                  22/22  
-    old_efference_refroot           6/6   
-    old_forward_model               8/8   
-    old_pg_forward_model           14/14  
+history  (spec_id=hist2000-09fea177): 149/149
+    encdec_new_current              6/6   
+    encdec_new_reference           23/23  
+    encdec_old_current             22/22  
+    encdec_old_reference            6/6   
+    expfm_new_position              5/5   
+    expfm_new_reference            23/23  
+    expfm_old_current              23/23  
+    expfm_old_position              8/8   
+    expfm_old_reference             6/6   
+    pgfm_new_reference             13/13  
+    pgfm_old_current               14/14  
+
+eval:eval3ds-66aaff5b  (spec_id=eval3ds-66aaff5b): 61/149
+    encdec_new_current              6/6   
+    encdec_new_reference            0/23     *** GAP ***
+    encdec_old_current             22/22  
+    encdec_old_reference            6/6   
+    expfm_new_position              5/5   
+    expfm_new_reference             0/23     *** GAP ***
+    expfm_old_current               0/23     *** GAP ***
+    expfm_old_position              8/8   
+    expfm_old_reference             0/6      *** GAP ***
+    pgfm_new_reference              0/13     *** GAP ***
+    pgfm_old_current               14/14  
+
+Missing artifacts. Produce or fetch them with:
+  # 88 runs missing eval:eval3ds-66aaff5b
+  # other specs held for these runs: legacy-batch (79), legacy-batch-v0 (54)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs collision-model-xml/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs collision-model-xml/runs.csv

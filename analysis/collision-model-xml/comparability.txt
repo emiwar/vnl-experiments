@@ -1,10 +1,13 @@
 ======================================================================
-Group condition='new_efference'  (n=6)
+Group condition='encdec_new_current'  (n=6)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -27,12 +30,15 @@ Group condition='new_efference'  (n=6)
   git_commit                        : ['201d6e11079d3f463b8c751039e86d42cebcd9ba']
 
 ======================================================================
-Group condition='new_forward_model'  (n=5)
+Group condition='encdec_new_reference'  (n=23)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -50,45 +56,20 @@ Group condition='new_forward_model'  (n=5)
   config.ppo.total_steps            : [600000000]
   summary._step                     : [600064000.0]
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
-  env_params.torque_actuators       : [False]
-  env_params.body_target_frame      : ['current_root']
-  git_commit                        : ['201d6e11079d3f463b8c751039e86d42cebcd9ba']
+  env_params.torque_actuators       : [True]
+  env_params.body_target_frame      : ['reference_root']
+  git_commit                        : ['ef060b73c049f0242100f38ecf427083c2cf8ab1']
 
 ======================================================================
-Group condition='new_pg_forward_model'  (n=21)
+Group condition='encdec_old_current'  (n=22)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
-  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
-  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
-  net_params.critic_hidden_sizes    : ['[1024, 1024]']
-  env_params.clip_length            : [250]
-  env_params.ctrl_dt                : [0.01]
-  env_params.sim_dt                 : [0.002]
-  env_params.solver                 : ['newton']
-  env_params.iterations             : [5]
-  env_params.ls_iterations          : [5]
-  env_params.njmax                  : [256]
-  env_params.naconmax               : [131072]
-  env_params.rescale_factor         : [0.9]
-  env_params.mujoco_impl            : ['warp']
-  config.ppo.n_envs                 : [4096]
-  config.ppo.total_steps            : [600000000]
-  summary._step                     : [600064000.0]
-  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
-  env_params.torque_actuators       : [False]
-  env_params.body_target_frame      : ['current_root']
-  git_commit                        : ['0560d402669d035fa2e35105c27c4fd89ce6e298']
-
-======================================================================
-Group condition='old_efference'  (n=22)
-======================================================================
-  env                               : ['AbsoluteImitation']
-  seed                              : [42]
-  net_params.latent_size            : [32]
-  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -111,12 +92,15 @@ Group condition='old_efference'  (n=22)
   git_commit                        : ['1cd5838f55449417b0aa477b8452a1fbdd77f392']
 
 ======================================================================
-Group condition='old_efference_refroot'  (n=6)
+Group condition='encdec_old_reference'  (n=6)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -139,12 +123,108 @@ Group condition='old_efference_refroot'  (n=6)
   git_commit                        : ['909e774d8aa380ec8732b4895aeeabba889a5fce']
 
 ======================================================================
-Group condition='old_forward_model'  (n=8)
+Group condition='expfm_new_position'  (n=5)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.clip_length            : [250]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.002]
+  env_params.solver                 : ['newton']
+  env_params.iterations             : [5]
+  env_params.ls_iterations          : [5]
+  env_params.njmax                  : [256]
+  env_params.naconmax               : [131072]
+  env_params.rescale_factor         : [0.9]
+  env_params.mujoco_impl            : ['warp']
+  config.ppo.n_envs                 : [4096]
+  config.ppo.total_steps            : [600000000]
+  summary._step                     : [600064000.0]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+  env_params.torque_actuators       : [False]
+  env_params.body_target_frame      : ['current_root']
+  git_commit                        : ['201d6e11079d3f463b8c751039e86d42cebcd9ba']
+
+======================================================================
+Group condition='expfm_new_reference'  (n=23)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  seed                              : [42]
+  net_params.latent_size            : [32]
+  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.clip_length            : [250]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.002]
+  env_params.solver                 : ['newton']
+  env_params.iterations             : [5]
+  env_params.ls_iterations          : [5]
+  env_params.njmax                  : [256]
+  env_params.naconmax               : [131072]
+  env_params.rescale_factor         : [0.9]
+  env_params.mujoco_impl            : ['warp']
+  config.ppo.n_envs                 : [4096]
+  config.ppo.total_steps            : [600000000]
+  summary._step                     : [600064000.0]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+  env_params.torque_actuators       : [True]
+  env_params.body_target_frame      : ['reference_root']
+  git_commit                        : ['ef060b73c049f0242100f38ecf427083c2cf8ab1']
+
+======================================================================
+Group condition='expfm_old_current'  (n=23)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  seed                              : [42]
+  net_params.latent_size            : [32]
+  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.clip_length            : [250]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.002]
+  env_params.solver                 : ['newton']
+  env_params.iterations             : [5]
+  env_params.ls_iterations          : [5]
+  env_params.njmax                  : [256]
+  env_params.naconmax               : [131072]
+  env_params.rescale_factor         : [0.9]
+  env_params.mujoco_impl            : ['warp']
+  config.ppo.n_envs                 : [4096]
+  config.ppo.total_steps            : [600000000]
+  summary._step                     : [600064000.0]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent.xml']
+  env_params.torque_actuators       : [True]
+  env_params.body_target_frame      : ['current_root']
+  git_commit                        : ['546437641064f2c18793e24dd96a84bccd1a9088']
+
+======================================================================
+Group condition='expfm_old_position'  (n=8)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  seed                              : [42]
+  net_params.latent_size            : [32]
+  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -167,12 +247,77 @@ Group condition='old_forward_model'  (n=8)
   git_commit                        : ['891cd0d35d58eb1fcd9ab8c83761e6067c4536a6']
 
 ======================================================================
-Group condition='old_pg_forward_model'  (n=14)
+Group condition='expfm_old_reference'  (n=6)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.clip_length            : [250]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.002]
+  env_params.solver                 : ['newton']
+  env_params.iterations             : [5]
+  env_params.ls_iterations          : [5]
+  env_params.njmax                  : [256]
+  env_params.naconmax               : [131072]
+  env_params.rescale_factor         : [0.9]
+  env_params.mujoco_impl            : ['warp']
+  config.ppo.n_envs                 : [4096]
+  config.ppo.total_steps            : [600000000]
+  summary._step                     : [600064000.0]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent.xml']
+  env_params.torque_actuators       : [True]
+  env_params.body_target_frame      : ['reference_root']
+  git_commit                        : ['909e774d8aa380ec8732b4895aeeabba889a5fce']
+
+======================================================================
+Group condition='pgfm_new_reference'  (n=13)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  seed                              : [42]
+  net_params.latent_size            : [32]
+  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.clip_length            : [250]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.002]
+  env_params.solver                 : ['newton']
+  env_params.iterations             : [5]
+  env_params.ls_iterations          : [5]
+  env_params.njmax                  : [256]
+  env_params.naconmax               : [131072]
+  env_params.rescale_factor         : [0.9]
+  env_params.mujoco_impl            : ['warp']
+  config.ppo.n_envs                 : [4096]
+  config.ppo.total_steps            : [600000000]
+  summary._step                     : [600064000.0]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+  env_params.torque_actuators       : [True]
+  env_params.body_target_frame      : ['reference_root']
+  git_commit                        : ['25732c42334fc36980ba276952bbd3dffa4ebcf3']
+
+======================================================================
+Group condition='pgfm_old_current'  (n=14)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  seed                              : [42]
+  net_params.latent_size            : [32]
+  net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -195,12 +340,15 @@ Group condition='old_pg_forward_model'  (n=14)
   git_commit                        : ['d33e5bcfb09073fa7002b54c40e23243a77010a9', 'd4bd4dc071e4a1385f358ea8916d60fd912a86fa']  *** VARIES ***
 
 ======================================================================
-All runs  (n=82)
+All runs  (n=149)
 ======================================================================
   env                               : ['AbsoluteImitation']
   seed                              : [42]
   net_params.latent_size            : [32]
   net_params.kl_weight              : [0.001]
+  net_params.min_std                : [0.1]
+  net_params.latent_min_std         : [0.01]
+  net_params.std_scale              : [1]
   net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
   net_params.critic_hidden_sizes    : ['[1024, 1024]']
@@ -220,4 +368,4 @@ All runs  (n=82)
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent.xml', '/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']  *** VARIES ***
   env_params.torque_actuators       : [False, True]  *** VARIES ***
   env_params.body_target_frame      : ['current_root', 'reference_root']  *** VARIES ***
-  git_commit                        : ['0560d402669d035fa2e35105c27c4fd89ce6e298', '1cd5838f55449417b0aa477b8452a1fbdd77f392', '201d6e11079d3f463b8c751039e86d42cebcd9ba', '891cd0d35d58eb1fcd9ab8c83761e6067c4536a6', '909e774d8aa380ec8732b4895aeeabba889a5fce', 'd33e5bcfb09073fa7002b54c40e23243a77010a9', 'd4bd4dc071e4a1385f358ea8916d60fd912a86fa']  *** VARIES ***
+  git_commit                        : ['1cd5838f55449417b0aa477b8452a1fbdd77f392', '201d6e11079d3f463b8c751039e86d42cebcd9ba', '25732c42334fc36980ba276952bbd3dffa4ebcf3', '546437641064f2c18793e24dd96a84bccd1a9088', '891cd0d35d58eb1fcd9ab8c83761e6067c4536a6', '909e774d8aa380ec8732b4895aeeabba889a5fce', 'd33e5bcfb09073fa7002b54c40e23243a77010a9', 'd4bd4dc071e4a1385f358ea8916d60fd912a86fa', 'ef060b73c049f0242100f38ecf427083c2cf8ab1']  *** VARIES ***

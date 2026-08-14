@@ -1,50 +1,41 @@
-"""New (almost-full-collision) walker XML vs the old (very sparse) one.
+"""New (almost-full-collision) walker XML + reference_root vs the old (sparse) baseline.
 
-Five questions, one dataset:
+Primary question
+----------------
+The configuration going forward is **new XML + `reference_root` + torque actuators**.
+How does it compare to the old baseline it replaces, **old XML + `current_root` +
+torque**? Both arms are the policy-gradient forward model (``fm_loss_weight = 0``,
+``detach_prediction = False``), which is the only network with a torque-actuated cohort
+on both sides at the standard 600 M-step / ``min_std = 0.1`` settings.
 
-1. how does the new XML perform relative to the old one?
-2. is the difference uniform across networks/conditions, or worse somewhere?
-3. how does ``body_target_frame`` come into it?
-4. is convergence slower?
-5. how much slower is the new XML to simulate?
+The primary contrast therefore moves **two** things at once (walker XML and target
+frame). Two groups of supplementary conditions separate them:
 
-Cohorts
--------
-The new-XML runs are confounded with actuator mode -- the new EncDec runs used torque
-control, the new forward-model runs used position control -- so the analysis is built
-from two *internally matched* pairs plus one explicitly-flagged doubly-confounded pair:
+* **XML alone** — EncDec + efference, torque, `current_root` on both sides
+  (``encdec_old_current`` vs ``encdec_new_current``).
+* **Frame alone** — old XML, torque, `current_root` vs `reference_root`, measured
+  independently in two networks (``encdec_*`` and ``expfm_*``). Both reference-root arms
+  come from the deliberate 2026-07-06 A/B at ``909e774d``.
 
-===========================  ================================================
-``old/new_efference``        EncDec + efference copy, torque, matched
-``old/new_forward_model``    explicit FM (loss 1, detached), position, matched
-``old/new_pg_forward_model`` policy-gradient FM -- **old = torque, new =
-                             position**, shown only to explain the apparent
-                             difference away
-``old_efference_refroot``    the primary old-XML baseline for the EncDec pair:
-                             909e774d, three days before the new cohort, after
-                             the nnx-ppo 0.3.0-dev pin and the logging rename
-===========================  ================================================
+The decomposition necessarily crosses networks: there is no cell where XML and frame vary
+independently within one architecture. It bounds the split rather than measuring it.
 
-The canonical ``old_efference`` sweep (1cd5838f) predates both of those changes, so it
-is kept as a second, independent baseline rather than the primary one. They agree to
-within 8 reward.
+A third supplementary pair covers **position control** (``expfm_*_position``), which is
+an XML-only contrast at fixed `current_root` and is treated as a special case.
 
-On the frame (question 3)
--------------------------
-Every new-XML run in this selection logs ``env_params.body_target_frame =
-current_root``, although the training script at their recorded commits (``201d6e11``,
-``0560d402``) reads ``reference_root``: the cluster working copy had been edited, a
-state only committed later as ``456fbd7``. WandB stored no ``diff.patch`` for these
-runs, so ``env_params`` is the only record of what actually ran -- which is why this
-script filters on ``env_params.*`` and never on the training script at the run's commit.
-(``ef060b7``, 2026-08-11, has since set ``reference_root`` in both training scripts, so
-runs launched after that date do use it.)
+Excluded by design
+------------------
+``net_params.min_std == 0.1`` and ``summary._step == 600_064_000`` drop the
+larger-min-std (0.25) and longer-training (2 G-step) new-XML runs, which belong to a
+separate question. Also excluded: seeds 43/44, non-standard architectures, and runs where
+``efference_length != delay_k``.
 
 Data sources
 ------------
-Run configs and summaries come from the committed run index; the reward curves and the
-throughput series come from the ``history`` artifacts in the store. Neither touches the
-WandB API, so this script runs offline in a couple of seconds.
+Configs and summaries from the committed run index; reward curves and throughput from
+``history`` artifacts; offline evaluation from ``eval`` artifacts where present (see
+``coverage.txt`` — the new-XML arm has none yet, so ``data_eval.csv`` covers only the
+conditions that do). Nothing here touches the WandB API.
 
 Run it
 ------
@@ -53,6 +44,7 @@ Run it
     ../.venv/bin/python analysis/collision-model-xml/extract.py --check
 """
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -63,22 +55,24 @@ from vnl_experiments.wandb_utils import comparability_report, pipeline
 
 HERE = Path(__file__).resolve().parent
 PROJECT = "emiwar-team/nnx-ppo-rodent-delays"
-REQUIRES = ["index", "history"]
+REQUIRES = ["index", "history", "eval:eval3ds-66aaff5b"]
 
-OLD_XML = "rodent.xml"
 NEW_XML = "rodent_no_tail_collisions.xml"
-
+EXPECTED_STEP = 600_064_000
+STD_MIN_STD = 0.1
 STD_ARCH = {
     "net_params.enc_hidden_sizes": "[512, 512, 512, 512]",
     "net_params.dec_hidden_sizes": "[512, 512, 512, 512]",
     "net_params.critic_hidden_sizes": "[1024, 1024]",
 }
-EXPECTED_STEP = 600_064_000
 
 REWARD_MEAN_KEYS = ("summary.eval/episode_reward/mean", "summary.episode_reward/mean")
 REWARD_STD_KEYS = ("summary.eval/episode_reward/std", "summary.episode_reward/std")
 LIFESPAN_KEYS = ("summary.eval/lifespan/mean", "summary.lifespan_mean")
 CURVE_KEYS = ("eval/episode_reward/mean", "episode_reward/mean")
+
+EVAL_SPEC_ID = "eval3ds-66aaff5b"
+EVAL_DATASETS = ("train", "old_eval", "new_eval")
 
 
 # --------------------------------------------------------------------------------------
@@ -86,17 +80,18 @@ CURVE_KEYS = ("eval/episode_reward/mean", "episode_reward/mean")
 # --------------------------------------------------------------------------------------
 
 
-def _xml_name(series: pd.Series) -> pd.Series:
-    return series.astype(str).str.rsplit("/", n=1).str[-1]
+def _is_new_xml(df: pd.DataFrame) -> pd.Series:
+    return df["env_params.walker_xml_path"].astype(str).str.contains(NEW_XML)
 
 
 def _base(df: pd.DataFrame) -> pd.Series:
-    """What all seven cells share: standard architecture, the standard 600 M-step
-    budget, seed 42, and efference length tied to the delay."""
+    """What every included run shares. Also what excludes the two out-of-scope cohorts:
+    ``min_std`` drops the larger-exploration runs, ``_step`` drops the 2 G-step ones."""
     mask = (
         (df["env"] == "AbsoluteImitation")
         & (df["seed"] == 42)
         & (df["summary._step"] == EXPECTED_STEP)
+        & (df["net_params.min_std"] == STD_MIN_STD)
         & (df["delay_k"] == df["efference_length"])
     )
     for column, value in STD_ARCH.items():
@@ -104,39 +99,52 @@ def _base(df: pd.DataFrame) -> pd.Series:
     return mask
 
 
-def _cell(xml: str, torque: bool, network: str, frame: str = "current_root",
-          dates: tuple[str, ...] | None = None):
-    """A selector for one (xml, control mode, network, frame) cell.
+def _network(df: pd.DataFrame, kind: str) -> pd.Series:
+    """Network identity from tags plus the forward-model knobs.
 
-    ``network`` is derived from the run's tags plus the forward-model knobs rather than
-    read from a config field, because no single field separates the explicit forward
-    model (``fm_loss_weight=1``, detached) from the policy-gradient one
-    (``fm_loss_weight=0``, gradient flowing through the predictor).
+    No single config field separates the explicit forward model (``fm_loss_weight = 1``,
+    prediction detached) from the policy-gradient one (``fm_loss_weight = 0``, gradient
+    flowing through the predictor), so both are needed.
     """
+    tags = df["tags"].fillna("").str.split(",")
+    is_fm = tags.apply(lambda t: "ForwardModel" in t)
+    if kind == "encdec":
+        return tags.apply(lambda t: "EncDec" in t) & ~is_fm
+    if kind == "explicit_fm":
+        return (is_fm & (df["fm_loss_weight"] == 1)
+                & df["detach_prediction"].fillna(True).astype(bool))
+    if kind == "pg_fm":
+        return is_fm & (df["fm_loss_weight"] == 0) & (df["detach_prediction"] == False)  # noqa: E712
+    raise ValueError(kind)
+
+
+#: Terminal states that are acceptable *given* that ``summary._step`` reached
+#: ``EXPECTED_STEP``. Completing all 600 M steps is the real inclusion criterion; the
+#: WandB state only says how the process exited. The 2026-08-11 cohort (46 runs at
+#: ``ef060b7``) is marked ``failed`` because it died in the post-training evaluation --
+#: it has every training metric, normal 3.5-7.5 h runtimes, and no ``final_eval/*`` keys.
+#: A run that died *during* training cannot reach ``EXPECTED_STEP``, so this pair of
+#: conditions admits the former and excludes the latter.
+ACCEPTED_STATES = ("finished", "failed")
+
+
+def _cell(network: str, *, new_xml: bool, torque: bool, frame: str,
+          commits: tuple[str, ...] | None = None, dates: tuple[str, ...] | None = None):
+    """Selector for one cell. ``commits``/``dates`` pin a specific launch tranche where a
+    cell spans several, so a baseline stays a single coherent sweep."""
 
     def selector(df: pd.DataFrame) -> pd.Series:
-        tags = df["tags"].fillna("").str.split(",")
-        is_fm = tags.apply(lambda t: "ForwardModel" in t)
-        is_encdec = tags.apply(lambda t: "EncDec" in t)
-
-        if network == "efference":
-            net_mask = is_encdec & ~is_fm
-        elif network == "forward_model":
-            net_mask = (is_fm & (df["fm_loss_weight"] == 1)
-                        & df["detach_prediction"].fillna(True).astype(bool))
-        elif network == "pg_forward_model":
-            net_mask = (is_fm & (df["fm_loss_weight"] == 0)
-                        & (df["detach_prediction"] == False))  # noqa: E712
-        else:
-            raise ValueError(network)
-
         mask = (
             _base(df)
-            & net_mask
-            & (_xml_name(df["env_params.walker_xml_path"]) == xml)
+            & _network(df, network)
+            & (_is_new_xml(df) == new_xml)
             & (df["env_params.torque_actuators"] == torque)
             & (df["env_params.body_target_frame"] == frame)
+            & df["tags"].fillna("").str.split(",").apply(lambda t: "TrainEvalSplit" in t)
+            & df["state"].isin(ACCEPTED_STATES)
         )
+        if commits is not None:
+            mask &= df["git_commit"].str[:8].isin(commits)
         if dates is not None:
             mask &= df["created_at"].str[:10].isin(dates)
         return mask
@@ -145,21 +153,71 @@ def _cell(xml: str, torque: bool, network: str, frame: str = "current_root",
 
 
 CONDITIONS = {
-    "old_efference":         _cell(OLD_XML, True,  "efference",
-                                   dates=("2026-06-11", "2026-06-12")),
-    "new_efference":         _cell(NEW_XML, True,  "efference", dates=("2026-07-09",)),
-    "old_efference_refroot": _cell(OLD_XML, True,  "efference", frame="reference_root",
-                                   dates=("2026-07-06",)),
-    "old_forward_model":     _cell(OLD_XML, False, "forward_model"),
-    "new_forward_model":     _cell(NEW_XML, False, "forward_model"),
-    "old_pg_forward_model":  _cell(OLD_XML, True,  "pg_forward_model"),
-    "new_pg_forward_model":  _cell(NEW_XML, False, "pg_forward_model"),
+    # --- the EncDec 2x2: the only network where XML and frame vary independently ------
+    # The canonical 1cd5838f delay sweep is the reference baseline used across all of
+    # these questions; later torque EncDec tranches are left out to keep it one sweep.
+    "encdec_old_current": _cell("encdec", new_xml=False, torque=True,
+                                frame="current_root", commits=("1cd5838f",)),
+    "encdec_old_reference": _cell("encdec", new_xml=False, torque=True,
+                                  frame="reference_root"),
+    "encdec_new_current": _cell("encdec", new_xml=True, torque=True,
+                                frame="current_root"),
+    "encdec_new_reference": _cell("encdec", new_xml=True, torque=True,
+                                  frame="reference_root"),
+
+    # --- explicit forward model, torque: three of the four cells ---------------------
+    "expfm_old_current": _cell("explicit_fm", new_xml=False, torque=True,
+                               frame="current_root", commits=("54643764",)),
+    "expfm_old_reference": _cell("explicit_fm", new_xml=False, torque=True,
+                                 frame="reference_root"),
+    "expfm_new_reference": _cell("explicit_fm", new_xml=True, torque=True,
+                                 frame="reference_root"),
+
+    # --- policy-gradient forward model, torque: the two diagonal cells ---------------
+    "pgfm_old_current": _cell("pg_fm", new_xml=False, torque=True, frame="current_root"),
+    "pgfm_new_reference": _cell("pg_fm", new_xml=True, torque=True,
+                                frame="reference_root"),
+
+    # --- position control (XML alone, current_root both sides) -----------------------
+    "expfm_old_position": _cell("explicit_fm", new_xml=False, torque=False,
+                                frame="current_root"),
+    "expfm_new_position": _cell("explicit_fm", new_xml=True, torque=False,
+                                frame="current_root"),
 }
 
-# The experimental axes (xml, network, control mode, frame, delay) and git_commit vary by
+#: Which pairs the plots draw, and what each one isolates. The three ``primary_*`` pairs
+#: are the same contrast (old XML + current_root -> new XML + reference_root, torque)
+#: measured in three independent networks.
+PAIRS = {
+    "primary_encdec": ("encdec_old_current", "encdec_new_reference",
+                       "XML + frame (EncDec, torque)"),
+    "primary_expfm": ("expfm_old_current", "expfm_new_reference",
+                      "XML + frame (explicit FM, torque)"),
+    "primary_pgfm": ("pgfm_old_current", "pgfm_new_reference",
+                     "XML + frame (policy-gradient FM, torque)"),
+
+    # the EncDec 2x2, each factor held at both levels of the other
+    "xml_at_current": ("encdec_old_current", "encdec_new_current",
+                       "XML alone, at current_root (EncDec)"),
+    "xml_at_reference": ("encdec_old_reference", "encdec_new_reference",
+                         "XML alone, at reference_root (EncDec)"),
+    "frame_at_old": ("encdec_old_current", "encdec_old_reference",
+                     "Frame alone, on old XML (EncDec)"),
+    "frame_at_new": ("encdec_new_current", "encdec_new_reference",
+                     "Frame alone, on new XML (EncDec)"),
+    # the same frame contrast in a second network, old XML only
+    "frame_expfm": ("expfm_old_current", "expfm_old_reference",
+                    "Frame alone, on old XML (explicit FM)"),
+
+    "position_xml": ("expfm_old_position", "expfm_new_position",
+                     "XML alone (explicit FM, position, current_root)"),
+}
+
+# The experimental axes (xml, frame, network, control mode, delay) and git_commit vary by
 # design; everything else must be single-valued within a condition.
 INVARIANTS = [
     "env", "seed", "net_params.latent_size", "net_params.kl_weight",
+    "net_params.min_std", "net_params.latent_min_std", "net_params.std_scale",
     "net_params.enc_hidden_sizes", "net_params.dec_hidden_sizes",
     "net_params.critic_hidden_sizes",
     "env_params.clip_length", "env_params.ctrl_dt", "env_params.sim_dt",
@@ -177,8 +235,8 @@ INVARIANTS = [
 # --------------------------------------------------------------------------------------
 
 
-def _network_of(condition: str) -> str:
-    return condition.split("_", 1)[1].replace("efference_refroot", "efference")
+NETWORK_OF = {"pgfm": "pg_forward_model", "encdec": "efference",
+              "expfm": "forward_model"}
 
 
 def history_of(store: Store, wandb_id: str, spec_id: str) -> pd.DataFrame | None:
@@ -195,6 +253,7 @@ def median_sps(hist: pd.DataFrame | None, column: str) -> float | None:
 
 
 def build_row(run: pd.Series, hist: pd.DataFrame | None) -> dict:
+    condition = run["condition"]
     xml = str(run["env_params.walker_xml_path"]).rsplit("/", 1)[-1]
     notes = run["notes"]
     return {
@@ -208,36 +267,28 @@ def build_row(run: pd.Series, hist: pd.DataFrame | None) -> dict:
         "notes": notes.strip() if isinstance(notes, str) else "",
         "created_at": run["created_at"],
         # experimental axes
-        "condition": run["condition"],
+        "condition": condition,
         "xml": "new" if xml == NEW_XML else "old",
         "walker_xml": xml,
-        "network": _network_of(run["condition"]),
+        "network": NETWORK_OF[condition.split("_")[0]],
         "control_mode": "torque" if run["env_params.torque_actuators"] else "position",
+        "body_target_frame": run["env_params.body_target_frame"],
         "delay_k": run["delay_k"],
         "efference_length": run["efference_length"],
-        # authoritative frame + fm knobs (sanity)
-        "body_target_frame": run["env_params.body_target_frame"],
-        "net_params_body_target_frame": run.get("net_params.body_target_frame"),
-        "torque_actuators": run["env_params.torque_actuators"],
+        # fm knobs (sanity)
         "fm_loss_weight": run.get("fm_loss_weight"),
         "detach_prediction": run.get("detach_prediction"),
+        "min_std": run["net_params.min_std"],
         # invariants
         "env": run["env"],
         "seed": run["seed"],
         "latent_size": run["net_params.latent_size"],
         "kl_weight": run["net_params.kl_weight"],
-        "enc_hidden_sizes": run["net_params.enc_hidden_sizes"],
-        "dec_hidden_sizes": run["net_params.dec_hidden_sizes"],
-        "critic_hidden_sizes": run["net_params.critic_hidden_sizes"],
         "clip_length": run["env_params.clip_length"],
         "ctrl_dt": run["env_params.ctrl_dt"],
-        "sim_dt": run["env_params.sim_dt"],
         "solver": run["env_params.solver"],
-        "iterations": run["env_params.iterations"],
-        "ls_iterations": run["env_params.ls_iterations"],
         "njmax": run["env_params.njmax"],
         "naconmax": run["env_params.naconmax"],
-        "rescale_factor": run["env_params.rescale_factor"],
         "mujoco_impl": run["env_params.mujoco_impl"],
         "n_envs": run["config.ppo.n_envs"],
         "total_steps": run["config.ppo.total_steps"],
@@ -245,15 +296,22 @@ def build_row(run: pd.Series, hist: pd.DataFrame | None) -> dict:
         # hardware -- speed comparisons are only valid within one GPU model
         "gpu": run["gpu"],
         "host": run["host"],
-        # metrics
+        # training-time metrics (eval_env == train_env, so: eval on training clips)
         "reward_mean": pipeline.first_present(run, *REWARD_MEAN_KEYS),
         "reward_std": pipeline.first_present(run, *REWARD_STD_KEYS),
         "lifespan_mean": pipeline.first_present(run, *LIFESPAN_KEYS),
-        "train_sps_final": run.get("summary.throughput/train_sps"),
-        "eval_sps_final": run.get("summary.throughput/eval_sps"),
         "train_sps_median": median_sps(hist, "throughput/train_sps"),
         "eval_sps_median": median_sps(hist, "throughput/eval_sps"),
         "runtime_s": run.get("summary._runtime"),
+        # inline end-of-training eval, present only on runs from 2026-08-10 onward.
+        # A *different* measurement from the batch eval artifacts below (in-memory
+        # weights vs the newest checkpoint on disk) -- never mix them in one figure.
+        "inline_eval_old_eval_reward": run.get(
+            "summary.final_eval/old_eval/episode_reward/mean"),
+        "inline_eval_new_eval_reward": run.get(
+            "summary.final_eval/new_eval/episode_reward/mean"),
+        "inline_eval_new_eval_survived": run.get(
+            "summary.final_eval/new_eval/termination_rate/survived"),
     }
 
 
@@ -270,6 +328,36 @@ def build_curve(run: pd.Series, hist: pd.DataFrame | None) -> list[dict]:
             for _, row in hist.dropna(subset=[key]).iterrows()]
 
 
+def build_eval_rows(store: Store, run: pd.Series) -> list[dict]:
+    """One row per (run, dataset) from the batch offline evaluation, if present."""
+    entry = store.lookup("eval", run["wandb_id"], EVAL_SPEC_ID)
+    if entry is None:
+        return []
+    record = json.loads((store.root / entry.path).read_text())
+    rows = []
+    for dataset in EVAL_DATASETS:
+        block = record.get("datasets", {}).get(dataset)
+        if not block:
+            continue
+        lifespan = block["lifespan_steps"]["mean"]
+        rows.append({
+            "wandb_id": run["wandb_id"],
+            "condition": run["condition"],
+            "delay_k": run["delay_k"],
+            "dataset": dataset,
+            "checkpoint_step": entry.resolved.get("checkpoint_step"),
+            "n_clips": block["n_clips"],
+            "episode_reward": block["episode_reward"]["mean"],
+            "lifespan_steps": lifespan,
+            # Length-fair metrics: raw reward is comparable within a dataset only.
+            "reward_per_step": block["episode_reward"]["mean"] / lifespan,
+            "survived": block["termination_rate"]["survived"],
+            "hazard_rate": ((1 - block["termination_rate"]["survived"])
+                            / (lifespan * float(run["env_params.ctrl_dt"]))),
+        })
+    return rows
+
+
 def main() -> None:
     args = pipeline.parse_args(__doc__)
 
@@ -279,18 +367,21 @@ def main() -> None:
 
     store = Store()
     producer = get_producer("history")
-    spec_id = producer.spec_id(producer.spec())
+    history_spec_id = producer.spec_id(producer.spec())
 
-    rows, curves = [], []
+    rows, curves, evals = [], [], []
     for _, run in runs.iterrows():
-        hist = history_of(store, run["wandb_id"], spec_id)
+        hist = history_of(store, run["wandb_id"], history_spec_id)
         rows.append(build_row(run, hist))
         curves.extend(build_curve(run, hist))
+        evals.extend(build_eval_rows(store, run))
 
-    df = pd.DataFrame(rows).sort_values(["network", "xml", "delay_k", "wandb_id"],
+    df = pd.DataFrame(rows).sort_values(["condition", "delay_k", "wandb_id"],
                                         ignore_index=True)
     curves_df = pd.DataFrame(curves).sort_values(["condition", "delay_k", "step"],
                                                  ignore_index=True)
+    eval_df = pd.DataFrame(evals).sort_values(["condition", "dataset", "delay_k"],
+                                              ignore_index=True)
 
     report = comparability_report(runs, invariant_cols=INVARIANTS, group_col="condition")
     if not args.check:
@@ -298,21 +389,17 @@ def main() -> None:
 
     print("\nCohort:")
     for cond, sub in df.groupby("condition"):
-        print(f"  {cond:24s} n={len(sub):2d} delays={sorted(sub['delay_k'])}")
-        print(f"  {'':24s} xml={sub['walker_xml'].unique()} "
-              f"torque={sub['torque_actuators'].unique()} "
-              f"frame={sub['body_target_frame'].unique()} "
-              f"git={sorted(sub['git_commit'].unique())} "
-              f"gpu={sorted(set(sub['gpu'].dropna()))}")
+        print(f"  {cond:22s} n={len(sub):2d} xml={sub['xml'].iat[0]:3s} "
+              f"{sub['control_mode'].iat[0]:8s} {sub['body_target_frame'].iat[0]:14s} "
+              f"git={sorted(sub['git_commit'].unique())}")
+        print(f"  {'':22s} delays={sorted(sub['delay_k'])}")
 
-    # Question 3 in one table: which frame each XML was actually trained with.
-    print("\nbody_target_frame by xml (authoritative env_params value):")
-    print(pd.crosstab(df["xml"], df["body_target_frame"]).to_string())
-    print("net_params.body_target_frame (inert copy):",
-          df["net_params_body_target_frame"].unique())
+    print("\nxml x frame (authoritative env_params values):")
+    print(pd.crosstab([df["xml"], df["control_mode"]], df["body_target_frame"]).to_string())
 
     ok = pipeline.write_csv(df, HERE / "data.csv", check=args.check)
     ok &= pipeline.write_csv(curves_df, HERE / "curves.csv", check=args.check)
+    ok &= pipeline.write_csv(eval_df, HERE / "data_eval.csv", check=args.check)
     if args.check and not ok:
         raise SystemExit(1)
 
