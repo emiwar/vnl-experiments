@@ -41,6 +41,6 @@ eval:eval3ds-66aaff5b  (spec_id=eval3ds-66aaff5b): 61/149
 
 Missing artifacts. Produce or fetch them with:
   # 88 runs missing eval:eval3ds-66aaff5b
-  # other specs held for these runs: legacy-batch (79), legacy-batch-v0 (54)
+  # other specs held for these runs: legacy-batch (79), legacy-batch-v0 (54), eval1ds-n10-7a2d5d63 (1), eval1ds-n25-7cb0d690 (1), eval1ds-n00-0e76d03c (1)
   python -m vnl_experiments.artifacts plan  --kind eval --runs collision-model-xml/runs.csv
   python -m vnl_experiments.artifacts pull  --kind eval --runs collision-model-xml/runs.csv

@@ -50,6 +50,7 @@ import gc
 import glob
 import json
 import warnings
+from collections.abc import Sequence
 from pathlib import Path
 
 import jax
@@ -59,6 +60,7 @@ import jax
 # re-exported (rather than imported where used) so existing `from
 # vnl_experiments.delays.eval_runs import ...` call sites keep working.
 from vnl_experiments.delays.evaluation import (  # noqa: F401
+    DATASET_NAMES,
     DEFAULT_NEW_EVAL_H5,
     NEW_EVAL_CLIP_LENGTH,
     REPO_ROOT,
@@ -167,8 +169,20 @@ def collect_inline_evals(search_dirs: list[Path], output_dir: Path,
 # ---------------------------------------------------------------------------
 
 def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
-                 new_eval_h5: Path, seed: int, limit_clips: int | None) -> dict:
-    """Rebuild one run from its checkpoint and evaluate it."""
+                 new_eval_h5: Path, seed: int, limit_clips: int | None,
+                 action_noise: float | None = None,
+                 datasets: Sequence[str] = DATASET_NAMES) -> dict:
+    """Rebuild one run from its checkpoint and evaluate it.
+
+    ``action_noise`` is the std of a fixed Gaussian perturbation added to the
+    executed action (see :func:`vnl_experiments.delays.evaluation._rollout`);
+    ``None`` is the ordinary noise-free evaluation.
+
+    ``datasets`` selects which of ``train`` / ``old_eval`` / ``new_eval`` to
+    measure. Restricting it is the main way to cut the GPU cost of a sweep;
+    ``new_eval`` alone is ~6x the steps of the other two, which are each a
+    single 80/20 half of the run's own reference data.
+    """
     with open(ckpt_dir / "config.json") as f:
         cfg_json = json.load(f)
     env_params = cfg_json["env_params"]
@@ -190,9 +204,10 @@ def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
     return evaluate_networks(
         nets, env_cls, base_cfg,
         metadata=run_metadata(wid, wn, ckpt_dir, step, net_params,
-                              env_cls.__name__),
+                              env_cls.__name__, action_noise),
         train_clips=train_clips, test_clips=test_clips, train_env=train_env,
-        new_eval_h5=new_eval_h5, seed=seed, limit_clips=limit_clips,
+        new_eval_h5=new_eval_h5, names=tuple(datasets), seed=seed,
+        limit_clips=limit_clips, action_noise=action_noise,
     )
 
 
@@ -219,6 +234,14 @@ def main() -> None:
     p.add_argument("--limit-clips", type=int, default=None,
                    help="Cap clips per split (local/memory-limited testing).")
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--datasets", nargs="+", default=list(DATASET_NAMES),
+                   choices=list(DATASET_NAMES),
+                   help="Which splits to measure (fewer = cheaper).")
+    p.add_argument("--action-noise", type=float, default=None,
+                   help="Std of a fixed Gaussian perturbation added to the "
+                        "executed action (post-tanh, clipped to [-1, 1]). "
+                        "Results go to {wid}__n{std}.json so a noise sweep "
+                        "cannot clobber the noise-free records.")
     args = p.parse_args()
 
     if args.populate:
@@ -238,9 +261,10 @@ def main() -> None:
     runs = read_run_list(args.run_list)
     print(f"Loaded {len(runs)} runs from {args.run_list}")
 
+    suffix = "" if args.action_noise is None else f"__n{args.action_noise:g}"
     evaluated, skipped_existing, missing = [], [], []
     for wid, wn, env_class_hint in runs:
-        out_path = args.output_dir / f"{wid}.json"
+        out_path = args.output_dir / f"{wid}{suffix}.json"
         if out_path.exists() and not args.override:
             skipped_existing.append(wn)
             continue
@@ -254,7 +278,8 @@ def main() -> None:
         print(f"\n=== {wn} ({wid}) ===")
         try:
             result = evaluate_run(wid, wn, env_class_hint, ckpt_dir,
-                                  args.new_eval_h5, args.seed, args.limit_clips)
+                                  args.new_eval_h5, args.seed, args.limit_clips,
+                                  args.action_noise, tuple(args.datasets))
             if result is None:
                 missing.append(wn)
                 continue

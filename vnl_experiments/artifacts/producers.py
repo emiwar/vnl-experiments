@@ -153,6 +153,10 @@ class EvalProducer(Producer):
     can only be computed where the data lives would make "do I have this yet?"
     unanswerable from the laptop. The step that was actually restored is recorded in the
     sidecar's ``resolved.checkpoint_step``, and coverage checks assert on it.
+
+    ``action_noise`` defaults to ``None`` rather than ``0.0`` on purpose: ``normalise_spec``
+    drops ``None`` values, so adding this axis leaves the noise-free ``spec_id``
+    (``eval3ds-66aaff5b``) and every artifact already made under it untouched.
     """
 
     KIND = "eval"
@@ -165,10 +169,17 @@ class EvalProducer(Producer):
         "seed": 0,
         "limit_clips": None,
         "new_eval_h5": "eval_clips_32x30s.h5",
+        # Std of a fixed Gaussian perturbation added to the executed action
+        # (post-tanh, clipped to [-1, 1]). None = the ordinary noise-free eval.
+        "action_noise": None,
     }
 
     def prefix(self, spec: Mapping[str, Any]) -> str:
-        return f"eval{len(spec['datasets'])}ds"
+        base = f"eval{len(spec['datasets'])}ds"
+        noise = spec.get("action_noise")
+        # `is None`, not truthiness: an explicit 0.0 is a sweep point and must read
+        # as `n00` rather than borrow the noise-free prefix.
+        return base if noise is None else f"{base}-n{round(noise * 100):02d}"
 
     def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
                 ctx: Mapping[str, Any]) -> dict[str, Any]:
@@ -185,7 +196,9 @@ class EvalProducer(Producer):
         record = evaluate_run(wandb_id, ctx.get("wandb_name", wandb_id),
                               ctx.get("env_class", "AbsoluteImitation"),
                               Path(ckpt_dir), new_eval_h5,
-                              spec["seed"], spec["limit_clips"])
+                              spec["seed"], spec["limit_clips"],
+                              action_noise=spec.get("action_noise"),
+                              datasets=tuple(spec["datasets"]))
         if record is None:
             raise RuntimeError(f"evaluate_run returned nothing for {wandb_id}")
         out_path.write_text(json.dumps(record, indent=2))
@@ -194,7 +207,10 @@ class EvalProducer(Producer):
         return {"checkpoint_step": record.get("step"),
                 "env_class": record.get("env_class"),
                 "network_class": record.get("network_class"),
-                "datasets": sorted(record.get("datasets", {}))}
+                "datasets": sorted(record.get("datasets", {})),
+                # `resolved` is not hashed, so this is free, and `manifest_df`
+                # surfaces it as a filterable `resolved.action_noise` column.
+                "action_noise": record.get("action_noise")}
 
 
 class ActivationsProducer(Producer):

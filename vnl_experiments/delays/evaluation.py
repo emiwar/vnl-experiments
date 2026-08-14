@@ -310,7 +310,8 @@ def param_counts(nets, network_class: str) -> dict:
 # Deterministic per-clip rollout
 # ---------------------------------------------------------------------------
 
-def _rollout(env, networks, n_clips: int, n_steps: int, key):
+def _rollout(env, networks, n_clips: int, n_steps: int, key,
+             action_noise: float | None = None):
     """One latched episode per clip (reset at frame 0). Returns raw per-clip arrays.
 
     ``n_steps`` is the number of *env steps* to scan. It must be large enough to
@@ -320,7 +321,20 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key):
     — about twice ``clip_length``. All accumulators are masked by the pre-step
     ``done`` flag, so contributions after termination (and any post-termination
     NaNs) are dropped.
+
+    ``action_noise`` is the std of a fixed Gaussian perturbation added to the
+    action *after* the network has produced it (post-tanh, so in the same units
+    as the actuator range, then clipped back into ``[-1, 1]``). It is deliberately
+    injected outside the network: the efference copy therefore queues the
+    *intended* action while the body executes the perturbed one, i.e. the noise is
+    unobserved motor noise rather than a wider policy distribution. ``None`` (or
+    ``0.0``) leaves the action untouched and consumes no randomness, so the
+    default path is bit-identical to what this function did before the noise
+    option existed.
     """
+    # `fold_in` rather than a split, so the per-clip reset keys below are exactly
+    # the ones a noise-free eval has always used.
+    noise_key = jax.random.fold_in(key, 1)
     keys = jax.random.split(key, n_clips)
     clip_ids = jp.arange(n_clips)
     env_states = jax.vmap(
@@ -339,9 +353,20 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key):
         )
 
     def step(env, networks, carry):
-        env_state, net_state, cuml_reward, lifespan, env_accum, net_accum = carry
+        (env_state, net_state, noise_key, cuml_reward, lifespan,
+         env_accum, net_accum) = carry
         out = networks(net_state, env_state.obs)
-        next_env_state = jax.vmap(env.step)(env_state, out.output.actions)
+        actions = out.output.actions
+        if action_noise:
+            noise_key, sub = jax.random.split(noise_key)
+            # One key per leaf: `actions` is a single array for the rodent nets but
+            # a pytree for a multi-sampler bank, whose leaves must not share noise.
+            leaves, treedef = jax.tree.flatten(actions)
+            actions = jax.tree.unflatten(treedef, [
+                jp.clip(a + action_noise * jax.random.normal(k, a.shape), -1.0, 1.0)
+                for a, k in zip(leaves, jax.random.split(sub, len(leaves)))
+            ])
+        next_env_state = jax.vmap(env.step)(env_state, actions)
         next_env_state = next_env_state.replace(
             done=jp.logical_or(next_env_state.done, env_state.done).astype(float)
         )
@@ -355,7 +380,7 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key):
         net_accum = jax.tree.map(
             lambda c, m: c + mask(already_done, m), net_accum, out.metrics
         )
-        return (next_env_state, out.next_state, cuml_reward, lifespan,
+        return (next_env_state, out.next_state, noise_key, cuml_reward, lifespan,
                 env_accum, net_accum)
 
     step_scan = nnx.scan(
@@ -365,11 +390,13 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key):
         length=n_steps,
     )
     init_carry = (
-        env_states, net_states,
+        env_states, net_states, noise_key,
         jp.zeros(n_clips), jp.zeros(n_clips),
         init_env_accum, init_net_accum,
     )
-    _, _, cuml_reward, lifespan, env_accum, net_accum = step_scan(networks, init_carry)
+    _, _, _, cuml_reward, lifespan, env_accum, net_accum = step_scan(
+        networks, init_carry
+    )
     return cuml_reward, lifespan, env_accum, net_accum
 
 
@@ -393,12 +420,15 @@ def _flatten_net_metrics(net_accum: dict, denom: np.ndarray) -> dict:
 
 
 def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
-                 key, limit_clips: int | None) -> dict:
+                 key, limit_clips: int | None,
+                 action_noise: float | None = None) -> dict:
     n = n_clips if limit_clips is None else min(n_clips, limit_clips)
-    eval_jit = nnx.jit(_rollout, static_argnums=(0, 2, 3))
+    # `action_noise` is static so the `if action_noise` branch in `_rollout`
+    # resolves at trace time.
+    eval_jit = nnx.jit(_rollout, static_argnums=(0, 2, 3, 5))
     networks.eval()
     cuml_reward, lifespan, env_accum, net_accum = eval_jit(
-        env, networks, n, n_steps, key
+        env, networks, n, n_steps, key, action_noise
     )
     networks.train()
 
@@ -446,7 +476,8 @@ def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
 # ---------------------------------------------------------------------------
 
 def run_metadata(wandb_id: str, wandb_name: str, checkpoint_dir, step: int,
-                 net_params: dict, env_class: str) -> dict:
+                 net_params: dict, env_class: str,
+                 action_noise: float | None = None) -> dict:
     """The identity/hyperparameter half of a result record.
 
     Both producers build this the same way, so the JSON schema stays identical
@@ -471,6 +502,10 @@ def run_metadata(wandb_id: str, wandb_name: str, checkpoint_dir, step: int,
             float(net_params["fm_loss_weight"])
             if "fm_loss_weight" in net_params else None
         ),
+        # A property of the *measurement*, not of the run: the std of the fixed
+        # Gaussian perturbation added to the executed action. None = the ordinary
+        # noise-free eval.
+        "action_noise": None if action_noise is None else float(action_noise),
     }
 
 
@@ -487,10 +522,14 @@ def evaluate_networks(
     names: tuple[str, ...] = DATASET_NAMES,
     seed: int = 0,
     limit_clips: int | None = None,
+    action_noise: float | None = None,
 ) -> dict:
     """Evaluate ``nets`` on every dataset and return the full result record.
 
     Returns ``{**metadata, "param_counts": ..., "datasets": {name: metrics}}``.
+
+    ``action_noise`` (see :func:`_rollout`) perturbs the executed action; the
+    default of ``None`` is the ordinary noise-free evaluation.
     """
     datasets = build_datasets(
         env_cls, env_config, train_clips=train_clips, test_clips=test_clips,
@@ -511,7 +550,8 @@ def evaluate_networks(
         env = None  # release the previous dataset's env before building the next
         env = ds.make_env()
         result["datasets"][ds.name] = eval_dataset(
-            env, nets, ds.n_clips, ds.n_steps, ds.ctrl_dt, sub, limit_clips
+            env, nets, ds.n_clips, ds.n_steps, ds.ctrl_dt, sub, limit_clips,
+            action_noise,
         )
     return result
 

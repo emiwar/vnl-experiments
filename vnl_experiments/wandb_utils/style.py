@@ -43,6 +43,13 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     # Forward-model loss vs architecture question.
     "pg_forward_model": {"color": "C4", "marker": "D", "label": "Policy-gradient FM (loss = 0)"},
     "fm0_untrained": {"color": "C7", "marker": ".", "label": "Untrained predictor (loss = 0, detached)"},
+    # Action-noise robustness question. Colours match `forward_model` / `efference`
+    # above so the arms read the same across questions; the wider-exploration
+    # (min_std = 0.25) variants keep the hue and change the marker.
+    "expfm": {"color": "C2", "marker": "^", "label": "Explicit forward model"},
+    "encdec": {"color": "C1", "marker": "o", "label": "Enc-dec with efference copy"},
+    "expfm_std25": {"color": "C2", "marker": "*", "label": r"Explicit FM, min_std 0.25"},
+    "pgfm_std25": {"color": "C4", "marker": "*", "label": r"Policy-gradient FM, min_std 0.25"},
 }
 
 

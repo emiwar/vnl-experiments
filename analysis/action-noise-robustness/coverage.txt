@@ -1,0 +1,54 @@
+Coverage for 56 runs in action-noise-robustness
+
+index  (spec_id=-): 56/56
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_std25                     5/5   
+    pgfm_std25                      5/5   
+
+eval:eval3ds-n00-04ceda93  (spec_id=eval3ds-n00-04ceda93): 0/56
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_std25                     0/5      *** GAP ***
+    pgfm_std25                      0/5      *** GAP ***
+
+eval:eval3ds-n02-5bcf9203  (spec_id=eval3ds-n02-5bcf9203): 0/56
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_std25                     0/5      *** GAP ***
+    pgfm_std25                      0/5      *** GAP ***
+
+eval:eval3ds-n05-ead26b7d  (spec_id=eval3ds-n05-ead26b7d): 0/56
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_std25                     0/5      *** GAP ***
+    pgfm_std25                      0/5      *** GAP ***
+
+eval:eval3ds-n10-2d7c9136  (spec_id=eval3ds-n10-2d7c9136): 0/56
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_std25                     0/5      *** GAP ***
+    pgfm_std25                      0/5      *** GAP ***
+
+eval:eval3ds-n25-9443d2fe  (spec_id=eval3ds-n25-9443d2fe): 0/56
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_std25                     0/5      *** GAP ***
+    pgfm_std25                      0/5      *** GAP ***
+
+Missing artifacts. Produce or fetch them with:
+  # 56 runs missing eval:eval3ds-n00-04ceda93
+  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
+  # 56 runs missing eval:eval3ds-n02-5bcf9203
+  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
+  # 56 runs missing eval:eval3ds-n05-ead26b7d
+  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
+  # 56 runs missing eval:eval3ds-n10-2d7c9136
+  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
+  # 56 runs missing eval:eval3ds-n25-9443d2fe
+  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
