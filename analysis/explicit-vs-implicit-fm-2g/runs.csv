@@ -1,0 +1,9 @@
+condition,wandb_id,wandb_name,created_at,state
+expfm_2g,3dfjggpw,RodentForwardModel_delay20_eff20-20260813-074628,2026-08-13T11:46:32Z,finished
+expfm_2g,7wpzx8cl,RodentForwardModel_delay50_eff50-20260813-074948,2026-08-13T11:49:49Z,finished
+expfm_2g,dgv264dt,RodentForwardModel_delay0_eff0-20260813-073550,2026-08-13T11:35:59Z,finished
+expfm_2g,itedqjyt,RodentForwardModel_delay10_eff10-20260813-074327,2026-08-13T11:43:29Z,finished
+pgfm_2g,1dbmh27r,RodentForwardModel_delay10_eff10_nodetach-20260813-064420,2026-08-13T10:44:30Z,finished
+pgfm_2g,6jz9o5p4,RodentForwardModel_delay50_eff50_nodetach-20260813-070412,2026-08-13T11:04:14Z,finished
+pgfm_2g,nsfdsuk2,RodentForwardModel_delay0_eff0_nodetach-20260813-064425,2026-08-13T10:44:30Z,finished
+pgfm_2g,x1wjdvt9,RodentForwardModel_delay20_eff20_nodetach-20260813-070304,2026-08-13T11:03:09Z,finished

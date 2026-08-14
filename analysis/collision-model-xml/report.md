@@ -145,6 +145,15 @@ gaining 3.1 % and 3.0 %. There the deficit is a genuinely lower plateau.
 So the band is a mixture: its leading edge (25–40) is convergence speed, its trailing edge
 (50–60) is a lower ceiling. The excluded 2 G-step runs will sharpen this.
 
+> **Followed up in [`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/)**
+> (2026-08-14), using the eight 2 G-step runs at delays 0/10/20/50. It confirms the
+> mixture and locates the boundary: at delays ≤ 20 the deficit is purely convergence speed
+> (the new XML costs ~1.1–1.5× the steps, then overtakes the baseline by 2–12 %); at delay
+> 50 in the PG-FM it is a ceiling that *widens* with more compute. It also finds that the
+> single-final-eval-point reduction used throughout this report inflates the PG-FM
+> delay-50 deficit: **−15.2 % here is −7.9 % when the last 50 M steps are averaged**, on
+> the same two runs. Treat the point estimates in this report as ±3 %.
+
 ## Position control
 
 ![Position control](figures/position.png)
@@ -215,8 +224,8 @@ evaluation.
 
 ## Follow-ups
 
-- **The 2 G-step runs**, which separate the "slower climb" and "lower plateau" halves of
-  the band directly.
+- ~~**The 2 G-step runs**, which separate the "slower climb" and "lower plateau" halves of
+  the band directly.~~ Done: [`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/).
 - **Multiple seeds at delays 30–60.** The whole effect lives in a band where every cell is
   n = 1, and the band's peak (−19.7 % at delay 40) rests on one run per arm.
 - **Why is the explicit FM immune?** It is the most interesting result here and it is

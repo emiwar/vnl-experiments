@@ -1,0 +1,9 @@
+Coverage for 8 runs in explicit-vs-implicit-fm-2g
+
+index  (spec_id=-): 8/8
+    expfm_2g                        4/4   
+    pgfm_2g                         4/4   
+
+history:hist2000-fc46b078  (spec_id=hist2000-fc46b078): 8/8
+    expfm_2g                        4/4   
+    pgfm_2g                         4/4   

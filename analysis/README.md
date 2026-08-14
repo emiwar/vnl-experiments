@@ -316,6 +316,16 @@ terminating. Per-clip quantities are worst hit — every `std`, and `termination
 as signal. `new_eval` is 32 clips, single seed: read its curves for trend, not point
 values.
 
+**The final training-curve point is not a measurement either.** The same nondeterminism
+moves a single inline eval point (and hence the run summary's `eval/episode_reward/mean`)
+by a few percent, more at short lifespans. Reduce a run to the **mean of the eval points
+in the last 50 M steps** — five points, at the 10 M-step eval cadence — not to its last
+one. This is not cosmetic: `collision-model-xml`'s headline PG-FM deficit at delay 50 is
+−15.2 % from the final point and −7.9 % from the window, on the same two runs. The
+independent noise bound is ±2.9 %, measured in
+[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) from pairs of runs that share
+a configuration.
+
 **Inline and batch evals may measure different weights.** Training runs evaluate
 themselves when they finish and push the headline numbers to the run summary under
 `final_eval/…` (e.g. `final_eval/old_eval/episode_reward/mean`,
@@ -342,6 +352,8 @@ would imply a precision that does not exist. The originals can be deleted once
 files into `eval_results/eval_results/`, so re-run `import-legacy` after a collect.
 
 Analyses written before this pipeline (everything except
-[`collision-model-xml/`](collision-model-xml/)) still read `eval_results/` directly and
-fetch from WandB in their `extract.py`. They remain valid and their CSVs are unchanged;
-convert one to the layout above when you next need to touch it.
+[`collision-model-xml/`](collision-model-xml/),
+[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) and
+[`explicit-vs-implicit-fm-2g/`](explicit-vs-implicit-fm-2g/)) still read `eval_results/`
+directly and fetch from WandB in their `extract.py`. They remain valid and their CSVs are
+unchanged; convert one to the layout above when you next need to touch it.

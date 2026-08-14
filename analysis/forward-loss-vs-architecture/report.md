@@ -56,6 +56,16 @@ policy-gradient model implicitly learn to predict?
 
 ## Tentative conclusions
 
+> **Revisited at a 3.3× budget in [`explicit-vs-implicit-fm-2g/`](../explicit-vs-implicit-fm-2g/)**
+> (2026-08-14). Both conclusions survive, with one important qualification: the *delay at
+> which the explicit model pulls ahead is a property of the 600 M budget, not of the
+> networks*. It sits at ~10 with a 500 M budget, ~13 at 1 G and ~17 at 2 G, and is still
+> drifting — at delay 10 the two arms are exactly tied once both converge. The long-delay
+> conclusion strengthens instead: at delay 50 the gap **grows** from +54 % to +91 % as the
+> budget goes 500 M → 2 G, because the policy-gradient arm peaks near 660 M and then
+> declines. The L2 result also strengthens — the policy-gradient predictor's error does
+> not merely stay high, it *rises* over training (delay 50: ~0.50 → 1.00).
+
 **The policy-gradient forward model recovers the explicit model's performance only at short delay,
 and it does so WITHOUT implicitly learning a forward model.**
 
