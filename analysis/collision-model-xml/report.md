@@ -8,6 +8,13 @@ target frame + torque actuators**. How does it compare with the old baseline it 
 contrast moves two things at once — can the walker XML and the target frame be told apart?
 And is position control different?
 
+> **Note on a revision.** An earlier version of this report was built on training-time
+> WandB reward, because no new-`reference_root` run had an offline evaluation yet. With
+> the offline evals now in (146/149 runs), **several of its conclusions do not survive** —
+> in particular "the new XML is free out to delay 20" and "the explicit forward model is
+> immune". Training-time reward turns out to under-detect this specific effect, and
+> asymmetrically. See *Why the training-time metric missed it*.
+
 ## Dataset & comparability
 
 **Source:** WandB `emiwar-team/nnx-ppo-rodent-delays`, tag `TrainEvalSplit`, selected by
@@ -27,214 +34,180 @@ the `CONDITIONS` in `extract.py` and frozen in `runs.csv` (149 runs).
 | `expfm_old_position` | 8 | old | position | current | explicit FM | 0–100 | `891cd0d3` |
 | `expfm_new_position` | 5 | new | position | current | explicit FM | 0–50 | `201d6e11` |
 
-The primary contrast (old XML + `current_root` → new XML + `reference_root`, torque) is
-measured in **three independent networks**, with full 0–100 delay sweeps on both sides for
-EncDec and the explicit FM. The four EncDec cells form a complete **2 × 2** in XML ×
-frame, which is what makes the decomposition a measurement rather than a bound.
+The primary contrast is measured in **three independent networks**, with full 0–100 delay
+sweeps on both sides for EncDec and the explicit FM. The four EncDec cells form a complete
+**2 × 2** in XML × frame.
+
+**Primary evidence is the offline evaluation**, not training-time reward: the held-out
+`old_eval` split (169 unseen clips, full 502-step rollouts from frame 0), batch spec
+`eval3ds-66aaff5b`, 146/149 runs. Only `pgfm_new_reference` has gaps (10/13; missing
+delays 5, 20, 30).
 
 **Included despite `state = failed`:** the 46 runs at `ef060b73` (2026-08-11) that make up
-`encdec_new_reference` and `expfm_new_reference` are marked failed because they died in
-the *post-training* evaluation. All 46 reached `summary._step = 600_064_000`, have every
-training metric, ran a normal 3.5–7.5 h, and have no `final_eval/*` keys at all — the
-signature of completing training and then failing the final eval. The inclusion rule in
-`extract.py` is therefore `state ∈ {finished, failed}` **and** `_step == EXPECTED_STEP`; a
-run that died during training cannot satisfy the second condition.
+`encdec_new_reference` and `expfm_new_reference` died in the *post-training* evaluation.
+All reached `summary._step = 600_064_000`, ran a normal 3.5–7.5 h, and have no
+`final_eval/*` keys. The inclusion rule is `state ∈ {finished, failed}` **and**
+`_step == EXPECTED_STEP`; a run that died during training cannot satisfy the second.
 
-**Excluded by design** (`min_std == 0.1`, `_step == 600_064_000`): the 10 larger-`min_std`
-(0.25) and 8 longer-training (2 G-step) new-XML runs, per request. Also excluded: seeds
-43/44, non-standard architectures, `efference_length != delay_k`, and the
-`fm_loss_weight = 0` **detached** runs (an untrained-predictor control from another
-question).
+**Excluded by design** (`min_std == 0.1`, `_step == 600_064_000`): the larger-`min_std`
+(0.25) and 2 G-step new-XML runs, per request. Also seeds 43/44, non-standard
+architectures, `efference_length != delay_k`, and the `fm_loss_weight = 0` **detached**
+control.
 
-**Artifacts** (`coverage.txt`): `history` 149/149. Batch offline eval
-(`eval3ds-66aaff5b`) 61/149 — see *Missing data*.
+**Comparability.** Every invariant is single-valued within each condition except
+`git_commit` in `pgfm_old_current`. Manual checks: configs read from the index, not tags;
+`min_std` / `latent_min_std` / `std_scale` verified (this is what separates in-scope from
+out-of-scope new runs and is invisible in a run's name); the `d4bd4dc0`→`d33e5bcf` diff is
+additive-only; the `d33e5bcf`→`25732c42` network diff is a default-inert `latent_key`
+signature change; and across every primary pair all network, PPO and env invariants are
+identical, which is stronger evidence than reading a six-week diff.
 
-**Programmatic comparability** (`comparability.txt`): every invariant is single-valued
-within each condition except `git_commit` in `pgfm_old_current` (`d4bd4dc0`/`d33e5bcf`).
-The experimental axes are labelled from `env_params`, never inferred from the training
-script.
-
-**Manual comparability.** Configs read from the index rather than from tags; `min_std`,
-`latent_min_std` and `std_scale` checked explicitly (this is what separates in-scope from
-out-of-scope new runs and is invisible in a run's name or tags). Three `git diff`s:
-
-- *Within the PG-FM baseline*: `d4bd4dc0` and `d33e5bcf` cover **disjoint** delays, and the
-  delay-30 point comes from the minority commit. The diff touches only `analysis/`,
-  `eval_runs.txt`, a plotting-style entry, and an *additive* metrics dict in
-  `forward_model.py`. The baseline is smooth across the tranche boundary.
-- *Between the PG-FM arms* (`d33e5bcf` → `25732c42`): in the network path only
-  `latent_key: str` → `str | None`, with a `None` branch these runs never take.
-- *Between the EncDec / explicit-FM arms* (`1cd5838f`, `54643764` → `ef060b73`): a six- to
-  eight-week span. Empirically decisive rather than the diff: every network, PPO and env
-  invariant is identical across the arms (`comparability.txt`), so whatever else changed
-  did not reach the training configuration.
+**Every eval was verified to have used the run's own body and frame** — `walker_xml`,
+`body_target_frame`, `env_class` and the restored checkpoint directory were checked
+per run against the run's config, and all 146 restored `checkpoint_step = 600_064_000`. A
+body/policy mismatch would produce exactly this report's signature, so this check matters.
 
 **Caveats.**
 
-1. **Single seed per cell** (all seed 42). Every number below is one run versus one run;
-   what carries weight is that the *shape* replicates across networks, not any single point.
-2. **Not commit-controlled.** Six to eight weeks separate the arms of each primary pair.
-3. Two conditions (`encdec_new_current`, `expfm_new_position`) have only 5–6 runs to
-   delay 50, which limits the 2 × 2 and the position contrast to delays ≤ 50.
+1. **Single seed per cell** (all seed 42). What carries weight is that the shape
+   replicates across three networks, not any single point.
+2. **Not commit-controlled**: six to eight weeks separate the arms of each primary pair.
+3. `encdec_new_current` and `expfm_new_position` reach only delay 50, limiting the 2 × 2
+   and the position contrast to delays ≤ 50.
+4. Offline eval is not bit-reproducible (~1 % on reward; `survived` moves by ~0.6 pp per
+   clip at 169 clips). Differences below a few percent mean nothing.
 
-## Primary result — a deficit confined to a delay band, and only in some networks
+## Primary result — the new body falls over far more often
 
-![The primary contrast in three networks](figures/primary.png)
+![Held-out performance in three networks](figures/primary.png)
 
-Out to delay ~20 the new configuration is indistinguishable from the baseline in all three
-networks (within ±3 %). Then the networks separate:
+On held-out clips the new configuration is **worse at essentially every delay, in all
+three networks**, and the effect decomposes cleanly:
 
-| delay | EncDec | explicit FM | PG-FM |
-|---:|---:|---:|---:|
-| 20 | +1.2 % | +3.3 % | −4.6 % |
-| 30 | **−13.4 %** | +1.9 % | **−21.5 %** |
-| 40 | **−19.7 %** | +1.7 % | — |
-| 50 | **−14.6 %** | +0.7 % | **−15.2 %** |
-| 60 | **−16.9 %** | +2.9 % | — |
-| 70 | −1.5 % | +8.6 % | +4.6 % |
-| 100 | 0.0 % | **+14.0 %** | +10.5 % |
+- **Per-step tracking is almost unchanged.** Reward per step moves by −1 % at short delays
+  and at worst −11 % at long ones. The policies still imitate about as accurately as before
+  while they are upright.
+- **Survival collapses.** That is the entire effect.
 
-Two things stand out.
+| delay | survival, EncDec old → new | explicit FM old → new | PG-FM old → new |
+|---:|---|---|---|
+| 0 | 99 % → 96 % | 99 % → 93 % | 99 % → 91 % |
+| 10 | 71 % → 56 % | 88 % → 57 % | 85 % → 62 % |
+| 20 | 43 % → 30 % | 57 % → 41 % | — |
+| 50 | 26 % → 6 % | 44 % → 12 % | 26 % → 4 % |
+| 100 | 7 % → 0 % | 36 % → 17 % | 2 % → 2 % |
 
-**The deficit is a band, not a trend.** In EncDec it opens at delay 25–30, peaks at −19.7 %
-(delay 40), and has closed by delay 70. PG-FM shows the same band shifted slightly
-earlier. Beyond delay 70 both networks are at or above baseline. Episode lifespan follows
-the same shape (−11.4 % at delay 40, +12.5 % at delay 100), so this is the policy failing
-earlier in the band, not just tracking less accurately.
+Episode reward, which multiplies the two, drops 20–50 % across the middle and upper delay
+range in all three networks.
 
-**The explicit forward model is immune.** Across all 23 matched delays its median change
-is **+0.7 %**, it never drops below −3.1 %, and at long delay it is *better* with the new
-configuration (+8.6 % at 70, +14.0 % at 100). It is also by far the strongest architecture
-at long delay in absolute terms (1284 at delay 100, versus 772 for EncDec). Whatever the
-new collision geometry costs, an explicitly trained forward model absorbs it.
+**The explicit forward model is *not* immune** — the earlier training-clip reading of this
+was wrong. It is consistently the *best* architecture (44 % vs 26 % survival at delay 50 on
+the old body, 12 % vs 6 % on the new; 17 % vs ~0 % at delay 100), and it retains the most
+at long delay, but it takes the same qualitative hit. The PG-FM row at delay 100 reads
+2 % → 2 % only because its baseline has already hit the floor.
+
+## Why the training-time metric missed it
+
+![Training-time vs held-out](figures/training_vs_heldout.png)
+
+Training-time reward said the new configuration was within ±3 % out to delay 20 and *ahead*
+at long delay for the explicit FM. The held-out evaluation says −20 to −50 %. Same runs,
+same checkpoints.
+
+The right-hand panel isolates the mechanism. For the **old** body the two lifespan
+measurements agree — median ratio 0.96 (EncDec) and 0.97 (explicit FM) at delays ≤ 60. For
+the **new** body the training-time metric **overstates** lifespan, by up to 2.3× (EncDec)
+and 2.1× (explicit FM), and increasingly so with delay.
+
+So the training-time metric is not merely noisy here; it is **biased in favour of the new
+body**. The two evaluations differ in episode structure — training-time reward is measured
+on short auto-resetting episodes on the training clips, while the offline eval runs a full
+502-step latched rollout from frame 0 — and the new body's failure mode is one that
+accumulates over a long continuous rollout. A short window rarely samples it.
+
+This is not a generalization gap: within each arm the train → held-out drop in reward per
+step is −0.5 % to −2.5 %, and it is the same for both arms. The offline **`train`**
+evaluation (673 clips the policies were trained on) shows the same collapse as `old_eval`.
+The difference is rollout length, not clip novelty.
 
 ## Decomposition — XML or frame?
 
-![The EncDec 2x2](figures/decomposition.png)
+![The EncDec 2x2 on held-out clips](figures/decomposition.png)
 
-With all four EncDec cells present, both factors can be measured at both levels of the
-other:
-
-| delay | XML effect at `current_root` | XML effect at `reference_root` | Frame effect on old XML | Frame effect on new XML |
+| delay | XML at `current_root` | XML at `reference_root` | Frame on old XML | Frame on new XML |
 |---:|---:|---:|---:|---:|
-| 0 | −0.0 % | +0.4 % | −0.4 % | 0.0 % |
-| 5 | −0.2 % | −0.8 % | +0.9 % | +0.3 % |
-| 10 | −2.8 % | +1.2 % | −2.4 % | +1.7 % |
-| 20 | +0.4 % | −2.3 % | +3.6 % | +0.9 % |
-| 50 | **−12.8 %** | **−14.0 %** | −0.7 % | −2.1 % |
+| 0 | −2.0 % | −2.2 % | −0.8 % | −1.0 % |
+| 5 | −7.2 % | −10.8 % | +2.8 % | −1.1 % |
+| 10 | −16.8 % | −12.5 % | +0.3 % | +5.4 % |
+| 20 | −21.9 % | −30.1 % | +10.7 % | −0.9 % |
+| 50 | −48.0 % | −37.2 % | +0.2 % | +20.9 % |
 
-**The XML carries the entire effect**, and it does so identically at both frames: −12.8 %
-and −14.0 % at delay 50. **The frame is free** at both XMLs: ±3.6 % everywhere, with no
-trend and no consistent sign. And the two XML curves lie on top of each other, so **there
-is no interaction** — the frame does not become costly on the new body, nor vice versa.
+(reward; survival tells the same story — the XML costs 16–19 pp at delay 50 at both frames,
+the frame costs −2.4 to +10.7 pp with no trend)
 
-This is now a measurement inside one network rather than a bound stitched from several.
-The frame contrast in the explicit FM (`frame_expfm`, old XML) agrees independently:
-−1.6 % to +3.3 %.
-
-## Convergence — partly a slower climb, partly a real plateau
-
-![Learning curves and remaining slope](figures/convergence.png)
-
-At delay 30 the new arm is still climbing hard at 600 M (gaining 9.4 % of its final reward
-in the last 100 M steps, against 3.2 % for the baseline), so part of that gap is simply
-unfinished training. At delays 50 and 60 the picture reverses: the new arm has **flattened
-or turned down** (−0.4 % and −6.5 % over the last 100 M) while the baseline is still
-gaining 3.1 % and 3.0 %. There the deficit is a genuinely lower plateau.
-
-So the band is a mixture: its leading edge (25–40) is convergence speed, its trailing edge
-(50–60) is a lower ceiling. The excluded 2 G-step runs will sharpen this.
-
-> **Followed up in [`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/)**
-> (2026-08-14), using the eight 2 G-step runs at delays 0/10/20/50. It confirms the
-> mixture and locates the boundary: at delays ≤ 20 the deficit is purely convergence speed
-> (the new XML costs ~1.1–1.5× the steps, then overtakes the baseline by 2–12 %); at delay
-> 50 in the PG-FM it is a ceiling that *widens* with more compute. It also finds that the
-> single-final-eval-point reduction used throughout this report inflates the PG-FM
-> delay-50 deficit: **−15.2 % here is −7.9 % when the last 50 M steps are averaged**, on
-> the same two runs. Treat the point estimates in this report as ±3 %.
+**The XML carries the entire effect**, and does so at both frames. **The frame remains
+free** at both XMLs — no trend, no consistent sign, and if anything slightly positive. The
+frame conclusion is the one thing that survives unchanged from the training-clip analysis,
+and it is now confirmed on held-out data in two networks (`frame_expfm`: −5.2 % to +2.4 %).
 
 ## Position control
 
 ![Position control](figures/position.png)
 
-Under position/PD control the XML costs **nothing at any delay** — the worst point across
-delays 0–50 is −1.6 % at delay 20, and delay 50 is +0.3 %, against −12.8 % for the same XML
-change under torque.
+The earlier conclusion that position control is unaffected **does not survive** either. On
+held-out clips the XML costs position control −4.8 % at delay 0, −10.1 % at delay 20 and
+−14.5 % at delay 50, with survival down 6.5–17.2 pp.
 
-The reading that fits: the inner PD loop absorbs the extra contact disturbances, whereas a
-torque policy must handle them in its outer loop — and in the 30–60 band it no longer has
-fresh enough proprioception to do so. (The delay-50 point is the only overlap between this
-contrast and the torque one, and this cell only reaches delay 50, so the comparison rests
-on the low end of the band.)
+It is still clearly *less* affected than torque control — −14.5 % versus −37 to −48 % at
+delay 50 — so the qualitative reading (the inner PD loop absorbs part of the extra contact
+disturbance) stands. But "free" was an artifact of the training-clip metric.
 
-## Speed — settled
+## Convergence
+
+![Learning curves](figures/convergence.png)
+
+Read these for convergence only; their *levels* are the metric that misleads. At delay 30
+the new arm is still climbing hard at 600 M (gaining 9.4 % of its final reward in the last
+100 M steps, against 3.2 % for the baseline); at delays 50 and 60 it has flattened or
+turned down (−0.4 %, −6.5 %) while the baseline still gains ~3 %. Longer training will
+narrow part of the gap but there is no sign it would close it.
+
+## Speed
 
 ![Throughput](figures/throughput.png)
 
-With the new sweeps there are now **18 A100-matched, delay-matched pairs** rather than the
-disjoint cells the earlier version had to reason around. Every one falls between −0.4 %
-and +2.7 %; median ratios are 1.005 (explicit FM, n = 14) and 1.014 (EncDec, n = 3). The
-new XML is **not slower** — marginally faster, if anything, consistent with the controlled
-benchmark (`benchmark_xml.py`: 16 → 70 collidable geoms adds only ~2 active contacts).
-
-## Offline evaluation
-
-![Offline evaluation](figures/offline_eval.png)
-
-Held-out clips reproduce the training-time picture where coverage exists: the XML-alone
-contrast at delay 50 is −6.5 % on `old_eval` and −8.6 % on `train`; the frame contrast
-stays within +2.6 %; the position contrast within ±0.6 %. `new_eval` (32 clips, single
-seed) is noisy and should be read for trend only.
-
-**No primary pair appears here** — none of the new `reference_root` arms has an offline
-evaluation.
+Unchanged and settled: 18 A100-matched, delay-matched pairs, all between −0.4 % and
++2.7 %; median ratios 1.005 (explicit FM, n = 14) and 1.014 (EncDec, n = 3). The new XML
+is not slower.
 
 ## Bottom line
 
-- **Adopt `reference_root`.** Free at both XML levels, in two networks, with no
-  interaction. This question is settled.
-- **No speed penalty.** Settled, with 18 GPU- and delay-matched pairs.
-- **The new XML is free out to delay ~20**, free at *every* delay under position control,
-  and free at *every* delay for the explicit forward model.
-- **The cost is specific**: torque control, EncDec or PG-FM, delays 25–60, where it reaches
-  −20 %. It closes again by delay 70. Part of that band is unfinished training (delay 30),
-  part is a real lower plateau (delays 50–60).
-- **If the going-forward setup keeps the explicit forward model, none of this bites** —
-  and at long delay the new configuration is actively better.
-
-## Missing data
-
-- **No new-`reference_root` run has an offline evaluation** (`encdec_new_reference` 0/23,
-  `expfm_new_reference` 0/23, `pgfm_new_reference` 0/13). The primary comparison rests
-  entirely on training-clip reward, and the held-out and 30 s-clip view of the
-  going-forward configuration is unknown. Highest-value thing to run:
-
-  ```bash
-  python -m vnl_experiments.artifacts plan --kind eval \
-      --runs analysis/collision-model-xml/runs.csv --out eval_todo.txt
-  # on the cluster:  sbatch slurm_eval.sh eval_todo.txt eval
-  python -m vnl_experiments.artifacts pull --kind eval \
-      --runs analysis/collision-model-xml/runs.csv
-  ```
-
-- Lower priority: `expfm_old_current` (23) and `expfm_old_reference` (6) hold only the
-  older `legacy-batch` spec, so the explicit-FM contrasts are missing from the offline
-  figure.
+- **`reference_root` is free.** Confirmed on held-out data, at both XML levels, in two
+  networks, with no interaction. Adopt it.
+- **No speed penalty.** Settled.
+- **The new XML has a real and substantial cost**: the body falls over much more often —
+  survival at delay 50 drops from 26 % to 6 % (EncDec) and 44 % to 12 % (explicit FM). It
+  is a *stability* cost, not a tracking cost: reward per step is nearly unchanged.
+- **It affects every network and both control modes**, though the explicit forward model
+  and position control are hit less hard.
+- **Training-time reward should not be used to judge this change.** It understates the
+  cost, and it does so more for the new body than the old.
 
 ## Follow-ups
 
-- ~~**The 2 G-step runs**, which separate the "slower climb" and "lower plateau" halves of
-  the band directly.~~ Done: [`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/).
-- **Multiple seeds at delays 30–60.** The whole effect lives in a band where every cell is
-  n = 1, and the band's peak (−19.7 % at delay 40) rests on one run per arm.
-- **Why is the explicit FM immune?** It is the most interesting result here and it is
-  unexplained. The `fm_pred_mse` recorded in the eval artifacts would show whether the
-  predictor's accuracy degrades on the new body at all.
-- **A new-XML `current_root` cell for the explicit FM and PG-FM**, to check that the
-  no-interaction result found in EncDec holds in the networks that carry the deficit.
-- **Denser sampling across delays 20–70** in EncDec, since the band's edges are currently
-  defined by single points at 25 and 70.
+- **This is a stability problem, so look at terminations.** The eval records carry
+  per-reason `termination_rate` (`root_too_far`, `root_too_rotated`, `pose_error`). Which
+  one grows on the new body would say whether this is falling, drifting, or pose
+  divergence — the single most informative next cut, and it needs no new runs.
+- **Watch the rendered rollouts.** Videos exist for 8 `pgfm_new_reference` runs; seeing the
+  failure directly is likely worth more than another summary statistic.
+- **Is it trainable away?** The 2 G-step runs, and possibly a reward/termination-threshold
+  adjustment for the more contact-rich body.
+- **Multiple seeds**, still n = 1 per cell everywhere.
+- **The 3 missing PG-FM evals** (delays 5, 20, 30) sit in the most interesting part of the
+  range; worth topping up.
+- **A new-XML `current_root` cell for the explicit FM and PG-FM**, to confirm the
+  no-interaction result outside EncDec.
 
 ---
 

@@ -8,15 +8,18 @@ Run from the repo root::
 Reads ONLY the committed CSVs (never WandB, never the artifact store) and writes
 figures/. See analysis/README.md §3.
 
-Encoding: **colour = network** (the canonical CONDITION_STYLE colours, so these figures
-line up with every other question), **line style = arm** — dashed + open marker for the
-baseline, solid + filled for the changed configuration.
+The **offline evaluation** (``data_eval.csv``) carries the conclusions here, not the
+training-time reward in ``data.csv``. Training-time reward is eval-on-training-clips over
+short auto-reset episodes and it systematically under-detects this particular effect --
+``fig_training_vs_heldout`` is the evidence for that and the reason for the ordering.
+
+Encoding: **colour = network** (the canonical CONDITION_STYLE colours), **line style =
+arm** — dashed + open marker for the baseline, solid + filled for the changed config.
 """
 
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -35,11 +38,13 @@ DATA = HERE / "data.csv"
 CURVES = HERE / "curves.csv"
 DATA_EVAL = HERE / "data_eval.csv"
 
+#: Held-out split, 169 clips, full 502-step rollouts from frame 0.
+HELD_OUT = "old_eval"
+
 _MANIFEST: dict[str, str] = {}
 
 
 def stamp(fig, name: str, *inputs) -> None:
-    """Add the provenance footer and remember it. Call just before ``savefig``."""
     _MANIFEST[f"{name}.png"] = provenance(fig, HERE, *(inputs or (DATA,)))
 
 
@@ -51,8 +56,6 @@ NETWORK_OF = {
     "expfm_old_position": "forward_model", "expfm_new_position": "forward_model",
     "pgfm_old_current": "pg_forward_model", "pgfm_new_reference": "pg_forward_model",
 }
-NETWORK_LABEL = {"efference": "EncDec + efference", "forward_model": "Explicit FM",
-                 "pg_forward_model": "Policy-gradient FM"}
 LABEL = {
     "encdec_old_current": "old XML, current_root",
     "encdec_old_reference": "old XML, reference_root",
@@ -88,173 +91,216 @@ PAIRS = {
                      "XML effect (position control)"),
 }
 PRIMARY_PAIRS = ["primary_encdec", "primary_expfm", "primary_pgfm"]
-# The 2x2: XML contrasts warm, frame contrasts cool, so main effects read at a glance.
 FACTOR_COLOR = {"xml_at_current": "C1", "xml_at_reference": "C3",
                 "frame_at_old": "C0", "frame_at_new": "C9",
                 "frame_expfm": "C2", "position_xml": "C5"}
 
 
-def dedup(df: pd.DataFrame, condition: str, metric: str = "reward_mean") -> pd.DataFrame:
-    """One point per delay for a condition (best of any duplicate runs at that delay)."""
-    sub = df[df["condition"] == condition].dropna(subset=[metric])
+# ---------------------------------------------------------------------------
+# accessors
+# ---------------------------------------------------------------------------
+
+def series(df: pd.DataFrame, condition: str, metric: str,
+           dataset: str | None = None) -> pd.Series:
+    """One value per delay for a condition, from data.csv or data_eval.csv."""
+    sub = df[df["condition"] == condition]
+    if dataset is not None:
+        sub = sub[sub["dataset"] == dataset]
+    sub = sub.dropna(subset=[metric])
     return (sub.sort_values(metric, ascending=False)
-               .drop_duplicates(["delay_k"])
-               .sort_values("delay_k"))
+               .drop_duplicates(["delay_k"]).set_index("delay_k")[metric]
+               .sort_index())
 
 
-def paired(df: pd.DataFrame, pair: str, metric: str = "reward_mean") -> pd.DataFrame:
-    """Delay-matched baseline/changed table with the absolute and relative difference."""
+def paired(df: pd.DataFrame, pair: str, metric: str,
+           dataset: str | None = None) -> pd.DataFrame:
+    """Delay-matched baseline/changed table with absolute and relative differences."""
     base, changed, _ = PAIRS[pair]
-    a = dedup(df, base, metric).set_index("delay_k")[metric]
-    b = dedup(df, changed, metric).set_index("delay_k")[metric]
-    out = pd.DataFrame({"baseline": a, "changed": b}).dropna()
+    out = pd.DataFrame({"baseline": series(df, base, metric, dataset),
+                        "changed": series(df, changed, metric, dataset)}).dropna()
     out["delta"] = out["changed"] - out["baseline"]
     out["pct"] = 100 * (out["changed"] / out["baseline"] - 1)
     return out.reset_index()
 
 
-def curve_of(curves: pd.DataFrame, condition: str, delay: int) -> pd.DataFrame:
-    sub = curves[(curves["condition"] == condition) & (curves["delay_k"] == delay)]
-    return sub.sort_values("step")
-
-
-def draw_arm(ax, df: pd.DataFrame, condition: str, *, baseline: bool, **kw) -> None:
-    sub = dedup(df, condition)
-    style = dict(color=color_for(NETWORK_OF[condition]),
-                 marker=marker_for(NETWORK_OF[condition]),
-                 label=LABEL[condition],
-                 **(BASELINE_STYLE if baseline else CHANGED_STYLE))
-    style.update(kw)
-    ax.plot(sub["delay_k"], sub["reward_mean"], **style)
-
-
 # ---------------------------------------------------------------------------
-# Figure 1 (primary): the same contrast in three independent networks
+# Figure 1 (primary): held-out performance, and what drives it
 # ---------------------------------------------------------------------------
 
-def fig_primary(df: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
+def fig_primary(ev: pd.DataFrame) -> None:
+    fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.3))
 
     ax = axes[0]
     for key in PRIMARY_PAIRS:
         base, changed, label = PAIRS[key]
-        draw_arm(ax, df, base, baseline=True,
-                 label=f"{label}: old XML, current_root")
-        draw_arm(ax, df, changed, baseline=False,
-                 label=f"{label}: new XML, reference_root")
+        for cond, baseline in [(base, True), (changed, False)]:
+            s = series(ev, cond, "survived", HELD_OUT)
+            ax.plot(s.index, 100 * s, color=color_for(NETWORK_OF[cond]),
+                    marker=marker_for(NETWORK_OF[cond]),
+                    label=f"{label}: {'old' if baseline else 'new'}",
+                    **(BASELINE_STYLE if baseline else CHANGED_STYLE))
     ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Mean episode reward (eval on train clips)")
-    ax.set_ylim(bottom=0)
-    ax.set_title("Torque control: baseline (dashed) vs going-forward config (solid)")
-    ax.legend(loc="lower left", fontsize=6.5, ncol=1)
-    add_ms_axis(ax, df["delay_k"].max())
+    ax.set_ylabel("Clips surviving the full 5 s (%)")
+    ax.set_title("Survival — where the whole effect lives")
+    ax.legend(loc="upper right", fontsize=6.5)
+    add_ms_axis(ax, ev["delay_k"].max())
     sns.despine(ax=ax)
 
-    ax = axes[1]
-    for key in PRIMARY_PAIRS:
-        m = paired(df, key)
-        net = NETWORK_OF[PAIRS[key][1]]
-        ax.plot(m["delay_k"], m["pct"], color=color_for(net), marker=marker_for(net),
-                label=PAIRS[key][2])
-    ax.axhline(0, color="k", lw=0.8, ls=":")
-    ax.axvspan(28, 62, color="0.85", zorder=0, lw=0)
-    ax.annotate("30–60", (45, ax.get_ylim()[1]), ha="center", va="top", fontsize=7,
-                color="0.45")
-    ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Reward change, new config vs baseline (%)")
-    ax.set_title("Same contrast, three networks")
-    ax.legend(loc="lower right", fontsize=8)
-    sns.despine(ax=ax)
+    for ax, metric, title, ylabel in [
+        (axes[1], "episode_reward", "Episode reward",
+         "Reward change, new vs old (%)"),
+        (axes[2], "reward_per_step", "Reward per step (tracking quality)",
+         "Change in reward per step (%)"),
+    ]:
+        for key in PRIMARY_PAIRS:
+            m = paired(ev, key, metric, HELD_OUT)
+            net = NETWORK_OF[PAIRS[key][1]]
+            ax.plot(m["delay_k"], m["pct"], color=color_for(net),
+                    marker=marker_for(net), label=PAIRS[key][2])
+        ax.axhline(0, color="k", lw=0.8, ls=":")
+        ax.set_xlabel("Observation delay (steps)")
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        sns.despine(ax=ax)
+    axes[2].set_ylim(-60, 15)
+    axes[1].set_ylim(-60, 15)
+    axes[1].legend(loc="lower left", fontsize=7)
 
+    fig.suptitle(f"Offline evaluation on held-out clips ({HELD_OUT}, 169 clips, "
+                 f"full 502-step rollouts)", fontsize=10)
     fig.tight_layout()
-    stamp(fig, "primary", DATA)
+    stamp(fig, "primary", DATA_EVAL)
     fig.savefig(FIGURES / "primary.png")
     print("Saved", FIGURES / "primary.png")
 
 
 # ---------------------------------------------------------------------------
-# Figure 2: the EncDec 2x2 — XML and frame varied independently
+# Figure 2: why the training-time metric missed it
 # ---------------------------------------------------------------------------
 
-def fig_decomposition(df: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
+def fig_training_vs_heldout(df: pd.DataFrame, ev: pd.DataFrame) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.3))
 
     ax = axes[0]
-    for cond, baseline, kw in [
-        ("encdec_old_current", True, {}),
-        ("encdec_old_reference", True, dict(marker="x", alpha=0.75)),
-        ("encdec_new_current", False, dict(marker="x", alpha=0.75)),
-        ("encdec_new_reference", False, {}),
-    ]:
-        draw_arm(ax, df, cond, baseline=baseline,
-                 color="C0" if "old" in cond else "C3", **kw)
-    ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Mean episode reward (eval on train clips)")
-    ax.set_ylim(bottom=0)
-    ax.set_title("All four EncDec cells (blue = old XML, red = new)")
-    ax.legend(loc="lower left", fontsize=7)
-    add_ms_axis(ax, df["delay_k"].max())
-    sns.despine(ax=ax)
-
-    ax = axes[1]
-    for key in ("xml_at_current", "xml_at_reference", "frame_at_old", "frame_at_new"):
-        m = paired(df, key)
-        ax.plot(m["delay_k"], m["pct"], color=FACTOR_COLOR[key], marker="o",
-                ls="-" if key.startswith("xml") else "--", label=PAIRS[key][2])
+    for key in PRIMARY_PAIRS:
+        net = NETWORK_OF[PAIRS[key][1]]
+        train = paired(df, key, "reward_mean")
+        held = paired(ev, key, "episode_reward", HELD_OUT)
+        ax.plot(train["delay_k"], train["pct"], color=color_for(net), ls="--",
+                marker=marker_for(net), mfc="none",
+                label=f"{PAIRS[key][2]}: training-time")
+        ax.plot(held["delay_k"], held["pct"], color=color_for(net), ls="-",
+                marker=marker_for(net), label=f"{PAIRS[key][2]}: held-out")
     ax.axhline(0, color="k", lw=0.8, ls=":")
     ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Reward change vs the other level (%)")
-    ax.set_title("Each factor, held at both levels of the other")
-    ax.legend(loc="lower left", fontsize=8)
+    ax.set_ylabel("Reward change, new vs old (%)")
+    ax.set_title("Same runs, two metrics")
+    ax.legend(loc="lower left", fontsize=6)
     sns.despine(ax=ax)
 
-    fig.suptitle("The XML carries the effect; the frame is free; they do not interact",
+    # The asymmetry is the point: the two lifespan measurements agree for the old arm
+    # and diverge by up to ~1.9x for the new one, so the training-time metric is not
+    # merely noisy, it is biased in favour of the new configuration.
+    ax = axes[1]
+    base, changed, _ = PAIRS["primary_encdec"]
+    for cond, baseline in [(base, True), (changed, False)]:
+        train = series(df, cond, "lifespan_mean")
+        held = series(ev, cond, "lifespan_steps", HELD_OUT)
+        m = pd.DataFrame({"t": train, "h": held}).dropna()
+        ax.plot(m.index, m["t"], color="0.45" if baseline else "C3", ls="--",
+                marker="o", ms=3, mfc="none",
+                label=f"{LABEL[cond]}: training-time")
+        ax.plot(m.index, m["h"], color="0.45" if baseline else "C3", ls="-",
+                marker="o", ms=3, label=f"{LABEL[cond]}: held-out")
+    ax.set_xlabel("Observation delay (steps)")
+    ax.set_ylabel("Mean episode lifespan (control steps)")
+    ax.set_title("EncDec lifespan: the two agree for the old body,\n"
+                 "diverge for the new one")
+    ax.legend(loc="upper right", fontsize=6.5)
+    sns.despine(ax=ax)
+
+    fig.tight_layout()
+    stamp(fig, "training_vs_heldout", DATA, DATA_EVAL)
+    fig.savefig(FIGURES / "training_vs_heldout.png")
+    print("Saved", FIGURES / "training_vs_heldout.png")
+
+
+# ---------------------------------------------------------------------------
+# Figure 3: the EncDec 2x2 on held-out data
+# ---------------------------------------------------------------------------
+
+def fig_decomposition(ev: pd.DataFrame) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.3), sharex=True)
+
+    for ax, metric, ylabel, scale in [
+        (axes[0], "episode_reward", "Reward change vs the other level (%)", None),
+        (axes[1], "survived", "Change in survival (percentage points)", 100),
+    ]:
+        for key in ("xml_at_current", "xml_at_reference", "frame_at_old",
+                    "frame_at_new"):
+            m = paired(ev, key, metric, HELD_OUT)
+            y = m["delta"] * scale if scale else m["pct"]
+            ax.plot(m["delay_k"], y, color=FACTOR_COLOR[key], marker="o",
+                    ls="-" if key.startswith("xml") else "--", label=PAIRS[key][2])
+        ax.axhline(0, color="k", lw=0.8, ls=":")
+        ax.set_xlabel("Observation delay (steps)")
+        ax.set_ylabel(ylabel)
+        sns.despine(ax=ax)
+    axes[0].legend(loc="lower left", fontsize=8)
+
+    fig.suptitle("EncDec 2x2 on held-out clips: the XML carries it, the frame is free",
                  fontsize=10)
     fig.tight_layout()
-    stamp(fig, "decomposition", DATA)
+    stamp(fig, "decomposition", DATA_EVAL)
     fig.savefig(FIGURES / "decomposition.png")
     print("Saved", FIGURES / "decomposition.png")
 
 
 # ---------------------------------------------------------------------------
-# Figure 3: position control
+# Figure 4: position control
 # ---------------------------------------------------------------------------
 
-def fig_position(df: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+def fig_position(ev: pd.DataFrame) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.3))
 
     ax = axes[0]
-    draw_arm(ax, df, "expfm_old_position", baseline=True)
-    draw_arm(ax, df, "expfm_new_position", baseline=False)
+    for cond, baseline in [("expfm_old_position", True), ("expfm_new_position", False)]:
+        s = series(ev, cond, "survived", HELD_OUT)
+        ax.plot(s.index, 100 * s, color=color_for("forward_model"),
+                marker=marker_for("forward_model"), label=LABEL[cond],
+                **(BASELINE_STYLE if baseline else CHANGED_STYLE))
+    for cond, baseline in [("expfm_old_current", True), ("expfm_new_reference", False)]:
+        s = series(ev, cond, "survived", HELD_OUT)
+        ax.plot(s.index, 100 * s, color="0.55", lw=1,
+                marker=".", ms=4, label=LABEL[cond] + " [torque]",
+                ls="--" if baseline else "-")
     ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Mean episode reward (eval on train clips)")
-    ax.set_ylim(bottom=0)
-    ax.set_title("Explicit forward model, position control")
-    ax.legend(loc="lower left", fontsize=8)
-    add_ms_axis(ax, df["delay_k"].max())
+    ax.set_ylabel("Clips surviving the full 5 s (%)")
+    ax.set_title("Position control (green) vs torque (grey)")
+    ax.legend(loc="upper right", fontsize=6.5)
     sns.despine(ax=ax)
 
     ax = axes[1]
     for key in ("position_xml", "xml_at_current", "xml_at_reference"):
-        m = paired(df, key)
+        m = paired(ev, key, "episode_reward", HELD_OUT)
         ax.plot(m["delay_k"], m["pct"], color=FACTOR_COLOR[key], marker="o",
                 ls="-" if key == "position_xml" else "--",
                 label=PAIRS[key][2] + ("" if key == "position_xml" else " (torque)"))
     ax.axhline(0, color="k", lw=0.8, ls=":")
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Reward change, new vs old XML (%)")
-    ax.set_title("The XML penalty needs torque control")
+    ax.set_title("Position control is hit too, about half as hard")
     ax.legend(loc="lower left", fontsize=8)
     sns.despine(ax=ax)
 
     fig.tight_layout()
-    stamp(fig, "position", DATA)
+    stamp(fig, "position", DATA_EVAL)
     fig.savefig(FIGURES / "position.png")
     print("Saved", FIGURES / "position.png")
 
 
 # ---------------------------------------------------------------------------
-# Figure 4: convergence — lower plateau or slower climb?
+# Figure 5: convergence (training curves — the only thing they are good for here)
 # ---------------------------------------------------------------------------
 
 def convergence_table(curves: pd.DataFrame) -> pd.DataFrame:
@@ -274,14 +320,15 @@ def convergence_table(curves: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def fig_convergence(df: pd.DataFrame, curves: pd.DataFrame) -> pd.DataFrame:
+def fig_convergence(curves: pd.DataFrame) -> pd.DataFrame:
     base, changed, _ = PAIRS["primary_encdec"]
     show = [30, 40, 50, 60]
 
     fig, axes = plt.subplots(1, len(show) + 1, figsize=(3.1 * (len(show) + 1), 3.7))
     for ax, delay in zip(axes, show):
         for cond, baseline in [(base, True), (changed, False)]:
-            c = curve_of(curves, cond, delay)
+            c = curves[(curves["condition"] == cond)
+                       & (curves["delay_k"] == delay)].sort_values("step")
             ax.plot(c["step"] / 1e6, c["reward_mean"], color=color_for(NETWORK_OF[cond]),
                     lw=1.2, ls="--" if baseline else "-",
                     label=LABEL[cond] if delay == show[0] else None)
@@ -289,47 +336,44 @@ def fig_convergence(df: pd.DataFrame, curves: pd.DataFrame) -> pd.DataFrame:
         ax.set_xlabel("Env steps (millions)")
         ax.set_ylim(bottom=0)
         sns.despine(ax=ax)
-    axes[0].set_ylabel("Mean episode reward")
+    axes[0].set_ylabel("Training-time reward")
     axes[0].legend(loc="lower right", fontsize=7)
 
-    # Only the EncDec pair here: all six arms on one axis is unreadable, and the
-    # three-network version is in convergence_table.csv.
     ax = axes[-1]
     slopes = convergence_table(curves)
     for cond, baseline in [(base, True), (changed, False)]:
         s = slopes[slopes["condition"] == cond].sort_values("delay_k")
         ax.plot(s["delay_k"], s["gained_pct"], color=color_for(NETWORK_OF[cond]),
-                marker=marker_for(NETWORK_OF[cond]), ms=3, lw=1.2,
-                label=LABEL[cond], **(BASELINE_STYLE if baseline else CHANGED_STYLE))
+                marker=marker_for(NETWORK_OF[cond]), ms=3, lw=1.2, label=LABEL[cond],
+                **(BASELINE_STYLE if baseline else CHANGED_STYLE))
     ax.axhline(0, color="k", lw=0.8, ls=":")
-    ax.axvspan(28, 62, color="0.88", zorder=0, lw=0)
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Reward still gained in the\nlast 100 M steps (% of final)")
     ax.set_title("Converged at 600 M? (EncDec)")
     ax.legend(loc="upper left", fontsize=6.5, frameon=False)
     sns.despine(ax=ax)
 
+    fig.suptitle("Training-time curves — read for convergence only; their levels "
+                 "under-detect the new body's failures", fontsize=9)
     fig.tight_layout()
-    stamp(fig, "convergence", DATA, CURVES)
+    stamp(fig, "convergence", CURVES)
     fig.savefig(FIGURES / "convergence.png")
     print("Saved", FIGURES / "convergence.png")
     return slopes
 
 
 # ---------------------------------------------------------------------------
-# Figure 5: throughput, GPU- and delay-matched
+# Figure 6: throughput
 # ---------------------------------------------------------------------------
 
 def throughput_table(df: pd.DataFrame) -> pd.DataFrame:
-    """Delay-matched new/old throughput ratios, A100 only."""
     a100 = df[df["gpu"].astype(str).str.contains("A100")]
     rows = []
     for key in PRIMARY_PAIRS:
         base, changed, label = PAIRS[key]
         for metric in ("train_sps_median", "eval_sps_median"):
-            a = dedup(a100, base, metric).set_index("delay_k")[metric]
-            b = dedup(a100, changed, metric).set_index("delay_k")[metric]
-            m = pd.DataFrame({"old": a, "new": b}).dropna()
+            m = pd.DataFrame({"old": series(a100, base, metric),
+                              "new": series(a100, changed, metric)}).dropna()
             for delay, r in m.iterrows():
                 rows.append({"pair": key, "label": label, "metric": metric,
                              "delay_k": delay, "old": r["old"], "new": r["new"],
@@ -352,7 +396,8 @@ def fig_throughput(df: pd.DataFrame) -> pd.DataFrame:
     ax.axhline(0, color="k", lw=0.8, ls=":")
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Throughput change, new vs old (%)")
-    ax.set_title("A100-SXM4-80GB only, delay-matched\n(above zero = the new XML is faster)")
+    ax.set_title("A100-SXM4-80GB only, delay-matched\n"
+                 "(above zero = the new XML is faster)")
     ax.legend(loc="best", fontsize=8)
     sns.despine(ax=ax)
     fig.tight_layout()
@@ -363,68 +408,33 @@ def fig_throughput(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# Figure 6: offline evaluation, where the batch eval covers both arms of a pair
-# ---------------------------------------------------------------------------
 
-def fig_offline_eval(ev: pd.DataFrame) -> None:
-    if ev.empty:
-        print("No offline eval rows; skipping offline_eval.png")
-        return
-    covered = set(ev["condition"])
-    pairs = [k for k, (a, b, _) in PAIRS.items() if {a, b} <= covered]
-    if not pairs:
-        print("No pair has offline eval on both arms; skipping offline_eval.png")
-        return
-
-    datasets = ["train", "old_eval", "new_eval"]
-    fig, axes = plt.subplots(1, len(datasets), figsize=(4.0 * len(datasets), 3.8),
-                             sharex=True)
-    for ax, dataset in zip(axes, datasets):
-        sub = ev[ev["dataset"] == dataset]
-        for key in pairs:
-            base, changed, label = PAIRS[key]
-            a = sub[sub["condition"] == base].groupby("delay_k")["reward_per_step"].max()
-            b = sub[sub["condition"] == changed].groupby("delay_k")[
-                "reward_per_step"].max()
-            m = pd.DataFrame({"a": a, "b": b}).dropna()
+def print_tables(df: pd.DataFrame, ev: pd.DataFrame, slopes: pd.DataFrame,
+                 throughput: pd.DataFrame) -> None:
+    for metric, label in [("episode_reward", "reward (%)"),
+                          ("reward_per_step", "reward per step (%)"),
+                          ("survived", "survival (pp)")]:
+        print(f"\n=== Held-out ({HELD_OUT}): change in {label} ===")
+        cols = {}
+        for key in PAIRS:
+            m = paired(ev, key, metric, HELD_OUT)
             if m.empty:
                 continue
-            ax.plot(m.index, 100 * (m["b"] / m["a"] - 1),
-                    color=FACTOR_COLOR.get(key, "C7"), marker="o", ls="--", label=label)
-        ax.axhline(0, color="k", lw=0.8, ls=":")
-        ax.set_title(dataset)
-        ax.set_xlabel("Observation delay (steps)")
-        sns.despine(ax=ax)
-    axes[0].set_ylabel("Change in reward per step vs baseline (%)")
-    axes[0].legend(loc="lower left", fontsize=7)
-    fig.suptitle("Offline evaluation (batch spec eval3ds-66aaff5b). No primary pair "
-                 "appears: none of the new reference_root arms has an offline eval yet.",
-                 fontsize=9)
-    fig.tight_layout()
-    stamp(fig, "offline_eval", DATA_EVAL)
-    fig.savefig(FIGURES / "offline_eval.png")
-    print("Saved", FIGURES / "offline_eval.png")
+            cols[key] = ((m["delta"] * 100) if metric == "survived"
+                         else m["pct"]).round(1)
+            cols[key].index = m["delay_k"]
+        print(pd.DataFrame(cols).to_string())
 
-
-# ---------------------------------------------------------------------------
-
-def print_tables(df: pd.DataFrame, slopes: pd.DataFrame,
-                 throughput: pd.DataFrame) -> None:
-    print("\n=== Reward change vs baseline (%) ===")
-    columns = {}
-    for key in PAIRS:
-        m = paired(df, key)
-        columns[key] = m.set_index("delay_k")["pct"].round(1)
-    print(pd.DataFrame(columns).to_string())
-
-    print("\n=== Reward still gained in the last 100 M steps (% of final) ===")
-    print(slopes.pivot_table(index="delay_k", columns="condition",
-                             values="gained_pct").round(1).to_string())
+    print("\n=== Training-time reward change (%) — for comparison ===")
+    cols = {}
+    for key in PRIMARY_PAIRS:
+        m = paired(df, key, "reward_mean")
+        cols[key] = m.set_index("delay_k")["pct"].round(1)
+    print(pd.DataFrame(cols).to_string())
 
     print("\n=== A100-only, delay-matched throughput ratio (new / old) ===")
-    summary = (throughput.groupby(["label", "metric"])["ratio"]
-               .agg(["median", "min", "max", "size"]).round(4))
-    print(summary.to_string())
+    print(throughput.groupby(["label", "metric"])["ratio"]
+          .agg(["median", "min", "max", "size"]).round(4).to_string())
 
 
 def main() -> None:
@@ -434,13 +444,13 @@ def main() -> None:
     curves = pd.read_csv(CURVES)
     ev = pd.read_csv(DATA_EVAL)
 
-    fig_primary(df)
-    fig_decomposition(df)
-    fig_position(df)
-    slopes = fig_convergence(df, curves)
+    fig_primary(ev)
+    fig_training_vs_heldout(df, ev)
+    fig_decomposition(ev)
+    fig_position(ev)
+    slopes = fig_convergence(curves)
     throughput = fig_throughput(df)
-    fig_offline_eval(ev)
-    print_tables(df, slopes, throughput)
+    print_tables(df, ev, slopes, throughput)
 
     slopes.to_csv(HERE / "convergence_table.csv", index=False)
     throughput.to_csv(HERE / "throughput_table.csv", index=False)
