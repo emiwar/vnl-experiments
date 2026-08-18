@@ -62,6 +62,19 @@ def read_run_ids(spec: str) -> list[str]:
         else:
             ids = [line.split()[0] for line in path.read_text().splitlines()
                    if line.strip() and not line.startswith("#")]
+    elif "/" in spec or path.suffix in (".csv", ".txt"):
+        # A value that looks like a path but does not resolve is a mistake, not a
+        # one-element id list. Falling through to the comma-split below turns it into a
+        # single bogus wandb id, and since `pull` passes the resulting file list to rsync
+        # with --ignore-missing-args, the remote's "no such file" is swallowed: rsync
+        # exits 0, reports "total size is 0", and `pull` claims success while having
+        # transferred nothing. Fail loudly instead.
+        raise SystemExit(
+            f"--runs {spec!r}: no such file (cwd {Path.cwd()}).\n"
+            f"Relative paths resolve against the current directory -- run from the "
+            f"repo root ({REPO_ROOT}) or pass an absolute path. To pass wandb ids "
+            f"directly, use a comma-separated list with no '/'."
+        )
     else:
         ids = [s.strip() for s in spec.split(",") if s.strip()]
     seen, out = set(), []

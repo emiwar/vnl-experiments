@@ -1,53 +1,50 @@
 # Is the explicit forward model more sensitive to motor noise than the enc-dec?
 
-> **Status: mechanism in place, sweep not yet run.** `runs.csv` is frozen at 56 runs and
-> `coverage.txt` shows 0/280 eval artifacts — all 56 need the cluster (no local
-> checkpoints). The smoke-test numbers at the bottom are from 2 runs and 4 clips on a
-> *different* cohort; they are a mechanism check, not a result.
+**Yes — and the effect appears exactly where the mechanism predicts it should.** The
+explicit forward model starts ~8 % *ahead* of the enc-dec with no noise and is ~10 %
+*behind* it at σ = 0.02: its advantage is conditional on clean execution. The penalty
+scales with the delay the predictor has to bridge (Spearman ρ ≈ −0.9, p < 0.001) and
+vanishes at delay 0, where there is nothing to predict.
+
+A second, **larger** effect fell out of the same sweep: training with wider exploration
+(`min_std = 0.25`) costs ~1/3 of the noise-free reward but buys far more robustness than
+either architecture choice, overtaking the `min_std = 0.1` runs by σ ≈ 0.05 and beating
+them 4× at σ = 0.25.
 
 ## Question
 
 The explicit forward model hands its decoder the predictor's output *instead of* the
 delayed proprioception, with no skip path (`vnl_experiments/delays/forward_model.py`).
-Does its advantage over the enc-dec therefore depend on execution being clean? An answer
-is a curve of performance vs. a fixed action-noise σ for each arm: if the explicit arm's
-*fractional* degradation is steeper, the advantage is conditional on clean execution.
-
-Secondary: **does training with wider exploration buy robustness?** The `min_std = 0.25`
-tranche has 2.5× the exploration noise of the rest. If robustness is partly just "was
-trained under noise", those runs should degrade more slowly.
+Does its advantage over the enc-dec depend on execution being clean? An answer is a curve
+of performance vs. a fixed action-noise σ for each arm: if the explicit arm's *fractional*
+degradation is steeper, the advantage is conditional.
 
 ## Design
 
-Each checkpoint is re-evaluated with a fixed Gaussian perturbation added to the executed
-action — σ in post-tanh action units (a fraction of the actuator half-range), clipped
-back into `[-1, 1]`.
+Each checkpoint was re-evaluated with a fixed Gaussian perturbation added to the executed
+action — σ in post-tanh action units (a fraction of the actuator half-range), clipped back
+into `[-1, 1]`. 56 runs × 5 σ × 3 datasets.
 
-- **Fixed σ, not the policy's learned `std`.** The learned std is state-dependent and
-  differs per run and architecture; reusing it would confound "robust to perturbation"
-  with "has a wide learned distribution".
+- **Fixed σ, not the policy's learned `std`**, which is state-dependent and differs per
+  run and architecture; reusing it would confound robustness with distribution width.
 - **Unobserved motor noise.** The noise is added after the network's action and outside
   `EfferenceCopy`, so the efference queue holds the *intended* action while the body
-  executes the perturbed one. The predictor's error is then irreducible, not merely
-  out-of-distribution. Both arms carry an efference copy and both get a clean queue, so
-  the comparison is symmetric. The noise does reach the policy indirectly, `delay_k`
-  steps later, via the env's `prev_action` / `actuator_ctrl` channels.
-- **σ = 0 is measured, not assumed** — it is a sweep point produced by the same code
-  path, spec and batch as the noisy points, rather than the pre-existing
-  `eval3ds-66aaff5b` records.
-- **σ ∈ {0, 0.02, 0.05, 0.1, 0.25}.** The smoke test below suggests 0.02–0.05 is where the
-  graded difference between the *architectures* lives, and that `min_std = 0.1` policies
-  are near the floor by 0.1. 0.25 is included regardless, because that saturation was
-  measured on `min_std = 0.1` policies and whether the `min_std = 0.25` tranche still has
-  headroom at 0.25 is exactly the secondary question. Expect the `min_std = 0.1` arms to
-  bottom out there — that is the contrast, not a wasted cell.
+  executes the perturbed one. The predictor's error is irreducible, not merely
+  out-of-distribution. Both arms carry an efference copy and both get a clean queue.
+- **σ = 0 is measured**, from the same code path, spec and batch as the noisy points.
+- **Headline metric is cumulative `episode_reward`**, which folds in tracking quality and
+  survival, compared only *within* a dataset. Each run is normalised to its **own** σ = 0
+  value, which also cancels the ~1 % GPU-physics irreproducibility (numerator and
+  denominator come from the same checkpoint). `reward_per_step` conditions on being alive
+  and is the rate-only view.
+- **Paired by delay.** With n = 1 per (condition, delay), the 23 matched delays *are* the
+  replication, so the primary test is a paired one across delays, not a seed average.
 
 ## Dataset & comparability
 
-- **Source:** WandB `emiwar-team/nnx-ppo-rodent-delays`, selected by `CONDITIONS` in
-  `extract.py` and frozen in `runs.csv`. 56 runs. All new XML
-  (`rodent_no_tail_collisions.xml`), `reference_root` targets, torque actuators,
-  seed 42, 600 M steps, `[512]×4` encoder/decoder, `[1024]×2` critic.
+WandB `emiwar-team/nnx-ppo-rodent-delays`, selected by `CONDITIONS` in `extract.py`,
+frozen in `runs.csv`. All new XML (`rodent_no_tail_collisions.xml`), `reference_root`
+targets, torque actuators, seed 42, 600 M steps, `[512]×4` enc/dec, `[1024]×2` critic.
 
 | condition | n | arm | min_std | delays | commit | state |
 |---|---:|---|---|---|---|---|
@@ -56,106 +53,145 @@ back into `[-1, 1]`.
 | `expfm_std25` | 5 | explicit FM | 0.25 | 0, 5, 10, 20, 50 | `d02b854a` | finished |
 | `pgfm_std25` | 5 | policy-gradient FM | 0.25 | 0, 5, 10, 20, 50 | `d02b854a` | finished |
 
-- **The two primary arms are exactly matched**: same 23 delays, one run per delay per arm,
-  same launch tranche and commit. The delay axis is the replication (n = 1 per cell), so
-  the comparison is *paired* across 23 delays rather than averaged over seeds.
+- **The primary arms are exactly matched**: same 23 delays, one run per delay, same launch
+  tranche and commit.
 - **Included despite `state = failed`:** both primary conditions are the 2026-08-11
-  `ef060b73` tranche, which died in the *post-training* evaluation. The inclusion rule
-  (following `analysis/collision-model-xml`) is `state ∈ {finished, failed}` **and**
-  `summary._step == 600_064_000`; a run that died during training cannot satisfy the
-  second condition. The three `crashed` forward-model runs at `25732c42` have
-  `_step = NaN` and are excluded by that gate.
-- **Artifacts used:** `REQUIRES` names one `eval` spec id per σ, each covering all three
-  datasets. See `coverage.txt`.
+  `ef060b73` tranche, which died in the *post-training* evaluation. The rule (following
+  `collision-model-xml`) is `state ∈ {finished, failed}` **and** `summary._step ==
+  600_064_000`; a run that died during training cannot satisfy the second. The three
+  `crashed` runs at `25732c42` have `_step = NaN` and are excluded by that gate.
+- **Coverage: 801/840 cells.** The only gap is **`encdec` at σ = 0.02, 10/23 delays**
+  (present: 1, 2, 3, 9, 10, 12, 15, 30, 60, 80). Every other (condition, σ) cell is
+  complete. All pooled comparisons in the figures are restricted to delays both arms
+  share at that σ (`paired_delays` in `plot.py`), so no panel compares differently
+  composed cohorts.
 - **Programmatic comparability:** `comparability.txt` — every condition is single-valued
-  on every invariant, including `git_commit`. Pooled across conditions only `min_std` and
-  `git_commit` vary, and they vary together: the `std25` tranche is a separate launch.
-- **Manual comparability:** *(to do before reporting)* `git diff ef060b73 d02b854a` —
-  whether anything between the two tranches touches shared env / reward / network code.
-  Only matters for the secondary (`min_std`) comparison; the primary pair is one commit.
-- **Caveats:**
-  - `min_std = 0.25` exists **only** for the forward model — there is no enc-dec run at
-    0.25 anywhere in the project. So the exploration-width axis cannot be crossed with the
-    architecture comparison, and `pgfm_std25` has no `min_std = 0.1` twin inside this
-    cohort (`pgfm_new_reference`, 13 runs at `25732c42`, would be the twin if the budget
-    allows adding it).
-  - n = 1 per (condition, delay). MuJoCo Warp GPU physics is not bit-reproducible:
-    `episode_reward` moves ~1 % and `termination_rate` ~3 pp per flipped clip
-    (README §6). The per-run σ=0 normalisation in `plot.py` cancels most of that, since
-    numerator and denominator come from the same checkpoint.
-  - Each (run, σ) is a single *noise realisation*. If the spread across delays turns out
-    comparable to the between-arm difference, repeat with several `seed` values per σ
-    (a distinct spec field, hence a distinct `spec_id`).
-  - `train` here is the 80 % training split, so the `train` vs `old_eval`/`new_eval`
-    contrast is what says whether noise sensitivity is a generalisation phenomenon.
+  on every invariant, `git_commit` included. Pooled, only `min_std` and `git_commit` vary,
+  and they vary together (the `std25` tranche is a separate launch 2 days later).
+- **Manual comparability:** *(outstanding)* `git diff ef060b73 d02b854a` — needed only for
+  the secondary `min_std` comparison; the primary pair is a single commit.
 
-## Producing the sweep
+## Result 1 — the explicit forward model degrades faster
 
-280 evaluations (56 runs × 5 σ), all three datasets each, all needing the cluster.
+`old_eval`, paired by delay, episode reward relative to each run's own σ = 0:
 
-```bash
-# laptop: one plan per sigma
-for s in 0.0 0.02 0.05 0.1 0.25; do
-  python -m vnl_experiments.artifacts plan --kind eval \
-      --runs analysis/action-noise-robustness/runs.csv \
-      --set action_noise=$s --out todo_n$s.txt
-done
+| σ | paired delays | expfm | encdec | difference | expfm worse in | Wilcoxon |
+|---|---:|---:|---:|---:|---:|---:|
+| 0.02 | 10 | 0.678 | 0.855 | **−0.177** | 7/10 | p = 0.027 |
+| 0.05 | 23 | 0.316 | 0.400 | **−0.084** | 19/23 | p < 0.001 |
+| 0.10 | 23 | 0.139 | 0.168 | −0.029 | 21/23 | p < 0.001 |
+| 0.25 | 23 | 0.037 | 0.046 | −0.009 | 18/23 | p < 0.001 |
 
-# cluster
-sbatch slurm_eval.sh todo_n0.02.txt eval --set action_noise=0.02   # etc.
+The direction is essentially unanimous (18–21 of 23 delays at every σ). In absolute terms
+the ranking **reverses** between σ = 0 and σ = 0.02. Restricted to the 10 delays both arms
+share at σ = 0.02, so every row compares the same runs (`old_eval`):
 
-# laptop
-python -m vnl_experiments.artifacts pull --kind eval \
-    --runs analysis/action-noise-robustness/runs.csv
-../.venv/bin/python analysis/action-noise-robustness/extract.py --refresh
-../.venv/bin/python analysis/action-noise-robustness/plot.py
-```
+| σ | expfm | encdec | expfm / encdec | survived (expfm / encdec) |
+|---|---:|---:|---:|---|
+| 0.00 | **1383** | 1285 | 1.08 | 0.55 / 0.48 |
+| 0.02 | 1011 | **1128** | **0.90** | 0.35 / 0.40 |
+| 0.05 | 584 | **618** | 0.94 | 0.19 / 0.18 |
+| 0.10 | 158 | **168** | 0.94 | 0.01 / 0.01 |
 
-σ = 0.0 is a real spec point (`eval3ds-n00-04ceda93`), distinct from the noise-free
-`eval3ds-66aaff5b`; produce it like the others.
+Over the full 23 delays (valid at every σ except 0.02) the ratio is 1.09 at σ = 0 and
+0.93 / 0.95 / 0.99 at σ = 0.05 / 0.10 / 0.25 — same reversal, and it narrows as both arms
+approach the floor.
 
-## Smoke test (not a result)
+![Degradation](figures/degradation.png)
 
-Two delay-20 runs from the **old-XML** cohort — `bge1cw3s` (explicit FM) and `fku7oyos`
-(enc-dec) — on `old_eval` with `limit_clips=4`. Different cohort, 4 clips, one run each:
-its only purpose was to check the mechanism end to end.
+Absolute (top) and relative-to-own-σ=0 (bottom) episode reward, per dataset. The two arms
+sit on top of each other in absolute terms from σ = 0.05 down; the bottom row is where the
+consistent separation lives.
 
-| arm | σ | reward/step | lifespan (steps) | survived | fm_pred_mse |
-|---|---|---|---|---|---|
-| enc-dec | 0.00 | 4.08 | 227 | 0.25 | — |
-| enc-dec | 0.10 | 2.93 | 46 | 0.00 | — |
-| enc-dec | 0.25 | 1.95 | 24 | 0.00 | — |
-| explicit FM | 0.00 | 4.06 | 318 | 0.25 | 0.034 |
-| explicit FM | 0.10 | 3.09 | 30 | 0.00 | 0.627 |
-| explicit FM | 0.25 | 2.17 | 18 | 0.00 | 1.629 |
+## Result 2 — the penalty tracks the delay, and disappears at delay 0
 
-Two things it settled:
+![Gap vs delay](figures/gap_vs_delay.png)
 
-1. **The perturbation reaches the quantity it was meant to reach.** `fm_pred_mse` rises
-   18× from σ = 0 to σ = 0.1 — the predictor really is being driven off its training
-   distribution, which is the mechanism the question is about.
-2. **σ = 0.1 is already near-saturating for `min_std = 0.1` policies.** Both arms lose
-   ~90 % of lifespan there, so the architecture comparison should be decided by 0.02 and
-   0.05. This is *not* a reason to drop 0.25: these two checkpoints were trained with
-   `min_std = 0.1`, and the `min_std = 0.25` tranche may well still have a floor left at
-   σ = 0.25. If even 0.02 turns out to bite hard, add levels *below* it (0.005 / 0.01)
-   rather than trusting interpolation from 0.
+The explicit arm's paired disadvantage per delay. It is ~0 for delays 0–5, then grows
+monotonically: at σ = 0.05 it reaches −0.14 to −0.26 by delays 50–100.
 
-## Tentative conclusion
+| σ | Spearman ρ (delay, gap) | p |
+|---|---:|---:|
+| 0.02 | −0.67 | 0.03 |
+| 0.05 | −0.92 | < 0.001 |
+| 0.10 | −0.87 | < 0.001 |
+| 0.25 | −0.91 | < 0.001 |
 
-None yet.
+This is the analysis's strongest internal control. At delay 0 the predictor has nothing to
+bridge, so a mechanism that runs *through* prediction error must show no penalty there —
+and it doesn't. A generic "this architecture is just more fragile" story predicts no such
+delay dependence.
+
+The mechanism is directly visible: the predictor's own L2 error against true current
+proprioception rises **25×** across the sweep (`expfm`, shared delays, `old_eval`):
+0.054 → 0.094 → 0.216 → 0.449 → 1.364.
+
+![Prediction error](figures/prediction_error.png)
+
+## Result 3 — it is not a generalisation effect
+
+Relative episode reward at σ = 0.05 is 0.304 / 0.387 (expfm / encdec) on **train**,
+0.316 / 0.400 on `old_eval`, 0.234 / 0.353 on `new_eval`. The same ordering and roughly
+the same magnitude appear on the training clips, so this is a control phenomenon, not
+overfitting. It is somewhat *larger* on `new_eval`, i.e. noise and novel clips compound.
+
+## Result 4 — wider training exploration buys much more robustness than architecture does
+
+Shared delays (0, 5, 10, 20, 50), `old_eval`, absolute episode reward:
+
+| σ | encdec | expfm | expfm_std25 | pgfm_std25 |
+|---|---:|---:|---:|---:|
+| 0.00 | 1373 | **1434** | 934 | 968 |
+| 0.02 | **1173** | 1066 | 907 | 955 |
+| 0.05 | 655 | 615 | 809 | **897** |
+| 0.10 | 479 | 461 | 614 | **695** |
+| 0.25 | 72 | 71 | 265 | **305** |
+
+![Exploration width](figures/exploration_width.png)
+
+`min_std = 0.25` costs ~1/3 of the noise-free reward, crosses over between σ = 0.02 and
+0.05, and by σ = 0.25 retains 19–20 % of its baseline against 5 % — with survival 0.10–0.14
+vs **0.000**, i.e. the `min_std = 0.1` policies never finish a clip at all. The effect
+dwarfs the architecture difference.
+
+Two details reinforce Result 1. `pgfm_std25` (predictor trained only by the policy
+gradient) beats `expfm_std25` at *every* σ — and its baseline prediction error is 0.710 vs
+0.074, i.e. it never learned to predict well but also never came to depend on the
+prediction being right. The more a policy leans on an accurate forward prediction, the more
+unobserved motor noise costs it.
+
+## Caveats
+
+- **σ = 0.02 is the weakest row.** `encdec` has 10/23 delays there, and the present set
+  skews mid-to-long (9, 10, 12, 15, 30, 60, 80) — exactly where the gap is largest. The
+  −0.177 mean is therefore an *over*-estimate of what a full 23-delay set would give: on
+  those same 10 delays the σ = 0.05 gap is −0.079, close to the full-set −0.084, so the
+  delay skew alone does not explain why σ = 0.02 shows the largest gap. Every
+  number quoted at σ = 0.02 above is paired on those 10 delays, so it is internally
+  consistent, but it is 10 delays and not 23. Filling the 13 missing runs (13 evals) would
+  settle the most quotable number in the report.
+- n = 1 per (condition, delay); the pairing is across delays, and the reported spread is
+  across-delay spread, not seed spread.
+- One noise realisation per (run, σ). The consistency across 23 independent delays is what
+  carries Result 1, not any single cell.
+- At σ = 0.25 both `min_std = 0.1` arms are on the floor (survived = 0.000), so the small
+  gap there says little; Results 1–2 rest on σ = 0.02–0.10.
+- The `min_std` comparison confounds exploration width with launch tranche/commit
+  (`ef060b73` vs `d02b854a`, 2 days apart) and rests on 5 delays × 1 run.
+- No enc-dec run exists at `min_std = 0.25` anywhere in the project, so Result 4 is
+  internal to the forward model.
 
 ## Follow-ups
 
-- Add `pgfm_new_reference` (13 runs, `25732c42`, min_std 0.1) to give `pgfm_std25` a
-  matched-`min_std` twin — +52 evals.
-- Repeat at several noise realisations per (run, σ) if the across-delay spread is large
-  relative to the arm difference.
-- The mirror experiment: inject the noise *inside* the sampler so the efference queue
-  holds the executed action. That separates "the noise is unpredictable" from "the noise
-  shifts the predictor's input distribution". Requires a change in `nnx-ppo`.
-- Sensory (proprioception) noise as a second axis, which stresses the encoder rather than
-  the predictor.
+- **Fill `encdec` σ = 0.02** (13 evals) — cheapest way to firm up the headline number.
+- Add `pgfm_new_reference` (13 runs, `25732c42`, min_std 0.1) so the policy-gradient arm
+  has a matched-`min_std` twin, separating "implicit predictor" from "wide exploration".
+- Train an enc-dec at `min_std = 0.25` to cross the two axes.
+- The mirror experiment: inject noise *inside* the sampler so the efference queue holds the
+  executed action. That separates "the noise is unpredictable" from "the noise shifts the
+  predictor's input distribution", and Result 2 predicts the penalty should largely vanish.
+- Sensory (proprioception) noise as a second axis, stressing the encoder rather than the
+  predictor.
 
 ---
 
