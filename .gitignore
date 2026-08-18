@@ -13,3 +13,7 @@ eval_results_bad/
 # The artifact store (§2 of analysis/README.md). Root-anchored so it does not also
 # swallow the vnl_experiments/artifacts/ package that manages it.
 /artifacts/
+# Run lists written by `artifacts audit-env --out-dir`; regenerable from the audit.
+/artifact_repair/
+# Per-run decode caches inside an analysis folder (the committed data.csv is the snapshot).
+analysis/*/.decode-cache/

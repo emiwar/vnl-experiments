@@ -57,6 +57,7 @@ from vnl_experiments.envs.absolute_imitation import (
     AbsoluteImitation,
     default_config as absolute_default_config,
 )
+from vnl_experiments.envs.config_io import resolve_local_xml_paths
 
 from nnx_ppo.algorithms.rollout import SlimData, SlimState
 
@@ -248,10 +249,10 @@ def parse_imitation_env_config(env_params: dict, reference_h5: str,
     with cfg.ignore_type():
         cfg.clip_set = "all"
 
-    # Keep local XML paths (training cluster paths are invalid here).
-    default = default_config_fn()
-    cfg.walker_xml_path = default.walker_xml_path
-    cfg.arena_xml_path = default.arena_xml_path
+    # Repair the asset paths: only the *directory* from the training cluster is invalid
+    # here, so keep the run's own XML files rather than the local defaults -- otherwise the
+    # video shows a different body than the one that was trained. See config_io.
+    resolve_local_xml_paths(cfg, env_params, default_config_fn())
 
     return cfg
 

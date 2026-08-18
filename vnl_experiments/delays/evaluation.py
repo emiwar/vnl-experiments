@@ -47,6 +47,7 @@ from vnl_experiments.envs.absolute_imitation import (
     AbsoluteImitation,
     default_config as absolute_default_config,
 )
+from vnl_experiments.envs.config_io import resolve_local_xml_paths
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_NEW_EVAL_H5 = (
@@ -150,11 +151,12 @@ def parse_env_config(env_params: dict, default_config_fn):
 
     cfg.start_frame_range = [0, 1]
 
-    # Always use the local XML paths (cluster paths in the checkpoint are stale).
+    # Repair the asset paths: the cluster paths in the checkpoint are stale here. Only the
+    # *directory* is stale though -- keep the run's own XML files, or an offline eval
+    # silently simulates a different body than the run trained on. See config_io.
     default = default_config_fn()
     cfg.reference_data_path = default.reference_data_path
-    cfg.walker_xml_path = default.walker_xml_path
-    cfg.arena_xml_path = default.arena_xml_path
+    resolve_local_xml_paths(cfg, env_params, default)
     return cfg
 
 

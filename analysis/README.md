@@ -115,6 +115,38 @@ known before looking at the checkpoint directory, and a spec computable only whe
 data lives would make "do I have this yet?" unanswerable from the laptop. The restored
 step is recorded in `resolved.checkpoint_step`.
 
+#### When to bump `VERSION`
+
+The spec says *what was asked for*; `VERSION` says *how the producer makes it*. Together they
+have to guarantee: same `(kind, wandb_id, spec_id)` ⇒ same recipe ⇒ bytes that may be pooled.
+
+**Bump** when `produce()` could write different bytes for the same spec: a numeric bug fix, a
+change in what is computed or recorded, or a change in the meaning of an existing field.
+
+**Do not bump** when adding a spec key whose default is `None` (`normalise_spec` drops `None`
+precisely so this stays valid — `EvalProducer.action_noise` is the precedent), when adding a
+field to `resolved` (not hashed), or for refactors and performance work that cannot change
+output.
+
+A bump does not invalidate the committed analyses — it *partitions* history. `coverage_table`
+looks up the `spec_id` pinned in `REQUIRES`, so a pinned folder keeps resolving its old files
+at full coverage indefinitely; only a **bare**-kind requirement (`"eval"` with no `:id`)
+re-resolves to the producer's current default and flips to 0/N. What the bump does change is
+what `plan`/`ensure` consider current, which is the signal you want.
+
+Two consequences worth planning for:
+
+* Artifacts whose bytes the change provably cannot alter should be **adopted**, not
+  recomputed: `artifacts adopt --kind K --runs R --from-spec <old-id>` hardlinks them onto the
+  new id and records `producer.adopted_from`. It refuses any run where the predicate fails.
+* A bump makes past damage *quiet*, since pinned folders keep rebuilding their old numbers and
+  `--check` stays green. Locate the fallout deliberately with
+  `artifacts audit-env --by-analysis` rather than waiting for a numeric diff.
+
+The 2026-08-18 walker-XML fix (below) is the worked example: `eval`, `activations` and `video`
+went to `VERSION = 2`, 363 + 16 + 16 artifacts were re-produced, 85 were adopted, and
+`history` was untouched.
+
 ### Cluster workflow (the default for anything needing a checkpoint)
 
 Checkpoints stay on the cluster; only results come down.
@@ -267,6 +299,35 @@ had been edited, a state only committed later as `456fbd7`. WandB stored no `dif
 so the logged config is the only record of what ran. Same for `torque_actuators` and
 `walker_xml_path`. See [`collision-model-xml/`](collision-model-xml/). (`ef060b7`,
 2026-08-11, has since set `reference_root` in both training scripts.)
+
+**Every offline rebuild used to silently swap the walker XML** (fixed 2026-08-18). A
+checkpoint records the *cluster* path of its XML, which does not exist on a laptop, so
+`parse_env_config` repaired it — by taking the local default, `consts.RODENT_XML_PATH` =
+`rodent.xml`. A run trained on `rodent_no_tail_collisions.xml` was therefore re-simulated on
+a **different body**, in three independent copies of the same block
+(`delays/evaluation.py`, `delays/eval_videos.py`, `tools/checkpoint_utils.py`) and so in
+every `eval`, `activations` and `video` artifact of the new-XML cohort. The inline
+end-of-training eval was unaffected — it is handed the live `env_config` — which is exactly
+why the discrepancy hid: offline `old_eval` reward sat 2 % / 13 % / 27 % / 42 % below inline
+at delays 0 / 10 / 20 / 50, with survival 0.23 vs 0.67 at delay 50, and nothing in the
+artifact said which body it had used.
+
+Three lasting consequences:
+
+* `envs/config_io.resolve_local_xml_paths` now repairs the *directory* while keeping the
+  *file*, and warns loudly when the run's own XML is genuinely unavailable locally.
+* Producers stamp `resolved.walker_xml_path` / `arena_xml_path`. **An absent stamp means
+  pre-fix**, which is what makes the damage decidable after the fact.
+* `artifacts audit-env` classifies every stored artifact as broken / adoptable / repaired
+  and writes the re-production run lists. It found 363 eval, 16 activation and 16 video
+  artifacts built on the wrong body; the analyses resting on them were
+  [`action-noise-robustness/`](action-noise-robustness/) (all six eval specs),
+  [`collision-model-xml/`](collision-model-xml/) (67/149 runs) and
+  [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) (16/29).
+
+The general lesson is narrower than "check your paths": **a reconstruction that repairs an
+input must record what it chose.** Any field a rebuild silently substitutes is a field no
+downstream analysis can audit.
 
 **Never use `scan_history`.** The runs log ~7 300 iterations over ~50 keys; streaming that
 for 80 runs ran over 40 minutes without finishing. Use the sampled endpoint

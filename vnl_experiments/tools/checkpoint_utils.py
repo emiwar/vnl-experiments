@@ -15,6 +15,7 @@ import jax.numpy as jp
 from flax import nnx
 
 from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4, default_config
+from vnl_experiments.envs.config_io import resolve_local_xml_paths
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
 from vnl_experiments.networks.nervenet_style_v3 import NerveNetNetwork_v3
@@ -73,11 +74,14 @@ def parse_env_config(env_params: dict):
         for k, v in env_params["reward_terms"].items():
             cfg.reward_terms[k] = float(v)
 
-    # Always use local paths — cluster paths from the checkpoint are invalid here
+    # Repair the asset paths — only the cluster *directory* is invalid here, so keep the
+    # run's own XML files rather than the local defaults. See envs/config_io.
+    # NOTE: unlike delays/evaluation.parse_env_config, this copy does not honour
+    # `body_target_frame`; it serves the interactive modular-rodent tools, which do not
+    # produce artifacts. Fix that too before using it for anything measured.
     default = default_config()
     cfg.reference_data_path = default.reference_data_path
-    cfg.walker_xml_path = default.walker_xml_path
-    cfg.arena_xml_path = default.arena_xml_path
+    resolve_local_xml_paths(cfg, env_params, default)
 
     return cfg
 

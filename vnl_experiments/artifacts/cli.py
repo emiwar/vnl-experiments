@@ -403,6 +403,76 @@ def cmd_import_legacy(args) -> int:
     return 0
 
 
+def cmd_audit_env(args) -> int:
+    """Report artifacts built on a different body than the run trained on."""
+    from vnl_experiments.artifacts import audit_env
+
+    return audit_env.main(args)
+
+
+def cmd_adopt(args) -> int:
+    """Hardlink artifacts from an older producer version onto the current ``spec_id``.
+
+    For a run that trained on the *default* assets, the 2026-08-18 XML fix cannot change
+    what ``produce`` would write, so recomputing the artifact under the new ``spec_id`` would
+    burn GPU hours to reproduce identical bytes. Adopting instead hardlinks the existing file
+    and writes a fresh sidecar that records where it came from.
+
+    The predicate is checked per run, not asserted by the caller: a run whose trained assets
+    differ from the defaults is **refused**, because for those the fix does change the output.
+    """
+    from vnl_experiments.artifacts.audit_env import classify
+
+    store = Store()
+    wanted = set(read_run_ids(args.runs))
+    rows = {(r.kind, r.wandb_id, r.spec_id): r for r in classify()}
+
+    adopted = refused = missing = skipped = 0
+    for wandb_id in sorted(wanted):
+        row = rows.get((args.kind, wandb_id, args.from_spec))
+        if row is None:
+            print(f"  {wandb_id}: no {args.kind}:{args.from_spec} in the store; skipped")
+            missing += 1
+            continue
+        if row.verdict != "adoptable":
+            print(f"  {wandb_id}: REFUSED ({row.verdict}"
+                  f"{': ' + row.reason if row.reason else ''})")
+            refused += 1
+            continue
+
+        source = store.lookup(args.kind, wandb_id, args.from_spec)
+        spec = dict(source.spec)
+        new_sid = get_producer(args.kind).spec_id(get_producer(args.kind).spec(**spec))
+        if store.have(args.kind, wandb_id, new_sid):
+            skipped += 1
+            continue
+
+        src_path = store.root / source.path
+        dest = store.path_for(args.kind, wandb_id, new_sid, src_path.suffix)
+        if args.dry_run:
+            print(f"  would link {source.path} -> {dest.relative_to(store.root)}")
+            adopted += 1
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if not dest.exists():
+            try:
+                os.link(src_path, dest)
+            except OSError:            # different filesystem: fall back to a copy
+                dest.write_bytes(src_path.read_bytes())
+        store.record(args.kind, wandb_id, new_sid, dest, spec=spec,
+                     producer={**source.producer, "adopted_from": args.from_spec,
+                               "adopted_reason": "run trained on the default assets, so "
+                                                 "the walker-XML fix cannot change the output"},
+                     resolved={**source.resolved, **row.trained})
+        adopted += 1
+
+    print(f"\nadopted {adopted}, refused {refused}, already present {skipped}, "
+          f"absent {missing}")
+    if adopted and not args.dry_run:
+        print(f"manifest reindexed: {len(store.reindex())} artifacts")
+    return 1 if refused else 0
+
+
 # --------------------------------------------------------------------------------------
 
 
@@ -453,6 +523,22 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("import-legacy", help="adopt eval_results/ into the store")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_import_legacy)
+
+    p = sub.add_parser("audit-env",
+                       help="artifacts built on a different body than was trained")
+    p.add_argument("--out-dir", help="write todo_*/adopt_* run lists + summary.txt here")
+    p.add_argument("--by-analysis", action="store_true",
+                   help="which analysis folders consumed a broken artifact")
+    p.set_defaults(func=cmd_audit_env)
+
+    p = sub.add_parser("adopt",
+                       help="hardlink artifacts from an older producer version to the "
+                            "current spec_id (only where provably identical)")
+    p.add_argument("--kind", required=True, choices=KINDS)
+    add_runs(p)
+    p.add_argument("--from-spec", required=True, help="the spec_id to adopt from")
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_adopt)
 
     args = parser.parse_args(argv)
     if getattr(args, "kind", None) and args.command in ("plan", "ensure") \

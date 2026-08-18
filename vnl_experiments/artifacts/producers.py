@@ -142,6 +142,30 @@ class HistoryProducer(Producer):
 # --------------------------------------------------------------------------------------
 
 
+def _asset_provenance(ckpt_dir: Path, env_class_hint: str | None) -> dict[str, str]:
+    """Which XML files an offline rebuild of this checkpoint uses, for the sidecar.
+
+    Re-derives the choice from the same inputs and the same function the env build uses
+    (``config_io._choose``), so the stamp cannot drift from what was actually simulated.
+
+    Recording this is not decoration. Until 2026-08-18 every offline rebuild silently
+    replaced the run's ``walker_xml_path`` with the local default, so new-XML runs were
+    re-simulated on ``rodent.xml``; nothing in the artifact said which body it used, which
+    is why it went unnoticed for a month. An absent ``walker_xml_path`` in ``resolved``
+    marks an artifact made before that fix.
+    """
+    from vnl_experiments.delays.evaluation import resolve_env_class
+    from vnl_experiments.envs.config_io import local_xml_names
+
+    config_path = Path(ckpt_dir) / "config.json"
+    if not config_path.exists():
+        return {}
+    env_params = json.loads(config_path.read_text()).get("env_params", {})
+    _, default_config_fn = resolve_env_class(env_class_hint or "", env_params,
+                                             "AbsoluteImitation")
+    return local_xml_names(env_params, default_config_fn())
+
+
 class EvalProducer(Producer):
     """Offline re-evaluation of a run's checkpoint on the train / old_eval / new_eval sets.
 
@@ -157,10 +181,15 @@ class EvalProducer(Producer):
     ``action_noise`` defaults to ``None`` rather than ``0.0`` on purpose: ``normalise_spec``
     drops ``None`` values, so adding this axis leaves the noise-free ``spec_id``
     (``eval3ds-66aaff5b``) and every artifact already made under it untouched.
+
+    ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
+    with the local default, so evals of runs trained on a non-default body now measure that
+    body. This changes the numbers, hence a new ``spec_id``; ``eval3ds-66aaff5b`` and its
+    noise variants remain readable for the analyses that pinned them.
     """
 
     KIND = "eval"
-    VERSION = 1
+    VERSION = 2
     EXT = ".json"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {
@@ -210,7 +239,8 @@ class EvalProducer(Producer):
                 "datasets": sorted(record.get("datasets", {})),
                 # `resolved` is not hashed, so this is free, and `manifest_df`
                 # surfaces it as a filterable `resolved.action_noise` column.
-                "action_noise": record.get("action_noise")}
+                "action_noise": record.get("action_noise"),
+                **_asset_provenance(Path(ckpt_dir), ctx.get("env_class"))}
 
 
 class ActivationsProducer(Producer):
@@ -223,10 +253,15 @@ class ActivationsProducer(Producer):
 
     These are also the artifacts most worth reusing across questions: recording them
     costs a full rollout with recording hooks, and the result is question-independent.
+
+    ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
+    with the local default. Recordings of runs trained on a non-default body were made on
+    the wrong body, off the policy's state distribution, so they are not comparable with
+    the ones made after the fix -- hence a new ``spec_id`` rather than an in-place repair.
     """
 
     KIND = "activations"
-    VERSION = 1
+    VERSION = 2
     EXT = ".h5"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {
@@ -287,7 +322,8 @@ class ActivationsProducer(Producer):
                 "dataset": spec["dataset"],
                 "n_clips": int(attrs.get("n_clips", 0)) or None,
                 "n_steps": int(attrs.get("n_steps", 0)) or None,
-                "n_layers": len(layers)}
+                "n_layers": len(layers),
+                **_asset_provenance(Path(ckpt_dir), ctx.get("env_class"))}
 
 
 class VideoProducer(Producer):
@@ -300,10 +336,14 @@ class VideoProducer(Producer):
     ``auto_reset=False`` -- the default -- keeps simulating past a termination so the
     failure mode is visible; ``True`` snaps back to the reference so the timeline stays
     locked to the mocap clip.
+
+    ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
+    with the local default, so videos of runs trained on a non-default body now show that
+    body. Earlier renders of those runs show the wrong animal.
     """
 
     KIND = "video"
-    VERSION = 1
+    VERSION = 2
     EXT = ".mp4"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {
@@ -349,7 +389,8 @@ class VideoProducer(Producer):
                 "env_class": stats.get("env_class"),
                 "network_class": stats.get("network_class"),
                 "n_clips": stats.get("n_eval_clips"),
-                "stem": stem}
+                "stem": stem,
+                **_asset_provenance(Path(ckpt_dir), stats.get("env_class"))}
 
 
 PRODUCERS: dict[str, Producer] = {
