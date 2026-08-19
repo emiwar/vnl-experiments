@@ -34,8 +34,16 @@ Data sources
 ------------
 Configs and summaries from the committed run index; reward curves and throughput from
 ``history`` artifacts; offline evaluation from ``eval`` artifacts where present (see
-``coverage.txt`` — the new-XML arm has none yet, so ``data_eval.csv`` covers only the
-conditions that do). Nothing here touches the WandB API.
+``coverage.txt``). Nothing here touches the WandB API.
+
+.. warning::
+
+   The eval spec was repointed on 2026-08-19 from ``eval3ds-66aaff5b`` to the post-fix
+   ``eval3ds-347333e3``. Every v1 eval of a new-XML run had been simulated on
+   ``rodent.xml`` -- the wrong body -- which depressed the new arm's held-out reward by
+   3 % at delay 0 rising to ~50 % at delay 60+. That is the shape of this question's former
+   headline result, and it does not survive the fix. **Read the retraction at the top of
+   ``report.md`` before using any number from this folder.**
 
 Run it
 ------
@@ -55,7 +63,7 @@ from vnl_experiments.wandb_utils import comparability_report, pipeline
 
 HERE = Path(__file__).resolve().parent
 PROJECT = "emiwar-team/nnx-ppo-rodent-delays"
-REQUIRES = ["index", "history", "eval:eval3ds-66aaff5b"]
+REQUIRES = ["index", "history", "eval:eval3ds-347333e3"]
 
 NEW_XML = "rodent_no_tail_collisions.xml"
 EXPECTED_STEP = 600_064_000
@@ -71,8 +79,43 @@ REWARD_STD_KEYS = ("summary.eval/episode_reward/std", "summary.episode_reward/st
 LIFESPAN_KEYS = ("summary.eval/lifespan/mean", "summary.lifespan_mean")
 CURVE_KEYS = ("eval/episode_reward/mean", "episode_reward/mean")
 
-EVAL_SPEC_ID = "eval3ds-66aaff5b"
+#: The **v2** eval spec (``EvalProducer.VERSION = 2``), post the 2026-08-18 walker-XML fix.
+#: The v1 id this replaced, ``eval3ds-66aaff5b``, simulated every new-XML run on
+#: ``rodent.xml``; see the retraction at the top of ``report.md``. Pinned rather than
+#: resolved from the producer so a future bump fails loudly in ``assert_spec_ids``.
+EVAL_SPEC_ID = "eval3ds-347333e3"
 EVAL_DATASETS = ("train", "old_eval", "new_eval")
+
+
+def assert_spec_ids() -> None:
+    """Fail loudly if the eval producer's spec_id has drifted from the pinned constant."""
+    got = get_producer("eval").spec_id(get_producer("eval").spec())
+    if got != EVAL_SPEC_ID:
+        raise SystemExit(
+            f"eval spec_id has drifted: got {got}, expected {EVAL_SPEC_ID}.\n"
+            f"The artifacts this analysis reads were made by a different eval spec or "
+            f"producer VERSION. Update EVAL_SPEC_ID deliberately, re-produce, and say so "
+            f"in report.md -- do not silently repoint at a different generation of data.")
+
+
+def assert_artifact_body(entry, run: pd.Series) -> None:
+    """The eval must say it simulated the body this run trained on.
+
+    This cohort exists to compare two bodies, so the check is per-run rather than against
+    one expected name -- and it is the guard that would have caught the 2026-08-18 bug on
+    day one. An artifact with no stamp predates the fix and was simulated on ``rodent.xml``
+    whatever its run trained on, so absence is an error, not something to shrug at.
+    """
+    stamp = (entry.resolved or {}).get("walker_xml_path")
+    trained = Path(str(run["env_params.walker_xml_path"])).name
+    if stamp is None:
+        raise SystemExit(
+            f"eval artifact for {run['wandb_id']} has no resolved.walker_xml_path, so it "
+            f"predates the 2026-08-18 walker-XML fix and was simulated on the wrong body. "
+            f"Re-produce it (see analysis/README.md §6).")
+    if stamp != trained:
+        raise SystemExit(f"eval artifact for {run['wandb_id']} was produced on {stamp}, "
+                         f"but the run trained on {trained}.")
 
 
 # --------------------------------------------------------------------------------------
@@ -333,6 +376,7 @@ def build_eval_rows(store: Store, run: pd.Series) -> list[dict]:
     entry = store.lookup("eval", run["wandb_id"], EVAL_SPEC_ID)
     if entry is None:
         return []
+    assert_artifact_body(entry, run)
     record = json.loads((store.root / entry.path).read_text())
     rows = []
     for dataset in EVAL_DATASETS:
@@ -346,6 +390,9 @@ def build_eval_rows(store: Store, run: pd.Series) -> list[dict]:
             "delay_k": run["delay_k"],
             "dataset": dataset,
             "checkpoint_step": entry.resolved.get("checkpoint_step"),
+            # The body the eval actually simulated -- the field whose absence *was* the
+            # 2026-08-18 bug. Carried into the CSV so the fix is auditable from the data.
+            "walker_xml": entry.resolved.get("walker_xml_path"),
             "n_clips": block["n_clips"],
             "episode_reward": block["episode_reward"]["mean"],
             "lifespan_steps": lifespan,
@@ -360,6 +407,7 @@ def build_eval_rows(store: Store, run: pd.Series) -> list[dict]:
 
 def main() -> None:
     args = pipeline.parse_args(__doc__)
+    assert_spec_ids()
 
     runs = pipeline.resolve_selection(HERE, CONDITIONS, refresh=args.refresh,
                                       sync=args.sync, project=args.project)

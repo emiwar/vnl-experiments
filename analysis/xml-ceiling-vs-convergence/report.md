@@ -21,6 +21,10 @@ speed — the new XML costs ~1.1–1.5× more steps to reach a given reward and 
 the baseline. At delay 50 in the policy-gradient FM it is a ceiling: that run peaks at
 600–700 M and *declines*, ending 14.7 % below a baseline it never reaches.
 
+**Held-out clips agree** (added 2026-08-19, see *Held-out clips*): 7 of 8 cells end above
+the baseline, the same one does not, and the explicit FM's advantage is **larger** on
+held-out data than on the training curve (+29 % rather than +16 % at delay 50).
+
 ## Dataset & comparability
 
 **Source:** WandB `emiwar-team/nnx-ppo-rodent-delays`, tag `TrainEvalSplit`, selected by
@@ -49,8 +53,29 @@ every training metric. The inclusion rule is `state ∈ {finished, failed}` **an
 `_step == ` the budget's expected value; a run that died during training cannot satisfy
 the second.
 
-**Artifacts** (`coverage.txt`): `history` 29/29. Batch offline eval (`eval3ds-66aaff5b`)
-**4/29** — only `pgfm_old_600m`. See *Missing data*.
+**Artifacts** (`coverage.txt`): `history` 29/29, batch offline eval **29/29**
+(`eval3ds-347333e3`).
+
+**The walker-XML fix (2026-08-18) and why the eval spec id changed.** Until 2026-08-18
+every offline path that rebuilt an env from a checkpoint overwrote the run's
+`walker_xml_path` with the local default `rodent.xml`, so **every offline eval of a
+new-XML run was silently re-simulated on the old body** — costing the new arm up to 42 %
+of its reward, growing with delay. That is precisely the shape of the effect this question
+is testing for, so a pre-fix eval could have manufactured the ceiling verdict out of
+nothing. The fix bumped `EvalProducer.VERSION` to 2, minting `eval3ds-347333e3`, and every
+v2 artifact now stamps `resolved.walker_xml_path`. `extract.py` refuses any eval whose
+stamp is absent or disagrees with the run's own `env_params.walker_xml_path`
+(`assert_artifact_body`), and `assert_spec_ids` turns a future producer bump into a loud
+failure rather than a silent swap. The stamps in `data_eval.csv` are 51 × the new XML and
+36 × `rodent.xml`, matching the cohort exactly.
+
+**Nothing in the primary result moved.** `data.csv` and `curves.csv` are byte-identical
+before and after: they are built from `history` artifacts, which are WandB curves and were
+never touched by the bug. The four `pgfm_old_600m` eval rows that existed under
+`eval3ds-66aaff5b` are also unchanged to the last digit — they are the *same bytes*,
+adopted into v2 by hardlink because their stored XML basenames already equalled the local
+default, which makes the fix a provable no-op on that path. What is new is the other 25
+runs' worth of held-out data.
 
 **Programmatic comparability** (`comparability.txt`): every invariant is single-valued
 within every condition, including all PPO hyper-parameters and all eleven env knobs.
@@ -179,22 +204,68 @@ under-stated — those runs are still climbing.
 
 ![Held-out](figures/held_out.png)
 
-Only the PG-FM arms carry a held-out number on both sides: the inline end-of-training eval
-exists only on runs from 2026-08-10 onward (which rules out both baselines), and the 600 M
-explicit-FM cohort died *in* that eval. So this compares 600 M with 2 G **within** the new
-configuration, and shows the training-curve story is not an artefact of evaluating on the
-training clips:
+Everything above is the training curve: each run's own periodic eval, on its own training
+clips, logged by its own generation of the training code. The batch eval artifacts are one
+pass per run over the **169-clip held-out split**, against the newest checkpoint on disk,
+run by one piece of code for all 29 runs. That makes this the first version of the primary
+contrast where new-vs-old is measured identically on both sides, on data no run trained on.
 
-| delay | train | `old_eval` (held-out) | `new_eval` (30 s) | training curve |
-|---:|---:|---:|---:|---:|
-| 0 | +1.5 % | +2.2 % | −1.2 % | +1.7 % |
-| 10 | +12.3 % | +14.3 % | −7.3 % | +9.2 % |
-| 20 | +22.6 % | +18.7 % | +30.2 % | +22.5 % |
-| 50 | −4.5 % | −7.0 % | −4.2 % | −7.4 % |
+| network | delay | baseline @600 M | new @600 M | new @2 G | deficit @600 M | deficit @2 G | (curve @2 G) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| expfm | 0 | 2131 | 2092 | 2170 | −1.8 % | **+1.8 %** | +2.5 % |
+| expfm | 10 | 1881 | 1737 | 1986 | −7.7 % | **+5.6 %** | +6.0 % |
+| expfm | 20 | 1430 | 1531 | 1777 | +7.0 % | **+24.3 %** | +10.1 % |
+| expfm | 50 | 1135 | 1279 | 1465 | +12.7 % | **+29.1 %** | +15.8 % |
+| pgfm | 0 | 2144 | 2133 | 2179 | −0.5 % | **+1.6 %** | +1.8 % |
+| pgfm | 10 | 1891 | 1736 | 1983 | −8.2 % | **+4.9 %** | +6.1 % |
+| pgfm | 20 | 1367 | 1307 | 1525 | −4.4 % | **+11.5 %** | +11.9 % |
+| pgfm | 50 | 812 | 802 | 753 | −1.2 % | **−7.3 %** | −14.7 % |
 
-Held-out reward tracks the training curve at every delay, including the **negative** value
-at delay 50. `new_eval` is 32 clips at a single seed and is noisy (the delay-10 point
-disagrees in sign); read it for trend only.
+**The verdict is unchanged: seven of eight cells end above the baseline, and the exception
+is the same one.** Two things sharpen:
+
+- **The explicit FM's long-delay advantage is bigger than the curve said** — +24.3 % at
+  delay 20 and +29.1 % at delay 50, against +10.1 % and +15.8 % on the curve. Survival on
+  held-out clips rises from 0.44 to 0.65 at delay 50 (+47 % relative). The "explicit FM is
+  not merely unharmed by the new XML, it was the arm most starved of budget" reading gets
+  stronger, not weaker.
+- **The 600 M deficit at delay 50 was largely a training-clip effect.** On the curve the
+  PG-FM deficit at delay 50 is −7.9 %; held out it is −1.2 %, inside the noise floor. The
+  ceiling at delay 50 is therefore a claim about the *2 G* run (−7.3 %, still outside the
+  floor), not about the 600 M one.
+
+### Why the two measurements differ: the baseline generalises worse
+
+The gap is not measurement noise — it is a real difference in how far each arm's reward
+falls from its training clips to the held-out ones (`old_eval / train`, both from the same
+batch pass):
+
+| network | delay | old XML | new XML @600 M | new XML @2 G |
+|---|---:|---:|---:|---:|
+| expfm | 0 | 0.987 | 0.976 | 0.992 |
+| expfm | 10 | 0.972 | 0.924 | 0.956 |
+| expfm | 20 | 0.922 | 0.910 | 0.932 |
+| expfm | 50 | **0.874** | 0.918 | 0.908 |
+| pgfm | 0 | 0.990 | 0.985 | 0.989 |
+| pgfm | 10 | 0.960 | 0.937 | 0.956 |
+| pgfm | 20 | 0.896 | 0.926 | 0.877 |
+| pgfm | 50 | **0.827** | 0.943 | 0.939 |
+
+At delay 50 the old-XML baselines lose 13–17 % of their reward on held-out clips (0.874,
+0.844 for the frame control, 0.827) while the new-XML runs lose 6–9 %. So part of what
+looked like a new-XML deficit at 600 M was the baseline's larger train/held-out gap, and it
+disappears when both are scored on data neither trained on. The direction is
+interpretable — with more of the body able to collide, a policy has less room to exploit
+clip-specific solutions — but with one seed per cell this is an observation, not a result.
+
+### The fix validates itself here too
+
+For the 13 runs that carry both, the re-produced batch eval and the run's own inline
+end-of-training eval agree to **0.986–1.017** (worst 1.7 %) with no delay trend. These are
+different measurements — in-memory weights at `total_steps` vs the newest checkpoint on
+disk — so they are never mixed in a figure, but before the walker-XML fix this same ratio
+ran 0.58–0.98 on new-XML runs and scaled with delay. `new_eval` (32 fresh 30 s clips at one
+seed) moves ~10 % between neighbouring cells and is in `data_eval.csv` for trend only.
 
 ## The frame control
 
@@ -211,11 +282,12 @@ remains sound.
   training steps at these delays and nothing in final reward.
 - **At delay 50 in the policy-gradient FM, it is a ceiling** — and worse than a plateau:
   the run peaks near 660 M and declines. This is the one cell where more compute makes the
-  gap wider, not narrower.
+  gap wider, not narrower. It is the only cell that is negative on held-out clips too
+  (−7.3 %), which is what makes it a result rather than a curve artefact.
 - **The explicit forward model has no deficit at any tested delay**, and benefits most
-  from the longer budget at long delay (+15.8 % at delay 50). `collision-model-xml`'s
-  "the explicit FM is immune" holds and strengthens: it is not merely unharmed, it was the
-  arm most starved by the 600 M budget.
+  from the longer budget at long delay: +15.8 % at delay 50 on the curve, **+29.1 % on
+  held-out clips**. `collision-model-xml`'s "the explicit FM is immune" holds and
+  strengthens: it is not merely unharmed, it was the arm most starved by the 600 M budget.
 - **Practical reading:** if the going-forward setup keeps the explicit forward model,
   the new XML is free and 600 M is simply too short a budget at delay ≥ 20. If it uses the
   policy-gradient FM, delays beyond ~20 have a real problem that compute does not fix.
@@ -225,22 +297,14 @@ remains sound.
 
 ## Missing data
 
-- **No offline batch eval on 25 of 29 runs** — only `pgfm_old_600m` has
-  `eval3ds-66aaff5b`. A single batch pass over this whole cohort would give the first
-  held-out *new-vs-old* comparison (the inline evals above cannot cross that boundary:
-  the baselines predate the feature, and inline and batch evals measure different
-  weights). Highest-value thing to run:
-
-  ```bash
-  python -m vnl_experiments.artifacts plan --kind eval \
-      --runs analysis/xml-ceiling-vs-convergence/runs.csv --out eval_todo.txt
-  # on the cluster:  sbatch slurm_eval.sh eval_todo.txt eval
-  python -m vnl_experiments.artifacts pull --kind eval \
-      --runs analysis/xml-ceiling-vs-convergence/runs.csv
-  ```
-
-- `expfm_old_600m` and `expfm_oldref_600m` hold only the older `legacy-batch` /
-  `legacy-batch-v0` specs, which must not be mixed with `eval3ds-66aaff5b`.
+- ~~**No offline batch eval on 25 of 29 runs.**~~ Done 2026-08-19: the whole cohort now
+  holds `eval3ds-347333e3`, which is what *Held-out clips* is built from. This was the
+  highest-value gap in the previous version of this report.
+- `expfm_old_600m` and `expfm_oldref_600m` also hold the older `legacy-batch` /
+  `legacy-batch-v0` specs. Those must not be mixed with `eval3ds-347333e3` — different
+  clip sets and a different producer — and nothing here reads them.
+- **Still nothing on the `expfm_new_600m` inline eval**, since those four runs died in it.
+  The batch eval now covers them, so this no longer blocks anything.
 
 ## Follow-ups
 
@@ -253,6 +317,12 @@ remains sound.
 - **Delay 30 at 2 G**, the worst point of the band in `collision-model-xml` (−21.5 %) and
   the boundary between the two regimes found here.
 - **A 2 G EncDec run**, the network with the largest deficit and no long run at all.
+- **Is the train/held-out gap really an XML effect?** At delay 50 the old-XML runs lose
+  13–17 % of their reward off their training clips and the new-XML runs 6–9 %, which is what
+  makes the two measurements of the 600 M deficit disagree. It is confounded with commit
+  and training date here. `collision-model-xml` has the cohort to test it: 22 `encdec_old_*`
+  and 23 `encdec_new_*` runs across the delay range, so once its v2 evals finish landing
+  this is an analysis-only question with no GPU cost.
 - ~~**Why does PG-FM delay 50 decline?** It is the only cell that loses reward late. Its
   `fm_pred_mse` and the entropy/KL traces would say whether the predictor degrades or the
   policy collapses.~~ Answered in

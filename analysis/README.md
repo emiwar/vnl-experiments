@@ -323,11 +323,33 @@ Three lasting consequences:
   artifacts built on the wrong body; the analyses resting on them were
   [`action-noise-robustness/`](action-noise-robustness/) (all six eval specs),
   [`collision-model-xml/`](collision-model-xml/) (67/149 runs) and
-  [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) (16/29).
+  [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) (16/29). It reports zero once a
+  folder is repointed, so it doubles as the done-check — it reads *pinned* spec ids only, not
+  every id a script mentions, so a retirement note in a comment does not keep a fixed folder
+  flagged.
 
 The general lesson is narrower than "check your paths": **a reconstruction that repairs an
 input must record what it chose.** Any field a rebuild silently substitutes is a field no
 downstream analysis can audit.
+
+A second lesson, from how long this survived: **verifying provenance against the record that
+was already trusted is not verification.** `collision-model-xml/report.md` stated that "every
+eval was verified to have used the run's own body and frame" — and it had been, by comparing
+the run's stored config against itself. Nothing in that check could see what the eval process
+actually loaded. Post-fix, the equivalent check reads `resolved.walker_xml_path` off the
+artifact and compares it to `env_params.walker_xml_path` from the index — two independently
+written records. `assert_artifact_body` in `collision-model-xml/extract.py` and
+`xml-ceiling-vs-convergence/extract.py` is the pattern; copy it into any folder that spans two
+bodies.
+
+**Outcome, 2026-08-19.** [`collision-model-xml/`](collision-model-xml/) carries a retraction:
+its headline result ("the new body falls over far more often; survival collapses") was the
+artefact, and the corrected data reverses it. The v1 evals understated new-XML held-out reward
+by 3.8 % at delay 0 rising to 77 % at delays 90–100, while the 79 old-XML runs are
+bit-identical across the fix — so the bug acted on exactly one arm of every contrast in that
+folder. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) went the other way: its
+curve-based primary result never moved (curves come from `history`), and the newly-usable evals
+gave it a held-out measurement it had been missing on 25 of 29 runs.
 
 **Never use `scan_history`.** The runs log ~7 300 iterations over ~50 keys; streaming that
 for 80 runs ran over 40 minutes without finishing. Use the sampled endpoint

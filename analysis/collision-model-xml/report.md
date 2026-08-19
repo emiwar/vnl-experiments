@@ -1,5 +1,64 @@
 # New walker XML + reference_root vs the old baseline
 
+> ## ⚠ Retraction, 2026-08-19
+>
+> **The 2026-08-15 version of this report was wrong, and wrong in the direction opposite to
+> what it claimed.** Its headline — *"the new body falls over far more often; survival
+> collapses; that is the entire effect"* — was an artefact of a bug in the offline
+> evaluation, not a property of the walker.
+>
+> Until the 2026-08-18 fix, every offline path that rebuilt an env from a checkpoint
+> overwrote the run's `walker_xml_path` with the local default `rodent.xml`. So **every
+> new-XML policy in this report was evaluated driving a body it had never been trained on**,
+> and the mismatch cost it more the harder the control problem — which is to say, more with
+> delay. The v1 evals understated new-XML held-out reward by:
+>
+> | delay | 0 | 1–5 | 6–10 | 12–20 | 25–40 | 50–70 | 90–100 |
+> |---|---:|---:|---:|---:|---:|---:|---:|
+> | mean understatement | 3.8 % | 5.3 % | 14.1 % | 31.7 % | 52.4 % | 72.5 % | 77.2 % |
+>
+> (51 new-XML runs holding both generations. The 79 old-XML runs are **bit-identical**
+> across the fix — their stored XML basename already equalled the local default, so the fix
+> is a provable no-op there, and their v2 files are the same bytes adopted by hardlink. The
+> bug therefore acted on exactly one arm of every contrast in this folder.)
+>
+> **What reverses.** Corrected survival on held-out clips, old → new:
+>
+> | delay | EncDec (was) | EncDec (is) | explicit FM (was) | explicit FM (is) | PG-FM (was) | PG-FM (is) |
+> |---:|---|---|---|---|---|---|
+> | 0 | 99→96 % | 99→99 % | 99→93 % | 99→97 % | 99→91 % | 99→99 % |
+> | 20 | 43→30 % | 43→53 % | 57→41 % | 57→68 % | — | 56→57 % |
+> | 50 | 26→6 % | 26→31 % | 44→12 % | 44→57 % | 26→4 % | 26→33 % |
+> | 100 | 7→0 % | 7→14 % | 36→17 % | 36→62 % | 2→2 % | 2→24 % |
+>
+> The new body does not fall over more. At delays ≥ 20 it survives *better*, and at delay
+> 100 dramatically so.
+>
+> **What this reinstates.** The 2026-08-15 revision retracted three conclusions from the
+> earlier training-time analysis. All three were right and are reinstated: *the new XML is
+> free out to delay 20*, *the explicit forward model is essentially immune*, and *position
+> control is unaffected*. The note that replaced them — "training-time reward is biased in
+> favour of the new body, overstating its lifespan by up to 2.3×" — described the bug, not
+> the metric. Corrected, the offline `train` eval and the training curve agree to a few
+> percent (EncDec at delays 30/40/50: −12.7/−15.9/−14.2 % offline vs −13.4/−19.7/−14.6 %
+> on the curve).
+>
+> **Why the report's own body check did not catch it.** It said *"every eval was verified to
+> have used the run's own body and frame"*. That check compared the run's **stored config**
+> against itself; it never saw what the eval process actually loaded. The v2 artifacts now
+> stamp `resolved.walker_xml_path` with the body the eval really simulated, and
+> `extract.py::assert_artifact_body` refuses any artifact whose stamp is missing or
+> disagrees with the run. Verifying provenance against the same record that was already
+> trusted is not verification — that is the transferable lesson here.
+>
+> **Status of the numbers below: interim.** Everything is rebuilt on the post-fix spec
+> `eval3ds-347333e3`, at **131/149** coverage — 18 new-XML runs are still being
+> re-evaluated on the cluster, so several delay cells are absent and the tables below skip
+> them rather than interpolating. The *shape* is consistent across three networks and both
+> offline datasets and is not going to move, but individual cells will, and the long-delay
+> claims rest on the fewest runs. Re-run `extract.py --refresh` once
+> `artifact_repair/2026-08-18-walker-xml/todo_eval3ds.txt` has drained.
+
 ## Question
 
 The configuration going forward is **new (almost-full-collision) XML + `reference_root`
@@ -7,13 +66,6 @@ target frame + torque actuators**. How does it compare with the old baseline it 
 (**old sparse-collision XML + `current_root` + torque**), across observation delays? That
 contrast moves two things at once — can the walker XML and the target frame be told apart?
 And is position control different?
-
-> **Note on a revision.** An earlier version of this report was built on training-time
-> WandB reward, because no new-`reference_root` run had an offline evaluation yet. With
-> the offline evals now in (146/149 runs), **several of its conclusions do not survive** —
-> in particular "the new XML is free out to delay 20" and "the explicit forward model is
-> immune". Training-time reward turns out to under-detect this specific effect, and
-> asymmetrically. See *Why the training-time metric missed it*.
 
 ## Dataset & comparability
 
@@ -38,10 +90,22 @@ The primary contrast is measured in **three independent networks**, with full 0�
 sweeps on both sides for EncDec and the explicit FM. The four EncDec cells form a complete
 **2 × 2** in XML × frame.
 
-**Primary evidence is the offline evaluation**, not training-time reward: the held-out
-`old_eval` split (169 unseen clips, full 502-step rollouts from frame 0), batch spec
-`eval3ds-66aaff5b`, 146/149 runs. Only `pgfm_new_reference` has gaps (10/13; missing
-delays 5, 20, 30).
+**Primary evidence is the offline evaluation**: the held-out `old_eval` split (169 unseen
+clips, full 502-step rollouts from frame 0), batch spec **`eval3ds-347333e3`** (post-fix,
+`EvalProducer.VERSION = 2`), **131/149 runs**. Every gap is in a new-XML condition, because
+those are the ones being re-evaluated:
+
+| condition | v2 evals | missing |
+|---|---:|---|
+| `encdec_new_current` | 5/6 | 1 |
+| `encdec_new_reference` | 18/23 | 5 |
+| `expfm_new_reference` | 14/23 | 9 |
+| `pgfm_new_reference` | 10/13 | 3 |
+| all old-XML and both position conditions | complete | — |
+
+The training curve (`data.csv`, from `history` artifacts) is unaffected by the bug and is
+byte-identical to the pre-fix version; it is quoted below as an independent measurement
+rather than as the primary one.
 
 **Included despite `state = failed`:** the 46 runs at `ef060b73` (2026-08-11) that make up
 `encdec_new_reference` and `expfm_new_reference` died in the *post-training* evaluation.
@@ -62,10 +126,12 @@ additive-only; the `d33e5bcf`→`25732c42` network diff is a default-inert `late
 signature change; and across every primary pair all network, PPO and env invariants are
 identical, which is stronger evidence than reading a six-week diff.
 
-**Every eval was verified to have used the run's own body and frame** — `walker_xml`,
-`body_target_frame`, `env_class` and the restored checkpoint directory were checked
-per run against the run's config, and all 146 restored `checkpoint_step = 600_064_000`. A
-body/policy mismatch would produce exactly this report's signature, so this check matters.
+**Every eval is verified to have simulated the run's own body**, from the artifact's
+`resolved.walker_xml_path` stamp — what the eval process actually loaded, not what the run's
+config said it should. `data_eval.csv` carries the stamp per row: `rodent.xml` on every
+old-XML condition, `rodent_no_tail_collisions.xml` on every new-XML one, with no exceptions.
+The previous version of this check compared the run config against itself and passed while
+the evals were on the wrong body; see the retraction.
 
 **Caveats.**
 
@@ -77,58 +143,82 @@ body/policy mismatch would produce exactly this report's signature, so this chec
 4. Offline eval is not bit-reproducible (~1 % on reward; `survived` moves by ~0.6 pp per
    clip at 169 clips). Differences below a few percent mean nothing.
 
-## Primary result — the new body falls over far more often
+## Primary result — a mild tracking cost, more than repaid in stability at long delay
 
 ![Held-out performance in three networks](figures/primary.png)
 
-On held-out clips the new configuration is **worse at essentially every delay, in all
-three networks**, and the effect decomposes cleanly:
+The effect splits cleanly into two components that pull in **opposite** directions:
 
-- **Per-step tracking is almost unchanged.** Reward per step moves by −1 % at short delays
-  and at worst −11 % at long ones. The policies still imitate about as accurately as before
-  while they are upright.
-- **Survival collapses.** That is the entire effect.
+- **Per-step tracking is genuinely worse on the new body at long delay**, and this is the
+  real cost. Reward per step is flat (±1 %) out to delay ~10, then falls: at delay 50,
+  −13.0 % (EncDec), −16.7 % (PG-FM), **−3.5 % (explicit FM)**.
+- **Survival is *better* on the new body**, and increasingly so with delay: +5 to +13 pp at
+  delay 50 and +7 to +27 pp at delay 100.
 
-| delay | survival, EncDec old → new | explicit FM old → new | PG-FM old → new |
-|---:|---|---|---|
-| 0 | 99 % → 96 % | 99 % → 93 % | 99 % → 91 % |
-| 10 | 71 % → 56 % | 88 % → 57 % | 85 % → 62 % |
-| 20 | 43 % → 30 % | 57 % → 41 % | — |
-| 50 | 26 % → 6 % | 44 % → 12 % | 26 % → 4 % |
-| 100 | 7 % → 0 % | 36 % → 17 % | 2 % → 2 % |
+Episode reward multiplies the two, so it is close to neutral at short delay and its sign at
+long delay depends on which component wins in that network:
 
-Episode reward, which multiplies the two, drops 20–50 % across the middle and upper delay
-range in all three networks.
+| delay | EncDec | explicit FM | PG-FM |
+|---:|---:|---:|---:|
+| 0 | +0.1 % | −1.8 % | −0.5 % |
+| 10 | — | −7.7 % | −8.2 % |
+| 20 | +4.4 % | +7.0 % | −4.4 % |
+| 30 | −5.8 % | +10.8 % | — |
+| 50 | −1.5 % | +12.7 % | −1.2 % |
+| 100 | +20.2 % | +23.8 % | +39.6 % |
 
-**The explicit forward model is *not* immune** — the earlier training-clip reading of this
-was wrong. It is consistently the *best* architecture (44 % vs 26 % survival at delay 50 on
-the old body, 12 % vs 6 % on the new; 17 % vs ~0 % at delay 100), and it retains the most
-at long delay, but it takes the same qualitative hit. The PG-FM row at delay 100 reads
-2 % → 2 % only because its baseline has already hit the floor.
+**The explicit forward model is essentially immune** — it is the one network where the
+per-step cost stays small (−3 to −7 % rather than −13 to −20 %), so the survival gain is
+never cancelled and held-out reward is positive at every delay ≥ 20. It is also the best
+architecture on both bodies, and the gap *widens* on the new one (57 % vs 33 % survival at
+delay 50; 62 % vs 14–24 % at delay 100).
 
-## Why the training-time metric missed it
+`xml-ceiling-vs-convergence` measures the same explicit-FM pair independently and lands on
+**+12.7 % at delay 50**, identical to the value above — the two folders pin the same
+tranches, so this is a consistency check on the rebuild rather than a second sample.
+
+**Where a real cost does show:** EncDec and the PG-FM lose 4–9 % of held-out reward in a
+band around delays 10–40, and their per-step tracking is 13–20 % worse from delay 40 up.
+Whatever the extra contact geometry costs, the explicit predictor absorbs it and the other
+two networks do not.
+
+## The training curve and the offline eval now agree
 
 ![Training-time vs held-out](figures/training_vs_heldout.png)
 
-Training-time reward said the new configuration was within ±3 % out to delay 20 and *ahead*
-at long delay for the explicit FM. The held-out evaluation says −20 to −50 %. Same runs,
-same checkpoints.
+This section previously argued that training-time reward was *biased in favour of the new
+body*, overstating its lifespan by up to 2.3×. That factor was the bug: the offline number
+was depressed, not the training-time one inflated.
 
-The right-hand panel isolates the mechanism. For the **old** body the two lifespan
-measurements agree — median ratio 0.96 (EncDec) and 0.97 (explicit FM) at delays ≤ 60. For
-the **new** body the training-time metric **overstates** lifespan, by up to 2.3× (EncDec)
-and 2.1× (explicit FM), and increasingly so with delay.
+Corrected, the two agree. Comparing the offline **`train`** evaluation (673 clips the
+policies trained on — so clip novelty is held fixed and only rollout structure differs)
+against the training curve:
 
-So the training-time metric is not merely noisy here; it is **biased in favour of the new
-body**. The two evaluations differ in episode structure — training-time reward is measured
-on short auto-resetting episodes on the training clips, while the offline eval runs a full
-502-step latched rollout from frame 0 — and the new body's failure mode is one that
-accumulates over a long continuous rollout. A short window rarely samples it.
+| network | delay | offline `train` | training curve |
+|---|---:|---:|---:|
+| EncDec | 30 | −12.7 % | −13.4 % |
+| EncDec | 40 | −15.9 % | −19.7 % |
+| EncDec | 50 | −14.2 % | −14.6 % |
+| EncDec | 60 | −8.8 % | −16.9 % |
+| explicit FM | 50 | +7.2 % | +0.7 % |
+| explicit FM | 100 | +14.9 % | +14.0 % |
+| PG-FM | 50 | −13.4 % | −15.2 % |
 
-This is not a generalization gap: within each arm the train → held-out drop in reward per
-step is −0.5 % to −2.5 %, and it is the same for both arms. The offline **`train`**
-evaluation (673 clips the policies were trained on) shows the same collapse as `old_eval`.
-The difference is rollout length, not clip novelty.
+Two measurements with different episode structure, on the same clips, agreeing to a few
+percent. The remaining spread between the offline `train` and `old_eval` columns is a
+**generalization** effect, not a rollout-length one, and it is asymmetric. Held-out reward as
+a fraction of training-clip reward, by delay band:
+
+| delay band | old XML | new XML |
+|---|---:|---:|
+| 0–10 | 0.978 (n=40) | 0.976 (n=26) |
+| 12–30 | 0.892 (n=16) | 0.917 (n=12) |
+| 40–100 | **0.851** (n=22) | **0.920** (n=13) |
+
+Identical at short delay, then the old body's gap opens to twice the new body's by delay 40+.
+`xml-ceiling-vs-convergence` finds the same pattern in its own cohort. That is why held-out
+numbers are consistently a little kinder to the new body than the training curve, and it is
+worth a question of its own — with one seed per cell it is an observation, not a result.
 
 ## Decomposition — XML or frame?
 
@@ -136,41 +226,55 @@ The difference is rollout length, not clip novelty.
 
 | delay | XML at `current_root` | XML at `reference_root` | Frame on old XML | Frame on new XML |
 |---:|---:|---:|---:|---:|
-| 0 | −2.0 % | −2.2 % | −0.8 % | −1.0 % |
-| 5 | −7.2 % | −10.8 % | +2.8 % | −1.1 % |
-| 10 | −16.8 % | −12.5 % | +0.3 % | +5.4 % |
-| 20 | −21.9 % | −30.1 % | +10.7 % | −0.9 % |
-| 50 | −48.0 % | −37.2 % | +0.2 % | +20.9 % |
+| 0 | — | +0.8 % | −0.6 % | — |
+| 2 | +0.6 % | — | −0.2 % | — |
+| 5 | +3.5 % | −3.1 % | +2.8 % | −3.8 % |
+| 10 | +0.1 % | — | +0.3 % | — |
+| 20 | +10.5 % | −5.7 % | +10.7 % | −5.5 % |
+| 50 | −0.3 % | −1.7 % | +0.2 % | −1.2 % |
 
-(reward; survival tells the same story — the XML costs 16–19 pp at delay 50 at both frames,
-the frame costs −2.4 to +10.7 pp with no trend)
+**The XML is close to free in this decomposition** — every cell is within ±10.5 % with no
+trend in delay, where the pre-fix table read −2 % to −48 % and got monotonically worse. The
+XML-alone contrast is where the earlier "the XML carries the entire effect" claim came from,
+and it does not survive.
 
-**The XML carries the entire effect**, and does so at both frames. **The frame remains
-free** at both XMLs — no trend, no consistent sign, and if anything slightly positive. The
-frame conclusion is the one thing that survives unchanged from the training-clip analysis,
-and it is now confirmed on held-out data in two networks (`frame_expfm`: −5.2 % to +2.4 %).
+**The frame remains free**, as it has in every version of this analysis: no trend, no
+consistent sign, `frame_expfm` spanning −5.2 % to +2.4 % in a second network. This is the
+one conclusion the bug never touched, because both its arms are old-XML runs and therefore
+bit-identical across the fix.
+
+Read the two ±5–10 % excursions at delay 20 with care: the `encdec_old_current` delay-20 run
+is the shared baseline of both the `+10.5 %` and the `+10.7 %` cells, so those are one run's
+worth of evidence appearing twice, not two independent findings.
 
 ## Position control
 
 ![Position control](figures/position.png)
 
-The earlier conclusion that position control is unaffected **does not survive** either. On
-held-out clips the XML costs position control −4.8 % at delay 0, −10.1 % at delay 20 and
-−14.5 % at delay 50, with survival down 6.5–17.2 pp.
+**Position control is essentially unaffected**, which reinstates the original training-time
+conclusion. On held-out clips the XML costs it −0.5 % at delay 0, −1.2 % at delay 5, −3.9 %
+at delay 20 and −3.2 % at delay 50 — flat, small, and inside the few-percent
+irreproducibility of the offline eval. The pre-fix version of this section reported −4.8 %,
+−10.1 % and −14.5 % and concluded that "free" had been an artefact of the training-clip
+metric; it was the other way round.
 
-It is still clearly *less* affected than torque control — −14.5 % versus −37 to −48 % at
-delay 50 — so the qualitative reading (the inner PD loop absorbs part of the extra contact
-disturbance) stands. But "free" was an artifact of the training-clip metric.
+Position control remains the *least* affected mode, but with the torque numbers now also
+near zero at these delays that is no longer a meaningful contrast. What the position cohort
+cannot say is anything about long delay: it stops at delay 50.
 
 ## Convergence
 
 ![Learning curves](figures/convergence.png)
 
-Read these for convergence only; their *levels* are the metric that misleads. At delay 30
+These come from `history` artifacts and are untouched by the walker-XML bug. At delay 30
 the new arm is still climbing hard at 600 M (gaining 9.4 % of its final reward in the last
 100 M steps, against 3.2 % for the baseline); at delays 50 and 60 it has flattened or
-turned down (−0.4 %, −6.5 %) while the baseline still gains ~3 %. Longer training will
-narrow part of the gap but there is no sign it would close it.
+turned down (−0.4 %, −6.5 %) while the baseline still gains ~3 %.
+
+This is answered directly in [`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/),
+which trained the going-forward configuration to 2 G steps: at delays 0–20 the 600 M deficit
+is entirely convergence speed and closes, and at delay 50 it closes in the explicit FM but
+becomes a genuine ceiling in the PG-FM, whose predictor degrades late in training.
 
 ## Speed
 
@@ -182,30 +286,44 @@ is not slower.
 
 ## Bottom line
 
+*Interim, at 131/149 eval coverage — see the retraction.*
+
 - **`reference_root` is free.** Confirmed on held-out data, at both XML levels, in two
-  networks, with no interaction. Adopt it.
-- **No speed penalty.** Settled.
-- **The new XML has a real and substantial cost**: the body falls over much more often —
-  survival at delay 50 drops from 26 % to 6 % (EncDec) and 44 % to 12 % (explicit FM). It
-  is a *stability* cost, not a tracking cost: reward per step is nearly unchanged.
-- **It affects every network and both control modes**, though the explicit forward model
-  and position control are hit less hard.
-- **Training-time reward should not be used to judge this change.** It understates the
-  cost, and it does so more for the new body than the old.
+  networks, with no interaction. Adopt it. (Untouched by the bug: both arms are old-XML.)
+- **No speed penalty.** Settled, and never in question — throughput comes from `history`.
+- **The new XML is close to free at delays ≤ 20 and better at long delay.** The one real cost
+  is per-step tracking beyond delay ~40 in EncDec and the PG-FM (−13 to −20 %), and it is
+  outweighed by better survival, so held-out episode reward is positive at delay 100 in all
+  three networks (+20 to +40 %).
+- **The explicit forward model is essentially immune**, and its advantage over the other two
+  networks is *larger* on the new body — 57 % vs 33 % survival at delay 50, 62 % vs 14–24 %
+  at delay 100. If the going-forward setup keeps the explicit FM, the new collision model
+  costs nothing measurable here.
+- **Position control is unaffected** out to delay 50, the range it covers.
+- **Training-time reward is a usable proxy for this change after all.** It agrees with the
+  offline `train` eval to a few percent. It is, if anything, mildly *pessimistic* about the
+  new body, because the old body generalises worse off its training clips at long delay.
 
 ## Follow-ups
 
-- **This is a stability problem, so look at terminations.** The eval records carry
-  per-reason `termination_rate` (`root_too_far`, `root_too_rotated`, `pose_error`). Which
-  one grows on the new body would say whether this is falling, drifting, or pose
-  divergence — the single most informative next cut, and it needs no new runs.
-- **Watch the rendered rollouts.** Videos exist for 8 `pgfm_new_reference` runs; seeing the
-  failure directly is likely worth more than another summary statistic.
-- **Is it trainable away?** The 2 G-step runs, and possibly a reward/termination-threshold
-  adjustment for the more contact-rich body.
-- **Multiple seeds**, still n = 1 per cell everywhere.
-- **The 3 missing PG-FM evals** (delays 5, 20, 30) sit in the most interesting part of the
-  range; worth topping up.
+- **Finish the eval sweep.** 18 new-XML runs still need `eval3ds-347333e3` (9 of them in
+  `expfm_new_reference`, which carries the strongest claim above). Everything in this report
+  should be regenerated once they land.
+- **The asymmetric generalization gap deserves its own question.** Held-out/train reward is
+  0.851 for old-XML runs at delays 40–100 against 0.920 for new-XML ones, and identical at
+  short delay. If the extra contact geometry really does suppress clip-specific solutions
+  that is a point in the new body's favour that neither this folder nor
+  `xml-ceiling-vs-convergence` was designed to test. Needs no new runs — the cohort is here.
+- **Where does the per-step tracking cost come from?** It is the one surviving cost, it is
+  ~4× larger in EncDec and the PG-FM than in the explicit FM, and it only appears past delay
+  ~40. `env/joint_l2_error` is already logged, so this is analysis-only.
+- **Look at terminations anyway.** The eval records carry per-reason `termination_rate`
+  (`root_too_far`, `root_too_rotated`, `pose_error`). The story has changed — the new body
+  survives *better* — so the question is now which failure mode it avoids.
+- **Watch the rendered rollouts**, but re-render first: the existing videos were produced on
+  the wrong body by the same bug, and `todo_video.txt` covers them.
+- **Multiple seeds**, still n = 1 per cell everywhere. Several claims above rest on a single
+  run at a single delay.
 - **A new-XML `current_root` cell for the explicit FM and PG-FM**, to confirm the
   no-interaction result outside EncDec.
 

@@ -26,13 +26,13 @@ history  (spec_id=hist2000-09fea177): 149/149
     pgfm_new_reference             13/13  
     pgfm_old_current               14/14  
 
-eval:eval3ds-66aaff5b  (spec_id=eval3ds-66aaff5b): 146/149
-    encdec_new_current              6/6   
-    encdec_new_reference           23/23  
+eval:eval3ds-347333e3  (spec_id=eval3ds-347333e3): 131/149
+    encdec_new_current              5/6      *** GAP ***
+    encdec_new_reference           18/23     *** GAP ***
     encdec_old_current             22/22  
     encdec_old_reference            6/6   
     expfm_new_position              5/5   
-    expfm_new_reference            23/23  
+    expfm_new_reference            14/23     *** GAP ***
     expfm_old_current              23/23  
     expfm_old_position              8/8   
     expfm_old_reference             6/6   
@@ -40,7 +40,7 @@ eval:eval3ds-66aaff5b  (spec_id=eval3ds-66aaff5b): 146/149
     pgfm_old_current               14/14  
 
 Missing artifacts. Produce or fetch them with:
-  # 3 runs missing eval:eval3ds-66aaff5b
-  # other specs held for these runs: legacy-batch (79), legacy-batch-v0 (54), eval1ds-n10-7a2d5d63 (1), eval1ds-n25-7cb0d690 (1), eval1ds-n00-0e76d03c (1)
+  # 18 runs missing eval:eval3ds-347333e3
+  # other specs held for these runs: eval3ds-66aaff5b (146), legacy-batch (79), legacy-batch-v0 (54), eval3ds-n00-04ceda93 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), eval3ds-n02-5bcf9203 (33), eval3ds-n25-da25f356 (13), eval3ds-n10-2726ab9c (12), eval1ds-n10-55253244 (1), eval1ds-n10-7a2d5d63 (1), eval1ds-n25-2a726563 (1), eval1ds-n25-7cb0d690 (1), eval1ds-n00-a71113bf (1), eval1ds-n00-0e76d03c (1)
   python -m vnl_experiments.artifacts plan  --kind eval --runs collision-model-xml/runs.csv
   python -m vnl_experiments.artifacts pull  --kind eval --runs collision-model-xml/runs.csv

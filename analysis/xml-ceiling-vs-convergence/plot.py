@@ -33,6 +33,7 @@ HERE = Path(__file__).resolve().parent
 FIGURES = HERE / "figures"
 DATA = HERE / "data.csv"
 CURVES = HERE / "curves.csv"
+EVAL = HERE / "data_eval.csv"
 
 _MANIFEST: dict[str, str] = {}
 
@@ -368,59 +369,88 @@ def fig_replication(curves: pd.DataFrame, table: pd.DataFrame) -> None:
 # Figure 5: does the extra budget also buy held-out performance?
 # --------------------------------------------------------------------------------------
 
-#: Only the PG-FM arms carry a usable held-out number. The inline end-of-training eval
-#: exists only on runs from 2026-08-10 onward, which rules out both baselines, and the
-#: 600 M explicit-FM cohort died *in* that eval. So this compares 600 M with 2 G within
-#: the new configuration -- never new against old, and never inline against the batch
-#: eval artifacts (different weights: in-memory vs newest checkpoint on disk).
-HELD_OUT_PAIR = ("pgfm_new_600m", "pgfm_new_2g")
-INLINE_DATASETS = [("inline_train_reward", "train (80 % split)"),
-                   ("inline_old_eval_reward", "old_eval (held-out, 5 s)"),
-                   ("inline_new_eval_reward", "new_eval (32 fresh 30 s clips)")]
+#: The held-out dataset. ``old_eval`` is the 169-clip held-out split of the same reference
+#: data the runs trained on, so it is the one dataset comparable across every tier here.
+#: (``new_eval`` is 32 fresh 30 s clips at one seed and moves ~10 %; ``train`` is the
+#: training split, i.e. the same thing the reward curve measures.)
+HELD_OUT = "old_eval"
 
 
-def fig_held_out(df: pd.DataFrame, table: pd.DataFrame) -> None:
-    base, changed = HELD_OUT_PAIR
-    sub = df[df["condition"].isin(HELD_OUT_PAIR)].dropna(subset=["inline_train_reward"])
-    if sub.empty:
-        print("No inline eval on both arms; skipping held_out.png")
-        return
+def held_out_table(evals: pd.DataFrame, dataset: str = HELD_OUT,
+                   metric: str = "episode_reward") -> pd.DataFrame:
+    """The three-tier contrast again, measured on held-out clips instead of the curve.
 
-    # Delay 10 has two 600 M runs; average them.
-    means = sub.groupby(["condition", "delay_k"]).mean(numeric_only=True)
-
-    fig, ax = plt.subplots(figsize=(6.6, 4.3))
-    width = 0.26
-    x = np.arange(len(DELAYS))
-    for i, (column, label) in enumerate(INLINE_DATASETS):
-        pct = []
+    One batch pass per run against the newest checkpoint on disk, so unlike the training
+    curve (which each run computes on its own training clips) every tier is the *same*
+    measurement, and new-vs-old is finally sayable on data no run trained on.
+    """
+    sub = evals[evals["dataset"] == dataset]
+    rows = []
+    for network, (base, new600, new2g) in TIERS.items():
+        # delay 10 has two pgfm_new_600m runs; average them, as the curves do.
+        means = (sub[sub["condition"].isin((base, new600, new2g))]
+                 .groupby(["condition", "delay_k"])[metric].mean())
         for delay in DELAYS:
-            try:
-                a = means.loc[(base, delay), column]
-                b = means.loc[(changed, delay), column]
-            except KeyError:
-                pct.append(np.nan)
-                continue
-            pct.append(100 * (b / a - 1))
-        ax.bar(x + (i - 1) * width, pct, width, label=label, alpha=0.9)
-    # the training-curve number, for reference
-    curve_pct = (table[table["network"] == "pgfm"].set_index("delay_k")
-                 .loc[list(DELAYS), "new_2G_final"].to_numpy()
-                 / table[table["network"] == "pgfm"].set_index("delay_k")
-                 .loc[list(DELAYS), "new_600M"].to_numpy() - 1) * 100
-    ax.plot(x, curve_pct, "k_", ms=26, mew=1.4, label="training curve, 2 G vs 600 M")
-    ax.axhline(0, color="k", lw=0.8)
-    ax.set_xticks(x, [str(d) for d in DELAYS])
-    ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel("Reward change, 2 G vs 600 M (%)")
-    ax.set_title("Policy-gradient FM, new XML: what the extra budget buys\n"
-                 "on held-out clips (inline end-of-training eval)", fontsize=9.5)
-    top = ax.get_ylim()[1]
-    ax.set_ylim(top=top * 1.35)
-    ax.legend(fontsize=7, frameon=False, loc="upper left", ncol=2)
-    sns.despine(ax=ax)
+            b = means.get((base, delay), np.nan)
+            n6 = means.get((new600, delay), np.nan)
+            n2 = means.get((new2g, delay), np.nan)
+            rows.append({"network": network, "delay_k": delay,
+                         f"{metric}_baseline_600M": b,
+                         f"{metric}_new_600M": n6,
+                         f"{metric}_new_2G": n2,
+                         f"{metric}_deficit_600M_pct": 100 * (n6 / b - 1),
+                         f"{metric}_deficit_2G_pct": 100 * (n2 / b - 1)})
+    return pd.DataFrame(rows)
+
+
+def fig_held_out(evals: pd.DataFrame, table: pd.DataFrame) -> None:
+    """Raw held-out reward per tier (top), and the same as a deficit (bottom)."""
+    held = held_out_table(evals)
+    noise = table["replicate_pct"].abs().max()
+    sub_all = evals[evals["dataset"] == HELD_OUT]
+
+    # sharey per row: the two networks are only comparable on a common scale, and the
+    # bottom row's whole point is where each curve sits relative to the noise band.
+    fig, axes = plt.subplots(2, 2, figsize=(10.6, 7.0), sharex=True, sharey="row")
+    for col, network in enumerate(TIERS):
+        # -- raw reward, three tiers ----------------------------------------------------
+        ax = axes[0, col]
+        for tier, condition in enumerate(TIERS[network]):
+            means = (sub_all[sub_all["condition"] == condition]
+                     .groupby("delay_k")["episode_reward"].mean().reindex(DELAYS))
+            ax.plot(DELAYS, means.to_numpy(), label=TIER_LABEL[tier],
+                    marker=marker_for(NETWORKS[network]), ms=4,
+                    mfc="none" if tier == 1 else None, **tier_style(network, tier))
+        ax.set_title(NETWORK_LABEL[network])
+        ax.set_ylim(bottom=0)
+        sns.despine(ax=ax)
+
+        # -- the same, relative to the baseline, against the noise floor ----------------
+        ax = axes[1, col]
+        h = held[held["network"] == network].sort_values("delay_k")
+        color = color_for(NETWORKS[network])
+        ax.axhspan(-noise, noise, color="0.88", zorder=0, lw=0)
+        ax.axhline(0, color="k", lw=0.8, ls=":")
+        ax.plot(h["delay_k"], h["episode_reward_deficit_600M_pct"], color=color,
+                marker=marker_for(NETWORKS[network]), ls="--", mfc="none",
+                label="new @600 M vs baseline")
+        ax.plot(h["delay_k"], h["episode_reward_deficit_2G_pct"], color=color,
+                marker=marker_for(NETWORKS[network]), ls="-",
+                label="new @2 G vs baseline")
+        ax.set_xlabel("Observation delay (steps)")
+        ax.legend(loc="upper left", fontsize=7.5, frameon=False)
+        sns.despine(ax=ax)
+
+    axes[0, 0].set_ylabel(f"Held-out reward\n({HELD_OUT}, 169 clips)")
+    axes[1, 0].set_ylabel("Held-out reward vs the\nold-XML baseline @600 M (%)")
+    axes[0, 0].legend(loc="lower left", fontsize=6.5, frameon=False)
+    axes[1, 1].annotate(f"run-to-run noise (±{noise:.1f} %)", (DELAYS[-1], noise),
+                        fontsize=7, color="0.4", va="bottom", ha="right")
+    fig.suptitle("The primary result on clips no run trained on. One batch eval pass per "
+                 "run,\nthe same measurement for every tier -- unlike the training curve.",
+                 fontsize=10)
     fig.tight_layout()
-    stamp(fig, "held_out", DATA, CURVES)
+    stamp(fig, "held_out", EVAL, CURVES)
     fig.savefig(FIGURES / "held_out.png")
     print("Saved", FIGURES / "held_out.png")
 
@@ -451,7 +481,32 @@ def last_point_table(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def print_tables(table: pd.DataFrame, df: pd.DataFrame) -> None:
+def print_inline_crosscheck(df: pd.DataFrame, evals: pd.DataFrame) -> None:
+    """Batch eval vs the run's own inline end-of-training eval, where both exist.
+
+    Two *different* measurements -- in-memory weights at ``total_steps`` vs the newest
+    checkpoint on disk -- so they are never mixed in a figure. Their agreement is the
+    check that the re-produced (post walker-XML-fix) batch evals are sane; before the fix
+    this ratio ran 0.58-0.98 on the new-XML runs, scaling with delay.
+    """
+    batch = (evals[evals["dataset"] == HELD_OUT]
+             .set_index("wandb_id")["episode_reward"])
+    both = df.dropna(subset=["inline_old_eval_reward"]).copy()
+    both = both[both["wandb_id"].isin(batch.index)]
+    if both.empty:
+        return
+    both["batch"] = both["wandb_id"].map(batch)
+    both["ratio"] = both["batch"] / both["inline_old_eval_reward"]
+    print("\n=== Batch eval vs inline end-of-training eval (old_eval; different weights, "
+          "so expect ~1 with no delay trend) ===")
+    print(both[["condition", "delay_k", "inline_old_eval_reward", "batch", "ratio"]]
+          .sort_values(["condition", "delay_k"]).round(3).to_string(index=False))
+    print(f"  ratio: {both['ratio'].min():.3f} - {both['ratio'].max():.3f} "
+          f"(n={len(both)}); worst |1 - ratio| = "
+          f"{(both['ratio'] - 1).abs().max() * 100:.1f} %")
+
+
+def print_tables(table: pd.DataFrame, df: pd.DataFrame, evals: pd.DataFrame) -> None:
     show = ["network", "delay_k", "baseline_600M", "new_600M", "new_2G_final",
             "deficit_600M_pct", "deficit_2G_pct", "replicate_pct",
             "new_2G_gain_last_500M_pct", "baseline_gain_last_100M_pct"]
@@ -471,6 +526,19 @@ def print_tables(table: pd.DataFrame, df: pd.DataFrame) -> None:
         last_point_table(df), on=["network", "delay_k"])
     print(merged.round(2).to_string(index=False))
 
+    print("\n=== Held-out clips (old_eval, 169 clips), reward and survival ===")
+    held = held_out_table(evals).merge(
+        held_out_table(evals, metric="survived"), on=["network", "delay_k"])
+    print(held.round(3).to_string(index=False))
+
+    print("\n=== The curve and the held-out eval, side by side (deficit %) ===")
+    both = table[["network", "delay_k", "deficit_600M_pct", "deficit_2G_pct"]].merge(
+        held_out_table(evals)[["network", "delay_k",
+                               "episode_reward_deficit_600M_pct",
+                               "episode_reward_deficit_2G_pct"]],
+        on=["network", "delay_k"])
+    print(both.round(1).to_string(index=False))
+
     print("\n=== Inline end-of-training eval (only runs from 2026-08-10 onward have it; "
           "both baselines predate it) ===")
     inline = df.dropna(subset=["inline_old_eval_reward"])
@@ -486,6 +554,7 @@ def main() -> None:
     FIGURES.mkdir(exist_ok=True)
     df = pd.read_csv(DATA)
     curves = pd.read_csv(CURVES)
+    evals = pd.read_csv(EVAL)
 
     table = contrast_table(curves)
 
@@ -493,9 +562,13 @@ def main() -> None:
     fig_closure(curves, table)
     fig_convergence(curves, table)
     fig_replication(curves, table)
-    fig_held_out(df, table)
-    print_tables(table, df)
+    fig_held_out(evals, table)
+    print_tables(table, df, evals)
+    print_inline_crosscheck(df, evals)
 
+    # The curve-based contrast and its held-out counterpart, in one committed table.
+    table = table.merge(held_out_table(evals), on=["network", "delay_k"]).merge(
+        held_out_table(evals, metric="survived"), on=["network", "delay_k"])
     table.to_csv(HERE / "contrast_table.csv", index=False)
     write_figure_manifest(HERE, _MANIFEST)
 

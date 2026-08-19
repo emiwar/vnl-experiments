@@ -18,17 +18,11 @@ history  (spec_id=hist2000-09fea177): 29/29
     pgfm_new_600m                   5/5   
     pgfm_old_600m                   4/4   
 
-eval:eval3ds-66aaff5b  (spec_id=eval3ds-66aaff5b): 4/29
-    expfm_new_2g                    0/4      *** GAP ***
-    expfm_new_600m                  0/4      *** GAP ***
-    expfm_old_600m                  0/4      *** GAP ***
-    expfm_oldref_600m               0/4      *** GAP ***
-    pgfm_new_2g                     0/4      *** GAP ***
-    pgfm_new_600m                   0/5      *** GAP ***
+eval:eval3ds-347333e3  (spec_id=eval3ds-347333e3): 29/29
+    expfm_new_2g                    4/4   
+    expfm_new_600m                  4/4   
+    expfm_old_600m                  4/4   
+    expfm_oldref_600m               4/4   
+    pgfm_new_2g                     4/4   
+    pgfm_new_600m                   5/5   
     pgfm_old_600m                   4/4   
-
-Missing artifacts. Produce or fetch them with:
-  # 25 runs missing eval:eval3ds-66aaff5b
-  # other specs held for these runs: legacy-batch (12), legacy-batch-v0 (8)
-  python -m vnl_experiments.artifacts plan  --kind eval --runs xml-ceiling-vs-convergence/runs.csv
-  python -m vnl_experiments.artifacts pull  --kind eval --runs xml-ceiling-vs-convergence/runs.csv

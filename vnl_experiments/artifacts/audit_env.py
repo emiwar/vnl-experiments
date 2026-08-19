@@ -288,6 +288,33 @@ def write_lists(rows: Iterable[Row], out_dir: Path) -> list[Path]:
     return written
 
 
+def _pinned_strings(path: Path) -> str:
+    """Every string literal in ``path`` that a spec id could actually be *pinned* in.
+
+    Searching the raw source instead makes a folder that merely *mentions* a retired spec id
+    -- in a comment, or in the docstring recording why it was retired -- look like it still
+    reads that data, so a repointed folder could never come back clean. Docstrings and
+    bare-string statements are dropped for the same reason; a real pin is a string in an
+    expression (an assignment right-hand side, a list element, an argument).
+
+    A file that will not parse falls back to its raw text: over-reporting is the safe
+    direction for an audit.
+    """
+    import ast
+
+    try:
+        tree = ast.parse(path.read_text())
+    except SyntaxError:
+        return path.read_text()
+
+    commentary = {id(node.value) for node in ast.walk(tree)
+                  if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)}
+    return "\n".join(
+        node.value for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str)
+        and id(node) not in commentary)
+
+
 def by_analysis(rows: Iterable[Row]) -> str:
     """Which committed analyses consumed a broken artifact.
 
@@ -317,7 +344,7 @@ def by_analysis(rows: Iterable[Row]) -> str:
         if not folder.is_dir() or folder.name.startswith("_"):
             continue
 
-        scripts = "\n".join(p.read_text() for p in folder.glob("*.py"))
+        scripts = "\n".join(_pinned_strings(p) for p in folder.glob("*.py"))
         pinned = [(kind, sid) for (kind, sid) in broken_ids if sid in scripts]
 
         ids: set[str] = set()

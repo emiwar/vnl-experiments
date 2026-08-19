@@ -8,10 +8,11 @@ Run from the repo root::
 Reads ONLY the committed CSVs (never WandB, never the artifact store) and writes
 figures/. See analysis/README.md §3.
 
-The **offline evaluation** (``data_eval.csv``) carries the conclusions here, not the
-training-time reward in ``data.csv``. Training-time reward is eval-on-training-clips over
-short auto-reset episodes and it systematically under-detects this particular effect --
-``fig_training_vs_heldout`` is the evidence for that and the reason for the ordering.
+The **offline evaluation** (``data_eval.csv``) carries the conclusions here, on the post-fix
+spec ``eval3ds-347333e3``; the training-time reward in ``data.csv`` is a second, independent
+measurement rather than a discredited one. ``fig_training_vs_heldout`` shows the two agreeing
+to a few percent. Before the 2026-08-18 walker-XML fix they diverged by up to 2.3x and this
+module's framing was built on that divergence -- see the retraction in ``report.md``.
 
 Encoding: **colour = network** (the canonical CONDITION_STYLE colours), **line style =
 arm** — dashed + open marker for the baseline, solid + filled for the changed config.
@@ -141,7 +142,7 @@ def fig_primary(ev: pd.DataFrame) -> None:
                     **(BASELINE_STYLE if baseline else CHANGED_STYLE))
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Clips surviving the full 5 s (%)")
-    ax.set_title("Survival — where the whole effect lives")
+    ax.set_title("Survival")
     ax.legend(loc="upper right", fontsize=6.5)
     add_ms_axis(ax, ev["delay_k"].max())
     sns.despine(ax=ax)
@@ -162,8 +163,14 @@ def fig_primary(ev: pd.DataFrame) -> None:
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         sns.despine(ax=ax)
-    axes[2].set_ylim(-60, 15)
-    axes[1].set_ylim(-60, 15)
+    # Symmetric, and wide enough for every plotted point. The hard -60..15 window these
+    # panels used to carry was sized for the pre-fix numbers and silently clipped the
+    # positive tail off the top once the walker-XML fix landed.
+    span = max(abs(paired(ev, key, m, HELD_OUT)["pct"]).max()
+               for key in PRIMARY_PAIRS
+               for m in ("episode_reward", "reward_per_step"))
+    for ax in (axes[1], axes[2]):
+        ax.set_ylim(-1.1 * span, 1.1 * span)
     axes[1].legend(loc="lower left", fontsize=7)
 
     fig.suptitle(f"Offline evaluation on held-out clips ({HELD_OUT}, 169 clips, "
@@ -195,12 +202,14 @@ def fig_training_vs_heldout(df: pd.DataFrame, ev: pd.DataFrame) -> None:
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Reward change, new vs old (%)")
     ax.set_title("Same runs, two metrics")
-    ax.legend(loc="lower left", fontsize=6)
+    ax.legend(loc="upper left", fontsize=6, frameon=False)
     sns.despine(ax=ax)
 
-    # The asymmetry is the point: the two lifespan measurements agree for the old arm
-    # and diverge by up to ~1.9x for the new one, so the training-time metric is not
-    # merely noisy, it is biased in favour of the new configuration.
+    # The asymmetry is the point, and the walker-XML fix flipped which side carries it:
+    # the two lifespan measurements now track each other on the *new* body and diverge on
+    # the *old* one from delay ~20 up. Pre-fix this panel read the other way round and was
+    # the evidence for "training-time reward is biased in favour of the new body", which is
+    # retracted -- the divergence was the offline eval driving the wrong body.
     ax = axes[1]
     base, changed, _ = PAIRS["primary_encdec"]
     for cond, baseline in [(base, True), (changed, False)]:
@@ -214,8 +223,8 @@ def fig_training_vs_heldout(df: pd.DataFrame, ev: pd.DataFrame) -> None:
                 marker="o", ms=3, label=f"{LABEL[cond]}: held-out")
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Mean episode lifespan (control steps)")
-    ax.set_title("EncDec lifespan: the two agree for the old body,\n"
-                 "diverge for the new one")
+    ax.set_title("EncDec lifespan: the two agree for the new body,\n"
+                 "diverge for the old one")
     ax.legend(loc="upper right", fontsize=6.5)
     sns.despine(ax=ax)
 
@@ -248,7 +257,7 @@ def fig_decomposition(ev: pd.DataFrame) -> None:
         sns.despine(ax=ax)
     axes[0].legend(loc="lower left", fontsize=8)
 
-    fig.suptitle("EncDec 2x2 on held-out clips: the XML carries it, the frame is free",
+    fig.suptitle("EncDec 2x2 on held-out clips: both factors are close to free",
                  fontsize=10)
     fig.tight_layout()
     stamp(fig, "decomposition", DATA_EVAL)
@@ -289,7 +298,7 @@ def fig_position(ev: pd.DataFrame) -> None:
     ax.axhline(0, color="k", lw=0.8, ls=":")
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel("Reward change, new vs old XML (%)")
-    ax.set_title("Position control is hit too, about half as hard")
+    ax.set_title("Position control: within a few percent at every delay")
     ax.legend(loc="lower left", fontsize=8)
     sns.despine(ax=ax)
 
@@ -353,8 +362,8 @@ def fig_convergence(curves: pd.DataFrame) -> pd.DataFrame:
     ax.legend(loc="upper left", fontsize=6.5, frameon=False)
     sns.despine(ax=ax)
 
-    fig.suptitle("Training-time curves — read for convergence only; their levels "
-                 "under-detect the new body's failures", fontsize=9)
+    fig.suptitle("Training-time curves — from history artifacts, so unaffected by the "
+                 "walker-XML bug; read for convergence", fontsize=9)
     fig.tight_layout()
     stamp(fig, "convergence", CURVES)
     fig.savefig(FIGURES / "convergence.png")

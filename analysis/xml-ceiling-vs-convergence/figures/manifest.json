@@ -1,7 +1,7 @@
 {
-  "budget.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 568d216  \u00b7  2026-08-14",
-  "closure.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 568d216  \u00b7  2026-08-14",
-  "convergence.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 568d216  \u00b7  2026-08-14",
-  "held_out.png": "xml-ceiling-vs-convergence  \u00b7  data.csv 1ae47b61  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 568d216  \u00b7  2026-08-14",
-  "replication.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 568d216  \u00b7  2026-08-14"
+  "budget.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 8602d2e  \u00b7  2026-08-19",
+  "closure.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 8602d2e  \u00b7  2026-08-19",
+  "convergence.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 8602d2e  \u00b7  2026-08-19",
+  "held_out.png": "xml-ceiling-vs-convergence  \u00b7  data_eval.csv 2dfb0b03  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 8602d2e  \u00b7  2026-08-19",
+  "replication.png": "xml-ceiling-vs-convergence  \u00b7  curves.csv 14e3ba9c  \u00b7  vnl-experiments 8602d2e  \u00b7  2026-08-19"
 }
