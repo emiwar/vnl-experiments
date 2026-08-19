@@ -1,0 +1,31 @@
+Coverage for 17 runs in explicit-vs-implicit-fm-probe
+
+index  (spec_id=-): 17/17
+    expfm_2g                        4/4   
+    expfm_600m                      4/4   
+    pgfm_2g                         4/4   
+    pgfm_600m                       5/5   
+
+activations:act-old_eval-fa8b8144  (spec_id=act-old_eval-fa8b8144): 17/17
+    expfm_2g                        4/4   
+    expfm_600m                      4/4   
+    pgfm_2g                         4/4   
+    pgfm_600m                       5/5   
+
+eval:eval3ds-347333e3  (spec_id=eval3ds-347333e3): 17/17
+    expfm_2g                        4/4   
+    expfm_600m                      4/4   
+    pgfm_2g                         4/4   
+    pgfm_600m                       5/5   
+
+history:hist2000-fc46b078  (spec_id=hist2000-fc46b078): 17/17
+    expfm_2g                        4/4   
+    expfm_600m                      4/4   
+    pgfm_2g                         4/4   
+    pgfm_600m                       5/5   
+
+history:hist2000-09fea177  (spec_id=hist2000-09fea177): 17/17
+    expfm_2g                        4/4   
+    expfm_600m                      4/4   
+    pgfm_2g                         4/4   
+    pgfm_600m                       5/5   

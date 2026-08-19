@@ -203,6 +203,17 @@ class EvalProducer(Producer):
         "action_noise": None,
     }
 
+    def spec(self, **overrides: Any) -> dict[str, Any]:
+        spec = super().spec(**overrides)
+        # `--set action_noise=0` parses as an int, and json.dumps writes `0` where `0.0`
+        # writes `0.0`, so the two hash to different spec_ids for a numerically identical
+        # eval. That silently minted a parallel `eval3ds-n00-21b2d9a8` alongside the real
+        # n00 spec on 2026-08-19. produce() uses the value numerically, so canonicalise it
+        # here. Float values are unaffected, so no existing spec_id changes.
+        if spec.get("action_noise") is not None:
+            spec["action_noise"] = float(spec["action_noise"])
+        return spec
+
     def prefix(self, spec: Mapping[str, Any]) -> str:
         base = f"eval{len(spec['datasets'])}ds"
         noise = spec.get("action_noise")

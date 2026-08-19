@@ -1,0 +1,9 @@
+{
+  "budget_crosscheck.png": "explicit-vs-implicit-fm-probe  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "encoder_2g.png": "explicit-vs-implicit-fm-probe  \u00b7  data.csv abbcf5cd  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "encoder_600m.png": "explicit-vs-implicit-fm-probe  \u00b7  data.csv abbcf5cd  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "fm_prediction_curves.png": "explicit-vs-implicit-fm-probe  \u00b7  curves.csv c9dab402  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "probe_2g.png": "explicit-vs-implicit-fm-probe  \u00b7  data.csv abbcf5cd  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "probe_600m.png": "explicit-vs-implicit-fm-probe  \u00b7  data.csv abbcf5cd  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19",
+  "reward_vs_delay.png": "explicit-vs-implicit-fm-probe  \u00b7  data_reward.csv 41c02957  \u00b7  vnl-experiments afbeea0  \u00b7  2026-08-19"
+}

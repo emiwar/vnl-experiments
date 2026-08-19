@@ -434,9 +434,16 @@ def cmd_adopt(args) -> int:
             print(f"  {wandb_id}: no {args.kind}:{args.from_spec} in the store; skipped")
             missing += 1
             continue
-        if row.verdict != "adoptable":
+        # Never adopt a wrong-body artifact, whatever the caller claims: that is the one
+        # case where the bytes genuinely differ from what produce() would write now.
+        if row.verdict == "broken":
+            print(f"  {wandb_id}: REFUSED (broken: {row.reason})")
+            refused += 1
+            continue
+        if row.verdict != "adoptable" and not args.reason:
             print(f"  {wandb_id}: REFUSED ({row.verdict}"
-                  f"{': ' + row.reason if row.reason else ''})")
+                  f"{': ' + row.reason if row.reason else ''}"
+                  f"; pass --reason to adopt anyway)")
             refused += 1
             continue
 
@@ -461,8 +468,9 @@ def cmd_adopt(args) -> int:
                 dest.write_bytes(src_path.read_bytes())
         store.record(args.kind, wandb_id, new_sid, dest, spec=spec,
                      producer={**source.producer, "adopted_from": args.from_spec,
-                               "adopted_reason": "run trained on the default assets, so "
-                                                 "the walker-XML fix cannot change the output"},
+                               "adopted_reason": args.reason or
+                               "run trained on the default assets, so the walker-XML fix "
+                               "cannot change the output"},
                      resolved={**source.resolved, **row.trained})
         adopted += 1
 
@@ -537,6 +545,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--kind", required=True, choices=KINDS)
     add_runs(p)
     p.add_argument("--from-spec", required=True, help="the spec_id to adopt from")
+    p.add_argument("--reason", help="adopt artifacts that are not merely pre-fix, recording "
+                                   "this justification in the sidecar. Wrong-body artifacts "
+                                   "are refused regardless.")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_adopt)
 

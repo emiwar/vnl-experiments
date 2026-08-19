@@ -1,0 +1,41 @@
+explicit-vs-implicit-fm-probe -- sanity checks
+==============================================
+
+ceiling  input::current_proprio     min 1.0000  (expect ~1.00; below that the target or mask is wrong)
+leak     layer::2/proprioception    min 1.0000  (pre-Delay Normalizer: expect ~1.00)
+
+delay buffer vs k-shifted floor (expect equal to ~3 dp):
+  delay  10: buffer 0.0973  floor 0.0973  |diff| 0.0000
+  delay  20: buffer 0.0567  floor 0.0567  |diff| 0.0000
+  delay  50: buffer 0.0198  floor 0.0198  |diff| 0.0000
+
+encoder pathway, decoding current proprio: -0.041 - 0.129 (expect low; high means the reference target leaks the current pose)
+degenerate rows (delta at delay 0): 132, all NaN: True
+
+rows per run (expect 68, or 66 at delay 0 -- no delay leaf):
+  1dbmh27r delay  10: 68
+  25io6a70 delay  10: 68
+  3dfjggpw delay  20: 68
+  48icppj0 delay  20: 68
+  6cbzq5on delay  50: 68
+  6jz9o5p4 delay  50: 68
+  7wpzx8cl delay  50: 68
+  cgs8q5gj delay  10: 68
+  dgv264dt delay   0: 66
+  efc0z8fe delay   0: 66
+  itedqjyt delay  10: 68
+  kwk401pl delay  10: 68
+  lxgp2zfn delay  50: 68
+  nsfdsuk2 delay   0: 66
+  q7e7028r delay   0: 66
+  x1wjdvt9 delay  20: 68
+  yt776s6d delay  20: 68
+
+unclassified probes: none
+
+fm_mse_old_eval, explicit : 0.0002 - 0.0758
+fm_mse_old_eval, implicit : 0.4403 - 1.0575
+
+offline / in-training FM error ratio (expect ~1, delay 0 excepted where both are ~1e-4 and the ratio is unstable):
+  delay > 0: 0.98 - 1.27  (n=13)
+  delay = 0: 0.28 - 1.01
