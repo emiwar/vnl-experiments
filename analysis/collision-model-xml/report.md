@@ -51,13 +51,10 @@
 > disagrees with the run. Verifying provenance against the same record that was already
 > trusted is not verification — that is the transferable lesson here.
 >
-> **Status of the numbers below: interim.** Everything is rebuilt on the post-fix spec
-> `eval3ds-347333e3`, at **131/149** coverage — 18 new-XML runs are still being
-> re-evaluated on the cluster, so several delay cells are absent and the tables below skip
-> them rather than interpolating. The *shape* is consistent across three networks and both
-> offline datasets and is not going to move, but individual cells will, and the long-delay
-> claims rest on the fewest runs. Re-run `extract.py --refresh` once
-> `artifact_repair/2026-08-18-walker-xml/todo_eval3ds.txt` has drained.
+> **Status of the numbers below: complete.** Everything is rebuilt on the post-fix spec
+> `eval3ds-347333e3` at **149/149** coverage — every run, every condition. `artifacts
+> audit-env` reports zero broken artifacts across `eval`, `activations` and `video`, so the
+> 2026-08-18 repair is finished and nothing here is provisional.
 
 ## Question
 
@@ -92,16 +89,13 @@ sweeps on both sides for EncDec and the explicit FM. The four EncDec cells form 
 
 **Primary evidence is the offline evaluation**: the held-out `old_eval` split (169 unseen
 clips, full 502-step rollouts from frame 0), batch spec **`eval3ds-347333e3`** (post-fix,
-`EvalProducer.VERSION = 2`), **131/149 runs**. Every gap is in a new-XML condition, because
-those are the ones being re-evaluated:
+`EvalProducer.VERSION = 2`), **149/149 runs — every condition complete**. `data_eval.csv`
+carries the body stamp per row: 79 old-XML runs read `rodent.xml`, 70 new-XML ones read
+`rodent_no_tail_collisions.xml`, no exceptions.
 
-| condition | v2 evals | missing |
-|---|---:|---|
-| `encdec_new_current` | 5/6 | 1 |
-| `encdec_new_reference` | 18/23 | 5 |
-| `expfm_new_reference` | 14/23 | 9 |
-| `pgfm_new_reference` | 10/13 | 3 |
-| all old-XML and both position conditions | complete | — |
+The last two runs to land (`th9oxbti` at delay 5, `via4qt5i` at delay 30) had never held an
+eval of *any* spec, so they were absent from the walker-XML re-production lists and needed
+producing from scratch rather than repairing.
 
 The training curve (`data.csv`, from `history` artifacts) is unaffected by the bug and is
 byte-identical to the pre-fix version; it is quoted below as an independent measurement
@@ -160,27 +154,46 @@ long delay depends on which component wins in that network:
 
 | delay | EncDec | explicit FM | PG-FM |
 |---:|---:|---:|---:|
-| 0 | +0.1 % | −1.8 % | −0.5 % |
-| 10 | — | −7.7 % | −8.2 % |
+| 0 | −0.1 % | −1.8 % | −0.5 % |
+| 5 | −0.4 % | −1.1 % | −1.5 % |
+| 10 | +2.1 % | −7.7 % | −8.2 % |
 | 20 | +4.4 % | +7.0 % | −4.4 % |
-| 30 | −5.8 % | +10.8 % | — |
+| 30 | −5.8 % | +10.8 % | **−17.2 %** |
+| 40 | −9.3 % | +16.0 % | — |
 | 50 | −1.5 % | +12.7 % | −1.2 % |
+| 60 | −3.7 % | +19.3 % | — |
+| 80 | +29.3 % | +29.6 % | — |
 | 100 | +20.2 % | +23.8 % | +39.6 % |
 
-**The explicit forward model is essentially immune** — it is the one network where the
-per-step cost stays small (−3 to −7 % rather than −13 to −20 %), so the survival gain is
-never cancelled and held-out reward is positive at every delay ≥ 20. It is also the best
-architecture on both bodies, and the gap *widens* on the new one (57 % vs 33 % survival at
-delay 50; 62 % vs 14–24 % at delay 100).
+**The explicit forward model is essentially immune, and past delay 20 the new body is simply
+better for it.** Its per-step cost stays small (−2 to −7.5 %, against −10 to −20 % for the
+other two), so the survival gain is never cancelled: held-out reward is positive at **every
+one of the nine delays ≥ 20**, rising from +7.0 % to +23.8 %. This is the condition whose
+sweep is complete, so that run of nine same-signed cells is the strongest single claim in the
+report. The explicit FM is also the best architecture on both bodies, and its lead *widens* on
+the new one (57 % vs 33 % survival at delay 50; 62 % vs 14–24 % at delay 100).
 
 `xml-ceiling-vs-convergence` measures the same explicit-FM pair independently and lands on
 **+12.7 % at delay 50**, identical to the value above — the two folders pin the same
 tranches, so this is a consistency check on the rebuild rather than a second sample.
 
-**Where a real cost does show:** EncDec and the PG-FM lose 4–9 % of held-out reward in a
-band around delays 10–40, and their per-step tracking is 13–20 % worse from delay 40 up.
-Whatever the extra contact geometry costs, the explicit predictor absorbs it and the other
-two networks do not.
+**Where a real cost does show:** there is a genuine deficit band in the two networks without
+an explicit predictor, centred on delay 30. The PG-FM's worst cell is **−17.2 % at delay 30**
+and EncDec's is −9.3 % at delay 40; both track 10–17 % worse per step from delay 30 up. Even
+there the cost does not persist — EncDec is back to +29 % by delay 80, because survival keeps
+improving while per-step tracking stops getting worse. Whatever the extra contact geometry
+costs, the explicit predictor absorbs it and the other two networks do not.
+
+That delay-30 PG-FM cell is worth flagging: it was the last artifact to arrive, and it lands
+where the *original* training-time analysis put the worst point of the band (−21.5 % on the
+curve). So the deficit band that motivated
+[`xml-ceiling-vs-convergence/`](../xml-ceiling-vs-convergence/) is real and held-out-confirmed
+— it is just narrower, shallower, and confined to the two networks lacking an explicit
+predictor, rather than the −20 to −50 % everywhere that the pre-fix evals showed.
+
+Read the delay-80/90/100 cells with the caveat that both bodies are near the survival floor
+there (7–14 % for EncDec, 2–24 % for the PG-FM), so a large *percentage* gain is a small
+absolute one.
 
 ## The training curve and the offline eval now agree
 
@@ -213,7 +226,7 @@ a fraction of training-clip reward, by delay band:
 |---|---:|---:|
 | 0–10 | 0.978 (n=40) | 0.976 (n=26) |
 | 12–30 | 0.892 (n=16) | 0.917 (n=12) |
-| 40–100 | **0.851** (n=22) | **0.920** (n=13) |
+| 40–100 | **0.851** (n=22) | **0.923** (n=18) |
 
 Identical at short delay, then the old body's gap opens to twice the new body's by delay 40+.
 `xml-ceiling-vs-convergence` finds the same pattern in its own cohort. That is why held-out
@@ -226,7 +239,7 @@ worth a question of its own — with one seed per cell it is an observation, not
 
 | delay | XML at `current_root` | XML at `reference_root` | Frame on old XML | Frame on new XML |
 |---:|---:|---:|---:|---:|
-| 0 | — | +0.8 % | −0.6 % | — |
+| 0 | +0.0 % | +0.8 % | −0.6 % | — |
 | 2 | +0.6 % | — | −0.2 % | — |
 | 5 | +3.5 % | −3.1 % | +2.8 % | −3.8 % |
 | 10 | +0.1 % | — | +0.3 % | — |
@@ -286,7 +299,7 @@ is not slower.
 
 ## Bottom line
 
-*Interim, at 131/149 eval coverage — see the retraction.*
+*At full 149/149 eval coverage on the post-fix spec.*
 
 - **`reference_root` is free.** Confirmed on held-out data, at both XML levels, in two
   networks, with no interaction. Adopt it. (Untouched by the bug: both arms are old-XML.)
@@ -306,11 +319,11 @@ is not slower.
 
 ## Follow-ups
 
-- **Finish the eval sweep.** 18 new-XML runs still need `eval3ds-347333e3` (9 of them in
-  `expfm_new_reference`, which carries the strongest claim above). Everything in this report
-  should be regenerated once they land.
+- ~~**Finish the eval sweep.**~~ Complete at 149/149 as of 2026-08-19; `audit-env` reports
+  zero broken artifacts. The delay-30 PG-FM cell that arrived last turned out to be the
+  deepest point of the whole deficit band, so it was worth waiting for.
 - **The asymmetric generalization gap deserves its own question.** Held-out/train reward is
-  0.851 for old-XML runs at delays 40–100 against 0.920 for new-XML ones, and identical at
+  0.851 for old-XML runs at delays 40–100 against 0.923 for new-XML ones, and identical at
   short delay. If the extra contact geometry really does suppress clip-specific solutions
   that is a point in the new body's favour that neither this folder nor
   `xml-ceiling-vs-convergence` was designed to test. Needs no new runs — the cohort is here.

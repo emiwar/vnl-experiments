@@ -97,13 +97,22 @@ NOISE_LEVELS = (0.0, 0.02, 0.05, 0.1, 0.25)
 #: they cannot drift out of sync with the spec, and asserted against these constants so a
 #: ``VERSION`` bump or a spec change is a loud failure rather than a silent switch to
 #: different data. Regenerate by running this module and pasting the printed mapping.
+#: These are the **v2** ids (``EvalProducer.VERSION = 2``), post the 2026-08-18 walker-XML
+#: fix. The v1 set they replaced -- ``eval3ds-n00-04ceda93`` and its four siblings -- had
+#: simulated every new-XML run on ``rodent.xml``; see ``report.md``. Note ``action_noise``
+#: must be a **float**: the producer now coerces it, but a cluster job that passed the int
+#: ``0`` once minted a whole parallel spec id before it did.
 EXPECTED_SPEC_IDS = {
-    0.0: "eval3ds-n00-04ceda93",
-    0.02: "eval3ds-n02-5bcf9203",
-    0.05: "eval3ds-n05-ead26b7d",
-    0.1: "eval3ds-n10-2d7c9136",
-    0.25: "eval3ds-n25-9443d2fe",
+    0.0: "eval3ds-n00-6a6b8d4e",
+    0.02: "eval3ds-n02-a4e0be11",
+    0.05: "eval3ds-n05-7c60cd50",
+    0.1: "eval3ds-n10-2726ab9c",
+    0.25: "eval3ds-n25-da25f356",
 }
+
+#: The body every artifact here must have been simulated on. This cohort is entirely
+#: new-XML, so one expected name is enough -- unlike ``collision-model-xml``, which spans two.
+EXPECTED_XML = "rodent_no_tail_collisions.xml"
 
 
 def spec_for(sigma: float) -> dict:
@@ -245,9 +254,31 @@ def read_eval(store: Store, wandb_id: str, spec_id: str) -> dict | None:
     entry = store.lookup("eval", wandb_id, spec_id)
     if entry is None:
         return None
+    assert_artifact_body(entry, wandb_id)
     record = json.loads((store.root / entry.path).read_text())
     record["_checkpoint_step"] = (entry.resolved or {}).get("checkpoint_step")
+    record["_walker_xml"] = (entry.resolved or {}).get("walker_xml_path")
     return record
+
+
+def assert_artifact_body(entry, wandb_id: str) -> None:
+    """The eval must say it simulated the body these runs trained on.
+
+    Pre-fix artifacts carry no stamp at all, so absence is an error rather than something to
+    shrug at: an unstamped file was produced on ``rodent.xml`` whatever the run trained on.
+    Motor-noise robustness is measured as a *ratio* across sigma, and the pre-fix bug hit every
+    sigma of a run equally, so it would have cancelled in the headline metric and shown up only
+    as a wrong baseline -- exactly the kind of damage a numeric check cannot see.
+    """
+    stamp = (entry.resolved or {}).get("walker_xml_path")
+    if stamp is None:
+        raise SystemExit(
+            f"eval artifact for {wandb_id} has no resolved.walker_xml_path, so it predates the "
+            f"2026-08-18 walker-XML fix and was simulated on the wrong body. Re-produce it "
+            f"(see analysis/README.md §6).")
+    if stamp != EXPECTED_XML:
+        raise SystemExit(f"eval artifact for {wandb_id} was produced on {stamp}, "
+                         f"expected {EXPECTED_XML}.")
 
 
 def _fm_pred_mse(net_metrics: dict) -> float | None:
@@ -287,6 +318,9 @@ def build_row(run: pd.Series, sigma: float, spec_id: str, dataset: str,
         "checkpoint_step": record.get("_checkpoint_step") or record.get("step"),
         # The record's own copy of the measurement setting; must agree with the spec.
         "record_action_noise": record.get("action_noise"),
+        # The body the eval actually simulated -- the field whose absence *was* the
+        # 2026-08-18 bug. Carried into the CSV so the fix is auditable from the data.
+        "walker_xml": record.get("_walker_xml"),
         "n_clips": data["n_clips"],
         "n_steps": data["n_steps"],
         "episode_reward": data["episode_reward"]["mean"],

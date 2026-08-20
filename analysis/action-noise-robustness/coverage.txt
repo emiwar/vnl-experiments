@@ -6,38 +6,32 @@ index  (spec_id=-): 56/56
     expfm_std25                     5/5   
     pgfm_std25                      5/5   
 
-eval:eval3ds-n00-04ceda93  (spec_id=eval3ds-n00-04ceda93): 56/56
+eval:eval3ds-n00-6a6b8d4e  (spec_id=eval3ds-n00-6a6b8d4e): 56/56
     encdec                         23/23  
     expfm                          23/23  
     expfm_std25                     5/5   
     pgfm_std25                      5/5   
 
-eval:eval3ds-n02-5bcf9203  (spec_id=eval3ds-n02-5bcf9203): 43/56
-    encdec                         10/23     *** GAP ***
-    expfm                          23/23  
-    expfm_std25                     5/5   
-    pgfm_std25                      5/5   
-
-eval:eval3ds-n05-ead26b7d  (spec_id=eval3ds-n05-ead26b7d): 56/56
+eval:eval3ds-n02-a4e0be11  (spec_id=eval3ds-n02-a4e0be11): 56/56
     encdec                         23/23  
     expfm                          23/23  
     expfm_std25                     5/5   
     pgfm_std25                      5/5   
 
-eval:eval3ds-n10-2d7c9136  (spec_id=eval3ds-n10-2d7c9136): 56/56
+eval:eval3ds-n05-7c60cd50  (spec_id=eval3ds-n05-7c60cd50): 56/56
     encdec                         23/23  
     expfm                          23/23  
     expfm_std25                     5/5   
     pgfm_std25                      5/5   
 
-eval:eval3ds-n25-9443d2fe  (spec_id=eval3ds-n25-9443d2fe): 56/56
+eval:eval3ds-n10-2726ab9c  (spec_id=eval3ds-n10-2726ab9c): 56/56
     encdec                         23/23  
     expfm                          23/23  
     expfm_std25                     5/5   
     pgfm_std25                      5/5   
 
-Missing artifacts. Produce or fetch them with:
-  # 13 runs missing eval:eval3ds-n02-5bcf9203
-  # other specs held for these runs: eval3ds-n00-04ceda93 (56), eval3ds-n25-9443d2fe (56), eval3ds-n05-ead26b7d (56), eval3ds-n10-2d7c9136 (56), eval3ds-66aaff5b (46)
-  python -m vnl_experiments.artifacts plan  --kind eval --runs action-noise-robustness/runs.csv
-  python -m vnl_experiments.artifacts pull  --kind eval --runs action-noise-robustness/runs.csv
+eval:eval3ds-n25-da25f356  (spec_id=eval3ds-n25-da25f356): 56/56
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_std25                     5/5   
+    pgfm_std25                      5/5   

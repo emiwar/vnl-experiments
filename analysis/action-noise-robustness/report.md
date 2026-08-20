@@ -1,15 +1,25 @@
 # Is the explicit forward model more sensitive to motor noise than the enc-dec?
 
 **Yes — and the effect appears exactly where the mechanism predicts it should.** The
-explicit forward model starts ~8 % *ahead* of the enc-dec with no noise and is ~10 %
-*behind* it at σ = 0.02: its advantage is conditional on clean execution. The penalty
-scales with the delay the predictor has to bridge (Spearman ρ ≈ −0.9, p < 0.001) and
-vanishes at delay 0, where there is nothing to predict.
+explicit forward model retains less of its own noise-free reward than the enc-dec at every
+σ tested — 0.80 vs 0.92 at σ = 0.02 and 0.38 vs 0.48 at σ = 0.05 — so its 12 % advantage in
+absolute terms at σ = 0 is gone by σ = 0.02 and inverted by σ = 0.05. Its advantage is
+conditional on clean execution. The penalty scales with the delay the predictor has to
+bridge (Spearman ρ = −0.79 to −0.92, every p < 1e-5) and vanishes at delay 0, where there
+is nothing to predict.
 
 A second, **larger** effect fell out of the same sweep: training with wider exploration
-(`min_std = 0.25`) costs ~1/3 of the noise-free reward but buys far more robustness than
-either architecture choice, overtaking the `min_std = 0.1` runs by σ ≈ 0.05 and beating
-them 4× at σ = 0.25.
+(`min_std = 0.25`) costs ~30 % of the noise-free reward but buys far more robustness than
+either architecture choice, overtaking the `min_std = 0.1` runs by σ = 0.05 and beating
+them 4.3× at σ = 0.25.
+
+> **Rebuilt 2026-08-19 on the post-fix eval spec.** All 280 eval artifacts were re-produced
+> after the 2026-08-18 walker-XML fix (every run here is new-XML, so every one of them had
+> been evaluated on the wrong body) and the σ = 0.02 gap closed at the same time. Absolute
+> rewards rose 1.1–1.8× on average. **Every conclusion above survived**, because the headline
+> metric normalises each run to its own σ = 0 and the bug hit numerator and denominator
+> together — unlike [`collision-model-xml/`](../collision-model-xml/), whose contrast was
+> across bodies and did reverse. See *What the rebuild changed*.
 
 ## Question
 
@@ -60,11 +70,14 @@ targets, torque actuators, seed 42, 600 M steps, `[512]×4` enc/dec, `[1024]×2`
   `collision-model-xml`) is `state ∈ {finished, failed}` **and** `summary._step ==
   600_064_000`; a run that died during training cannot satisfy the second. The three
   `crashed` runs at `25732c42` have `_step = NaN` and are excluded by that gate.
-- **Coverage: 801/840 cells.** The only gap is **`encdec` at σ = 0.02, 10/23 delays**
-  (present: 1, 2, 3, 9, 10, 12, 15, 30, 60, 80). Every other (condition, σ) cell is
-  complete. All pooled comparisons in the figures are restricted to delays both arms
-  share at that σ (`paired_delays` in `plot.py`), so no panel compares differently
-  composed cohorts.
+- **Coverage: 840/840 cells — complete.** Every (run, σ, dataset) cell is present, on the
+  post-fix v2 specs (`eval3ds-n00-6a6b8d4e` and its four siblings). The previous version was
+  801/840, missing `encdec` at 13 of 23 delays at σ = 0.02, which was the single weakest cell
+  in the analysis; it is now full. Pooled comparisons are still restricted to delays both arms
+  share at that σ (`paired_delays` in `plot.py`), which is now every delay at every σ.
+- **Every artifact is verified to have simulated the new-XML body**, from its
+  `resolved.walker_xml_path` stamp (`assert_artifact_body`): 840/840 rows read
+  `rodent_no_tail_collisions.xml`. An absent stamp means pre-fix and is a hard error.
 - **Programmatic comparability:** `comparability.txt` — every condition is single-valued
   on every invariant, `git_commit` included. Pooled, only `min_std` and `git_commit` vary,
   and they vary together (the `std25` tranche is a separate launch 2 days later).
@@ -77,25 +90,29 @@ targets, torque actuators, seed 42, 600 M steps, `[512]×4` enc/dec, `[1024]×2`
 
 | σ | paired delays | expfm | encdec | difference | expfm worse in | Wilcoxon |
 |---|---:|---:|---:|---:|---:|---:|
-| 0.02 | 10 | 0.678 | 0.855 | **−0.177** | 7/10 | p = 0.027 |
-| 0.05 | 23 | 0.316 | 0.400 | **−0.084** | 19/23 | p < 0.001 |
-| 0.10 | 23 | 0.139 | 0.168 | −0.029 | 21/23 | p < 0.001 |
-| 0.25 | 23 | 0.037 | 0.046 | −0.009 | 18/23 | p < 0.001 |
+| 0.02 | 23 | 0.802 | 0.915 | **−0.113** | 21/23 | p < 0.001 |
+| 0.05 | 23 | 0.378 | 0.483 | **−0.104** | 20/23 | p < 0.001 |
+| 0.10 | 23 | 0.135 | 0.157 | −0.023 | 18/23 | p < 0.001 |
+| 0.25 | 23 | 0.027 | 0.034 | −0.007 | 15/23 | p = 0.007 |
 
-The direction is essentially unanimous (18–21 of 23 delays at every σ). In absolute terms
-the ranking **reverses** between σ = 0 and σ = 0.02. Restricted to the 10 delays both arms
-share at σ = 0.02, so every row compares the same runs (`old_eval`):
+All four rows are now the full 23 delays. The direction is near-unanimous (21/23 at
+σ = 0.02, 20/23 at σ = 0.05) and weakens only at σ = 0.25, where both arms are near the floor
+and there is little left to lose. In absolute terms the ranking **reverses** between σ = 0
+and σ = 0.05 (`old_eval`, all 23 delays):
 
 | σ | expfm | encdec | expfm / encdec | survived (expfm / encdec) |
 |---|---:|---:|---:|---|
-| 0.00 | **1383** | 1285 | 1.08 | 0.55 / 0.48 |
-| 0.02 | 1011 | **1128** | **0.90** | 0.35 / 0.40 |
-| 0.05 | 584 | **618** | 0.94 | 0.19 / 0.18 |
-| 0.10 | 158 | **168** | 0.94 | 0.01 / 0.01 |
+| 0.00 | **1660** | 1477 | 1.12 | 0.77 / 0.64 |
+| 0.02 | 1369 | 1371 | **1.00** | 0.62 / 0.59 |
+| 0.05 | 675 | **739** | **0.91** | 0.20 / 0.26 |
+| 0.10 | 244 | **249** | 0.98 | 0.05 / 0.06 |
+| 0.25 | 46 | **47** | 0.97 | 0.00 / 0.00 |
 
-Over the full 23 delays (valid at every σ except 0.02) the ratio is 1.09 at σ = 0 and
-0.93 / 0.95 / 0.99 at σ = 0.05 / 0.10 / 0.25 — same reversal, and it narrows as both arms
-approach the floor.
+So the explicit arm's 12 % lead is spent by σ = 0.02 and negative by σ = 0.05, then the two
+converge as both approach the floor. The reversal is one σ step later than the previous
+version of this table reported, and that table was built on the 10 σ = 0.02 delays then
+available; the retention view above is the one that does not depend on which σ the crossing
+happens to land in.
 
 ![Degradation](figures/degradation.png)
 
@@ -108,14 +125,24 @@ consistent separation lives.
 ![Gap vs delay](figures/gap_vs_delay.png)
 
 The explicit arm's paired disadvantage per delay. It is ~0 for delays 0–5, then grows
-monotonically: at σ = 0.05 it reaches −0.14 to −0.26 by delays 50–100.
+monotonically: at σ = 0.05 it reaches −0.15 to −0.23 by delays 50–100. The σ = 0.02 row is
+the one that changed on the rebuild — it was ρ = −0.67 at p = 0.03 on 10 delays, and is now
+ρ = −0.79 at p = 7.5e−06 on all 23.
 
-| σ | Spearman ρ (delay, gap) | p |
-|---|---:|---:|
-| 0.02 | −0.67 | 0.03 |
-| 0.05 | −0.92 | < 0.001 |
-| 0.10 | −0.87 | < 0.001 |
-| 0.25 | −0.91 | < 0.001 |
+Now that it is complete, **σ = 0.02 carries the deepest gap of any σ**, −0.22 to −0.27 across
+delays 20–40, and the effect shrinks again at σ = 0.10 and 0.25. That non-monotonicity is a
+floor effect rather than a reversal: by σ = 0.10 the enc-dec has itself dropped to 0.16 of its
+noise-free reward, so there is little left for the explicit arm to lose relative to it. The
+largest *separation* is where the perturbation is big enough to break the predictor but small
+enough that the baseline still works — which is the mechanism's own prediction, and it was not
+visible while the σ = 0.02 row had 10 delays.
+
+| σ | Spearman ρ (delay, gap) | p | n |
+|---|---:|---:|---:|
+| 0.02 | −0.79 | 7.5e−06 | 23 |
+| 0.05 | −0.92 | 8.7e−10 | 23 |
+| 0.10 | −0.91 | 2.4e−09 | 23 |
+| 0.25 | −0.80 | 3.9e−06 | 23 |
 
 This is the analysis's strongest internal control. At delay 0 the predictor has nothing to
 bridge, so a mechanism that runs *through* prediction error must show no penalty there —
@@ -123,17 +150,17 @@ and it doesn't. A generic "this architecture is just more fragile" story predict
 delay dependence.
 
 The mechanism is directly visible: the predictor's own L2 error against true current
-proprioception rises **25×** across the sweep (`expfm`, shared delays, `old_eval`):
-0.054 → 0.094 → 0.216 → 0.449 → 1.364.
+proprioception rises **35×** across the sweep (`expfm`, `old_eval`):
+0.045 → 0.078 → 0.200 → 0.481 → 1.552.
 
 ![Prediction error](figures/prediction_error.png)
 
 ## Result 3 — it is not a generalisation effect
 
-Relative episode reward at σ = 0.05 is 0.304 / 0.387 (expfm / encdec) on **train**,
-0.316 / 0.400 on `old_eval`, 0.234 / 0.353 on `new_eval`. The same ordering and roughly
-the same magnitude appear on the training clips, so this is a control phenomenon, not
-overfitting. It is somewhat *larger* on `new_eval`, i.e. noise and novel clips compound.
+Relative episode reward at σ = 0.05 is 0.371 / 0.472 (expfm / encdec) on **train**,
+0.378 / 0.483 on `old_eval`, 0.251 / 0.376 on `new_eval`. The same ordering and almost
+exactly the same magnitude appear on the training clips, so this is a control phenomenon,
+not overfitting. It is clearly *larger* on `new_eval`, i.e. noise and novel clips compound.
 
 ## Result 4 — wider training exploration buys much more robustness than architecture does
 
@@ -141,40 +168,67 @@ Shared delays (0, 5, 10, 20, 50), `old_eval`, absolute episode reward:
 
 | σ | encdec | expfm | expfm_std25 | pgfm_std25 |
 |---|---:|---:|---:|---:|
-| 0.00 | 1373 | **1434** | 934 | 968 |
-| 0.02 | **1173** | 1066 | 907 | 955 |
-| 0.05 | 655 | 615 | 809 | **897** |
-| 0.10 | 479 | 461 | 614 | **695** |
-| 0.25 | 72 | 71 | 265 | **305** |
+| 0.00 | 1590 | **1734** | 1216 | 1214 |
+| 0.02 | **1493** | 1451 | 1196 | 1221 |
+| 0.05 | 870 | 781 | 1132 | **1179** |
+| 0.10 | 519 | 499 | 868 | **953** |
+| 0.25 | 83 | 75 | 325 | **342** |
 
 ![Exploration width](figures/exploration_width.png)
 
-`min_std = 0.25` costs ~1/3 of the noise-free reward, crosses over between σ = 0.02 and
-0.05, and by σ = 0.25 retains 19–20 % of its baseline against 5 % — with survival 0.10–0.14
-vs **0.000**, i.e. the `min_std = 0.1` policies never finish a clip at all. The effect
-dwarfs the architecture difference.
+`min_std = 0.25` costs ~30 % of the noise-free reward, crosses over between σ = 0.02 and
+0.05, and by σ = 0.25 retains 27–28 % of its baseline against 4–5 % — with survival
+0.15–0.16 vs **0.000–0.002**, i.e. the `min_std = 0.1` policies essentially never finish a
+clip. At σ = 0.25 the wider-exploration runs score **4.3× more reward**. The effect dwarfs
+the architecture difference.
 
 Two details reinforce Result 1. `pgfm_std25` (predictor trained only by the policy
-gradient) beats `expfm_std25` at *every* σ — and its baseline prediction error is 0.710 vs
-0.074, i.e. it never learned to predict well but also never came to depend on the
+gradient) beats `expfm_std25` at *every* σ ≥ 0.02 — and its noise-free prediction error is
+0.756 vs 0.049, i.e. it never learned to predict well but also never came to depend on the
 prediction being right. The more a policy leans on an accurate forward prediction, the more
 unobserved motor noise costs it.
 
+## What the rebuild changed
+
+All 280 artifacts were re-produced on the post-fix eval spec on 2026-08-19. Absolute rewards
+rose by 1.1–1.8× on average (individual cells up to 3.6×), and the rise was **not** uniform in
+σ — mean v2/v1 was 1.47 at σ = 0, 1.80 at σ = 0.05 and 1.11 at σ = 0.25, because at high noise
+the policies were failing anyway and the wrong body cost them less on top. So the bug did not
+simply cancel; it compressed the dynamic range of every degradation curve.
+
+What survived, and why: the headline metric normalises each run to **its own** σ = 0 value, so
+the wrong-body penalty largely divides out. Every conclusion is unchanged in direction, and two
+are stronger:
+
+| claim | before | after |
+|---|---|---|
+| expfm retains less, σ = 0.02 | −0.177 on 10 delays, p = 0.027 | **−0.113 on 23 delays, p < 0.001** |
+| ρ(delay, gap) at σ = 0.02 | −0.67, p = 0.03, n = 10 | **−0.79, p = 7.5e−06, n = 23** |
+| absolute crossover | between σ = 0 and 0.02 | between σ = 0.02 and 0.05 |
+| `min_std = 0.25` advantage at σ = 0.25 | 4× | 4.3× |
+| predictor error across the sweep | 25× | 35× |
+
+The one substantive revision is the crossover σ, which moved one step later. It was read off a
+table restricted to the 10 σ = 0.02 delays then available — exactly the kind of claim a partial
+sweep should not have carried.
+
+This is the contrast with [`collision-model-xml/`](../collision-model-xml/), whose headline
+**did** reverse: its primary contrast is *across bodies*, so the bug hit one arm only and could
+not divide out. A within-run ratio was the right choice here for reasons unrelated to the bug,
+and it happened to make this analysis robust to it.
+
 ## Caveats
 
-- **σ = 0.02 is the weakest row.** `encdec` has 10/23 delays there, and the present set
-  skews mid-to-long (9, 10, 12, 15, 30, 60, 80) — exactly where the gap is largest. The
-  −0.177 mean is therefore an *over*-estimate of what a full 23-delay set would give: on
-  those same 10 delays the σ = 0.05 gap is −0.079, close to the full-set −0.084, so the
-  delay skew alone does not explain why σ = 0.02 shows the largest gap. Every
-  number quoted at σ = 0.02 above is paired on those 10 delays, so it is internally
-  consistent, but it is 10 delays and not 23. Filling the 13 missing runs (13 evals) would
-  settle the most quotable number in the report.
+- ~~**σ = 0.02 is the weakest row.**~~ Filled 2026-08-19: `encdec` now has all 23 delays at
+  σ = 0.02. The caveat correctly predicted the direction — it warned that the −0.177 mean was an
+  *over*-estimate because the 10 available delays skewed mid-to-long, and the full 23-delay
+  value is **−0.113**. The row is now the strongest in Result 1 (21/23, p < 0.001) rather than
+  the weakest.
 - n = 1 per (condition, delay); the pairing is across delays, and the reported spread is
   across-delay spread, not seed spread.
 - One noise realisation per (run, σ). The consistency across 23 independent delays is what
   carries Result 1, not any single cell.
-- At σ = 0.25 both `min_std = 0.1` arms are on the floor (survived = 0.000), so the small
+- At σ = 0.25 both `min_std = 0.1` arms are on the floor (survived 0.000–0.002), so the small
   gap there says little; Results 1–2 rest on σ = 0.02–0.10.
 - The `min_std` comparison confounds exploration width with launch tranche/commit
   (`ef060b73` vs `d02b854a`, 2 days apart) and rests on 5 delays × 1 run.
@@ -183,7 +237,6 @@ unobserved motor noise costs it.
 
 ## Follow-ups
 
-- **Fill `encdec` σ = 0.02** (13 evals) — cheapest way to firm up the headline number.
 - Add `pgfm_new_reference` (13 runs, `25732c42`, min_std 0.1) so the policy-gradient arm
   has a matched-`min_std` twin, separating "implicit predictor" from "wide exploration".
 - Train an enc-dec at `min_std = 0.25` to cross the two axes.
