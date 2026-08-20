@@ -232,11 +232,22 @@ decay — the budget at which that gain would fall inside the ±2.9 % noise floo
 
 ## Follow-ups
 
-- **Delays 30 and 40 at 2 G.** The crossover has drifted into the 20–50 bracket and there
+> **The first two are done, in
+> [`explicit-vs-implicit-fm-budgets/`](../explicit-vs-implicit-fm-budgets/)** (2026-08-20),
+> using the 2026-08-18/19 batch of 4 G-step runs at delays 20/30/40/50 (seed 43). Headline
+> corrections to this report: the crossover drift **halts** — 2 G, 2.9 G and 4 G all put it
+> at delay ~22, so the converged answer is ~20 rather than "still receding". And the
+> delay-50 advantage keeps *growing* with budget (+91 % here at 2 G, +110 % at 4 G). The
+> second seed also shows the implicit arm is seed-sensitive at ±7.6 % while the explicit arm
+> is within ±1.9 %, which puts the +4.3 % delay-20 result below resolution.
+
+- ~~**Delays 30 and 40 at 2 G.** The crossover has drifted into the 20–50 bracket and there
   is nothing sampled inside it; two runs per arm would locate it directly instead of by
-  interpolation across a 30-step gap.
-- **A second seed at delay 20**, the one cell whose result (+4.3 %) is close enough to the
-  noise floor that it turns on a single run.
+  interpolation across a 30-step gap.~~ Done (at 4 G): the advantage is +17 % at delay 30
+  and +71 % at delay 40.
+- ~~**A second seed at delay 20**, the one cell whose result (+4.3 %) is close enough to the
+  noise floor that it turns on a single run.~~ Done: seed 43 gives +5.2 % at 2 G, but the
+  seed spread in the implicit arm is ±7.6 %, so delay 20 stays unresolved.
 - **A checkpoint-sweep offline eval** — `eval` artifacts at 200 M-step intervals along the
   eight runs — which is the only thing that would turn the overfitting question into a
   curve rather than two endpoints. The producer pins `checkpoint: "last"`, so this needs a

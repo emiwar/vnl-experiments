@@ -1,0 +1,17 @@
+Coverage for 57 runs in explicit-vs-implicit-fm-budgets
+
+index  (spec_id=-): 57/57
+    expfm_2g                        4/4   
+    expfm_4g                        5/5   
+    expfm_600m                     23/23  
+    pgfm_2g                         4/4   
+    pgfm_4g                         5/5   
+    pgfm_600m                      16/16  
+
+history:hist2000-fc46b078  (spec_id=hist2000-fc46b078): 57/57
+    expfm_2g                        4/4   
+    expfm_4g                        5/5   
+    expfm_600m                     23/23  
+    pgfm_2g                         4/4   
+    pgfm_4g                         5/5   
+    pgfm_600m                      16/16  

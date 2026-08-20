@@ -436,7 +436,9 @@ files into `eval_results/eval_results/`, so re-run `import-legacy` after a colle
 
 Analyses written before this pipeline (everything except
 [`collision-model-xml/`](collision-model-xml/),
-[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) and
-[`explicit-vs-implicit-fm-2g/`](explicit-vs-implicit-fm-2g/)) still read `eval_results/`
+[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/),
+[`explicit-vs-implicit-fm-2g/`](explicit-vs-implicit-fm-2g/) and
+[`explicit-vs-implicit-fm-budgets/`](explicit-vs-implicit-fm-budgets/)) still read
+`eval_results/`
 directly and fetch from WandB in their `extract.py`. They remain valid and their CSVs are
 unchanged; convert one to the layout above when you next need to touch it.
