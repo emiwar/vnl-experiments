@@ -45,6 +45,7 @@ from vnl_experiments.wandb_utils import (
     comparability_report,
     fetch_runs,
     git_commit_summary,
+    pipeline,
     records_to_df,
 )
 
@@ -91,7 +92,9 @@ def git8(run) -> str:
 
 
 def std_arch(net: dict) -> bool:
-    return all(list(net.get(k, [])) == v for k, v in STD_ARCH.items())
+    """Standard widths *and* all of the decoder's input streams present."""
+    return (pipeline.full_decoder_inputs(net)
+            and all(list(net.get(k, [])) == v for k, v in STD_ARCH.items()))
 
 
 def coalesce(summary, keys):

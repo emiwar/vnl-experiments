@@ -123,8 +123,19 @@ def _shared_defaults(**extra):
 
 
 def delay_defaults():
-    """Defaults for ``RodentEncDecDelays`` (feedforward decoder)."""
-    return _shared_defaults(dec_hidden_sizes=[512] * 4)
+    """Defaults for ``RodentEncDecDelays`` (feedforward decoder).
+
+    ``dec_use_intention`` / ``dec_use_proprioception`` are the decoder-input ablation
+    switches: set one to False to drop that stream from the decoder's input entirely
+    (see ``build_delay_network``). The third stream, the efference copy, is switched
+    off by ``efference_length=0`` instead -- that path predates these flags and stays
+    as it is so the existing no-efference runs remain comparable.
+    """
+    return _shared_defaults(
+        dec_hidden_sizes=[512] * 4,
+        dec_use_intention=True,        # encoder latent -> decoder
+        dec_use_proprioception=True,   # (delayed) proprioception -> decoder
+    )
 
 
 def forward_model_defaults():
@@ -164,7 +175,19 @@ def recurrent_defaults():
 # ---------------------------------------------------------------------------
 
 def build_delay_network(net_params: dict, env, rngs: nnx.Rngs):
-    """Reconstruct the enc-dec delay network from saved net_params."""
+    """Reconstruct the enc-dec delay network from saved net_params.
+
+    The decoder's input is the concatenation of up to three streams: the encoder's
+    latent (the "intention"), the delayed proprioception, and the efference copy of
+    the in-flight actions. Each can be ablated away: ``dec_use_intention=False`` and
+    ``dec_use_proprioception=False`` drop their branch from the ``Concat`` (and the
+    corresponding term from the decoder's input width), ``efference_length=0`` makes
+    the ``EfferenceCopy`` a pass-through. Both flags default to True, so a
+    ``net_params`` dict written before they existed rebuilds exactly as before.
+
+    The critic is untouched by the flags: it keeps seeing undelayed ``task_obs`` and
+    ``proprioception`` in every arm, which is what makes the ablations comparable.
+    """
     p = _parse_net_params({k: v for k, v in net_params.items()
                            if k != "network_class"})
 
@@ -188,6 +211,14 @@ def build_delay_network(net_params: dict, env, rngs: nnx.Rngs):
     normalize_obs = bool(p.get("normalize_obs", True))
     initializer_scale = float(p.get("initializer_scale", 1.0))
 
+    use_intention = bool(p.get("dec_use_intention", True))
+    use_proprio = bool(p.get("dec_use_proprioception", True))
+    if not (use_intention or use_proprio):
+        raise ValueError(
+            "build_delay_network: the decoder needs at least one of intention / "
+            "proprioception (Concat requires at least one component)"
+        )
+
     activation = _ACTIVATIONS[str(p.get("activation", "swish"))]
 
     # Only override nnx's default initialiser when a non-default scale was asked
@@ -202,21 +233,32 @@ def build_delay_network(net_params: dict, env, rngs: nnx.Rngs):
         )
 
     enc_sizes = [task_obs_size] + enc_hidden + [latent_size * 2]
-    decoder_in = latent_size + proprio_size + efference_length * action_size
+    decoder_in = (
+        (latent_size if use_intention else 0)
+        + (proprio_size if use_proprio else 0)
+        + efference_length * action_size
+    )
     dec_sizes = [decoder_in] + dec_hidden + [action_size * 2]
     critic_sizes = [task_obs_size + proprio_size] + critic_hidden + [1]
 
-    encoder_branch = Sequential([
-        Flattener(),
-        *make_mlp_layers(enc_sizes, rngs, activation,
-                         activation_last_layer=False, **kernel_kwargs),
-        VariationalBottleneck(latent_size, rngs, kl_weight, latent_min_std),
-    ])
+    # Insertion order fixes the decoder's input layout, so build the dict in the
+    # historical order (intention, then proprioception, then the efference queue
+    # appended by EfferenceCopy). An ablated branch is not constructed at all, so a
+    # no-intention run has no encoder and hence no KL term in its loss.
+    components = {}
+    if use_intention:
+        components["task_obs"] = Sequential([
+            Flattener(),
+            *make_mlp_layers(enc_sizes, rngs, activation,
+                             activation_last_layer=False, **kernel_kwargs),
+            VariationalBottleneck(latent_size, rngs, kl_weight, latent_min_std),
+        ])
 
-    proprio_branch_layers = [Flattener()]
-    if delay_k > 0:
-        proprio_branch_layers.append(Delay(jp.zeros(proprio_size), k_steps=delay_k))
-    proprio_branch = Sequential(proprio_branch_layers)
+    if use_proprio:
+        proprio_branch_layers = [Flattener()]
+        if delay_k > 0:
+            proprio_branch_layers.append(Delay(jp.zeros(proprio_size), k_steps=delay_k))
+        components["proprioception"] = Sequential(proprio_branch_layers)
 
     decoder = Sequential([
         *make_mlp_layers(dec_sizes, rngs, activation,
@@ -226,7 +268,7 @@ def build_delay_network(net_params: dict, env, rngs: nnx.Rngs):
     ])
 
     actor = Sequential([
-        Concat(task_obs=encoder_branch, proprioception=proprio_branch),
+        Concat(components),
         EfferenceCopy(inner=decoder, sample_action=jp.zeros(action_size),
                       queue_length=efference_length),
     ])

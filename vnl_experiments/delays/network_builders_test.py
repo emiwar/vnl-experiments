@@ -17,6 +17,7 @@ A stub env stands in for the rodent so these run on CPU in seconds.
 """
 
 import json
+import warnings
 
 from absl.testing import absltest, parameterized
 import jax
@@ -28,6 +29,7 @@ from nnx_ppo.networks.containers import Concat, Sequential
 from nnx_ppo.networks.delay import Delay
 from nnx_ppo.networks.normalizer import Normalizer
 from nnx_ppo.networks.utils import Filter, Flattener, Map
+from nnx_ppo.networks.variational import VariationalBottleneck
 
 from vnl_experiments.delays import network_builders as nb
 from vnl_experiments.delays.efference_copy import EfferenceCopy
@@ -256,6 +258,115 @@ class FeedforwardRegressionTest(absltest.TestCase):
             nets, _ = build("RodentForwardModel", {"detach_prediction": value})
             fm = nets.layers[-1].action.layers[1].inner
             self.assertEqual(fm.detach_prediction, expected)
+
+
+class DecoderInputAblationTest(absltest.TestCase):
+    """``dec_use_intention`` / ``dec_use_proprioception``.
+
+    The completeness ablations for the enc-dec decoder's three input streams (the
+    third, the efference copy, is ablated by ``efference_length=0``). The invariant
+    that matters most here is the first test: every ``net_params`` dict written
+    before these flags existed must rebuild byte-for-byte as it did before.
+    """
+
+    #: task_obs 17 -> latent 8, proprio 20, efference 5 x 5 = 25.
+    FULL_WIDTH = 8 + 20 + 25
+
+    @staticmethod
+    def _decoder_in(nets):
+        decoder = nets.layers[-1].action.layers[1].inner
+        return decoder.layers[0].linear.in_features
+
+    @staticmethod
+    def _streams(nets):
+        return set(nets.layers[-1].action.layers[0].components)
+
+    def test_absent_flags_rebuild_the_historical_network(self):
+        """No keys == both keys True: the back-compat contract for old config.json."""
+        old, _ = build("RodentEncDecDelays")
+        new, _ = build("RodentEncDecDelays", {"dec_use_intention": True,
+                                              "dec_use_proprioception": True})
+        self.assertEqual(param_shapes(new), param_shapes(old))
+        self.assertEqual(self._decoder_in(old), self.FULL_WIDTH)
+        self.assertEqual(self._streams(old), {"task_obs", "proprioception"})
+
+    def test_no_intention_drops_the_latent_and_the_encoder(self):
+        nets, _ = build("RodentEncDecDelays", {"dec_use_intention": False})
+        self.assertEqual(self._decoder_in(nets), self.FULL_WIDTH - 8)
+        self.assertEqual(self._streams(nets), {"proprioception"})
+        out = nets(nets.initialize_state(BATCH), stub_obs())
+        self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
+        self.assertTrue(jp.all(jp.isfinite(out.output.actions)))
+
+    def test_no_intention_has_no_variational_bottleneck(self):
+        """The encoder is not built at all, so the run has no KL term to weight.
+
+        Worth pinning separately: a zero-width latent would still carry a bottleneck
+        (and would crash the metrics logger on its (B, 0) mu/sigma) -- this ablation
+        removes the branch instead.
+        """
+        full, _ = build("RodentEncDecDelays")
+        self.assertIsInstance(
+            full.layers[-1].action.layers[0].components["task_obs"].layers[-1],
+            VariationalBottleneck)
+        nets, _ = build("RodentEncDecDelays", {"dec_use_intention": False})
+        actor_modules = [m for _, m in nnx.iter_graph(nets.layers[-1].action)]
+        self.assertFalse(any(isinstance(m, VariationalBottleneck)
+                             for m in actor_modules))
+
+    def test_no_proprioception_drops_that_branch_only(self):
+        nets, _ = build("RodentEncDecDelays", {"dec_use_proprioception": False})
+        self.assertEqual(self._decoder_in(nets), self.FULL_WIDTH - 20)
+        self.assertEqual(self._streams(nets), {"task_obs"})
+        out = nets(nets.initialize_state(BATCH), stub_obs())
+        self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
+        self.assertTrue(jp.all(jp.isfinite(out.output.actions)))
+
+    def test_critic_is_never_ablated(self):
+        """The ablations are actor-only -- the critic keeps its full, undelayed input."""
+        full, _ = build("RodentEncDecDelays")
+        expected = param_shapes(full.layers[-1].value)
+        for flag in ("dec_use_intention", "dec_use_proprioception"):
+            nets, _ = build("RodentEncDecDelays", {flag: False})
+            self.assertEqual(param_shapes(nets.layers[-1].value), expected, flag)
+
+    def test_ablating_both_is_rejected(self):
+        with self.assertRaises(ValueError):
+            build("RodentEncDecDelays", {"dec_use_intention": False,
+                                         "dec_use_proprioception": False})
+
+    def test_flags_survive_the_config_json_round_trip(self):
+        """config.json stringifies everything, so "False" must still ablate."""
+        for flag, dropped in (("dec_use_intention", 8),
+                              ("dec_use_proprioception", 20)):
+            nets, net_params = build("RodentEncDecDelays", {flag: False})
+            rebuilt = nb.build_network(
+                json.loads(json.dumps(net_params, default=str)),
+                StubEnv(), nnx.Rngs(0))
+            self.assertEqual(param_shapes(rebuilt), param_shapes(nets), flag)
+            self.assertEqual(self._decoder_in(rebuilt), self.FULL_WIDTH - dropped)
+
+    def test_defaults_carry_the_flags_on(self):
+        defaults = nb.delay_defaults()
+        self.assertTrue(defaults["dec_use_intention"])
+        self.assertTrue(defaults["dec_use_proprioception"])
+        # And they are delay-net only: an inert key on another architecture is the
+        # `latent_ar1_weight` mistake.
+        for other in ("RodentForwardModel", "RodentEncDecRecurrent"):
+            self.assertNotIn("dec_use_intention",
+                             nb.ARCHITECTURES[other].defaults())
+
+    def test_param_counts_survives_a_missing_encoder(self):
+        """The offline eval's semantic param groups must degrade, not raise."""
+        from vnl_experiments.delays import evaluation
+
+        nets, _ = build("RodentEncDecDelays", {"dec_use_intention": False})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            counts = evaluation.param_counts(nets, "RodentEncDecDelays")
+        self.assertEqual(counts["total"], param_count(nets))
+        self.assertNotIn("encoder", counts)
+        self.assertIn("decoder", counts)
 
 
 class RecurrentArchitectureTest(parameterized.TestCase):

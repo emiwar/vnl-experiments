@@ -23,6 +23,7 @@ from vnl_experiments.wandb_utils import (
     comparability_report,
     fetch_runs,
     git_commit_summary,
+    pipeline,
     records_to_df,
     run_record,
 )
@@ -70,6 +71,8 @@ def hidden_stack_params(sizes) -> int:
 def condition_of(run) -> str | None:
     c = run.config
     net = c.get("net_params", {}) or {}
+    if not pipeline.full_decoder_inputs(net):
+        return None  # a decoder-input ablation is a different question
     # Hold the rest of the architecture + hyperparameters fixed.
     if net.get("enc_hidden_sizes") != FIXED_ENC:
         return None

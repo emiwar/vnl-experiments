@@ -315,7 +315,11 @@ def param_counts(nets, network_class: str) -> dict:
 
     try:
         head = adapter.action.layers[0]          # Concat (EncDec) or Map (FM)
-        out["encoder"] = _count_params(head.components["task_obs"])
+        # "task_obs" is absent when the intention stream is ablated away
+        # (dec_use_intention=False) -- that run has no encoder to count, but its
+        # decoder still has to be reported.
+        if "task_obs" in head.components:
+            out["encoder"] = _count_params(head.components["task_obs"])
         inner = adapter.action.layers[1].inner   # decoder (EncDec) or ForwardModel
         if isinstance(inner, ForwardModel):
             out["decoder"] = _count_params(inner.decoder)

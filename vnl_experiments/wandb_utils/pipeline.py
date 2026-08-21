@@ -37,6 +37,47 @@ from vnl_experiments.wandb_utils import index
 
 SELECTION_COLUMNS = ("condition", "wandb_id", "wandb_name", "created_at", "state")
 
+#: Net-config flags that ablate one of the enc-dec decoder's input streams
+#: (see ``vnl_experiments.delays.network_builders.build_delay_network``). Absent or
+#: True means the stream is present, which is why every run predating the flags reads
+#: as un-ablated.
+DECODER_INPUT_FLAGS = ("dec_use_intention", "dec_use_proprioception")
+
+
+# --------------------------------------------------------------------------------------
+# cohort guards
+# --------------------------------------------------------------------------------------
+
+
+def full_decoder_inputs(net_params: Mapping[str, Any] | None) -> bool:
+    """False if this run ablated one of the decoder's input streams.
+
+    A decoder-input ablation keeps the standard hidden sizes and can keep
+    ``efference_length == delay_k``, so it satisfies every "standard architecture,
+    efference-matched" test the analyses apply and would silently join their baseline
+    cohort. Any analysis whose baseline means "the decoder sees all three streams"
+    has to say so explicitly -- this is that test, in dict form for the extractors
+    that classify a live ``run.config``.
+    """
+    net = net_params or {}
+    return all(net.get(key, True) for key in DECODER_INPUT_FLAGS)
+
+
+def full_decoder_inputs_mask(df: pd.DataFrame) -> pd.Series:
+    """:func:`full_decoder_inputs` as a row mask over an index frame.
+
+    Tolerates the columns being missing entirely (no ablation run synced yet), which
+    ``index.select`` deliberately does not -- it raises on unknown columns. Tests for
+    the ablated value rather than the present one so that a missing cell -- every run
+    older than the flags -- reads as un-ablated without an ``fillna`` downcast.
+    """
+    mask = pd.Series(True, index=df.index)
+    for key in DECODER_INPUT_FLAGS:
+        column = f"net_params.{key}"
+        if column in df.columns:
+            mask &= ~df[column].isin([False, 0, "False", "false"])
+    return mask
+
 
 # --------------------------------------------------------------------------------------
 # CLI

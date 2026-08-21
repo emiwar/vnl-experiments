@@ -16,6 +16,7 @@ from vnl_experiments.wandb_utils import (
     comparability_report,
     fetch_runs,
     git_commit_summary,
+    pipeline,
     records_to_df,
     run_record,
 )
@@ -48,6 +49,8 @@ def condition_of(run) -> str | None:
         return None
     c = run.config
     net = c.get("net_params", {}) or {}
+    if not pipeline.full_decoder_inputs(net):
+        return None  # a decoder-input ablation is a different question
     if any(net.get(k) != v for k, v in STD_ARCH.items()):
         return None  # non-standard architecture (decoder-size sweep) — different question
     delay = c.get("delay_k")

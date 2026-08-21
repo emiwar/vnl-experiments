@@ -164,6 +164,7 @@ def _cell(arm: str, budget: int):
             & (df["env_params.body_target_frame"] == "reference_root")
             & (df["env_params.torque_actuators"] == True)  # noqa: E712
             & (df["delay_k"] == df["efference_length"])
+            & pipeline.full_decoder_inputs_mask(df)
             & df["delay_k"].isin(DELAYS)
         )
         for column, value in STD_ARCH.items():

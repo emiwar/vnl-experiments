@@ -291,6 +291,18 @@ before 2026-07-06 therefore trained with `current_root` regardless of what `net_
 shows. Always filter and label on `env_params`. This invalidated the reference-root vs
 current-root comparison in [`imitation-target-representation/`](imitation-target-representation/).
 
+**A decoder-input ablation looks exactly like the standard efference baseline.**
+`net_params.dec_use_intention=False` / `dec_use_proprioception=False` (added 2026-08-21)
+drop the intention or the proprioception stream from the enc-dec decoder. Such a run keeps
+the standard `{enc,dec,critic}_hidden_sizes`, keeps `efference_length == delay_k`, and
+carries the `TrainEvalSplit` tag — so it passes every test the "standard efference
+baseline" cohorts apply and joins them silently. Every folder that selects that cohort now
+gates on `pipeline.full_decoder_inputs(net)` (dict form, for the live-fetch extractors) or
+`& pipeline.full_decoder_inputs_mask(df)` (index form). Use those rather than a plain
+filter kwarg: the columns are **absent**, not `True`, on every run predating the flags, so
+`index.select(..., **{"net_params.dec_use_intention": True})` would drop the entire history.
+The run name and tags also carry a `nointent` / `noproprio` token.
+
 **The cluster working copy drifts from the committed script.** The same rule — read
 `env_params`, never the script at the run's commit — applies to *every* env knob. The
 2026-07-09/07-19 new-XML cohort logged `body_target_frame = current_root` while the script

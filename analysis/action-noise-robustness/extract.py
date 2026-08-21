@@ -181,6 +181,7 @@ def _base(df: pd.DataFrame) -> pd.Series:
         (df["summary._step"] == EXPECTED_STEP)
         & df["state"].isin(ACCEPTED_STATES)
         & (df["delay_k"] == df["efference_length"])
+        & pipeline.full_decoder_inputs_mask(df)
         & df["env_params.walker_xml_path"].astype(str).str.contains(NEW_XML)
     )
     for column, value in COHORT.items():

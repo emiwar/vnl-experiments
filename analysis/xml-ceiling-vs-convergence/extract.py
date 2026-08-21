@@ -164,6 +164,7 @@ def _cell(network: str, *, budget: int, new_xml: bool, frame: str,
             & (df["seed"] == 42)
             & (df["net_params.min_std"] == STD_MIN_STD)
             & (df["delay_k"] == df["efference_length"])
+            & pipeline.full_decoder_inputs_mask(df)
             & df["delay_k"].isin(DELAYS)
             & (df["env_params.torque_actuators"] == True)  # noqa: E712
             & (df["config.ppo.total_steps"] == budget)

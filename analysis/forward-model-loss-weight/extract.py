@@ -26,6 +26,7 @@ from vnl_experiments.wandb_utils import (
     comparability_report,
     fetch_runs,
     git_commit_summary,
+    pipeline,
     records_to_df,
     run_record,
 )
@@ -61,6 +62,8 @@ INVARIANTS = [
 def condition_of(run) -> str | None:
     c = run.config
     net = c.get("net_params", {}) or {}
+    if not pipeline.full_decoder_inputs(net):
+        return None  # a decoder-input ablation is a different question
     if net.get("enc_hidden_sizes") != STD_ENC:
         return None
     if net.get("dec_hidden_sizes") != STD_DEC:

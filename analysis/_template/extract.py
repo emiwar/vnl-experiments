@@ -45,6 +45,13 @@ NEW_XML = f"{XML_ROOT}/rodent_no_tail_collisions.xml"
 # Filter on `env_params.*` for anything the environment consumes. Never infer an env knob
 # from the training script at the run's commit: the cluster working copy drifts from what
 # is committed, and `env_params` is the only record of what actually ran.
+#
+# If a condition means "the standard enc-dec network", say so: a decoder-input ablation
+# (`net_params.dec_use_intention=False` / `dec_use_proprioception=False`) keeps the
+# standard hidden sizes and can keep `efference_length == delay_k`, so it passes every
+# other baseline test. Use a callable selector and `& pipeline.full_decoder_inputs_mask(df)`
+# -- a plain filter kwarg would drop every run predating those flags, since the columns
+# are absent there rather than True.
 CONDITIONS = {
     "old_xml": {
         "tags": ["TrainEvalSplit"],

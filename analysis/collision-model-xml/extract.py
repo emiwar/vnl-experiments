@@ -136,6 +136,7 @@ def _base(df: pd.DataFrame) -> pd.Series:
         & (df["summary._step"] == EXPECTED_STEP)
         & (df["net_params.min_std"] == STD_MIN_STD)
         & (df["delay_k"] == df["efference_length"])
+        & pipeline.full_decoder_inputs_mask(df)
     )
     for column, value in STD_ARCH.items():
         mask &= df[column] == value

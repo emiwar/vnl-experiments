@@ -119,6 +119,7 @@ def _shared(df: pd.DataFrame) -> pd.Series:
         (df["env"] == "AbsoluteImitation")
         & df["tags"].fillna("").str.split(",").apply(lambda t: "ForwardModel" in t)
         & (df["delay_k"] == df["efference_length"])
+        & pipeline.full_decoder_inputs_mask(df)
         & df["env_params.walker_xml_path"].astype(str).str.contains(NEW_XML)
         & (df["env_params.body_target_frame"] == "reference_root")
         & (df["env_params.torque_actuators"] == True)  # noqa: E712

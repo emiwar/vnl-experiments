@@ -15,6 +15,13 @@ Run as::
     python -m vnl_experiments.delays.train_rodent --delay 5 \
         --network RodentEncDecRecurrent --net-config rnn_cell=gru
 
+    # decoder-input ablations (the three streams the decoder receives; the third,
+    # the efference copy, is ablated with --efference 0)
+    python -m vnl_experiments.delays.train_rodent --delay 20 \
+        --net-config dec_use_intention=false
+    python -m vnl_experiments.delays.train_rodent --delay 20 \
+        --net-config dec_use_proprioception=false
+
 Any net-config key of the chosen architecture can be overridden on the command
 line, e.g. ``--net-config rnn_hidden_sizes=[256,256] --net-config latent_size=64``.
 ``python -m vnl_experiments.delays.train_rodent --list-networks`` prints the
@@ -368,11 +375,22 @@ def run(
     if nets is None:
         raise SystemExit(f"build_network returned None for {arch.name!r}")
 
+    # Decoder-input ablations get their own name token and tag. Without this a
+    # no-intention run at eff == delay is indistinguishable from a standard-arch
+    # efference baseline to the analyses that select on delay_k / efference_length /
+    # hidden sizes alone. Empty when both flags are at their default, so existing
+    # run names and tag sets are unchanged.
+    ablations = tuple(
+        token for key, token in (("dec_use_intention", "nointent"),
+                                 ("dec_use_proprioception", "noproprio"))
+        if not net_params.get(key, True)
+    )
+
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
     exp_name = (
         f"{arch.run_label(net_params)}_delay{args.delay}_eff{efference_length}"
-        f"{name_token}-{timestamp}{suffix}"
+        f"{''.join(f'_{t}' for t in ablations)}{name_token}-{timestamp}{suffix}"
     )
 
     ckpt_dir = f"checkpoints/{exp_name}"
@@ -402,7 +420,8 @@ def run(
         },
         name=exp_name,
         tags=(*arch.tags, "warp", "TrainEvalSplit", arch.name,
-              f"delay{args.delay}", f"eff{efference_length}", *extra_tags),
+              f"delay{args.delay}", f"eff{efference_length}",
+              *ablations, *extra_tags),
         notes=getattr(args, "notes", DEFAULT_NOTES),
     )
     result = ppo.train_ppo(
