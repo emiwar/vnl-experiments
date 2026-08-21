@@ -287,13 +287,32 @@ def _param_tree(module) -> dict:
 
 
 def param_counts(nets, network_class: str) -> dict:
-    """Semantic per-submodule counts + the full hierarchical tree."""
+    """Semantic per-submodule counts + the full hierarchical tree.
+
+    An architecture may supply its own grouping via ``Architecture.param_groups``
+    (see ``network_builders``); otherwise the generic positional introspection
+    below applies. The two original architectures deliberately have **no** hook,
+    so they keep taking the generic path and their eval-record bytes -- and hence
+    every stored artifact ``spec_id`` -- stay identical.
+    """
+    # Local import: network_builders' param-group hooks import back from here.
+    from vnl_experiments.delays.network_builders import get_architecture
+
     out = {"total": _count_params(nets), "tree": _param_tree(nets)}
     adapter = next((l for l in nets.layers if isinstance(l, PPOAdapter)), None)
     if adapter is None:
         return out
     out["critic"] = _count_params(adapter.value)
     out["actor"] = _count_params(adapter.action)
+
+    arch = get_architecture(network_class)
+    if arch is not None and arch.param_groups is not None:
+        try:
+            out.update(arch.param_groups(nets))
+        except (AttributeError, KeyError, IndexError, TypeError) as e:
+            warnings.warn(f"Could not extract semantic param groups: {e!r}")
+        return out
+
     try:
         head = adapter.action.layers[0]          # Concat (EncDec) or Map (FM)
         out["encoder"] = _count_params(head.components["task_obs"])

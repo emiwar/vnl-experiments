@@ -351,6 +351,69 @@ folder. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) went the ot
 curve-based primary result never moved (curves come from `history`), and the newly-usable evals
 gave it a held-out measurement it had been missing on 25 of 29 runs.
 
+**The in-training `eval/*` series measured the *train* split** (fixed 2026-08-20). Both
+delays training scripts built a held-out env and then threw it away:
+
+```python
+eval_env = AbsoluteImitation(env_config, clips=test_clips)
+eval_env = train_env          # <- train_rodent_delays.py:173, train_rodent_forward_model.py:188
+```
+
+The override dates from the file's creation (`e5bbf3f`, 2026-06-01), so **every delays run
+to date** reported in-training eval on the clips it was training on. What that touches:
+
+* **Affected: the WandB `eval/*` metrics** — `eval/episode_reward/*`, `eval/lifespan/*`,
+  `eval/net/*`, `eval/env/*`. These are what the `history` artifact captures, so any
+  curve-based result is a train-split learning curve, not a generalisation measurement.
+* **Not affected: the offline `eval` artifacts, nor the inline end-of-training eval**
+  (`evaluation.run_final_eval`). Both are handed `train_clips` / `test_clips` explicitly and
+  build their own envs via `build_datasets`, so their `train` / `old_eval` / `new_eval`
+  datasets were always genuinely separated. Held-out numbers taken from the store are sound.
+
+The comparability consequence belongs with §4: `eval/*` means *train-split* before the fix
+and *held-out* after it. **Never pool or contrast `eval/*` across 2026-08-20** — a post-fix
+run will look worse for reasons that have nothing to do with what it is testing. Add
+`created_at` (or `git_commit`) to `INVARIANTS` in any folder whose runs straddle the date,
+and prefer the offline `eval` artifacts for anything held-out.
+
+Action: audit any question folder whose primary result rests on `history`-derived `eval/*`
+curves. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) is the first to check —
+§6 already records that its primary result is curve-based from `history` — and the check is
+whether "held-out" is claimed anywhere for a number that came from a curve. The fix itself
+changes no stored artifact and needs no `VERSION` bump.
+
+**Re-producing an `eval` artifact does not reproduce its numbers** (measured 2026-08-20).
+The rollout is not bit-reproducible: MuJoCo-warp on GPU gives slightly different physics
+run to run, tiny divergences flip a termination a step early, and the episode-reward
+accumulator amplifies that. Four *identical* invocations of `evaluate_run` — same code, same
+`seed=0`, same checkpoint (`k0i287kl`), full 169-clip `old_eval` — gave:
+
+| run | `episode_reward.mean` | `lifespan_steps.mean` |
+|---|---|---|
+| 1 | 1770.38 | 425.62 |
+| 2 | 1791.63 | 430.49 |
+| 3 | 1777.81 | 427.23 |
+| 4 | 1790.46 | 431.07 |
+
+a spread of **1.19 % of the mean** in reward and 5.5 steps in lifespan. It does *not* average
+away with more clips — the divergence is per-episode and same-signed, so 169 clips is no
+better than 2. `param_counts` is fully deterministic; only the rollout metrics move.
+
+Consequences:
+
+* **Treat ~1–2 % as the noise floor of any single eval artifact.** A contrast smaller than
+  that is not resolved by one artifact per run, no matter how many clips it averaged. Where a
+  small effect matters, repeat the eval under distinct `seed`s and report the spread.
+* The store's "same `spec_id` -> same bytes" model is an *addressing* guarantee, not a
+  reproducibility one. `spec_id` identifies the measurement *request*, not a unique answer.
+* This weakens the premise of "When to bump `VERSION`" (§2) and of `adopt`, whose rationale
+  is "a bump that provably cannot change bytes". Bytes change anyway on re-production, so
+  `adopt` is the right tool for far more cases than the wording implies — but equally, a
+  re-produced artifact differing from a stored one is **not** evidence of a code change.
+* When re-checking a suspected regression, compare the *network*, not the eval: rebuild both
+  ways and diff weights and forward outputs, which are deterministic. That is how the
+  2026-08-20 registry refactor was verified.
+
 **Never use `scan_history`.** The runs log ~7 300 iterations over ~50 keys; streaming that
 for 80 runs ran over 40 minutes without finishing. Use the sampled endpoint
 (`run.history(keys=[...], samples=N)`) — that is what the `history` artifact does, and it
