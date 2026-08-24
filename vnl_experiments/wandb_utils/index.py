@@ -89,6 +89,13 @@ META_FIELDS = (
     "slurm_job_id",
     "program",
     "args",
+    # Software stack. WandB records these per run in wandb-metadata.json but nothing
+    # used to surface them, so a driver/OS/CUDA change was an invisible confound -- the
+    # same failure mode as reading a training script instead of `env_params`. Add them to
+    # INVARIANTS in any analysis whose runs straddle a cluster upgrade.
+    "os",
+    "cuda_version",
+    "python",
 )
 
 _SCALAR = (str, int, float, bool, type(None))
@@ -172,6 +179,11 @@ def build_record(run) -> dict[str, Any]:
         "slurm_job_id": slurm.get("job_id") or slurm.get("jobid"),
         "program": meta.get("program"),
         "args": meta.get("args"),
+        # Kernel + glibc, CUDA toolkit, interpreter. Backfilled only by `sync --full`:
+        # `_is_fresh` keeps cached records, so pre-existing rows lack these until then.
+        "os": meta.get("os"),
+        "cuda_version": meta.get("cudaVersion"),
+        "python": meta.get("python"),
         "config": run.config or {},
         "summary": _clean_summary(run.summary),
         "_synced_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

@@ -61,6 +61,7 @@ from nnx_ppo.algorithms.config import (
 )
 from nnx_ppo.algorithms.types import LoggingLevel
 
+from vnl_experiments.provenance import repo_versions
 from vnl_experiments.delays import evaluation
 from vnl_experiments.delays.network_builders import (
     ARCHITECTURES,
@@ -413,6 +414,11 @@ def run(
             # knob becomes a `net_params.*` column.
             "network_class": arch.name,
             "seed": seed,
+            # Git state of all three repos. WandB's own `git_commit` covers only
+            # vnl-experiments; nnx-ppo (the algorithm) and vnl-playground (the task)
+            # were previously unrecorded, and `dirty` flags a working copy that has
+            # drifted from its commit -- which has happened on the cluster before.
+            "repos": repo_versions(),
             "config": dataclasses.asdict(config),
             "net_params": net_params,
             "env_params": env_config.to_dict(),

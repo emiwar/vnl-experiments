@@ -261,6 +261,22 @@ anything that varies with `*** VARIES ***`. Include at minimum: `env`, `seed`, t
 sizes, the PPO settings, `summary._step` (**actual** trained steps, not just the
 configured `total_steps`), and `git_commit`.
 
+Since 2026-08-24 runs also log the **environment they ran in**, and a cohort that straddles
+a cluster upgrade should treat these as invariants too:
+
+| column | what it pins |
+|---|---|
+| `repos.nnx_ppo.commit`, `repos.vnl_playground.commit` | the algorithm and the task. `git_commit` covers only vnl-experiments; these two repos were previously unrecorded |
+| `repos.*.dirty` | **any `True` here voids the commit** — the working copy had drifted, so the hash does not identify the code |
+| `os`, `cuda_version`, `python` | kernel + glibc, CUDA toolkit, interpreter |
+
+Artifact sidecars carry the matching `producer.repos`, `producer.cuda_driver`,
+`producer.platform` and `producer.packages` (jax / mujoco / warp-lang / orbax / …),
+because an artifact is produced long after its run and often on a different stack — a
+run's WandB `requirements.txt` says nothing about the environment that later evaluated it.
+A MuJoCo minor bump is not cosmetic: 3.6.0 vs 3.9.0 moves `old_eval` reward by ~3 % on an
+identical checkpoint, against a delay-0-to-5 effect of only ~9 %.
+
 **Manual** — the analyst additionally:
 
 - inspects the actual run `config` independently (do **not** trust tags or notes alone);

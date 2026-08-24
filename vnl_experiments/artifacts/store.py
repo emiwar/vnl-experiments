@@ -44,6 +44,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import socket
 import subprocess
 from dataclasses import dataclass
@@ -52,6 +53,8 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 import pandas as pd
+
+from vnl_experiments.provenance import repo_versions
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "analysis" / "_artifacts" / "manifest.jsonl"
@@ -131,6 +134,41 @@ def _gpu_name() -> str | None:
         return None
 
 
+def _cuda_driver() -> str | None:
+    """NVIDIA driver version, which nothing else records.
+
+    WandB's per-run metadata has ``cudaVersion`` (the toolkit) and the GPU model, but
+    not the driver -- and the driver is exactly what a cluster OS update changes.
+    """
+    try:
+        out = subprocess.run(["nvidia-smi", "--query-gpu=driver_version",
+                              "--format=csv,noheader"],
+                             capture_output=True, text=True, timeout=10)
+        return (out.stdout.strip().splitlines() or [None])[0]
+    except Exception:  # noqa: BLE001
+        return None
+
+
+#: Packages whose version can change a *number* an artifact reports: the physics, the
+#: linear algebra, and the checkpoint reader. Recorded per artifact because artifacts are
+#: produced long after the run, often on a different software stack -- a run's WandB
+#: ``requirements.txt`` says nothing about the environment that later evaluated it.
+STACK_PACKAGES = ("jax", "jaxlib", "mujoco", "mujoco-mjx", "warp-lang", "flax",
+                  "orbax-checkpoint", "numpy")
+
+
+def _stack_versions() -> dict[str, str]:
+    from importlib.metadata import PackageNotFoundError, version
+
+    out = {}
+    for name in STACK_PACKAGES:
+        try:
+            out[name] = version(name)
+        except PackageNotFoundError:
+            continue
+    return out
+
+
 def producer_stamp(module: str, version: int, **extra: Any) -> dict[str, Any]:
     """The ``producer`` block written into every sidecar."""
     stamp = {
@@ -139,6 +177,13 @@ def producer_stamp(module: str, version: int, **extra: Any) -> dict[str, Any]:
         "git_commit": _git_commit(),
         "host": socket.gethostname(),
         "gpu": _gpu_name(),
+        "cuda_driver": _cuda_driver(),
+        "platform": platform.platform(),
+        "python": platform.python_version(),
+        "packages": _stack_versions() or None,
+        # git state of all three editable repos, not just vnl-experiments: nnx-ppo is
+        # the algorithm and vnl-playground is the task, and both can change a number.
+        "repos": repo_versions() or None,
         "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
     }
     stamp.update(extra)
