@@ -394,37 +394,70 @@ curves. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) is the firs
 whether "held-out" is claimed anywhere for a number that came from a curve. The fix itself
 changes no stored artifact and needs no `VERSION` bump.
 
-**Re-producing an `eval` artifact does not reproduce its numbers** (measured 2026-08-20).
-The rollout is not bit-reproducible: MuJoCo-warp on GPU gives slightly different physics
-run to run, tiny divergences flip a termination a step early, and the episode-reward
-accumulator amplifies that. Four *identical* invocations of `evaluate_run` — same code, same
-`seed=0`, same checkpoint (`k0i287kl`), full 169-clip `old_eval` — gave:
+**19 runs trained with the regularisation switched off** (2026-08-21 to 2026-08-24).
+`delays.network_builders._parse_net_params` ran `int(v)` on every value, and
+`int(0.01) == 0` in Python, so every sub-1.0 float was truncated to zero. The parser
+existed to decode the stringified `config.json` on the **eval** side, where those four
+values only touch a regularisation term and a reported metric. The 2026-08-21 registry
+refactor put **training** on the same path, and from then until the fix every run trained
+with:
 
-| run | `episode_reward.mean` | `lifespan_steps.mean` |
+| net_param | config says | actually used |
 |---|---|---|
-| 1 | 1770.38 | 425.62 |
-| 2 | 1791.63 | 430.49 |
-| 3 | 1777.81 | 427.23 |
-| 4 | 1790.46 | 431.07 |
+| `entropy_weight` | 0.01 | **0** — no entropy bonus |
+| `kl_weight` | 0.001 | **0** — no KL penalty |
+| `min_std` | 0.1 | **0** — no policy-std floor |
+| `latent_min_std` | 0.01 | **0** |
 
-a spread of **1.19 % of the mean** in reward and 5.5 steps in lifespan. It does *not* average
-away with more clips — the divergence is per-episode and same-signed, so 169 clips is no
-better than 2. `param_counts` is fully deterministic; only the rollout metrics move.
+The result is premature entropy collapse: on `old_eval` the action std fell 0.167 -> 0.049
+(below the floor that was supposed to be enforced — that impossibility is what exposed the
+bug), the bottleneck KL rose 21.7 -> 146.0, `root_too_far` terminations went 1.2 % -> 18.3 %,
+and reward fell **14 % at delay 0 and 36 % at delay 10** against the matched 2026-08-11
+runs. It hits every architecture equally, so the affected LSTM runs say nothing about
+recurrence.
+
+**The logged config does not show it.** `net_params` records the intended 0.01 / 0.001 /
+0.1 — the truncation happens after the config is written — so no column distinguishes a
+broken run and no comparability report can flag one. The discriminator is the commit:
+`pipeline.UNREGULARIZED_COMMITS`, with `pipeline.regularized_training_mask(df)` as the row
+mask. `created_at` is **not** a safe proxy: `dgmexgcj` trained on 2026-08-21 from the
+earlier `afbeea0` and is fine.
+
+The general lesson is the sibling of the walker-XML one: **a value that is recorded before
+it is transformed is not a record of what ran.** `env_params` is authoritative because the
+env reads it directly; `net_params` was not, because a parser sat between it and the
+network. Where a config passes through coercion, the thing worth asserting is the value the
+*module* ended up with — which is what `network_builders_test.ParseNetParamsTest` now does.
+
+`eval`, `activations` and `video` went to `VERSION = 3` on 2026-08-24, because the fix
+restores `latent_min_std` and the bottleneck samples at eval time, shifting the actions
+slightly (mean |delta| 5.4e-4, max 1.2e-2; critic values unchanged). Old artifacts stay
+valid at their pinned `spec_id`s and need re-producing only for a formal old-vs-new
+comparison. `history` is unaffected and keeps `VERSION = 1`.
+
+**Eval reproducibility is host-dependent** (measured 2026-08-24). On the **cluster** the
+offline eval is exactly reproducible: across 56 runs that hold two independently produced
+artifacts of the same spec (the `action_noise` `None`-vs-`0` spec_id split minted duplicates
+of `eval3ds-n00-*`), all 168 files are **byte-identical by sha256**, on both H200 and V100.
+So `spec_id` -> bytes really is a function there, and a re-produced artifact that differs
+from a stored one *is* evidence of a code or environment change.
+
+On **this laptop** (RTX 4060) it is not: four identical `evaluate_run` invocations on one
+checkpoint, full 169-clip `old_eval`, spanned 1.19 % of the mean in reward (1770.4 / 1791.6 /
+1777.8 / 1790.5) and 5.5 steps in lifespan. The likely cause is memory-pressure-dependent XLA
+autotuning under `XLA_PYTHON_CLIENT_PREALLOCATE=false` plus MuJoCo-warp atomics at low
+occupancy; it was *not* reproduced on datacenter GPUs.
 
 Consequences:
 
-* **Treat ~1–2 % as the noise floor of any single eval artifact.** A contrast smaller than
-  that is not resolved by one artifact per run, no matter how many clips it averaged. Where a
-  small effect matters, repeat the eval under distinct `seed`s and report the spread.
-* The store's "same `spec_id` -> same bytes" model is an *addressing* guarantee, not a
-  reproducibility one. `spec_id` identifies the measurement *request*, not a unique answer.
-* This weakens the premise of "When to bump `VERSION`" (§2) and of `adopt`, whose rationale
-  is "a bump that provably cannot change bytes". Bytes change anyway on re-production, so
-  `adopt` is the right tool for far more cases than the wording implies — but equally, a
-  re-produced artifact differing from a stored one is **not** evidence of a code change.
-* When re-checking a suspected regression, compare the *network*, not the eval: rebuild both
-  ways and diff weights and forward outputs, which are deterministic. That is how the
-  2026-08-20 registry refactor was verified.
+* **Produce artifacts on the cluster.** A laptop-produced eval is a ~1 % measurement of a
+  quantity the cluster computes exactly, and mixing the two into one cohort injects noise
+  that nothing in the manifest records. `producer.gpu` in the sidecar is what tells them
+  apart.
+* Do not use a laptop reproduction to decide whether a code change altered results --
+  re-produce on the cluster, or compare the *network* instead (weights and forward outputs
+  are deterministic everywhere), which is how the 2026-08-20 registry refactor was verified.
+* `param_counts` is deterministic on every host; only the rollout metrics move.
 
 **Never use `scan_history`.** The runs log ~7 300 iterations over ~50 keys; streaming that
 for 80 runs ran over 40 minutes without finishing. Use the sampled endpoint

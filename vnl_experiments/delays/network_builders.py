@@ -72,25 +72,45 @@ _ACTIVATIONS = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}
 # ---------------------------------------------------------------------------
 
 def _parse_net_params(raw: dict) -> dict:
-    """Convert JSON string values to proper Python types (matching checkpoint_utils)."""
+    """Convert JSON *string* values to proper Python types.
+
+    Older ``config.json`` files were written with ``json.dump(..., default=str)``
+    and can carry values such as ``"512"`` / ``"True"`` / ``"None"``, so strings
+    still have to be decoded. Values that arrive already typed -- every JSON
+    number, bool and null, and everything the training script passes in directly
+    -- are returned untouched.
+
+    **Do not** put a bare ``int(v)`` back on this path. Until 2026-08-24 the
+    coercion ran on *every* value, and because ``int(0.01) == 0`` in Python it
+    silently truncated every sub-1.0 float to zero: ``entropy_weight`` 0.01,
+    ``kl_weight`` 0.001, ``min_std`` 0.1 and ``latent_min_std`` 0.01 all became 0.
+    In eval that only distorted the reported ``sigma`` and the sampled latent; but
+    once ``train_rodent.py`` started building its network here, it removed the
+    entropy bonus, the KL penalty and the policy-std floor from training outright.
+    """
     result = {}
     for k, v in raw.items():
         if isinstance(v, list):
             result[k] = [int(x) for x in v]
-        elif v == "True":
-            result[k] = True
-        elif v == "False":
-            result[k] = False
-        elif v == "None":
-            result[k] = None
-        else:
-            try:
-                result[k] = int(v)
-            except (ValueError, TypeError):
+        elif isinstance(v, str):
+            if v == "True":
+                result[k] = True
+            elif v == "False":
+                result[k] = False
+            elif v == "None":
+                result[k] = None
+            else:
                 try:
-                    result[k] = float(v)
-                except (ValueError, TypeError):
-                    result[k] = v
+                    result[k] = int(v)
+                except ValueError:
+                    try:
+                        result[k] = float(v)
+                    except ValueError:
+                        result[k] = v
+        else:
+            # Already a JSON number / bool / None, or a live Python value from
+            # net_config. Coercing these is what caused the 2026-08-24 bug.
+            result[k] = v
     return result
 
 

@@ -182,6 +182,12 @@ class EvalProducer(Producer):
     drops ``None`` values, so adding this axis leaves the noise-free ``spec_id``
     (``eval3ds-66aaff5b``) and every artifact already made under it untouched.
 
+    ``VERSION = 3`` (2026-08-24): ``_parse_net_params`` no longer truncates sub-1.0
+    floats to zero, so the rebuilt network finally gets the ``latent_min_std`` its
+    config specifies. The bottleneck samples at eval time, so a different latent
+    ``std`` shifts the sampled latent and hence the actions (measured: mean
+    |delta action| 5.4e-4, max 1.2e-2 on a real checkpoint; critic values unchanged).
+    Small, but not zero, so the bytes are not poolable with ``VERSION = 2``.
     ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
     with the local default, so evals of runs trained on a non-default body now measure that
     body. This changes the numbers, hence a new ``spec_id``; ``eval3ds-66aaff5b`` and its
@@ -189,7 +195,7 @@ class EvalProducer(Producer):
     """
 
     KIND = "eval"
-    VERSION = 2
+    VERSION = 3
     EXT = ".json"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {
@@ -265,6 +271,12 @@ class ActivationsProducer(Producer):
     These are also the artifacts most worth reusing across questions: recording them
     costs a full rollout with recording hooks, and the result is question-independent.
 
+    ``VERSION = 3`` (2026-08-24): ``_parse_net_params`` no longer truncates sub-1.0
+    floats to zero, so the rebuilt network finally gets the ``latent_min_std`` its
+    config specifies. The bottleneck samples at eval time, so a different latent
+    ``std`` shifts the sampled latent and hence the actions (measured: mean
+    |delta action| 5.4e-4, max 1.2e-2 on a real checkpoint; critic values unchanged).
+    Small, but not zero, so the bytes are not poolable with ``VERSION = 2``.
     ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
     with the local default. Recordings of runs trained on a non-default body were made on
     the wrong body, off the policy's state distribution, so they are not comparable with
@@ -272,7 +284,7 @@ class ActivationsProducer(Producer):
     """
 
     KIND = "activations"
-    VERSION = 2
+    VERSION = 3
     EXT = ".h5"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {
@@ -348,13 +360,19 @@ class VideoProducer(Producer):
     failure mode is visible; ``True`` snaps back to the reference so the timeline stays
     locked to the mocap clip.
 
+    ``VERSION = 3`` (2026-08-24): ``_parse_net_params`` no longer truncates sub-1.0
+    floats to zero, so the rebuilt network finally gets the ``latent_min_std`` its
+    config specifies. The bottleneck samples at eval time, so a different latent
+    ``std`` shifts the sampled latent and hence the actions (measured: mean
+    |delta action| 5.4e-4, max 1.2e-2 on a real checkpoint; critic values unchanged).
+    Small, but not zero, so the bytes are not poolable with ``VERSION = 2``.
     ``VERSION = 2`` (2026-08-18): the env rebuild no longer replaces the run's walker XML
     with the local default, so videos of runs trained on a non-default body now show that
     body. Earlier renders of those runs show the wrong animal.
     """
 
     KIND = "video"
-    VERSION = 2
+    VERSION = 3
     EXT = ".mp4"
     NEEDS_CHECKPOINT = True
     DEFAULTS = {

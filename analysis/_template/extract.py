@@ -46,6 +46,11 @@ NEW_XML = f"{XML_ROOT}/rodent_no_tail_collisions.xml"
 # from the training script at the run's commit: the cluster working copy drifts from what
 # is committed, and `env_params` is the only record of what actually ran.
 #
+# Exclude the 19 runs that trained with the regularisation zeroed (2026-08-21..24, see the
+# README trap): `& pipeline.regularized_training_mask(df)`. Nothing in `net_params`
+# distinguishes them -- the config records the intended values -- so this cannot be a
+# filter kwarg and no comparability report will warn you.
+#
 # If a condition means "the standard enc-dec network", say so: a decoder-input ablation
 # (`net_params.dec_use_intention=False` / `dec_use_proprioception=False`) keeps the
 # standard hidden sizes and can keep `efference_length == delay_k`, so it passes every

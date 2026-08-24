@@ -49,6 +49,47 @@ DECODER_INPUT_FLAGS = ("dec_use_intention", "dec_use_proprioception")
 # --------------------------------------------------------------------------------------
 
 
+#: Commits whose *training* path zeroed the regularisation hyperparameters.
+#:
+#: ``delays.network_builders._parse_net_params`` ran ``int(v)`` on every value, and
+#: ``int(0.01) == 0`` in Python, so every sub-1.0 float was silently truncated to zero.
+#: That parser existed for the eval-side rebuild, where it only distorted a reported
+#: metric -- but the 2026-08-21 registry refactor put **training** on the same path, so
+#: runs built from these commits trained with ``entropy_weight``, ``kl_weight``,
+#: ``min_std`` and ``latent_min_std`` all equal to 0: no entropy bonus, no KL penalty,
+#: no policy-std floor. They collapse to a near-deterministic policy and score far below
+#: an equivalent run (delay 0: -14 %, delay 10: -36 % on ``old_eval``).
+#:
+#: **Their logged ``net_params`` still show the intended values** -- the truncation
+#: happened after the config was recorded -- so no config column distinguishes them and
+#: the commit is the only discriminator. Runs are affected iff they were built from one
+#: of these commits; ``created_at`` is *not* a safe proxy (``dgmexgcj`` trained on
+#: 2026-08-21 from the earlier ``afbeea0`` and is fine).
+UNREGULARIZED_COMMITS = frozenset({
+    "62b52d930e858d2fb6a1699b611ed9c7be217c91",  # 62b52d9 registry refactor: training starts using the parser
+    "232082e9c45313a29cca5a941e3219b64c3241a1",  # 232082e decoder-input ablation flags, same broken path
+})
+
+
+def regularized_training(git_commit: Any) -> bool:
+    """False if this run trained with the regularisation weights zeroed.
+
+    Any analysis whose conclusion depends on policy entropy, the KL term, or simply on
+    runs being trained the way their config says, has to exclude these. There is no
+    config column to filter on -- see :data:`UNREGULARIZED_COMMITS`.
+    """
+    if not git_commit or not isinstance(git_commit, str):
+        return True
+    return git_commit not in UNREGULARIZED_COMMITS
+
+
+def regularized_training_mask(df: pd.DataFrame) -> pd.Series:
+    """:func:`regularized_training` as a row mask over an index frame."""
+    if "git_commit" not in df.columns:
+        return pd.Series(True, index=df.index)
+    return ~df["git_commit"].isin(UNREGULARIZED_COMMITS)
+
+
 def full_decoder_inputs(net_params: Mapping[str, Any] | None) -> bool:
     """False if this run ablated one of the decoder's input streams.
 

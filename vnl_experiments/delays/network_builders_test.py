@@ -147,6 +147,65 @@ class RegistryTest(absltest.TestCase):
             self.assertIsNone(nb.ARCHITECTURES[name].param_groups, name)
 
 
+class ParseNetParamsTest(absltest.TestCase):
+    """Regression guard for the 2026-08-24 float-truncation bug.
+
+    ``_parse_net_params`` sits on the *training* path as well as the eval path, so a
+    value it corrupts is a hyperparameter the run never had. The original code ran
+    ``int(v)`` on every value; ``int(0.01) == 0``, so every sub-1.0 float silently
+    became zero -- removing the entropy bonus, the KL penalty and the policy-std
+    floor from every run trained after the registry refactor.
+    """
+
+    #: The four that were zeroed, with the values the defaults actually specify.
+    SUB_ONE_FLOATS = {"entropy_weight": 0.01, "kl_weight": 0.001,
+                      "min_std": 0.1, "latent_min_std": 0.01}
+
+    def test_sub_one_floats_survive(self):
+        parsed = nb._parse_net_params(dict(self.SUB_ONE_FLOATS))
+        self.assertEqual(parsed, self.SUB_ONE_FLOATS)
+
+    def test_every_architecture_default_survives_parsing(self):
+        """The whole live net_config, for every architecture, must round-trip."""
+        for name, arch in nb.ARCHITECTURES.items():
+            defaults = arch.defaults().to_dict()
+            parsed = nb._parse_net_params(defaults)
+            for key, value in defaults.items():
+                if isinstance(value, float):
+                    self.assertEqual(parsed[key], value, f"{name}.{key}")
+
+    def test_config_json_round_trip_preserves_floats(self):
+        """As written by train_rodent.py and read back by the eval scripts."""
+        defaults = nb.delay_defaults().to_dict()
+        parsed = nb._parse_net_params(json.loads(json.dumps(defaults, default=str)))
+        for key, value in self.SUB_ONE_FLOATS.items():
+            self.assertEqual(parsed[key], value, key)
+
+    def test_legacy_string_values_still_decode(self):
+        """Old config.json files were stringified by json.dump(default=str)."""
+        parsed = nb._parse_net_params({
+            "latent_size": "32", "min_std": "0.1", "normalize_obs": "True",
+            "detach_prediction": "False", "latent_ar1_weight": "None",
+            "enc_hidden_sizes": ["512", "512"], "activation": "swish",
+        })
+        self.assertEqual(parsed, {
+            "latent_size": 32, "min_std": 0.1, "normalize_obs": True,
+            "detach_prediction": False, "latent_ar1_weight": None,
+            "enc_hidden_sizes": [512, 512], "activation": "swish",
+        })
+
+    def test_builder_receives_the_configured_std_floor(self):
+        """End-to-end: the floor must reach the sampler, not just the parser."""
+        nets, _ = build("RodentEncDecDelays", {"min_std": 0.1, "entropy_weight": 0.01,
+                                               "kl_weight": 0.001, "latent_min_std": 0.01})
+        sampler = nets.layers[-1].action.layers[1].inner.layers[-1]
+        self.assertEqual(sampler.min_std, 0.1)
+        self.assertEqual(sampler.entropy_weight, 0.01)
+        vb = nets.layers[-1].action.layers[0].components["task_obs"].layers[-1]
+        self.assertEqual(vb.kl_weight, 0.001)
+        self.assertEqual(vb.min_std, 0.01)
+
+
 class ArchitectureContractTest(parameterized.TestCase):
     """What every architecture must satisfy to work with the offline rollouts."""
 
