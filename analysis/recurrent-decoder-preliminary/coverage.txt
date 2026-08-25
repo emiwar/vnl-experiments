@@ -1,0 +1,5 @@
+Coverage for 35 runs in recurrent-decoder-preliminary
+
+index  (spec_id=-): 35/35
+    feedforward                    28/28  
+    recurrent                       7/7   

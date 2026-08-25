@@ -50,6 +50,13 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "expfm": {"color": "C2", "marker": "^", "label": "Explicit forward model"},
     "encdec": {"color": "C1", "marker": "o", "label": "Enc-dec with efference copy"},
     "expfm_std25": {"color": "C3", "marker": "*", "label": r"Explicit FM, min_std 0.25"},
+    # Refactor regression check (2026-08-24). The three code epochs of the enc-dec net.
+    "pre_refactor": {"color": "C0", "marker": "o", "label": "Pre-refactor (2026-08-11)"},
+    "unregularized": {"color": "C3", "marker": "x", "label": "Refactor, regularisation zeroed"},
+    "fixed": {"color": "C2", "marker": "s", "label": "Refactor, after fix"},
+    # Recurrent-decoder question.
+    "feedforward": {"color": "C1", "marker": "o", "label": "Feedforward decoder"},
+    "recurrent": {"color": "C9", "marker": "D", "label": "Recurrent (LSTM) decoder"},
     "pgfm_std25": {"color": "C4", "marker": "*", "label": r"Policy-gradient FM, min_std 0.25"},
 }
 

@@ -1,0 +1,6 @@
+Coverage for 30 runs in refactor-regression
+
+index  (spec_id=-): 30/30
+    fixed                           4/4   
+    pre_refactor                   23/23  
+    unregularized                   3/3   

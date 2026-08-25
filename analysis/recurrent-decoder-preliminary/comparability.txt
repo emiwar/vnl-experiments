@@ -1,0 +1,44 @@
+======================================================================
+Group condition='feedforward'  (n=28)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+
+======================================================================
+Group condition='recurrent'  (n=7)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+
+======================================================================
+All runs  (n=35)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.critic_hidden_sizes    : ['[1024, 1024]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']

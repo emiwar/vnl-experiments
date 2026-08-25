@@ -1,0 +1,63 @@
+======================================================================
+Group condition='fixed'  (n=4)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.seed                       : [42, 52]  *** VARIES ***
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+
+======================================================================
+Group condition='pre_refactor'  (n=23)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.seed                       : [42]
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+
+======================================================================
+Group condition='unregularized'  (n=3)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.seed                       : [42]
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
+
+======================================================================
+All runs  (n=30)
+======================================================================
+  env                               : ['AbsoluteImitation']
+  config.seed                       : [42, 52]  *** VARIES ***
+  config.ppo.total_steps            : [600000000]
+  config.ppo.rollout_length         : [20]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_minibatches          : [8]
+  net_params.latent_size            : [32]
+  net_params.enc_hidden_sizes       : ['[512, 512, 512, 512]']
+  net_params.dec_hidden_sizes       : ['[512, 512, 512, 512]']
+  env_params.body_target_frame      : ['reference_root']
+  env_params.ctrl_dt                : [0.01]
+  env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
