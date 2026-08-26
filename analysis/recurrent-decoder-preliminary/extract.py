@@ -81,10 +81,13 @@ CONDITIONS = {
 #: `dec_hidden_sizes` is absent by construction: the recurrent decoder replaces it with
 #: `dec_pre_hidden_sizes` / `rnn_hidden_sizes` / `dec_post_hidden_sizes`, so it is the
 #: axis, not an invariant. `n_envs` and `seed` vary and are carried as columns.
+#: `config.ppo.rollout_length` was an invariant until 2026-08-25, when a 20/40/60 sweep
+#: made it an experimental axis. It is the BPTT truncation horizon for the recurrent
+#: decoder -- at `ctrl_dt = 0.01` those are 0.2 / 0.4 / 0.6 s of credit assignment -- so
+#: it is exactly the knob a memory should be sensitive to. Carried as a column.
 INVARIANTS = [
     "env",
     "config.ppo.total_steps",
-    "config.ppo.rollout_length",
     "config.ppo.learning_rate",
     "config.ppo.n_minibatches",
     "net_params.latent_size",
@@ -136,6 +139,7 @@ def build_row(run: pd.Series) -> dict:
         "wandb_name": run["wandb_name"],
         "git_commit": str(run["git_commit"])[:7],
         "n_envs": run.get("config.ppo.n_envs"),
+        "rollout_length": run.get("config.ppo.rollout_length"),
         "seed": run.get("config.seed"),
         "delay_k": delay,
         "efference_length": eff,

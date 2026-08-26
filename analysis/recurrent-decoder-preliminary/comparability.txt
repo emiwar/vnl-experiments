@@ -1,9 +1,8 @@
 ======================================================================
-Group condition='feedforward'  (n=28)
+Group condition='feedforward'  (n=31)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.total_steps            : [600000000]
-  config.ppo.rollout_length         : [20]
   config.ppo.learning_rate          : [0.0001]
   config.ppo.n_minibatches          : [8]
   net_params.latent_size            : [32]
@@ -14,11 +13,10 @@ Group condition='feedforward'  (n=28)
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
 
 ======================================================================
-Group condition='recurrent'  (n=7)
+Group condition='recurrent'  (n=10)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.total_steps            : [600000000]
-  config.ppo.rollout_length         : [20]
   config.ppo.learning_rate          : [0.0001]
   config.ppo.n_minibatches          : [8]
   net_params.latent_size            : [32]
@@ -29,11 +27,10 @@ Group condition='recurrent'  (n=7)
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
 
 ======================================================================
-All runs  (n=35)
+All runs  (n=41)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.total_steps            : [600000000]
-  config.ppo.rollout_length         : [20]
   config.ppo.learning_rate          : [0.0001]
   config.ppo.n_minibatches          : [8]
   net_params.latent_size            : [32]

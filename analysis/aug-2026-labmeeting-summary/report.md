@@ -44,9 +44,17 @@ Two things to keep in mind for the whole deck:
   has a checkpoint to evaluate** — claims 1, 2, 4, 5. Claim 3 has to use the **training
   curve** instead, because the 4 B runs have no eval artifacts; that series is
   eval-on-*training*-clips for every run in this project (the `eval_env = train_env`
-  override, fixed 2026-08-20, after all of these ran). Its axis says so. The two agree
-  closely where both exist — Pearson r = 0.983 over 44 runs, held-out/train-clip ratio
-  1.007 (`checks.txt`) — so nothing in claim 3 hangs on the difference.
+  override, fixed 2026-08-20, after all of these ran). Its axis says so.
+
+  **The two axes are not on the same level, so don't read a value across from c2 to c3.**
+  At delay 0 the same run reads ~1980 on the curve and ~2090 offline. Three things differ:
+  the in-training eval inherits the run's `start_frame_range = [0, 44)` while the offline
+  eval latches every episode to frame 0 (a mean start of 22 mocap frames is ~9 % of the
+  clip's reward never accumulated); the curve is the *sampled* policy while the offline
+  eval calls `networks.eval()` and takes the mean action; and the splits differ. The offset
+  shrinks with delay — once the animal dies before the clip ends, the shorter episodes stop
+  costing anything — which is why the two axes cross around delay 10. Within either axis
+  the arms are affected identically, so every comparison drawn in claim 3 is sound.
 * **The whole new-XML 2026-08-11 sweep is WandB `state = failed`.** Those 46 runs reached
   the full 600 064 000 steps and died afterwards in the post-training inline eval. Step
   count is the inclusion criterion, not exit state.
