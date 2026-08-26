@@ -1,0 +1,51 @@
+Cross-checks for aug-2026-labmeeting-summary. Rebuild: extract.py
+========================================================================
+
+cohorts
+------------------------------------------------------------------------
+  efference_old      n=22  seed=[42] commit=['1cd5838f']
+                     delays=[0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+  encdec             n=23  seed=[42] commit=['ef060b73']
+                     delays=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
+  expfm              n=23  seed=[42] commit=['ef060b73']
+                     delays=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
+  expfm_2g           n=4   seed=[42] commit=['25732c42']
+                     delays=[0, 10, 20, 50]
+  expfm_4g           n=5   seed=[43] commit=['13637960', 'afbeea09']
+                     delays=[20, 30, 30, 40, 50]
+  no_efference_old   n=13  seed=[42] commit=['1cd5838f']
+                     delays=[1, 2, 3, 4, 5, 7, 10, 15, 20, 30, 50, 70, 100]
+  pgfm               n=13  seed=[42] commit=['25732c42']
+                     delays=[0, 1, 2, 3, 5, 10, 10, 15, 20, 30, 50, 70, 100]
+  pgfm_2g            n=4   seed=[42] commit=['25732c42']
+                     delays=[0, 10, 20, 50]
+  pgfm_4g            n=5   seed=[43] commit=['13637960', 'afbeea09']
+                     delays=[20, 20, 30, 40, 50]
+
+probe source: data.csv sha256 abbcf5cdceed
+
+eval/* is eval-on-training-clips for every run here (see README, 2026-08-20)
+legacy-batch vs eval3ds-347333e3 (v2), old-XML with-efference runs
+------------------------------------------------------------------------
+  n = 22 runs, delays 0-100
+  v2 - legacy, % of legacy reward on old_eval: mean +0.09 %, median +0.02 %, range -1.34 .. +1.42 %
+  largest single disagreement: delay 30, +1.42 %
+  Reference: re-evaluating one checkpoint twice moves reward ~1 % (README, eval nondeterminism).
+
+eval3ds-n00-6a6b8d4e (sigma=0) vs eval3ds-347333e3 (no action_noise field)
+------------------------------------------------------------------------
+  n = 46; difference in old_eval reward: mean +0.1213 %, max |2.8034| %
+  These are two spec ids for one recipe (`normalise_spec` drops a None action_noise), so anything but ~0 means the ids are not interchangeable and the noise figures must not borrow a baseline from the plain spec.
+
+training-curve reward at 600 M vs offline held-out eval reward
+------------------------------------------------------------------------
+  n = 44 runs; held-out / train-clip reward: mean 1.007, range 0.879-1.119
+  Pearson r = 0.9828
+  The gap is the train-eval generalisation gap plus the 2026-08-20 `eval_env = train_env` bug, both of which apply to every arm equally.
+
+wide lambda grid vs the standard one, on the layers both tables hold
+------------------------------------------------------------------------
+  n = 42 (group, run, target) cells
+  |wide - standard| R^2: mean 0.0005, max 0.0039
+  cells where the standard grid selected its top value (1e3): 23/42
+  A narrow layer is unaffected; the wide groups are what needed the extra decades, which is why the bar figure uses one grid throughout.

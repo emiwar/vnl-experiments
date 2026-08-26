@@ -1,0 +1,149 @@
+Coverage for 112 runs in aug-2026-labmeeting-summary
+
+index  (spec_id=-): 112/112
+    efference_old                  22/22  
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        4/4   
+    expfm_4g                        5/5   
+    no_efference_old               13/13  
+    pgfm                           13/13  
+    pgfm_2g                         4/4   
+    pgfm_4g                         5/5   
+
+eval:eval3ds-347333e3  (spec_id=eval3ds-347333e3): 89/112
+    efference_old                  22/22  
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        4/4   
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                           13/13  
+    pgfm_2g                         4/4   
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:legacy-batch  (spec_id=legacy-batch): 35/112
+    efference_old                  22/22  
+    encdec                          0/23     *** GAP ***
+    expfm                           0/23     *** GAP ***
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old               13/13  
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+history:hist2000-fc46b078  (spec_id=hist2000-fc46b078): 54/112
+    efference_old                   0/22     *** GAP ***
+    encdec                          0/23     *** GAP ***
+    expfm                          23/23  
+    expfm_2g                        4/4   
+    expfm_4g                        5/5   
+    no_efference_old                0/13     *** GAP ***
+    pgfm                           13/13  
+    pgfm_2g                         4/4   
+    pgfm_4g                         5/5   
+
+activations:act-old_eval-fa8b8144  (spec_id=act-old_eval-fa8b8144): 17/112
+    efference_old                   0/22     *** GAP ***
+    encdec                          0/23     *** GAP ***
+    expfm                           4/23     *** GAP ***
+    expfm_2g                        4/4   
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            5/13     *** GAP ***
+    pgfm_2g                         4/4   
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:eval3ds-n00-6a6b8d4e  (spec_id=eval3ds-n00-6a6b8d4e): 46/112
+    efference_old                   0/22     *** GAP ***
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:eval3ds-n02-a4e0be11  (spec_id=eval3ds-n02-a4e0be11): 46/112
+    efference_old                   0/22     *** GAP ***
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:eval3ds-n05-7c60cd50  (spec_id=eval3ds-n05-7c60cd50): 46/112
+    efference_old                   0/22     *** GAP ***
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:eval3ds-n10-2726ab9c  (spec_id=eval3ds-n10-2726ab9c): 46/112
+    efference_old                   0/22     *** GAP ***
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+eval:eval3ds-n25-da25f356  (spec_id=eval3ds-n25-da25f356): 46/112
+    efference_old                   0/22     *** GAP ***
+    encdec                         23/23  
+    expfm                          23/23  
+    expfm_2g                        0/4      *** GAP ***
+    expfm_4g                        0/5      *** GAP ***
+    no_efference_old                0/13     *** GAP ***
+    pgfm                            0/13     *** GAP ***
+    pgfm_2g                         0/4      *** GAP ***
+    pgfm_4g                         0/5      *** GAP ***
+
+Missing artifacts. Produce or fetch them with:
+  # 23 runs missing eval:eval3ds-347333e3
+  # other specs held for these runs: eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n10-2726ab9c (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 77 runs missing eval:legacy-batch
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n10-2726ab9c (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 58 runs missing history:hist2000-fc46b078
+  # other specs held for these runs: hist2000-09fea177 (102)
+  python -m vnl_experiments.artifacts plan  --kind history --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind history --runs aug-2026-labmeeting-summary/runs.csv
+  # 95 runs missing activations:act-old_eval-fa8b8144
+  # other specs held for these runs: act-old_eval-a16b8097 (16), legacy-old_eval (1)
+  python -m vnl_experiments.artifacts plan  --kind activations --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind activations --runs aug-2026-labmeeting-summary/runs.csv
+  # 66 runs missing eval:eval3ds-n00-6a6b8d4e
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n10-2726ab9c (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 66 runs missing eval:eval3ds-n02-a4e0be11
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n10-2726ab9c (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 66 runs missing eval:eval3ds-n05-7c60cd50
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n10-2726ab9c (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 66 runs missing eval:eval3ds-n10-2726ab9c
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n25-da25f356 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  # 66 runs missing eval:eval3ds-n25-da25f356
+  # other specs held for these runs: eval3ds-347333e3 (89), eval3ds-66aaff5b (86), eval3ds-n00-04ceda93 (46), eval3ds-n00-21b2d9a8 (46), eval3ds-n05-7c60cd50 (46), eval3ds-n10-2726ab9c (46), eval3ds-n02-a4e0be11 (46), eval3ds-n25-9443d2fe (46), eval3ds-n05-ead26b7d (46), eval3ds-n00-6a6b8d4e (46), eval3ds-n10-2d7c9136 (46), legacy-batch-v0 (35), legacy-batch (35), eval3ds-n02-5bcf9203 (33)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs aug-2026-labmeeting-summary/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs aug-2026-labmeeting-summary/runs.csv

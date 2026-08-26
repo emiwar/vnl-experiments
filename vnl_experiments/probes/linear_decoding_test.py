@@ -107,6 +107,31 @@ def test_decode_is_deterministic():
     assert a["test_r2"] == b["test_r2"] and a["lambda"] == b["lambda"]
 
 
+def test_decode_prepared_reproduces_decode_on_a_single_layer():
+    """The grouped path must be the same arithmetic, not merely a similar one.
+
+    `decode_grouped` exists so several layers can share one design matrix without
+    materialising `[T, N, sum(F)]`. If it ever stopped agreeing with `decode` on the
+    one-layer case, a combined-layer R² could not be compared with a per-layer one.
+    """
+    X, Y, mask, n = _synthetic(noise=0.5)
+    direct = ld.decode(X, Y, mask, n, seed=3)
+    sampler = ld.RowSampler(mask, n, seed=3)
+    prepared = ld.decode_prepared(sampler.take(X), sampler.take(Y))
+    assert prepared == direct
+
+
+def test_concat_splits_widens_without_reordering_rows():
+    X, Y, mask, n = _synthetic(noise=0.5)
+    sampler = ld.RowSampler(mask, n, seed=0)
+    taken = sampler.take(X)
+    doubled = ld.concat_splits([taken, taken])
+    for split in ld.RowSampler.SPLITS:
+        assert doubled[split].shape == (taken[split].shape[0], 2 * taken[split].shape[1])
+        np.testing.assert_array_equal(doubled[split][:, :taken[split].shape[1]],
+                                      taken[split])
+
+
 def test_split_is_by_clip_and_disjoint():
     train, val, test = ld._split_clips(20, 0.3, 0.2, seed=0)
     assert not (train & val) and not (train & test) and not (val & test)

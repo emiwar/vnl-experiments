@@ -41,7 +41,7 @@ figures, that test says so.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterator, Mapping
+from typing import Any, Iterator, Mapping, Sequence
 
 import h5py
 import numpy as np
@@ -347,3 +347,97 @@ def decode_file(path: str | Path, *, meta: Mapping[str, Any] | None = None,
                              **res})
             del X3
     return rows
+
+
+# ---------------------------------------------------------------------------
+# Grouped decoding: several layers concatenated into one design matrix
+# ---------------------------------------------------------------------------
+#
+# `decode` takes one dense ``[T, N, F]`` array, which is fine for a single layer
+# (~175 MB) and impossible for a concatenation of them: stacking the whole actor at
+# 502 x 169 x 7233 would be 2.4 TB. The split below fixes the sampled rows *first* and
+# gathers each layer into them one at a time, so peak memory is the number of sampled
+# rows times the summed width (a few GB), never the full time x clip grid.
+#
+# The arithmetic is unchanged -- same by-clip split, same lambda grid, same refit-on-
+# train+val -- and `linear_decoding_test` pins `decode_prepared` against `decode` on a
+# single layer so the two can never drift.
+
+
+class RowSampler:
+    """The by-clip train/val/test row indices for one recording, fixed once.
+
+    Sharing one sampler across every layer of a group is what makes the concatenation
+    meaningful: each layer must contribute the *same* rows, in the same order.
+    """
+
+    SPLITS = ("train", "val", "test")
+
+    def __init__(self, mask: np.ndarray, n_clips: int, *,
+                 test_frac: float = DEFAULT_TEST_FRAC,
+                 val_frac: float = DEFAULT_VAL_FRAC,
+                 max_samples: int = DEFAULT_MAX_SAMPLES,
+                 seed: int = 0):
+        train, val, test = _split_clips(n_clips, test_frac, val_frac, seed)
+        self.mask = mask
+        # seed + 1/2/3 per split, matching `decode`'s calls to `_rows`.
+        self.idx = {
+            "train": _row_index(mask, train, max_samples, seed + 1),
+            "val": _row_index(mask, val, max_samples, seed + 2),
+            "test": _row_index(mask, test, max_samples, seed + 3),
+        }
+
+    def take(self, array3: np.ndarray) -> dict[str, np.ndarray]:
+        """``[T, N, F] -> {split: [rows, F]}`` for the fixed indices."""
+        return {s: array3[i[:, 0], i[:, 1]] for s, i in self.idx.items()}
+
+    def sizes(self) -> dict[str, int]:
+        return {s: len(i) for s, i in self.idx.items()}
+
+
+def _row_index(mask: np.ndarray, clip_set, max_samples: int, seed: int) -> np.ndarray:
+    """``[rows, 2]`` (t, n) indices for clips in ``clip_set`` where ``mask`` is set.
+
+    Factored out of ``_rows`` so the same subsampling can be applied to many layers.
+    """
+    T, N = mask.shape
+    clip_ok = np.array([n in clip_set for n in range(N)])
+    idx = np.argwhere(mask & clip_ok[None, :])
+    if len(idx) > max_samples:
+        rng = np.random.default_rng(seed)
+        idx = idx[rng.choice(len(idx), max_samples, replace=False)]
+    return idx
+
+
+def decode_prepared(X: Mapping[str, np.ndarray], Y: Mapping[str, np.ndarray], *,
+                    lambdas=LAMBDA_GRID) -> dict:
+    """``decode`` on already-gathered rows: ``X``/``Y`` are ``{split: [rows, F]}``."""
+    Xtr, Xva, Xte = X["train"], X["val"], X["test"]
+    Ytr, Yva, Yte = Y["train"], Y["val"], Y["test"]
+    n_features = Xtr.shape[1]
+    if min(len(Xtr), len(Xva), len(Xte)) < n_features + 2:
+        return {"test_r2": float("nan"), "val_r2": float("nan"),
+                "lambda": float("nan"), "n_train": len(Xtr), "n_test": len(Xte),
+                "n_features": n_features}
+
+    best_lam, best_val = lambdas[0], -np.inf
+    for lam in lambdas:
+        m = _ridge_fit(Xtr, Ytr, lam)
+        r2 = _r2(Yva, _ridge_predict(m, Xva), m[2])
+        if r2 > best_val:
+            best_val, best_lam = r2, lam
+
+    Xtv = np.concatenate([Xtr, Xva])
+    Ytv = np.concatenate([Ytr, Yva])
+    model = _ridge_fit(Xtv, Ytv, best_lam)
+    return {"test_r2": _r2(Yte, _ridge_predict(model, Xte), model[2]),
+            "val_r2": best_val, "lambda": best_lam,
+            "n_train": len(Xtv), "n_test": len(Xte), "n_features": n_features}
+
+
+def concat_splits(parts: Sequence[Mapping[str, np.ndarray]]) -> dict[str, np.ndarray]:
+    """Concatenate several ``{split: [rows, F_i]}`` along the feature axis."""
+    if not parts:
+        raise ValueError("concat_splits: no parts")
+    return {s: np.concatenate([p[s] for p in parts], axis=1)
+            for s in RowSampler.SPLITS}
