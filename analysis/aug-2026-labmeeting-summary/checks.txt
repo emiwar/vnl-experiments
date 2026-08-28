@@ -3,6 +3,12 @@ Cross-checks for aug-2026-labmeeting-summary. Rebuild: extract.py
 
 cohorts
 ------------------------------------------------------------------------
+  ablate_efference   n=1   seed=[42] commit=['4245ae42']
+                     delays=[10]
+  ablate_intention   n=1   seed=[42] commit=['4245ae42']
+                     delays=[10]
+  ablate_proprioception n=1   seed=[42] commit=['4245ae42']
+                     delays=[10]
   efference_old      n=22  seed=[42] commit=['1cd5838f']
                      delays=[0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100]
   encdec             n=23  seed=[42] commit=['ef060b73']
@@ -39,9 +45,17 @@ eval3ds-n00-6a6b8d4e (sigma=0) vs eval3ds-347333e3 (no action_noise field)
 
 training-curve reward at 600 M vs offline held-out eval reward
 ------------------------------------------------------------------------
-  n = 44 runs; held-out / train-clip reward: mean 1.007, range 0.879-1.119
-  Pearson r = 0.9828
+  n = 70 runs; held-out / train-clip reward: mean 1.002, range 0.838-1.119
+  Pearson r = 0.9868
   The gap is the train-eval generalisation gap plus the 2026-08-20 `eval_env = train_env` bug, both of which apply to every arm equally.
+
+decoder-input ablations vs their control, offline eval3ds-382e9e69 (old_eval)
+------------------------------------------------------------------------
+  control vo7jiiwr (all three inputs): 1778.1
+  ablate_intention       dv8hft01:    863.6  ( 48.6 % of control)
+  ablate_proprioception  8kuci8sz:    775.7  ( 43.6 % of control)
+  ablate_efference       usv6hlqd:    884.2  ( 49.7 % of control)
+  The training curves put the same three at 43-45 % of the control, so the ordering and the size of the effect do not depend on which measurement is used -- which is what licenses the curve figure despite its split mismatch.
 
 wide lambda grid vs the standard one, on the layers both tables hold
 ------------------------------------------------------------------------

@@ -63,6 +63,12 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "gru": {"color": "C4", "marker": "s", "label": "GRU decoder"},
     "rnn": {"color": "C6", "marker": "v", "label": "Vanilla RNN decoder"},
     "pgfm_std25": {"color": "C4", "marker": "*", "label": r"Policy-gradient FM, min_std 0.25"},
+    # Decoder-input ablations (2026-08-25). `ablate_efference` deliberately reuses
+    # `no_efference`'s blue: it is the same manipulation, at one delay instead of a sweep.
+    "ablate_intention": {"color": "C3", "marker": "v", "label": "No intention"},
+    "ablate_proprioception": {"color": "C6", "marker": "P",
+                              "label": "No proprioception"},
+    "ablate_efference": {"color": "C0", "marker": "s", "label": "No efference copy"},
 }
 
 

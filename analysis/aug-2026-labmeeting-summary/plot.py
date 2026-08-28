@@ -53,11 +53,17 @@ PRIMARY_DATASET = "old_eval"
 #: Condition -> the shared style key, so a colour means the same thing in every folder.
 STYLE_KEY = {
     "efference_old": "efference", "no_efference_old": "no_efference",
+    "ablate_intention": "ablate_intention",
+    "ablate_proprioception": "ablate_proprioception",
+    "ablate_efference": "ablate_efference",
     "encdec": "encdec", "expfm": "forward_model", "pgfm": "pg_forward_model",
     "expfm_2g": "forward_model", "pgfm_2g": "pg_forward_model",
     "expfm_4g": "forward_model", "pgfm_4g": "pg_forward_model",
 }
 LABEL = {
+    "ablate_intention": "No intention",
+    "ablate_proprioception": "No proprioception",
+    "ablate_efference": "No efference copy",
     "efference_old": "With efference copy",
     "no_efference_old": "No efference copy",
     "encdec": "Enc-dec (efference copy)",
@@ -198,6 +204,46 @@ def c1_lifetime(data) -> plt.Figure:
 # --------------------------------------------------------------------------------------
 # Claim 2 -- a forward model improves learning
 # --------------------------------------------------------------------------------------
+
+#: The ablations exist at one delay only. Their control is the delay-10 member of the
+#: `encdec` sweep -- the same run claims 1, 2 and 4 already use.
+ABLATION_DELAY = 10
+ABLATION_ORDER = ("ablate_intention", "ablate_proprioception", "ablate_efference")
+
+
+def c1_decoder_inputs(data) -> plt.Figure:
+    """All three decoder inputs, one at a time, against the intact baseline.
+
+    Training curves rather than endpoints because the endpoints alone would not show that
+    none of the three arms is merely *slower* -- all three flatten early and stay flat.
+    """
+    curves = data["curves"]
+    fig, ax = plt.subplots(figsize=(6.6, 4.4))
+
+    control = curves[(curves["condition"] == "encdec")
+                     & (curves["delay_k"] == ABLATION_DELAY)]
+    for wandb_id, curve in control.groupby("wandb_id"):
+        curve = curve.sort_values("step")
+        ax.plot(curve["step"] / 1e6, curve["reward_mean"],
+                color=color_for("encdec"), lw=2.6,
+                label="All three inputs (baseline)", zorder=3)
+    for condition in ABLATION_ORDER:
+        cell = curves[curves["condition"] == condition]
+        for wandb_id, curve in cell.groupby("wandb_id"):
+            curve = curve.sort_values("step")
+            ax.plot(curve["step"] / 1e6, curve["reward_mean"],
+                    color=color_for(STYLE_KEY[condition]), lw=1.7,
+                    label=LABEL[condition])
+
+    ax.set_xlabel("Training steps (millions)")
+    ax.set_ylabel("Episode reward")
+    ax.set_ylim(0, None)
+    ax.grid(alpha=0.2)
+    ax.set_title(f"Drop any one decoder input and the policy loses half its reward\n"
+                 f"delay {ABLATION_DELAY} steps ({ABLATION_DELAY * 10} ms), "
+                 f"one run per condition", fontsize=10)
+    return finish(fig, ax, legend_loc="upper left")
+
 
 def c2_three_arms(data) -> plt.Figure:
     delay = held_out(data["delay"])
@@ -625,6 +671,7 @@ FIGURE_BUILDERS = [
     ("c1_reward_vs_delay", c1_reward, ("delay",)),
     ("c1_tracking_error_vs_delay", c1_tracking, ("delay",)),
     ("c1_lifetime_vs_delay", c1_lifetime, ("delay",)),
+    ("c1_decoder_input_ablation", c1_decoder_inputs, ("curves",)),
     ("c2_reward_vs_delay", c2_three_arms, ("delay",)),
     ("c3_learning_curves", c3_curves, ("curves", "budget")),
     ("c3_reward_vs_delay_at_4g", c3_reward_at_4g, ("budget",)),

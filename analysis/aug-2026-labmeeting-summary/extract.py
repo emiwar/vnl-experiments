@@ -108,10 +108,21 @@ NOISE_SPEC_IDS = {
 }
 #: The 11-key history spec: the only one carrying ``fm_pred_mse`` alongside reward.
 HISTORY_SPEC_ID = "hist2000-fc46b078"
+#: The producer's default history spec -- reward, lifespan, throughput. The enc-dec and
+#: decoder-ablation runs have this one and not the 11-key one, which is fine: nothing
+#: asks them for a prediction error, since they have no predictor.
+REWARD_HISTORY_SPEC_ID = "hist2000-09fea177"
 ACT_SPEC_ID = "act-old_eval-fa8b8144"
+#: v3 (``EvalProducer.VERSION = 3``). The decoder-ablation runs were evaluated after the
+#: bump and hold **only** this generation, so the ablation cross-check in ``checks.txt``
+#: reads v3 for all four of its runs. Everything else in this folder stays on v2; the two
+#: are never mixed inside one figure or one number.
+EVAL_V3_SPEC_ID = "eval3ds-382e9e69"
 
 REQUIRES = ["index", f"eval:{EVAL_SPEC_ID}", f"eval:{LEGACY_SPEC_ID}",
-            f"history:{HISTORY_SPEC_ID}", f"activations:{ACT_SPEC_ID}"] + \
+            f"eval:{EVAL_V3_SPEC_ID}",
+            f"history:{HISTORY_SPEC_ID}", f"history:{REWARD_HISTORY_SPEC_ID}",
+            f"activations:{ACT_SPEC_ID}"] + \
            [f"eval:{sid}" for sid in NOISE_SPEC_IDS.values()]
 
 NEW_XML = "rodent_no_tail_collisions.xml"
@@ -198,6 +209,46 @@ def _fm_tier(arm: str, budget: int, seed: int):
     return selector
 
 
+#: The 2026-08-25 decoder-input ablations. `4245ae42` is post the `a3450a9` fix, so the
+#: regularisation is intact, and post the 2026-08-20 `eval_env = train_env` fix, so their
+#: WandB `eval/*` is genuinely held out (their control's is not -- see ``report.md``).
+ABLATION_COMMIT = "4245ae42"
+
+
+def _ablation(*, intention: bool = True, proprioception: bool = True,
+              efference: bool = True):
+    """One decoder-input ablation at delay 10.
+
+    The three knobs are not interchangeable: dropping the intention or the proprioception
+    is a `net_params` flag, while dropping the efference copy is `efference_length = 0`.
+    Selecting on all three together is what keeps the cells disjoint -- a `nointent` run
+    still has `efference_length == delay_k` and would otherwise match the efference cell.
+    """
+    def selector(df: pd.DataFrame) -> pd.Series:
+        # Deliberately not `_common`: that gate includes `full_decoder_inputs_mask`,
+        # whose whole job is to keep these runs out of the baseline cohorts. Here they
+        # are the subject, so the architecture checks are spelled out instead.
+        mask = ((df["env"] == "AbsoluteImitation")
+                & _std(df)
+                & df["state"].isin(ACCEPTED_STATES)
+                & (df["env_params.walker_xml_path"].astype(str).str.contains(NEW_XML))
+                & (df["env_params.body_target_frame"] == "reference_root")
+                & (df["env_params.torque_actuators"] == True)  # noqa: E712
+                & (df["net_params.min_std"] == 0.1)
+                & (df["delay_k"] == 10)
+                & df["git_commit"].astype(str).str.startswith(ABLATION_COMMIT)
+                & (df["summary._step"] == FULL_600M)
+                & df["net_params.rnn_hidden_sizes"].isna()
+                & df["fm_loss_weight"].isna()
+                # `ne(False)`, not `== True`: the flags are *absent* on every run that
+                # predates them, and an absent flag means the input is present.
+                & (df["net_params.dec_use_intention"].ne(False) != (not intention))
+                & (df["net_params.dec_use_proprioception"].ne(False) != (not proprioception))
+                & ((df["efference_length"] == 0) == (not efference)))
+        return mask
+    return selector
+
+
 CONDITIONS = {
     # -- claim 1: the only cohort with a no-efference arm -------------------------------
     "efference_old": lambda df: _old_cohort(df) & (df["delay_k"] == df["efference_length"]),
@@ -215,17 +266,32 @@ CONDITIONS = {
     "pgfm_2g": _fm_tier("implicit", 2_000_000_000, 42),
     "expfm_4g": _fm_tier("explicit", 4_000_000_000, 43),
     "pgfm_4g": _fm_tier("implicit", 4_000_000_000, 43),
+    # -- claim 1: are all three decoder inputs load-bearing? ---------------------------
+    # One run each, delay 10 only, all at `4245ae42` (2026-08-25). Their control is the
+    # delay-10 member of `encdec` -- deliberately not duplicated into a condition of its
+    # own, since `select_conditions` requires the cells to be disjoint and re-selecting
+    # it here would make the same run appear twice in `runs.csv`.
+    "ablate_intention": _ablation(intention=False),
+    "ablate_proprioception": _ablation(proprioception=False),
+    "ablate_efference": _ablation(efference=False),
 }
 
 #: Sizes the selectors are expected to return. A silent change in cohort size is how a
 #: summary figure drifts away from the analysis it summarises, so it is an error here.
 EXPECTED_N = {"efference_old": 22, "no_efference_old": 13, "encdec": 23,
               "expfm": 23, "pgfm": 13, "expfm_2g": 4, "pgfm_2g": 4,
-              "expfm_4g": 5, "pgfm_4g": 5}
+              "expfm_4g": 5, "pgfm_4g": 5,
+              "ablate_intention": 1, "ablate_proprioception": 1, "ablate_efference": 1}
+
+#: The ablations' control: the delay-10 enc-dec run every other claim-1/2/4 figure uses.
+ABLATION_CONTROL_CONDITION = "encdec"
+ABLATION_DELAY = 10
 
 ARM_OF = {"efference_old": "encdec", "no_efference_old": "none", "encdec": "encdec",
           "expfm": "explicit", "pgfm": "implicit", "expfm_2g": "explicit",
-          "pgfm_2g": "implicit", "expfm_4g": "explicit", "pgfm_4g": "implicit"}
+          "pgfm_2g": "implicit", "expfm_4g": "explicit", "pgfm_4g": "implicit",
+          "ablate_intention": "encdec", "ablate_proprioception": "encdec",
+          "ablate_efference": "none"}
 BUDGET_OF = {"expfm_2g": 2_000_000_000, "pgfm_2g": 2_000_000_000,
              "expfm_4g": 4_000_000_000, "pgfm_4g": 4_000_000_000}
 #: Which eval generation each condition's endpoints are read from. ``None`` = no eval
@@ -234,7 +300,21 @@ BUDGET_OF = {"expfm_2g": 2_000_000_000, "pgfm_2g": 2_000_000_000,
 EVAL_OF = {"efference_old": LEGACY_SPEC_ID, "no_efference_old": LEGACY_SPEC_ID,
            "encdec": EVAL_SPEC_ID, "expfm": EVAL_SPEC_ID, "pgfm": EVAL_SPEC_ID,
            "expfm_2g": EVAL_SPEC_ID, "pgfm_2g": EVAL_SPEC_ID,
-           "expfm_4g": None, "pgfm_4g": None}
+           "expfm_4g": None, "pgfm_4g": None,
+           "ablate_intention": EVAL_V3_SPEC_ID,
+           "ablate_proprioception": EVAL_V3_SPEC_ID,
+           "ablate_efference": EVAL_V3_SPEC_ID}
+
+#: Which history generation each condition's curve comes from. ``None`` = no curve; the
+#: two old-XML cohorts are endpoint-only here.
+HISTORY_OF = {"efference_old": None, "no_efference_old": None,
+              "encdec": REWARD_HISTORY_SPEC_ID,
+              "expfm": HISTORY_SPEC_ID, "pgfm": HISTORY_SPEC_ID,
+              "expfm_2g": HISTORY_SPEC_ID, "pgfm_2g": HISTORY_SPEC_ID,
+              "expfm_4g": HISTORY_SPEC_ID, "pgfm_4g": HISTORY_SPEC_ID,
+              "ablate_intention": REWARD_HISTORY_SPEC_ID,
+              "ablate_proprioception": REWARD_HISTORY_SPEC_ID,
+              "ablate_efference": REWARD_HISTORY_SPEC_ID}
 
 DATASETS = ("train", "old_eval", "new_eval")
 #: The held-out split every headline figure uses. 169 unseen clips, 502 control steps.
@@ -398,9 +478,18 @@ CURVE_NOTE = "eval/* is eval-on-training-clips for every run here (see README, 2
 
 
 def build_curves(runs: pd.DataFrame, store: Store) -> pd.DataFrame:
+    """Tidy per-step curves, reading each condition's own history generation.
+
+    The two generations differ only in how many keys were fetched, not in the reward
+    series, so a figure may hold both -- unlike the eval artifacts, where a VERSION bump
+    means different bytes. ``spec_id`` is emitted per row anyway.
+    """
     frames = []
     for _, run in runs.iterrows():
-        entry = store.lookup("history", run["wandb_id"], HISTORY_SPEC_ID)
+        spec_id = HISTORY_OF.get(run["condition"], HISTORY_SPEC_ID)
+        if spec_id is None:
+            continue
+        entry = store.lookup("history", run["wandb_id"], spec_id)
         if entry is None:
             continue
         try:
@@ -415,6 +504,7 @@ def build_curves(runs: pd.DataFrame, store: Store) -> pd.DataFrame:
         out = pd.DataFrame({"step": frame["_step"].astype(int)})
         for source, name in CURVE_COLUMNS.items():
             out[name] = frame[source].to_numpy() if source in frame.columns else np.nan
+        out.insert(0, "history_spec_id", spec_id)
         out.insert(0, "delay_k", int(run["delay_k"]))
         out.insert(0, "seed", run["seed"])
         out.insert(0, "arm", ARM_OF[run["condition"]])
@@ -813,6 +903,49 @@ def curve_vs_eval(delay: pd.DataFrame, budget: pd.DataFrame) -> list[str]:
     return lines
 
 
+def ablation_check(runs: pd.DataFrame, store: Store) -> list[str]:
+    """The claim-1 ablation figure, measured a second way that has no split confound.
+
+    The figure is a training curve, and its control is the delay-10 `encdec` run, whose
+    WandB ``eval/*`` scored the **train** clips (it predates the 2026-08-20
+    ``eval_env = train_env`` fix) while the three ablations' scored held-out clips. That
+    difference flatters the control. Here all four are read from the *same* offline eval
+    spec on the *same* held-out split, so whatever survives is not the confound.
+    """
+    lines = ["", f"decoder-input ablations vs their control, offline {EVAL_V3_SPEC_ID} "
+                 f"({PRIMARY_DATASET})", "-" * 72]
+    control = runs[(runs["condition"] == ABLATION_CONTROL_CONDITION)
+                   & (runs["delay_k"] == ABLATION_DELAY)]
+    if control.empty:
+        lines.append("  no control run")
+        return lines
+    control_id = control.iloc[0]["wandb_id"]
+    record, _ = read_eval(store, control_id, EVAL_V3_SPEC_ID)
+    if record is None:
+        lines.append(f"  control {control_id} holds no {EVAL_V3_SPEC_ID}; produce it with "
+                     f"`artifacts ensure --kind eval --runs {control_id}`")
+        return lines
+    baseline = eval_metrics(record, PRIMARY_DATASET)["episode_reward"]
+    lines.append(f"  control {control_id} (all three inputs): {baseline:.1f}")
+    for condition in ("ablate_intention", "ablate_proprioception", "ablate_efference"):
+        row = runs[runs["condition"] == condition]
+        if row.empty:
+            continue
+        wandb_id = row.iloc[0]["wandb_id"]
+        ablated, _ = read_eval(store, wandb_id, EVAL_V3_SPEC_ID)
+        if ablated is None:
+            lines.append(f"  {condition:<22} {wandb_id}: no {EVAL_V3_SPEC_ID}")
+            continue
+        value = eval_metrics(ablated, PRIMARY_DATASET)["episode_reward"]
+        lines.append(f"  {condition:<22} {wandb_id}: {value:8.1f}  "
+                     f"({100 * value / baseline:5.1f} % of control)")
+    lines.append("  The training curves put the same three at 43-45 % of the control, so "
+                 "the ordering and the size of the effect do not depend on which "
+                 "measurement is used -- which is what licenses the curve figure despite "
+                 "its split mismatch.")
+    return lines
+
+
 def cohort_summary(runs: pd.DataFrame) -> list[str]:
     lines = ["", "cohorts", "-" * 72]
     for condition, group in runs.groupby("condition", sort=False):
@@ -898,6 +1031,7 @@ def main() -> None:
         lines += legacy_vs_v2(runs, store)
         lines += noise_zero_vs_plain(runs, store)
         lines += curve_vs_eval(written["delay"], written["budget"])
+        lines += ablation_check(runs, store)
         lines += group_vs_layer_grid(written["groups"], written["probe"])
         (HERE / "checks.txt").write_text("\n".join(lines) + "\n")
         print("\n".join(lines))

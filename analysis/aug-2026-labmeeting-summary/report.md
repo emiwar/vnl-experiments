@@ -35,6 +35,7 @@ Everything is `AbsoluteImitation`, standard architecture (enc/dec `[512]×4`, cr
 | `pgfm` (policy-gradient FM) | 13 | 0–100 | new XML, reference_root | `25732c42` | 2, 3, 5 |
 | `expfm_2g` / `pgfm_2g` | 4 + 4 | 0/10/20/50 | new XML, reference_root | `25732c42` | 3, 5 |
 | `expfm_4g` / `pgfm_4g` | 5 + 5 | 20/30/40/50 | new XML, reference_root | `13637960`, `afbeea09` | 3 |
+| `ablate_intention` / `ablate_proprioception` / `ablate_efference` | 1 + 1 + 1 | 10 | new XML, reference_root | `4245ae42` | 1 |
 | `efference_old` | 22 | 0–100 | **old XML, current_root** | `1cd5838f` | 1 |
 | `no_efference_old` | 13 | 1–100 | old XML, current_root | `1cd5838f` | 1 |
 
@@ -61,7 +62,7 @@ Two things to keep in mind for the whole deck:
 
 ---
 
-## Claim 1 — the efference copy is necessary
+## Claim 1 — the efference copy is necessary (and so is every other decoder input)
 
 **1a.** ![Reward with and without an efference copy](figures/c1_reward_vs_delay.png)
 
@@ -94,6 +95,38 @@ Two measurement notes worth knowing but not worth a slide: tracking error is com
 over steps the animal is alive, so it is conditioned on not having fallen yet and
 *understates* the damage at long delay; and lifetime is censored at the 5 s clip length,
 which is why the curve saturates on the left rather than continuing to rise.
+
+**1d.** ![Decoder-input ablations at delay 10](figures/c1_decoder_input_ablation.png)
+
+The efference copy is not a special case — **all three of the decoder's inputs are
+load-bearing, and removing any one costs about the same.** At delay 10 the intact network
+reaches 1755 while dropping the intention gives 778, the proprioception 751 and the
+efference copy 794: **43–45 % of the baseline in every case.**
+
+Read the *shape*, not just the endpoint. The three ablated runs are flat from ~150 M steps
+(gaining +48 to +194 over the last 450 M) while the baseline gains +796 over the same
+stretch. None of them is merely learning more slowly; each has hit a ceiling that the
+missing input sets.
+
+> **Caveats.** One run per condition, delay 10 only — that is what exists, and the effect
+> is far too large to be seed noise, but the *ordering* among the three ablations is not.
+>
+> **The control's curve is not on the same split as the ablations'.** The three ablations
+> are 2026-08-25 runs, so their WandB `eval/*` is genuinely held out; their control is the
+> delay-10 `encdec` run from 2026-08-11, whose `eval/*` scored the **train** clips (the
+> `eval_env = train_env` override, fixed 2026-08-20). That flatters the control by roughly
+> +8 % at this delay. It is not what makes the figure: re-measuring all four with **one**
+> offline eval spec on the held-out split puts the ablations at 864 / 776 / 884 against a
+> control of 1778 — **44–50 %**, the same picture (`checks.txt`).
+>
+> The control is a different commit (`ef060b73` vs `4245ae42`) because no matched-commit
+> baseline survives: the run launched to be exactly that, `1bigv5ca`, crashed before
+> logging a step, and the only other post-refactor delay-10 baseline (`ph7zg573`) uses
+> `rollout_length = 60` rather than 20, which changes the number of PPO updates per env
+> step and so is the wrong control for a *learning-curve* figure.
+> [`refactor-regression/`](../refactor-regression/) measures the two commits as
+> behaviour-neutral (+0.06 % at delay 0) once the regularisation bug is fixed, which
+> `4245ae42` is. One 600 M run would remove this caveat entirely (below).
 
 ---
 
@@ -314,7 +347,13 @@ architecture with *no predictor at all* build one anyway? It would let figure 5h
 bars per group instead of two, and it is the follow-up
 `explicit-vs-implicit-fm-probe/report.md` already asks for.
 
-**5. A second seed at delays 20 and 50.** Every cell carrying a reward claim in claims 2, 3
+**5. One matched baseline for the ablation figure — 1 run, 600 M.**
+Delay 10, `efference_length = 10`, all three decoder inputs, commit `4245ae42` (or later),
+`rollout_length = 20`, 4096 envs, seed 42. This is the run `1bigv5ca` was meant to be
+before it crashed. It would put figure **1d**'s control on the same commit *and* the same
+eval split as its three ablations, removing both caveats on that figure at once.
+
+**6. A second seed at delays 20 and 50.** Every cell carrying a reward claim in claims 2, 3
 and 5 is a single seed. The in-cohort noise estimate we do have — the duplicated
 implicit/600 M/delay-10 pair — is 1.1 % in reward and 0.0035 in R², and the effects above are
 far larger than that, but "far larger than a one-pair estimate" is what it is.
@@ -327,7 +366,9 @@ the store is v3 yet, this folder is internally consistent at v2, and the v2→v3
 
 ## Suggested slide order
 
-1. **1a** efference or nothing → **1b/1c** what delay actually does to the animal.
+1. **1a** efference or nothing → **1b/1c** what delay actually does to the animal →
+   **1d** and it is not just the efference copy: drop any one decoder input and half the
+   reward goes with it.
 2. **2** three architectures — the predictor is free, the loss is not.
 3. **3a** six learning curves → **3b** the delay sweep at 4 B. ("...but a lot of it is just
    convergence — except at long delay, where it isn't.")

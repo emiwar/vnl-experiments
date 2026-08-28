@@ -1,4 +1,7 @@
 condition,wandb_id,wandb_name,created_at,state
+ablate_efference,usv6hlqd,RodentEncDec_delay10_eff0-20260825-072407,2026-08-25T11:24:11Z,finished
+ablate_intention,dv8hft01,RodentEncDec_delay10_eff10_nointent-20260825-071450,2026-08-25T11:14:52Z,finished
+ablate_proprioception,8kuci8sz,RodentEncDec_delay10_eff10_noproprio-20260825-060653,2026-08-25T10:06:57Z,finished
 efference_old,1w7nuehe,RodentEncDec_delay50_eff50-20260611-120955,2026-06-11T16:09:57Z,finished
 efference_old,2l2lwxl0,RodentEncDec_delay90_eff90-20260611-120905,2026-06-11T16:09:06Z,finished
 efference_old,5d5tvuuv,RodentEncDec_delay8_eff8-20260611-120725,2026-06-11T16:07:26Z,finished
