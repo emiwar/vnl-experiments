@@ -57,6 +57,11 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     # Recurrent-decoder question.
     "feedforward": {"color": "C1", "marker": "o", "label": "Feedforward decoder"},
     "recurrent": {"color": "C9", "marker": "D", "label": "Recurrent (LSTM) decoder"},
+    # Recurrent-architecture comparison. `feedforward` / `forward_model` above are reused
+    # so the arms read the same as in the sibling questions.
+    "lstm": {"color": "C9", "marker": "D", "label": "LSTM decoder"},
+    "gru": {"color": "C4", "marker": "s", "label": "GRU decoder"},
+    "rnn": {"color": "C6", "marker": "v", "label": "Vanilla RNN decoder"},
     "pgfm_std25": {"color": "C4", "marker": "*", "label": r"Policy-gradient FM, min_std 0.25"},
 }
 
