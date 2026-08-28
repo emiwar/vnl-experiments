@@ -1,0 +1,8 @@
+Coverage for 56 runs in recurrent-architectures
+
+index  (spec_id=-): 56/56
+    feedforward                    33/33  
+    forward_model                   2/2   
+    gru                             1/1   
+    lstm                           17/17  
+    rnn                             3/3   
