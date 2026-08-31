@@ -5,18 +5,31 @@ inputs, regularisation intact, >=590 M steps** -- used to answer five questions:
 
 1. **Is a recurrent decoder better than feedforward, with or without an explicit forward
    model, given that it carries more parameters?** `total_params` is on every row.
-2. **How much delay can it tolerate?** An LSTM `efference_length = 1` sweep from delay 0
-   to 60.
-3. **Does a longer BPTT horizon help both architectures?** `rollout_length` 20 vs 60 at
-   delay 10, for feedforward, forward-model and LSTM.
+2. **How much delay can it tolerate?** Matched LSTM and feedforward
+   `efference_length = 1` sweeps at `rollout_length = 60`, from delay 0 to 60.
+3. **Does a longer BPTT horizon help both architectures?** Every cell measured at both
+   `rollout_length` 20 and 60 -- four feedforward, two LSTM, one forward-model.
 4. **Can a recurrent net run on a one-step action buffer and compensate internally, and
    up to what delay?** `eff_ratio` and the `efference_length = 1` vs `= delay_k` contrast.
 5. **Does the cell type matter?** LSTM vs GRU vs vanilla RNN at delay 10.
 
-**Requeued jobs.** The cluster terminated and requeued many of these, leaving a `crashed`
-partial and a `finished` twin per config. `MIN_STEPS` drops every partial: no config in
-this cohort has more than one surviving run, which `main()` asserts rather than assumes,
-so a future genuine duplicate fails loudly instead of being silently averaged.
+**Requeued jobs.** The cluster terminated and requeued many of these, leaving a partial
+and a complete twin per config. The cohort filter admits a run only once
+`summary._step >= config.ppo.total_steps`, i.e. it trained to completion -- not merely
+past a threshold -- so no partial can enter, whatever fraction it reached.
+
+`state` is deliberately *not* filtered on: 23 of the pre-refactor (`ef060b7`) feedforward
+runs are `failed` despite having trained the full 600 M steps and written a `final_eval`
+summary, so the job exited non-zero after the work was done. Filtering on `state` would
+silently delete the backbone of the delay sweep.
+
+Completion being guaranteed, a cell holding two runs is a genuine replicate rather than a
+partial in disguise, and `main()` reports them rather than failing. Two kinds occur, and
+they measure different things: **cross-epoch** replicates differ in `git_commit` (the
+feedforward delay-0 and delay-5 pairs, agreeing to +0.06 % per `refactor-regression`),
+while **same-config** replicates share commit, seed and every hyperparameter (the LSTM
+delay-40 pair) and so measure pure run-to-run nondeterminism -- GPU kernel scheduling, not
+seed. `plot.py` averages both.
 
 **Forward-model arm is the canonical one only** (`fm_loss_weight = 1.0`,
 `detach_prediction = True`). Older forward-model runs predate those keys and span
@@ -48,7 +61,6 @@ REQUIRES = ["index"]
 
 XML = "rodent_no_tail_collisions.xml"
 EVAL_SPECS = ("eval3ds-n00-6a6b8d4e", "eval3ds-n00-21b2d9a8")
-MIN_STEPS = 590_000_000
 
 
 def _cohort(df: pd.DataFrame) -> pd.Series:
@@ -58,7 +70,9 @@ def _cohort(df: pd.DataFrame) -> pd.Series:
         & df["env_params.body_target_frame"].eq("reference_root")
         & df["config.ppo.n_envs"].eq(4096)
         & df["config.seed"].eq(42)
-        & df["summary._step"].ge(MIN_STEPS)
+        # Trained to completion, not merely past a threshold: a requeued partial cannot
+        # satisfy this however far it got. `state` is not filtered -- see the docstring.
+        & df["summary._step"].ge(df["config.ppo.total_steps"])
         & pipeline.full_decoder_inputs_mask(df)
         & pipeline.regularized_training_mask(df)
     )
@@ -159,6 +173,26 @@ def build_row(run: pd.Series) -> dict:
     }
 
 
+def report_replicates(df: pd.DataFrame) -> None:
+    """Print every cell holding more than one run, and what its spread measures.
+
+    Completion is guaranteed by the cohort filter, so a duplicate is a real replicate,
+    never a partial. Which *kind* matters: a same-commit pair shares seed and every
+    hyperparameter, so its spread is pure run-to-run nondeterminism and is the tightest
+    noise floor available here; a cross-commit pair also spans a code epoch.
+    """
+    for key, group in df.groupby(CELL_KEY, dropna=False):
+        if len(group) == 1:
+            continue
+        kind = ("same-config (nondeterminism only)"
+                if group["git_commit"].nunique() == 1 else "cross-epoch")
+        lo, hi = group.old_eval_reward.min(), group.old_eval_reward.max()
+        cond, delay, eff, roll = key
+        print(f"replicate cell [{kind}] {cond} delay {delay:.0f} eff {eff:.0f} "
+              f"rollout {roll:.0f}: {list(group.wandb_id)} "
+              f"spread {100 * (hi - lo) / lo:.1f}% ({lo:.0f}-{hi:.0f}), averaged in plot.py")
+
+
 def main() -> None:
     args = pipeline.parse_args(__doc__)
     runs = pipeline.resolve_selection(HERE, CONDITIONS, refresh=args.refresh,
@@ -169,23 +203,7 @@ def main() -> None:
     df = df.sort_values(["condition", "delay_k", "efference_length", "rollout_length"],
                         ignore_index=True)
 
-    # Two runs in one cell are legitimate only if they are genuine replicates from
-    # different code epochs (`refactor-regression` shows those agree to +0.06 %). Two
-    # from the *same* commit mean a requeued partial slipped past MIN_STEPS, which would
-    # be averaged silently -- so that fails loudly.
-    replicates = []
-    for key, group in df.groupby(CELL_KEY, dropna=False):
-        if len(group) == 1:
-            continue
-        if group["git_commit"].nunique() == 1:
-            raise SystemExit(
-                f"duplicate runs from one commit in cell {key}: "
-                f"{list(group.wandb_id)} -- a requeued partial passed MIN_STEPS")
-        replicates.append((key, list(group.wandb_id)))
-    if replicates:
-        print("replicate cells (averaged in plot.py, distinct commits):")
-        for key, ids in replicates:
-            print(f"  {key}: {ids}")
+    report_replicates(df)
 
     report = comparability_report(runs, invariant_cols=INVARIANTS,
                                   group_col="condition")

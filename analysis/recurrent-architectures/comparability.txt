@@ -1,5 +1,5 @@
 ======================================================================
-Group condition='feedforward'  (n=33)
+Group condition='feedforward'  (n=37)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.n_envs                 : [4096]
@@ -47,7 +47,7 @@ Group condition='gru'  (n=1)
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
 
 ======================================================================
-Group condition='lstm'  (n=17)
+Group condition='lstm'  (n=22)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.n_envs                 : [4096]
@@ -79,7 +79,7 @@ Group condition='rnn'  (n=3)
   env_params.walker_xml_path        : ['/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent_no_tail_collisions.xml']
 
 ======================================================================
-All runs  (n=56)
+All runs  (n=65)
 ======================================================================
   env                               : ['AbsoluteImitation']
   config.ppo.n_envs                 : [4096]

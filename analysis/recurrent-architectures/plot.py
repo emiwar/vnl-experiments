@@ -108,8 +108,10 @@ def fig_delay(c: pd.DataFrame, raw: pd.DataFrame) -> Path:
     ]
     for cond, roll, mode, ls, lab in series:
         sel = c[(c.condition == cond) & (c.rollout_length == roll)]
+        # The `efference = 1` series keeps delay 0, where both architectures still hold a
+        # one-step buffer: it is the common anchor from which the two curves diverge.
         sel = (sel[sel.delay_k == sel.efference_length] if mode == "eq"
-               else sel[(sel.efference_length == 1) & (sel.delay_k > 0)])
+               else sel[sel.efference_length == 1])
         sel = sel.sort_values("delay_k")
         if sel.empty:
             continue
@@ -120,8 +122,9 @@ def fig_delay(c: pd.DataFrame, raw: pd.DataFrame) -> Path:
 
     ax.set_xlabel("Proprioception delay (control steps)")
     ax.set_ylabel("Held-out episode reward (old_eval)")
-    ax.set_title("An LSTM with a one-step action buffer tracks the feedforward net\n"
-                 "that has the full buffer, out to delay 60", fontsize=10.5)
+    ax.set_title("A one-step action buffer suffices for the LSTM but not the feedforward\n"
+                 "net \u2014 and past delay ~40 the full buffer becomes a liability",
+                 fontsize=10.5)
     ax.set_xlim(-2, 63)
     ax.legend(frameon=False, fontsize=8, loc="upper right")
     add_ms_axis(ax, 63)
@@ -133,29 +136,45 @@ def fig_delay(c: pd.DataFrame, raw: pd.DataFrame) -> Path:
     return out
 
 
+def rollout_pairs(c: pd.DataFrame) -> list:
+    """Every (condition, delay, efference) cell measured at both rollout 20 and 60."""
+    wide = c.pivot_table(index=["condition", "delay_k", "efference_length"],
+                         columns="rollout_length", values="reward")
+    if 20 not in wide or 60 not in wide:
+        return []
+    # Rename before reset_index: integer column labels become positional `_3`/`_4`
+    # attribute names on the namedtuples otherwise.
+    wide = wide.dropna(subset=[20, 60])[[20, 60]].rename(
+        columns={20: "r20", 60: "r60"}).reset_index()
+    wide["order"] = wide.condition.map(ARCH_ORDER.index)
+    wide = wide.sort_values(["order", "delay_k", "efference_length"])
+    return list(wide.itertuples(index=False))
+
+
 def fig_rollout(c: pd.DataFrame) -> Path:
     """Does a longer BPTT horizon help everyone, or only the recurrent net?"""
-    fig, ax = plt.subplots(figsize=(6.4, 4.2))
-    conds = [a for a in ("feedforward", "forward_model", "lstm")
-             if pick(c, a, delay_k=10, efference_length=10, rollout_length=20) is not None]
-    x = np.arange(len(conds))
-    v20 = [float(pick(c, a, delay_k=10, efference_length=10, rollout_length=20).reward)
-           for a in conds]
-    v60 = [float(pick(c, a, delay_k=10, efference_length=10, rollout_length=60).reward)
-           for a in conds]
+    pairs = rollout_pairs(c)
+    fig, ax = plt.subplots(figsize=(1.05 * len(pairs) + 3.0, 4.4))
+    x = np.arange(len(pairs))
+    v20 = [float(p.r20) for p in pairs]
+    v60 = [float(p.r60) for p in pairs]
     ax.bar(x - 0.19, v20, width=0.36, color="0.72", label="rollout 20 (0.2 s BPTT)")
-    ax.bar(x + 0.19, v60, width=0.36, color=[color_for(a) for a in conds],
+    ax.bar(x + 0.19, v60, width=0.36, color=[color_for(p.condition) for p in pairs],
            label="rollout 60 (0.6 s BPTT)")
     for i, (a, b) in enumerate(zip(v20, v60)):
-        ax.text(i + 0.19, b, f"{100 * (b - a) / a:+.1f}%", ha="center", va="bottom",
-                fontsize=9, fontweight="bold")
+        pct = 100 * (b - a) / a
+        ax.text(i + 0.19, b, f"{pct:+.1f}%", ha="center", va="bottom", fontsize=8.5,
+                fontweight="bold", color="0.15" if abs(pct) > 5 else "0.45")
     ax.set_xticks(x)
-    ax.set_xticklabels([SHORT[a].replace("\n", " ") for a in conds], fontsize=9)
+    ax.set_xticklabels(
+        [f"{SHORT[p.condition].replace(chr(10), ' ')}\ndelay {p.delay_k:.0f}, "
+         f"eff {p.efference_length:.0f}" for p in pairs], fontsize=8)
     ax.set_ylabel("Held-out episode reward (old_eval)")
     ax.set_ylim(0, max(v20 + v60) * 1.20)
-    ax.set_title("Longer BPTT helps only the recurrent decoder\n(delay 10, efference 10)",
+    ax.set_title("Longer BPTT helps only the recurrent decoder: both LSTM cells gain\n"
+                 "~8-10 %, three of four feedforward cells lose, the forward model is flat",
                  fontsize=10.5)
-    ax.legend(frameon=False, fontsize=8.5, loc="lower right")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper right")
     provenance(fig, HERE, DATA)
     fig.tight_layout()
     out = FIGURES / "rollout_length.png"
