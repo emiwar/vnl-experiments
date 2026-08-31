@@ -27,6 +27,17 @@ line, e.g. ``--net-config rnn_hidden_sizes=[256,256] --net-config latent_size=64
 ``python -m vnl_experiments.delays.train_rodent --list-networks`` prints the
 available architectures with their defaults.
 
+Env-config keys are overridable the same way with ``--env-config``, which is
+architecture-independent and takes dotted paths into the nested groups::
+
+    python -m vnl_experiments.delays.train_rodent --delay 5 \
+        --env-config ctrl_dt=0.02 \
+        --env-config reward_terms.joints.weight=0.5
+
+Such a run is tagged ``env-override``, and the resolved config lands in
+``config.json`` and WandB ``env_params`` as always -- those stay the record of
+what the run actually used.
+
 ``train_rodent_delays.py`` and ``train_rodent_forward_model.py`` are thin
 wrappers over this module and keep their original command lines.
 """
@@ -97,6 +108,11 @@ def add_common_args(p: argparse.ArgumentParser) -> argparse.ArgumentParser:
     p.add_argument("--efference", type=int, default=None,
                    help="Efference-copy queue length. Defaults to --delay. "
                         "0 disables the efference copy entirely.")
+    p.add_argument("--env-config", action="append", default=[], metavar="KEY=VALUE",
+                   help="Override an env-config key. Repeatable. Nested keys are "
+                        "dotted, e.g. reward_terms.joints.weight=0.5 or "
+                        "termination_criteria.pose_error.max_l2_error=6.0. "
+                        "Architecture-independent, unlike --net-config.")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--wandb-project", default="nnx-ppo-rodent-delays")
     p.add_argument("--exp-name-suffix", default="")
@@ -140,8 +156,16 @@ def parse_args(argv=None) -> argparse.Namespace:
 
 
 def _coerce(default, raw: str):
-    """Coerce a ``--net-config`` string to the type of the existing default."""
+    """Coerce a ``--net-config`` / ``--env-config`` string to the default's type.
+
+    The type of the value already in the config is the specification: it is what
+    keeps ``--net-config latent_size=32`` an int and ``--env-config ctrl_dt=0.02``
+    a float, and it is what ml_collections requires, since a ConfigDict refuses a
+    value of a different type than the field holds.
+    """
     if isinstance(default, bool):
+        # Before the int branch: bool is a subclass of int, and int("true") is
+        # not what anyone means.
         low = raw.strip().lower()
         if low in ("true", "1", "yes"):
             return True
@@ -151,10 +175,16 @@ def _coerce(default, raw: str):
     if isinstance(default, (list, tuple)):
         text = raw.strip()
         if text.startswith("["):
-            return [int(x) for x in json.loads(text)]
-        if text == "":
-            return []
-        return [int(x) for x in text.split(",")]
+            items = json.loads(text)
+        elif text == "":
+            items = []
+        else:
+            items = text.split(",")
+        # Element type from the existing elements, so int lists (hidden sizes,
+        # start_frame_range) stay ints and float ones (healthy_z_range) stay
+        # floats. Empty default: assume ints, which is what the net configs use.
+        element = type(default[0]) if len(default) else int
+        return [element(x) for x in items]
     if isinstance(default, int):
         return int(raw)
     if isinstance(default, float):
@@ -184,6 +214,76 @@ def apply_net_config_overrides(net_config, overrides: list[str]):
         except (ValueError, json.JSONDecodeError) as e:
             raise SystemExit(f"Bad value for --net-config {key}: {raw!r} ({e})")
     return net_config
+
+
+def apply_env_config_overrides(env_config, overrides: list[str]):
+    """Apply ``KEY=VALUE`` strings onto the env config, in place.
+
+    Nested keys are dotted, which is how the reward and termination settings are
+    reachable::
+
+        --env-config ctrl_dt=0.02
+        --env-config reward_terms.joints.weight=0.5
+        --env-config termination_criteria.pose_error.max_l2_error=6.0
+        --env-config start_frame_range=0,120
+
+    Every component of the path is checked, and an unknown one lists what is
+    available at that level rather than silently creating a key: a typo that
+    quietly did nothing would produce a run whose config says one thing and whose
+    behaviour is another, which is the failure mode ``env_params`` exists to
+    prevent. The resolved config -- overrides included -- is what gets written to
+    ``config.json`` and logged as WandB ``env_params``, so a run stays the record
+    of what it actually ran.
+    """
+    for item in overrides:
+        if "=" not in item:
+            raise SystemExit(f"--env-config expects KEY=VALUE, got {item!r}")
+        path, _, raw = item.partition("=")
+        path, raw = path.strip(), raw.strip()
+
+        parts = path.split(".")
+        node = env_config
+        for i, part in enumerate(parts[:-1]):
+            if part not in node:
+                where = ".".join(parts[:i]) or "the env config"
+                raise SystemExit(
+                    f"Unknown --env-config key {part!r} under {where}. "
+                    f"Available: {sorted(node.keys())}"
+                )
+            node = node[part]
+            if not hasattr(node, "keys"):
+                raise SystemExit(
+                    f"--env-config {path}: {'.'.join(parts[:i + 1])} is a value, "
+                    f"not a group, so it has no {parts[i + 1]!r} inside it."
+                )
+        leaf = parts[-1]
+        if leaf not in node:
+            where = ".".join(parts[:-1]) or "the env config"
+            raise SystemExit(
+                f"Unknown --env-config key {leaf!r} under {where}. "
+                f"Available: {sorted(node.keys())}"
+            )
+
+        current = node[leaf]
+        try:
+            value = _coerce(current, raw)
+        except (ValueError, json.JSONDecodeError) as e:
+            raise SystemExit(f"Bad value for --env-config {path}: {raw!r} ({e})")
+        try:
+            node[leaf] = value
+        except TypeError:
+            # ConfigDict is type-strict and some fields hold a type a CLI string
+            # cannot be parsed into directly -- the XML/reference paths are
+            # `epath` objects, not str. Rebuild the field's own type around the
+            # value.
+            try:
+                node[leaf] = type(current)(value)
+            except (TypeError, ValueError) as e:
+                raise SystemExit(
+                    f"Bad value for --env-config {path}: {raw!r} does not fit "
+                    f"a {type(current).__name__} field ({e})"
+                )
+    return env_config
 
 
 def print_networks() -> None:
@@ -376,6 +476,8 @@ def build_run(
     seed = args.seed
 
     env_config = make_env_config()
+    env_overrides = list(getattr(args, "env_config", []))
+    apply_env_config_overrides(env_config, env_overrides)
 
     net_config = arch.defaults()
     for key, value in (net_config_overrides or {}).items():
@@ -457,11 +559,21 @@ def build_run(
             "config": dataclasses.asdict(config),
             "net_params": net_params,
             "env_params": env_config.to_dict(),
+            # The resolved `env_params` above is the authoritative record, but it
+            # cannot say which of its values were deliberately changed. Keeping
+            # the raw flags makes that legible, and the run's command line
+            # reproducible, without having to diff against the defaults.
+            **({"env_config_overrides": env_overrides} if env_overrides else {}),
             **(extra_wandb_config or {}),
         },
+        # `env-override` marks a run whose env differs from the study's standard
+        # config. The comparability protocol (analysis/README.md) reads
+        # `env_params`, but a tag is what makes such a run obvious in a run list
+        # before anyone thinks to check.
         tags=(*arch.tags, "warp", "TrainEvalSplit", arch.name,
               f"delay{args.delay}", f"eff{efference_length}",
-              *ablations, *extra_tags),
+              *ablations, *(("env-override",) if env_overrides else ()),
+              *extra_tags),
         seed=seed,
     )
 

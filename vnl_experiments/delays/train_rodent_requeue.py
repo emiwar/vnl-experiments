@@ -36,7 +36,8 @@ Run as::
 
     python -m vnl_experiments.delays.train_rodent_requeue --delay 5
 
-with the same flags ``train_rodent.py`` accepts (see ``slurm_rodent_requeue.sh``
+with the same flags ``train_rodent.py`` accepts, ``--env-config`` included (see
+``slurm_rodent_requeue.sh``
 for how it is launched and requeued). Re-running the identical command outside
 Slurm resumes only if you pass the same ``--run-name``, since there is no job id
 to key on.
@@ -169,6 +170,38 @@ def warn_on_config_drift(stored, rebuilt) -> None:
         print(f"    this run:   { {k: new.get(k) for k in sorted(changed)} }")
 
 
+def warn_on_env_drift(run_dir, setup) -> None:
+    """Compare this attempt's env config with the one the run started with.
+
+    The env config is rebuilt from the CLI on every attempt, and since it is
+    CLI-tunable (``--env-config``) a changed flag -- or a changed
+    ``make_env_config`` -- would silently move the task under a run that is still
+    reported as one continuous curve. ``config.json`` is written once, by the
+    first attempt, so it is the record of what the run set out to be; anything
+    the offline eval path later reconstructs comes from it, not from this
+    attempt's flags.
+    """
+    config_path = Path(run_dir) / "config.json"
+    if not config_path.exists():
+        return
+    try:
+        stored = json.loads(config_path.read_text()).get("env_params", {})
+    except (json.JSONDecodeError, OSError):
+        return
+    # Round-trip through JSON so paths and tuples compare like they were stored.
+    rebuilt = json.loads(json.dumps(setup.env_config.to_dict(), default=str))
+    changed = [k for k in set(stored) | set(rebuilt)
+               if stored.get(k) != rebuilt.get(k)]
+    if changed:
+        print("  WARNING: this attempt's env config differs from the one in "
+              f"config.json, in: {sorted(changed)}")
+        for k in sorted(changed):
+            print(f"    {k}: config.json={stored.get(k)!r} "
+                  f"this run={rebuilt.get(k)!r}")
+        print("    config.json is NOT rewritten, so the offline eval path will "
+              "keep rebuilding the env the run started with.")
+
+
 def restore(step_dir: str, setup, *, n_envs: int):
     """Rebuild a resumable TrainingState from a checkpoint.
 
@@ -266,6 +299,7 @@ def run(args: argparse.Namespace, **build_kwargs) -> int:
 
     if step_dir is not None:
         print(f"  restoring {step_dir}")
+        warn_on_env_drift(run_dir, setup)
         initial_state, resumed_from_step = restore(
             step_dir, setup, n_envs=setup.config.ppo.n_envs
         )
