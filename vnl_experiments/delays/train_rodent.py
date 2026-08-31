@@ -42,6 +42,7 @@ import dataclasses
 import gc
 import json
 from datetime import datetime
+from typing import Any
 
 import jax
 import wandb
@@ -304,7 +305,43 @@ def make_train_config(args, *, log_net_metrics: bool = True) -> TrainConfig:
 # Training
 # ---------------------------------------------------------------------------
 
-def run(
+@dataclasses.dataclass
+class RunSetup:
+    """Everything needed to start -- or resume -- one delays run.
+
+    Built by :func:`build_run` so that :func:`run` and the preemption-safe entry
+    point (``train_rodent_requeue.py``) construct the envs, the network, the
+    ``config.json`` payload and the WandB config from the same code. The only
+    thing left to the caller is the run's *name*, which the two disagree about:
+    ``run`` timestamps it, while a requeued run needs a name that is stable
+    across attempts.
+    """
+
+    arch: Any
+    env_config: Any
+    net_params: dict
+    nets: Any
+    train_env: Any
+    eval_env: Any
+    train_clips: Any
+    test_clips: Any
+    config: TrainConfig
+    ablations: tuple[str, ...]
+    #: Run name up to (but excluding) the trailing ``-{timestamp}`` / job token.
+    name_stem: str
+    wandb_config: dict
+    tags: tuple[str, ...]
+    seed: int
+
+    def config_json(self) -> dict:
+        """The ``config.json`` payload the offline eval path reconstructs from."""
+        return {
+            "env_params": self.env_config.to_dict(),
+            "net_params": self.net_params,
+        }
+
+
+def build_run(
     args: argparse.Namespace,
     *,
     network: str | None = None,
@@ -313,8 +350,8 @@ def run(
     extra_tags: tuple[str, ...] = (),
     name_token: str = "",
     log_net_metrics: bool = True,
-) -> None:
-    """Train one run. The wrapper scripts call this with their own defaults.
+) -> RunSetup:
+    """Build the envs, network, configs and WandB metadata for one run.
 
     Args:
         args: Parsed CLI namespace (see ``add_common_args``).
@@ -387,24 +424,22 @@ def run(
         if not net_params.get(key, True)
     )
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
-    exp_name = (
-        f"{arch.run_label(net_params)}_delay{args.delay}_eff{efference_length}"
-        f"{''.join(f'_{t}' for t in ablations)}{name_token}-{timestamp}{suffix}"
-    )
-
-    ckpt_dir = f"checkpoints/{exp_name}"
-    os.makedirs(ckpt_dir, exist_ok=True)
-    with open(os.path.join(ckpt_dir, "config.json"), "w") as _f:
-        json.dump({
-            "env_params": env_config.to_dict(),
-            "net_params": net_params,
-        }, _f, indent=2, default=str)
-
-    wandb.init(
-        project=args.wandb_project,
-        config={
+    return RunSetup(
+        arch=arch,
+        env_config=env_config,
+        net_params=net_params,
+        nets=nets,
+        train_env=train_env,
+        eval_env=eval_env,
+        train_clips=train_clips,
+        test_clips=test_clips,
+        config=config,
+        ablations=ablations,
+        name_stem=(
+            f"{arch.run_label(net_params)}_delay{args.delay}_eff{efference_length}"
+            f"{''.join(f'_{t}' for t in ablations)}{name_token}"
+        ),
+        wandb_config={
             "env": "AbsoluteImitation",
             "delay_k": args.delay,
             "efference_length": efference_length,
@@ -424,10 +459,58 @@ def run(
             "env_params": env_config.to_dict(),
             **(extra_wandb_config or {}),
         },
-        name=exp_name,
         tags=(*arch.tags, "warp", "TrainEvalSplit", arch.name,
               f"delay{args.delay}", f"eff{efference_length}",
               *ablations, *extra_tags),
+        seed=seed,
+    )
+
+
+def run(
+    args: argparse.Namespace,
+    *,
+    network: str | None = None,
+    net_config_overrides: dict | None = None,
+    extra_wandb_config: dict | None = None,
+    extra_tags: tuple[str, ...] = (),
+    name_token: str = "",
+    log_net_metrics: bool = True,
+) -> None:
+    """Train one run to completion. The wrapper scripts call this.
+
+    See :func:`build_run` for the arguments; this adds the timestamped run name,
+    the WandB session, the training loop and the end-of-training eval.
+    """
+    setup = build_run(
+        args,
+        network=network,
+        net_config_overrides=net_config_overrides,
+        extra_wandb_config=extra_wandb_config,
+        extra_tags=extra_tags,
+        name_token=name_token,
+        log_net_metrics=log_net_metrics,
+    )
+    env_config = setup.env_config
+    net_params = setup.net_params
+    nets = setup.nets
+    train_env = setup.train_env
+    config = setup.config
+    seed = setup.seed
+
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    suffix = f"-{args.exp_name_suffix}" if args.exp_name_suffix else ""
+    exp_name = f"{setup.name_stem}-{timestamp}{suffix}"
+
+    ckpt_dir = f"checkpoints/{exp_name}"
+    os.makedirs(ckpt_dir, exist_ok=True)
+    with open(os.path.join(ckpt_dir, "config.json"), "w") as _f:
+        json.dump(setup.config_json(), _f, indent=2, default=str)
+
+    wandb.init(
+        project=args.wandb_project,
+        config=setup.wandb_config,
+        name=exp_name,
+        tags=setup.tags,
         notes=getattr(args, "notes", DEFAULT_NOTES),
     )
     result = ppo.train_ppo(
@@ -437,7 +520,7 @@ def run(
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
         checkpoint_fn=make_checkpoint_fn(ckpt_dir, config),
-        eval_env=eval_env,
+        eval_env=setup.eval_env,
         **({} if args.total_steps is None else {"total_steps": args.total_steps}),
     )
 
@@ -466,7 +549,8 @@ def run(
             ckpt_dir=ckpt_dir,
             wandb_id=wandb.run.id, wandb_name=exp_name, step=total_steps,
             net_params=net_params,
-            train_env=train_env, train_clips=train_clips, test_clips=test_clips,
+            train_env=train_env, train_clips=setup.train_clips,
+            test_clips=setup.test_clips,
             seed=seed, limit_clips=args.eval_limit_clips,
             summary_fn=wandb.run.summary.update,
         )
