@@ -18,7 +18,7 @@ moving parts:
   carries the WandB id and the attempt history.
 
 * **Light checkpoints.** ``include_env_state=False``: weights, optimizer,
-  ``rng_key`` and ``steps_taken``, ~43 MB instead of ~750 MB, about a second to
+  ``rng_key`` and ``steps_taken``, ~16 MB instead of ~750 MB, about a second to
   write, which is what makes saving inside a short preemption grace period
   realistic. The offline eval path only ever reads ``networks/``, so nothing
   downstream notices.
@@ -81,6 +81,10 @@ from vnl_experiments.envs.absolute_imitation import AbsoluteImitation
 #: that has been requeued this many times is more likely stuck than unlucky.
 DEFAULT_MAX_ATTEMPTS = 30
 
+#: Finer than the 50M the shared config uses: the interval is what a hard kill
+#: costs, and a light checkpoint is ~16 MB and ~1 s to write.
+DEFAULT_CHECKPOINT_EVERY_STEPS = 10_000_000
+
 
 # ---------------------------------------------------------------------------
 # CLI
@@ -99,6 +103,7 @@ def parse_args(argv=None) -> argparse.Namespace:
     p.add_argument("--list-networks", action="store_true",
                    help="Print the registered architectures and their defaults, then exit.")
     train_rodent.add_common_args(p)
+    p.set_defaults(checkpoint_every_steps=DEFAULT_CHECKPOINT_EVERY_STEPS)
     p.add_argument("--run-name", default=None,
                    help="Directory name under checkpoints/ for this run. Defaults "
                         "to {arch}_delay..._eff...-{slurm job id}. Pass it to make "

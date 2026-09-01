@@ -133,7 +133,8 @@ def add_common_args(p: argparse.ArgumentParser) -> argparse.ArgumentParser:
     p.add_argument("--no-final-eval", dest="final_eval", action="store_false",
                    help="Skip the end-of-training evaluation.")
     p.add_argument("--checkpoint-every-steps", type=int, default=None,
-                   help="Override checkpoint_every_steps (smoke testing).")
+                   help="Steps between checkpoints (default: %(default)s). "
+                        "None leaves the cadence make_train_config sets.")
     p.add_argument("--eval-every-steps", type=int, default=None,
                    help="Override the in-training eval interval (smoke testing).")
     p.add_argument("--eval-limit-clips", type=int, default=None,
