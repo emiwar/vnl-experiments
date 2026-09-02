@@ -9,9 +9,9 @@
 #
 # gpu_requeue runs on idle dedicated nodes, so this job will be killed and
 # requeued whenever a node's owner wants it back. Slurm then re-runs this script
-# from the top with the *same* job id, which is what
-# train_rodent_requeue.py keys its run directory and WandB run on -- so every
-# attempt continues the same run rather than starting a new one.
+# from the top with the *same* job id, which is what the trainer keys its run
+# directory and WandB run on -- so every attempt continues the same run rather
+# than starting a new one.
 #
 # What the directives above are for:
 #   --requeue           let Slurm requeue this job when it is preempted
@@ -23,11 +23,13 @@
 #                       itself arrives as SIGTERM; the script handles both by
 #                       checkpointing and exiting 42.
 #
-# Usage:
-#   sbatch slurm_rodent_requeue.sh --delay 5
-#   sbatch slurm_rodent_requeue.sh --network RodentEncDecRecurrent --net-config rnn_cell=gru
+# Usage (arguments are Hydra overrides, passed straight through):
+#   sbatch slurm_rodent_requeue.sh delay=5
+#   sbatch slurm_rodent_requeue.sh net=recurrent net.rnn_cell=gru
+#   sbatch slurm_rodent_requeue.sh delay=20 env.ctrl_dt=0.02 train.ppo.clip_range=0.3
 #
-# All arguments are passed through to train_rodent_requeue.py.
+# For a whole sweep, `python -m vnl_experiments.sweep` expands one command line into
+# one sbatch per cell.
 
 source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
 export MUJOCO_GL=egl
@@ -37,7 +39,7 @@ export MUJOCO_GL=egl
 # it is shared across the runs of a sweep with the same shapes.
 export JAX_COMPILATION_CACHE_DIR=/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/jax_cache
 
-srun python -m vnl_experiments.delays.train_rodent_requeue "$@"
+srun python -m vnl_experiments.train requeue.enabled=true "$@"
 code=$?
 
 # 42 = "saved my state, there is work left". Requeue explicitly rather than

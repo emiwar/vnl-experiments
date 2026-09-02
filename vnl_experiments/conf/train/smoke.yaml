@@ -1,0 +1,25 @@
+# @package train
+#
+# A few-minute run for checking that the machinery works. Not a scientific config: the
+# env count and step budget are far too small to learn anything, and video is off because
+# rendering dominates the runtime at this scale.
+#
+#   python -m vnl_experiments.train train=smoke final_eval=false
+
+defaults:
+  - rodent
+  - _self_
+
+ppo:
+  n_envs: 64
+  n_minibatches: 4
+  total_steps: 200_000
+
+eval:
+  every_steps: 100_000
+  n_envs: 64
+
+video:
+  enabled: false
+
+checkpoint_every_steps: 100_000

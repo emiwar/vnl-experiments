@@ -1,0 +1,50 @@
+# @package train
+#
+# The PPO / eval / video settings for a production rodent delays run.
+#
+# Unlike the env group, this file is deliberately NOT minimal. The env config's defaults
+# live in vnl-playground and *are* the task definition, so tracking them upstream is
+# correct. PPO hyperparameters are the opposite: they are part of the experiment, and a
+# default changing in nnx-ppo must not silently change the learning rate of a 600M-step
+# run that has to stay comparable to the ones already in the run index. So the
+# scientifically load-bearing values are pinned here even where they currently agree
+# with the library default.
+
+ppo:
+  n_envs: 4096
+  # Also the BPTT truncation horizon for recurrent architectures: the PPO update
+  # minibatches over the env axis only and replays the whole sequence, so gradients flow
+  # back exactly this many steps.
+  rollout_length: 20
+  total_steps: 600_000_000
+  learning_rate: 1.0e-4
+  discounting_factor: 0.95
+  gae_lambda: 0.95
+  clip_range: 0.2
+  n_epochs: 4
+  n_minibatches: 8          # must divide n_envs
+  normalize_advantages: true
+  gradient_clipping: 1.0
+  logging_level: [LOSSES, THROUGHPUT, ENV_METRICS, NETWORK_METRICS]
+  logging_percentiles: [0, 25, 50, 75, 100]
+
+eval:
+  enabled: true
+  every_steps: 10_000_000
+  n_envs: 1024
+  max_episode_length: 1000
+  logging_level: [LOSSES, ENV_METRICS, NETWORK_METRICS]
+  logging_percentiles: null
+
+video:
+  enabled: true
+  every_steps: 50_000_000
+  episode_length: 1000
+  render_kwargs:
+    height: 480
+    width: 640
+    camera: close_profile-rodent
+    add_labels: true
+
+seed: 42
+checkpoint_every_steps: 50_000_000

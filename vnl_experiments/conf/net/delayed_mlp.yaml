@@ -1,0 +1,16 @@
+# @package _global_
+#
+# Flat-observation delay baseline: an actor-only-delayed MLP with a privileged critic.
+# The whole observation plays the role of proprioception -- there is no encoder or latent,
+# because a dm_control task has no separable task/proprioception streams to encode.
+#
+# Requires a flat-obs env (`env=dmc/...`). See conf/net/encdec.yaml for how groups compose.
+
+defaults:
+  - /net_defaults@net: DelayedMLP
+  - _self_
+
+net_spec:
+  architecture: DelayedMLP
+
+net: {}

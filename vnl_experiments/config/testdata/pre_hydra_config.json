@@ -1,0 +1,132 @@
+{
+  "env_config": {
+    "arena_xml_path": "arena.xml",
+    "body_target_frame": "reference_root",
+    "clip_length": 250,
+    "clip_set": "all",
+    "ctrl_dt": 0.01,
+    "iterations": 5,
+    "keep_clips_idx": null,
+    "ls_iterations": 5,
+    "mocap_hz": 50,
+    "mujoco_impl": "warp",
+    "naconmax": 131072,
+    "njmax": 256,
+    "noslip_iterations": 0,
+    "qvel_init": "zeros",
+    "reference_data_path": "reference_clips.h5",
+    "reference_length": 5,
+    "reference_stride": 1,
+    "rescale_factor": 0.9,
+    "reward_terms": {
+      "bodies_pos": {
+        "exp_scale": 0.25,
+        "weight": 0.0
+      },
+      "control_cost": {
+        "weight": 0.02
+      },
+      "control_diff_cost": {
+        "weight": 0.02
+      },
+      "end_eff": {
+        "exp_scale": 0.032,
+        "weight": 1.0
+      },
+      "energy_cost": {
+        "max_value": 50.0,
+        "weight": 0.01
+      },
+      "joints": {
+        "exp_scale": 1.4,
+        "weight": 1.0
+      },
+      "joints_vel": {
+        "exp_scale": 1.0,
+        "weight": 0.0
+      },
+      "root_pos": {
+        "exp_scale": 0.035,
+        "weight": 1.0
+      },
+      "root_quat": {
+        "exp_scale": 20.0,
+        "weight": 1.0
+      },
+      "torso_z_range": {
+        "healthy_z_range": [
+          0.0325,
+          0.5
+        ],
+        "weight": 1.0
+      }
+    },
+    "sim_dt": 0.002,
+    "solver": "newton",
+    "start_frame_range": [
+      0,
+      44
+    ],
+    "termination_criteria": {
+      "nan_termination": {},
+      "pose_error": {
+        "max_l2_error": 4.5
+      },
+      "root_too_far": {
+        "max_distance": 0.1
+      },
+      "root_too_rotated": {
+        "max_degrees": 60.0
+      }
+    },
+    "torque_actuators": true,
+    "walker_xml_path": "rodent_no_tail_collisions.xml"
+  },
+  "train_config": {
+    "checkpoint_every_steps": 50000000,
+    "eval": {
+      "enabled": true,
+      "every_steps": 10000000,
+      "logging_level": "LoggingLevel.LOSSES|ENV_METRICS|NETWORK_METRICS",
+      "logging_percentiles": null,
+      "max_episode_length": 1000,
+      "n_envs": 1024
+    },
+    "ppo": {
+      "clip_range": 0.2,
+      "combine_advantages": false,
+      "critic_loss_weight": 1.0,
+      "discounting_factor": 0.95,
+      "gae_lambda": 0.95,
+      "gradient_clipping": 1.0,
+      "learning_rate": 0.0001,
+      "logging_level": "LoggingLevel.LOSSES|ENV_METRICS|NETWORK_METRICS|THROUGHPUT",
+      "logging_percentiles": [
+        0,
+        25,
+        50,
+        75,
+        100
+      ],
+      "n_envs": 4096,
+      "n_epochs": 4,
+      "n_minibatches": 8,
+      "normalize_advantages": true,
+      "rollout_length": 20,
+      "total_steps": 600000000,
+      "weight_decay": null
+    },
+    "seed": 42,
+    "video": {
+      "enabled": true,
+      "episode_length": 1000,
+      "every_steps": 50000000,
+      "render_kwargs": {
+        "add_labels": true,
+        "camera": "close_profile-rodent",
+        "height": 480,
+        "width": 640
+      }
+    }
+  }
+}

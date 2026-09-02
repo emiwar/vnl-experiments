@@ -1,0 +1,16 @@
+# @package _global_
+#
+# Explicit forward model: predicts the current proprioception from the delayed
+# observation plus the action buffer, and feeds the prediction to the decoder.
+#
+# See conf/net/encdec.yaml for how this group composes.
+
+defaults:
+  # The architecture's full net-config, generated from its `defaults()` (see
+  # vnl_experiments/conf_schema.py), so every key is settable without a `+` prefix.
+  - /net_defaults@net: RodentForwardModel
+  - _self_
+
+net_spec:
+  architecture: RodentForwardModel
+

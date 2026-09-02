@@ -1,0 +1,115 @@
+{
+  "env_params": {
+    "arena_xml_path": "/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/arena.xml",
+    "clip_length": 250,
+    "clip_set": "all",
+    "ctrl_dt": 0.01,
+    "iterations": 5,
+    "keep_clips_idx": null,
+    "ls_iterations": 5,
+    "mocap_hz": 50,
+    "mujoco_impl": "warp",
+    "naconmax": 131072,
+    "njmax": 256,
+    "noslip_iterations": 0,
+    "qvel_init": "zeros",
+    "reference_data_path": "/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/reference_data/reference_clips.h5",
+    "reference_length": 5,
+    "reference_stride": 1,
+    "rescale_factor": 0.9,
+    "reward_terms": {
+      "bodies_pos": {
+        "exp_scale": 0.25,
+        "weight": 0.0
+      },
+      "control_cost": {
+        "weight": 0.02
+      },
+      "control_diff_cost": {
+        "weight": 0.02
+      },
+      "end_eff": {
+        "exp_scale": 0.032,
+        "weight": 1.0
+      },
+      "energy_cost": {
+        "max_value": 50.0,
+        "weight": 0.01
+      },
+      "joints": {
+        "exp_scale": 1.4,
+        "weight": 1.0
+      },
+      "joints_vel": {
+        "exp_scale": 1.0,
+        "weight": 0.0
+      },
+      "root_pos": {
+        "exp_scale": 0.035,
+        "weight": 1.0
+      },
+      "root_quat": {
+        "exp_scale": 20.0,
+        "weight": 1.0
+      },
+      "torso_z_range": {
+        "healthy_z_range": [
+          0.0325,
+          0.5
+        ],
+        "weight": 1.0
+      }
+    },
+    "sim_dt": 0.002,
+    "solver": "newton",
+    "start_frame_range": [
+      0,
+      44
+    ],
+    "termination_criteria": {
+      "nan_termination": {},
+      "pose_error": {
+        "max_l2_error": 4.5
+      },
+      "root_too_far": {
+        "max_distance": 0.1
+      },
+      "root_too_rotated": {
+        "max_degrees": 60.0
+      }
+    },
+    "torque_actuators": true,
+    "walker_xml_path": "/n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/vnl-playground/vnl_playground/tasks/rodent/xmls/rodent.xml"
+  },
+  "net_params": {
+    "activation": "swish",
+    "critic_hidden_sizes": [
+      1024,
+      1024
+    ],
+    "dec_hidden_sizes": [
+      512,
+      512,
+      512,
+      512
+    ],
+    "enc_hidden_sizes": [
+      512,
+      512,
+      512,
+      512
+    ],
+    "entropy_weight": 0.01,
+    "initializer_scale": 1.0,
+    "kl_weight": 0.001,
+    "latent_ar1_weight": null,
+    "latent_min_std": 0.01,
+    "latent_size": 32,
+    "min_std": 0.1,
+    "normalize_obs": true,
+    "std_scale": 1.0,
+    "delay_k": 0,
+    "efference_length": 0,
+    "network_class": "RodentEncDecDelays"
+  }
+}

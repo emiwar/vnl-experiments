@@ -1,0 +1,16 @@
+# @package _global_
+#
+# Flat-observation explicit forward model: predicts the undelayed observation from the
+# delayed one plus the action buffer, and feeds the prediction to the actor. The
+# dm_control analogue of conf/net/forward_model.yaml.
+#
+# Requires a flat-obs env (`env=dmc/...`). See conf/net/encdec.yaml for how groups compose.
+
+defaults:
+  - /net_defaults@net: FlatForwardModel
+  - _self_
+
+net_spec:
+  architecture: FlatForwardModel
+
+net: {}

@@ -387,6 +387,10 @@ eval_env = AbsoluteImitation(env_config, clips=test_clips)
 eval_env = train_env          # <- train_rodent_delays.py:173, train_rodent_forward_model.py:188
 ```
 
+(Those scripts were replaced by `vnl_experiments/train.py` in the 2026-09-01 Hydra
+migration; the line references are to their last state in git history. The corrected
+construction, and a comment saying not to re-simplify it, live in `build_run` there.)
+
 The override dates from the file's creation (`e5bbf3f`, 2026-06-01), so **every delays run
 to date** reported in-training eval on the clips it was training on. What that touches:
 

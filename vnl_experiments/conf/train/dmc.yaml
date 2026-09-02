@@ -1,0 +1,41 @@
+# @package train
+#
+# PPO settings for the dm_control_suite tasks. These are far smaller problems than the
+# rodent -- a few tens of millions of steps rather than 600M -- so the budget, the env
+# count and the logging cadence all shrink. As in conf/train/rodent.yaml the load-bearing
+# hyperparameters are pinned rather than inherited, so a change to an nnx-ppo default
+# cannot silently move a comparison.
+
+ppo:
+  n_envs: 2048
+  rollout_length: 20
+  total_steps: 60_000_000
+  learning_rate: 3.0e-4
+  discounting_factor: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  n_epochs: 4
+  n_minibatches: 8
+  normalize_advantages: true
+  gradient_clipping: 1.0
+  logging_level: [LOSSES, THROUGHPUT, ENV_METRICS]
+  logging_percentiles: [0, 25, 50, 75, 100]
+
+eval:
+  enabled: true
+  every_steps: 2_000_000
+  n_envs: 256
+  max_episode_length: 1000
+  logging_level: [LOSSES, ENV_METRICS]
+  logging_percentiles: null
+
+video:
+  enabled: true
+  every_steps: 10_000_000
+  episode_length: 1000
+  render_kwargs:
+    height: 480
+    width: 640
+
+seed: 42
+checkpoint_every_steps: 10_000_000

@@ -1,7 +1,7 @@
 """The architecture registry for the delays experiments: build + restore + defaults.
 
 This module is the **single source of truth** for every network architecture in the
-delays family. Both the training scripts (``train_rodent.py``) and the offline eval
+delays family. Both the training entry point (``vnl_experiments/train.py``) and the offline eval
 scripts (``eval_runs.py``, ``eval_videos.py``, ``record_activations.py``) construct
 their networks by calling ``build_network`` here, so an architecture is defined
 exactly once and a train/eval drift is structurally impossible.
@@ -22,9 +22,17 @@ Public API:
     * ``build_delay_network`` / ``build_forward_model_network`` /
       ``build_recurrent_network`` — the individual builders.
 
-The builders are env-agnostic: they only query ``env.non_flattened_observation_size``
-and ``env.action_size``, so the same builders serve both the ``Imitation`` and
-``AbsoluteImitation`` environments.
+Architectures come in two observation layouts, declared by ``Architecture.obs_layout``:
+
+* ``"dict"`` (the rodent) — the builder queries ``env.non_flattened_observation_size``
+  for its ``task_obs`` / ``proprioception`` streams, so the same builders serve both the
+  ``Imitation`` and ``AbsoluteImitation`` environments;
+* ``"flat"`` (dm_control_suite) — there is one undifferentiated observation vector, so
+  the whole of it plays the role of proprioception and there is no encoder or latent.
+
+The training entry point refuses a combination whose layouts disagree, which is a
+mistake that would otherwise surface as a confusing shape error deep in the first
+forward pass.
 
 **Back-compat rule.** The ``p.get(key, <default>)`` fallbacks inside each builder
 exist for old ``config.json`` files written before a key existed, and their values
@@ -59,6 +67,10 @@ from nnx_ppo.networks.utils import Filter, Flattener, Map
 from nnx_ppo.networks.variational import VariationalBottleneck
 
 from vnl_experiments.delays.efference_copy import EfferenceCopy
+from vnl_experiments.delays.make_delayed_networks import (
+    make_delayed_mlp_actor_critic,
+    make_forward_model_actor_critic,
+)
 from vnl_experiments.delays.forward_model import ForwardModel
 
 #: Recurrent cell classes selectable via the ``rnn_cell`` net-config key.
@@ -85,7 +97,7 @@ def _parse_net_params(raw: dict) -> dict:
     silently truncated every sub-1.0 float to zero: ``entropy_weight`` 0.01,
     ``kl_weight`` 0.001, ``min_std`` 0.1 and ``latent_min_std`` 0.01 all became 0.
     In eval that only distorted the reported ``sigma`` and the sampled latent; but
-    once ``train_rodent.py`` started building its network here, it removed the
+    once the training entry point started building its network here, it removed the
     entropy bonus, the KL penalty and the policy-std floor from training outright.
     """
     result = {}
@@ -118,7 +130,7 @@ def _parse_net_params(raw: dict) -> dict:
 # Train-time defaults
 #
 # One function per architecture, returning the ``net_config`` a fresh run starts
-# from. ``train_rodent.py`` takes these and applies any ``--net-config`` overrides.
+# from. The entry point takes these and applies any ``net.*`` overrides.
 # These are *not* the same thing as the ``p.get`` fallbacks in the builders below;
 # see the back-compat rule in the module docstring.
 # ---------------------------------------------------------------------------
@@ -190,9 +202,88 @@ def recurrent_defaults():
     )
 
 
+def _flat_shared_defaults(**extra):
+    """Net-config keys shared by the flat-observation (dm_control) architectures.
+
+    Deliberately a different, smaller set than :func:`_shared_defaults`: there is no
+    encoder and no latent here, so the encoder/VAE knobs would be inert keys recorded in
+    every ``config.json`` -- the same trap as the inert ``body_target_frame`` on the net
+    config. The widths default narrower than the rodent's because these tasks are far
+    smaller.
+    """
+    return config_dict.create(
+        actor_hidden_sizes=[256] * 4,
+        critic_hidden_sizes=[256] * 5,
+        activation="swish",
+        normalize_obs=True,
+        initializer_scale=1.0,
+        entropy_weight=1e-2,
+        min_std=1e-3,
+        std_scale=1.0,
+        **extra,
+    )
+
+
+def flat_delay_defaults():
+    """Defaults for ``DelayedMLP``: actor-only-delayed MLP with a privileged critic."""
+    return _flat_shared_defaults()
+
+
+def flat_forward_model_defaults():
+    """Defaults for ``FlatForwardModel``: explicit predictor of the undelayed obs."""
+    return _flat_shared_defaults(
+        predictor_hidden_sizes=[256] * 4,
+        fm_loss_weight=1.0,
+        detach_prediction=True,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Network construction
 # ---------------------------------------------------------------------------
+
+def build_flat_delay_network(net_params: dict, env, rngs: nnx.Rngs):
+    """``DelayedMLP`` from saved net_params: the flat-obs delay baseline."""
+    p = _parse_net_params(net_params)
+    return make_delayed_mlp_actor_critic(
+        obs_size=env.observation_size,
+        action_size=env.action_size,
+        actor_hidden_sizes=p.get("actor_hidden_sizes", [256] * 4),
+        critic_hidden_sizes=p.get("critic_hidden_sizes", [256] * 5),
+        delay_k=p.get("delay_k", 0),
+        efference_length=p.get("efference_length", 0),
+        rngs=rngs,
+        activation=_ACTIVATIONS[p.get("activation", "swish")],
+        normalize_obs=p.get("normalize_obs", True),
+        initializer_scale=p.get("initializer_scale", 1.0),
+        entropy_weight=p.get("entropy_weight", 1e-2),
+        min_std=p.get("min_std", 1e-3),
+        std_scale=p.get("std_scale", 1.0),
+    )
+
+
+def build_flat_forward_model_network(net_params: dict, env, rngs: nnx.Rngs):
+    """``FlatForwardModel`` from saved net_params: the flat-obs explicit predictor."""
+    p = _parse_net_params(net_params)
+    return make_forward_model_actor_critic(
+        obs_size=env.observation_size,
+        action_size=env.action_size,
+        actor_hidden_sizes=p.get("actor_hidden_sizes", [256] * 4),
+        critic_hidden_sizes=p.get("critic_hidden_sizes", [256] * 5),
+        delay_k=p.get("delay_k", 0),
+        efference_length=p.get("efference_length", 0),
+        rngs=rngs,
+        predictor_hidden_sizes=p.get("predictor_hidden_sizes"),
+        fm_loss_weight=p.get("fm_loss_weight", 1.0),
+        detach_prediction=p.get("detach_prediction", True),
+        activation=_ACTIVATIONS[p.get("activation", "swish")],
+        normalize_obs=p.get("normalize_obs", True),
+        initializer_scale=p.get("initializer_scale", 1.0),
+        entropy_weight=p.get("entropy_weight", 1e-2),
+        min_std=p.get("min_std", 1e-3),
+        std_scale=p.get("std_scale", 1.0),
+    )
+
 
 def build_delay_network(net_params: dict, env, rngs: nnx.Rngs):
     """Reconstruct the enc-dec delay network from saved net_params.
@@ -571,6 +662,9 @@ class Architecture:
             run name, for architectures whose variants deserve distinct names.
         param_groups: Optional ``(nets) -> dict`` of semantic parameter counts.
             Leave ``None`` to use the generic introspection in ``evaluation.py``.
+        obs_layout: ``"dict"`` for envs with a structured observation (the rodent
+            imitation tasks) or ``"flat"`` for a single observation vector
+            (dm_control_suite). Checked against the env before anything is built.
     """
 
     name: str
@@ -580,6 +674,7 @@ class Architecture:
     tags: tuple[str, ...] = ()
     label: Callable[[dict], str] | None = None
     param_groups: Callable[[Any], dict] | None = None
+    obs_layout: str = "dict"
 
     def run_label(self, net_params: dict) -> str:
         return self.label(net_params) if self.label is not None else self.short_name
@@ -615,6 +710,26 @@ ARCHITECTURES: dict[str, Architecture] = {
             tags=("Recurrent", "EncDec"),
             label=_recurrent_label,
             param_groups=recurrent_param_groups,
+        ),
+        # Flat-observation architectures, for the dm_control_suite tasks. They predate
+        # the registry (they were reached directly by the old train_delays.py, which
+        # wrote no config.json); registering them is what gives those runs the same
+        # reload and artifact path the rodent runs have.
+        Architecture(
+            name="DelayedMLP",
+            defaults=flat_delay_defaults,
+            build=build_flat_delay_network,
+            short_name="DelayedMLP",
+            tags=("MLP", "FlatObs"),
+            obs_layout="flat",
+        ),
+        Architecture(
+            name="FlatForwardModel",
+            defaults=flat_forward_model_defaults,
+            build=build_flat_forward_model_network,
+            short_name="FlatForwardModel",
+            tags=("MLP", "ForwardModel", "FlatObs"),
+            obs_layout="flat",
         ),
     )
 }

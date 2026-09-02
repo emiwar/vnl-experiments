@@ -57,7 +57,7 @@ from vnl_experiments.envs.absolute_imitation import (
     AbsoluteImitation,
     default_config as absolute_default_config,
 )
-from vnl_experiments.envs.config_io import resolve_local_xml_paths
+from vnl_experiments.delays import evaluation
 
 from nnx_ppo.algorithms.rollout import SlimData, SlimState
 
@@ -196,63 +196,31 @@ def resolve_env_class(env_params: dict):
 
 def parse_imitation_env_config(env_params: dict, reference_h5: str,
                                clip_length: int, default_config_fn):
-    """Reconstruct an (Absolute)Imitation config from the saved env_params dict."""
-    cfg = default_config_fn()
+    """Reconstruct an (Absolute)Imitation config for *video* rendering.
 
-    for field, conv in [
-        ("ctrl_dt", float),
-        ("sim_dt", float),
-        ("naconmax", int),
-        ("njmax", int),
-        ("iterations", int),
-        ("ls_iterations", int),
-        ("noslip_iterations", int),
-        ("mocap_hz", int),
-        ("rescale_factor", float),
-    ]:
-        if field in env_params:
-            setattr(cfg, field, conv(env_params[field]))
+    The reconstruction itself is :func:`evaluation.parse_env_config` -- one implementation,
+    so the body, solver, reward terms and asset-path repair cannot drift between what an
+    eval measures and what a video shows. This used to be a second copy of that function's
+    field whitelist, which is exactly the kind of duplication that lets a fix land in one
+    place and not the other.
 
-    for field in ["solver", "mujoco_impl", "clip_set", "qvel_init",
-                  "body_target_frame"]:
-        if field in env_params:
-            setattr(cfg, field, env_params[field])
+    Everything below is a video-only override that *supersedes* whatever the run recorded,
+    so applying it after the shared reconstruction gives the same result as the old
+    inlined version did.
+    """
+    cfg = evaluation.parse_env_config(env_params, default_config_fn)
 
-    for field in ["torque_actuators"]:
-        if field in env_params:
-            val = env_params[field]
-            setattr(cfg, field, val if isinstance(val, bool) else val == "True")
-
-    if "reward_terms" in env_params:
-        for k, v in env_params["reward_terms"].items():
-            if isinstance(v, dict):
-                for sub_k, sub_v in v.items():
-                    try:
-                        cfg.reward_terms[k][sub_k] = float(sub_v)
-                    except (KeyError, TypeError, ValueError):
-                        pass
-            else:
-                try:
-                    cfg.reward_terms[k]["weight"] = float(v)
-                except (KeyError, TypeError, ValueError):
-                    pass
-
-    # Eval overrides: read the curated eval dataset, one clip per 1500 frames.
+    # Read the curated eval dataset, one clip per 1500 frames, rather than the run's
+    # training clips.
     cfg.reference_data_path = epath.Path(reference_h5)
     cfg.clip_length = clip_length
-    cfg.start_frame_range = [0, 1]
-    # Reduce pre-allocation sizes — a single env only needs a fraction.
+    # Reduce pre-allocation sizes -- a single render env only needs a fraction.
     cfg.naconmax = min(int(cfg.naconmax), 2048)
     cfg.njmax = min(int(cfg.njmax), 256)
-    # Reset clip_set to "all" so the loaded 32-clip file isn't filtered by a
-    # (possibly stale) trained clip_set; we index clips explicitly anyway.
+    # Reset clip_set to "all" so the loaded 32-clip file isn't filtered by a (possibly
+    # stale) trained clip_set; we index clips explicitly anyway.
     with cfg.ignore_type():
         cfg.clip_set = "all"
-
-    # Repair the asset paths: only the *directory* from the training cluster is invalid
-    # here, so keep the run's own XML files rather than the local defaults -- otherwise the
-    # video shows a different body than the one that was trained. See config_io.
-    resolve_local_xml_paths(cfg, env_params, default_config_fn())
 
     return cfg
 

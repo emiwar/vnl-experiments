@@ -27,7 +27,20 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-testpaths = ["nnx_ppo"]
+testpaths = ["vnl_experiments"]
+python_files = ["*_test.py", "test_*.py"]
+# `tools/` holds interactive diagnostics, one of which is named *_test.py but is a
+# gamepad probe, not a test. The rest are directories pytest has no business walking.
+norecursedirs = [
+    "analysis", "artifacts", "checkpoints", "downloaded_checkpoints", "wandb",
+    "eval_results", "vnl_experiments/tools",
+]
 
 [tool.setuptools.packages.find]
 exclude = ["downloaded_checkpoints*", "checkpoints*", "wandb*"]
+
+[tool.setuptools.package-data]
+# The Hydra config groups are data, not modules, so they need declaring or a
+# non-editable install would have no configuration to compose. The golden-test fixtures
+# travel with the tests for the same reason.
+vnl_experiments = ["conf/**/*.yaml", "**/testdata/**/*.json"]

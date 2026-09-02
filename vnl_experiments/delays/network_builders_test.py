@@ -41,11 +41,21 @@ BATCH = 4
 
 
 class StubEnv:
-    """Only what the builders actually query."""
+    """Only what the dict-obs builders actually query."""
 
     non_flattened_observation_size = {
         "state": {"task_obs": TASK_OBS, "proprioception": PROPRIO}
     }
+    action_size = ACTION_SIZE
+
+
+FLAT_OBS_SIZE = sum(TASK_OBS.values()) + sum(PROPRIO.values())
+
+
+class FlatStubEnv:
+    """Only what the flat-obs (dm_control) builders actually query."""
+
+    observation_size = FLAT_OBS_SIZE
     action_size = ACTION_SIZE
 
 
@@ -58,6 +68,24 @@ def stub_obs(batch=BATCH):
     }
 
 
+def flat_stub_obs(batch=BATCH):
+    return jp.ones((batch, FLAT_OBS_SIZE))
+
+
+def env_for(network_class):
+    """The stub env whose observation API the architecture's layout calls for."""
+    if nb.ARCHITECTURES[network_class].obs_layout == "flat":
+        return FlatStubEnv()
+    return StubEnv()
+
+
+def obs_for(network_class, batch=BATCH):
+    """The observation shape the architecture's layout calls for."""
+    if nb.ARCHITECTURES[network_class].obs_layout == "flat":
+        return flat_stub_obs(batch)
+    return stub_obs(batch)
+
+
 #: Small-but-complete net_params per architecture, plus the exact parameter count
 #: the current code produces. The count pins every layer width at once, so any
 #: accidental change to a builder's pipeline fails here.
@@ -65,6 +93,13 @@ SMALL = {
     "enc_hidden_sizes": [32],
     "critic_hidden_sizes": [32],
     "latent_size": "8",
+    "delay_k": "5",
+    "efference_length": "5",
+}
+
+FLAT_SMALL = {
+    "actor_hidden_sizes": [32],
+    "critic_hidden_sizes": [32],
     "delay_k": "5",
     "efference_length": "5",
 }
@@ -84,13 +119,20 @@ CASES = {
         },
         6931,
     ),
+    # Flat-observation (dm_control) architectures. A different, smaller key set:
+    # there is no encoder or latent, so `SMALL` does not apply.
+    "DelayedMLP": (FLAT_SMALL, 3595),
+    "FlatForwardModel": (
+        {**FLAT_SMALL, "predictor_hidden_sizes": [24]},
+        5232,
+    ),
 }
 
 
 def build(network_class, extra=None):
     net_params = {**CASES[network_class][0], "network_class": network_class,
                   **(extra or {})}
-    return nb.build_network(net_params, StubEnv(), nnx.Rngs(0)), net_params
+    return nb.build_network(net_params, env_for(network_class), nnx.Rngs(0)), net_params
 
 
 def param_count(module):
@@ -175,7 +217,7 @@ class ParseNetParamsTest(absltest.TestCase):
                     self.assertEqual(parsed[key], value, f"{name}.{key}")
 
     def test_config_json_round_trip_preserves_floats(self):
-        """As written by train_rodent.py and read back by the eval scripts."""
+        """As written by the training entry point and read back by the eval scripts."""
         defaults = nb.delay_defaults().to_dict()
         parsed = nb._parse_net_params(json.loads(json.dumps(defaults, default=str)))
         for key, value in self.SUB_ONE_FLOATS.items():
@@ -212,7 +254,7 @@ class ArchitectureContractTest(parameterized.TestCase):
     @parameterized.named_parameters(*ALL_ARCHITECTURES)
     def test_builds_and_runs(self, network_class):
         nets, _ = build(network_class)
-        out = nets(nets.initialize_state(BATCH), stub_obs())
+        out = nets(nets.initialize_state(BATCH), obs_for(network_class))
         self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
         self.assertEqual(out.output.value_estimates.shape, (BATCH,))
         self.assertFalse(jp.any(jp.isnan(out.output.actions)))
@@ -221,7 +263,7 @@ class ArchitectureContractTest(parameterized.TestCase):
     def test_carry_round_trip_preserves_structure(self, network_class):
         nets, _ = build(network_class)
         state = nets.initialize_state(BATCH)
-        out = nets(state, stub_obs())
+        out = nets(state, obs_for(network_class))
         reset = nets.reset_state(out.next_state)
         self.assertEqual(jax.tree.structure(out.next_state), jax.tree.structure(state))
         self.assertEqual(jax.tree.structure(reset), jax.tree.structure(state))
@@ -244,7 +286,7 @@ class ArchitectureContractTest(parameterized.TestCase):
         """
         nets, net_params = build(network_class)
         round_tripped = json.loads(json.dumps(net_params, default=str))
-        rebuilt = nb.build_network(round_tripped, StubEnv(), nnx.Rngs(0))
+        rebuilt = nb.build_network(round_tripped, env_for(network_class), nnx.Rngs(0))
         self.assertEqual(param_shapes(rebuilt), param_shapes(nets))
 
     @parameterized.named_parameters(*ALL_ARCHITECTURES)
@@ -257,8 +299,8 @@ class ArchitectureContractTest(parameterized.TestCase):
             "efference_length": 5,
             "network_class": network_class,
         }
-        nets = nb.build_network(net_params, StubEnv(), nnx.Rngs(0))
-        out = nets(nets.initialize_state(2), stub_obs(2))
+        nets = nb.build_network(net_params, env_for(network_class), nnx.Rngs(0))
+        out = nets(nets.initialize_state(2), obs_for(network_class, 2))
         self.assertEqual(out.output.actions.shape, (2, ACTION_SIZE))
 
 

@@ -2,7 +2,7 @@
 
 This is a drop-in subclass of
 :class:`vnl_playground.tasks.rodent.imitation.Imitation` used for the
-proprioceptive-delay study (``vnl_experiments/delays/train_rodent_delays.py``).
+proprioceptive-delay study (``vnl_experiments/train.py``).
 
 The baseline ``Imitation`` task builds its imitation target *relative* to the
 agent's current state: the joint target subtracts the current joint angles and

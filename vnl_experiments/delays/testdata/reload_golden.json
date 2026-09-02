@@ -1,0 +1,695 @@
+{
+  "encdec_modern": {
+    "architecture": "RodentEncDecDelays",
+    "env_class": "AbsoluteImitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "body_target_frame": "current_root",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 5,
+      "keep_clips_idx": null,
+      "ls_iterations": 5,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 131072,
+      "njmax": 256,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 0.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 0.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "body_target_frame": "reference_root",
+      "critic_hidden_sizes": [
+        1024,
+        1024
+      ],
+      "dec_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "delay_k": 5,
+      "efference_length": 5,
+      "enc_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "initializer_scale": 1.0,
+      "kl_weight": 0.001,
+      "latent_ar1_weight": null,
+      "latent_min_std": 0.01,
+      "latent_size": 32,
+      "min_std": 0.1,
+      "network_class": "RodentEncDecDelays",
+      "normalize_obs": true,
+      "std_scale": 1.0
+    }
+  },
+  "encdec_no_btf": {
+    "architecture": "RodentEncDecDelays",
+    "env_class": "Imitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 5,
+      "keep_clips_idx": null,
+      "ls_iterations": 5,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 131072,
+      "njmax": 256,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 0.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 0.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "critic_hidden_sizes": [
+        1024,
+        1024
+      ],
+      "dec_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "delay_k": 0,
+      "efference_length": 0,
+      "enc_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "initializer_scale": 1.0,
+      "kl_weight": 0.001,
+      "latent_ar1_weight": null,
+      "latent_min_std": 0.01,
+      "latent_size": 32,
+      "min_std": 0.1,
+      "network_class": "RodentEncDecDelays",
+      "normalize_obs": true,
+      "std_scale": 1.0
+    }
+  },
+  "forward_model_recent": {
+    "architecture": "RodentForwardModel",
+    "env_class": "AbsoluteImitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "body_target_frame": "reference_root",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 5,
+      "keep_clips_idx": null,
+      "ls_iterations": 5,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 131072,
+      "njmax": 256,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 0.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 0.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent_no_tail_collisions.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "critic_hidden_sizes": [
+        1024,
+        1024
+      ],
+      "dec_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "delay_k": 10,
+      "detach_prediction": true,
+      "efference_length": 10,
+      "enc_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "fm_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "fm_loss_weight": 1.0,
+      "initializer_scale": 1.0,
+      "kl_weight": 0.001,
+      "latent_ar1_weight": null,
+      "latent_min_std": 0.01,
+      "latent_size": 32,
+      "min_std": 0.1,
+      "network_class": "RodentForwardModel",
+      "normalize_obs": true,
+      "std_scale": 1.0
+    }
+  },
+  "legacy_stringified": {
+    "architecture": null,
+    "env_class": "Imitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 50,
+      "keep_clips_idx": null,
+      "ls_iterations": 50,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 65536,
+      "njmax": 1024,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 1.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 1.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "combine_likelihoods": true,
+      "critic_scale": 1.0,
+      "detached_critic": true,
+      "detached_critic_hidden_sizes": [
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "hidden_size": 128,
+      "min_std": 0.1,
+      "motor_scale": 1.0,
+      "network_class": "<class 'vnl_experiments.networks.nervenet_style_v3.NerveNetNetwork_v3'>",
+      "normalize_obs": true,
+      "root_size": 128
+    }
+  },
+  "nervenet_sequential": {
+    "architecture": null,
+    "env_class": "Imitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 6,
+      "keep_clips_idx": null,
+      "ls_iterations": 6,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 262144,
+      "njmax": 1024,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 1.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 1.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "critic_scale": 1.0,
+      "detached_critic": true,
+      "detached_critic_hidden_sizes": [
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "hidden_size": 256,
+      "min_std": 0.1,
+      "motor_scale": 1.0,
+      "network_class": "<class 'nnx_ppo.networks.containers.Sequential'>",
+      "normalize_obs": true,
+      "reveal_targets": "all",
+      "root_size": 256
+    }
+  },
+  "recurrent_synthetic": {
+    "architecture": "RodentEncDecRecurrent",
+    "env_class": "AbsoluteImitation",
+    "env_config": {
+      "arena_xml_path": "arena.xml",
+      "body_target_frame": "current_root",
+      "clip_length": 250,
+      "clip_set": "all",
+      "ctrl_dt": 0.01,
+      "iterations": 5,
+      "keep_clips_idx": null,
+      "ls_iterations": 5,
+      "mocap_hz": 50,
+      "mujoco_impl": "warp",
+      "naconmax": 131072,
+      "njmax": 256,
+      "noslip_iterations": 0,
+      "qvel_init": "zeros",
+      "reference_data_path": "reference_clips.h5",
+      "reference_length": 5,
+      "reference_stride": 1,
+      "rescale_factor": 0.9,
+      "reward_terms": {
+        "bodies_pos": {
+          "exp_scale": 0.25,
+          "weight": 0.0
+        },
+        "control_cost": {
+          "weight": 0.02
+        },
+        "control_diff_cost": {
+          "weight": 0.02
+        },
+        "end_eff": {
+          "exp_scale": 0.032,
+          "weight": 1.0
+        },
+        "energy_cost": {
+          "max_value": 50.0,
+          "weight": 0.01
+        },
+        "joints": {
+          "exp_scale": 1.4,
+          "weight": 1.0
+        },
+        "joints_vel": {
+          "exp_scale": 1.0,
+          "weight": 0.0
+        },
+        "root_pos": {
+          "exp_scale": 0.035,
+          "weight": 1.0
+        },
+        "root_quat": {
+          "exp_scale": 20.0,
+          "weight": 1.0
+        },
+        "torso_z_range": {
+          "healthy_z_range": [
+            0.0325,
+            0.5
+          ],
+          "weight": 1.0
+        }
+      },
+      "sim_dt": 0.002,
+      "solver": "newton",
+      "start_frame_range": [
+        0,
+        1
+      ],
+      "termination_criteria": {
+        "nan_termination": {},
+        "pose_error": {
+          "max_l2_error": 4.5
+        },
+        "root_too_far": {
+          "max_distance": 0.1
+        },
+        "root_too_rotated": {
+          "max_degrees": 60.0
+        }
+      },
+      "torque_actuators": true,
+      "walker_xml_path": "rodent.xml"
+    },
+    "net_params": {
+      "activation": "swish",
+      "critic_hidden_sizes": [
+        1024,
+        1024
+      ],
+      "dec_post_hidden_sizes": [
+        512,
+        512
+      ],
+      "dec_pre_hidden_sizes": [
+        512,
+        512
+      ],
+      "delay_k": 20,
+      "efference_length": 20,
+      "enc_hidden_sizes": [
+        512,
+        512,
+        512,
+        512
+      ],
+      "entropy_weight": 0.01,
+      "initializer_scale": 1.0,
+      "kl_weight": 0.001,
+      "latent_ar1_weight": null,
+      "latent_min_std": 0.01,
+      "latent_size": 32,
+      "min_std": 0.1,
+      "network_class": "RodentEncDecRecurrent",
+      "normalize_obs": true,
+      "rnn_cell": "lstm",
+      "rnn_hidden_sizes": [
+        512
+      ],
+      "rnn_trainable_initial_state": false,
+      "std_scale": 1.0
+    }
+  }
+}

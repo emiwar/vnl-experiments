@@ -1,0 +1,19 @@
+# @package _global_
+#
+# dm_control_suite WalkerRun, for delay experiments outside the rodent.
+#
+# These tasks are self-contained: no reference clips, no train/test split, and a single
+# flat observation vector rather than the rodent's structured one. That means a flat-obs
+# network (`net=delayed_mlp` or `net=flat_forward_model`); the entry point refuses a
+# mismatched pair rather than letting it fail deep in the first forward pass.
+#
+#   python -m vnl_experiments.train env=dmc/walker_run net=delayed_mlp train=dmc delay=5
+
+defaults:
+  - /env_defaults@env: WalkerRun
+  - _self_
+
+env_spec:
+  task: WalkerRun
+
+env: {}

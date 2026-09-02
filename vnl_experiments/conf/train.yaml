@@ -1,0 +1,64 @@
+# Root config for `python -m vnl_experiments.train`.
+#
+#   python -m vnl_experiments.train delay=5
+#   python -m vnl_experiments.train delay=5 net=recurrent net.rnn_cell=gru
+#   python -m vnl_experiments.train env.ctrl_dt=0.02 train.ppo.n_envs=64
+#   python -m vnl_experiments.train train=smoke final_eval=false
+#
+# `env` and `net` accept any key of their underlying config without a `+` prefix; the key
+# is validated against the real schema (vnl-playground's default_config, or the
+# architecture's defaults), which lists what is available if you typo one.
+
+defaults:
+  - env: rodent_imitation
+  - net: encdec
+  - train: rodent
+  - _self_
+
+# Proprioception delay, in env steps. 0 = no delay.
+delay: 0
+# Efference-copy queue length. null = same as `delay`; 0 disables the efference copy.
+efference: null
+
+seed: 42
+
+# End-of-training evaluation on the held-out clip split.
+final_eval: true
+# Cap clips per split in the final eval. A memory knob, not a science one.
+eval_limit_clips: null
+
+wandb:
+  project: nnx-ppo-rodent-delays
+  notes: ""
+  tags: []
+
+# Where run directories are created. Both run modes use it.
+checkpoint_root: checkpoints
+
+run:
+  # Explicit run directory name. null derives one from the architecture, delay and
+  # efference. On the requeue path the Slurm job id is appended so every attempt of the
+  # same job resolves to the same directory.
+  name: null
+  suffix: ""
+
+requeue:
+  # Preemption-safe mode, for the gpu_requeue partition: light checkpoints, a resume that
+  # redraws episode phase across the whole clip, and exit 42 to ask for a requeue.
+  # slurm_rodent_requeue.sh sets this.
+  enabled: false
+  max_attempts: 20
+  jax_cache_dir: null
+  # Keep env states in the checkpoint. Off by default here: they are ~94% of the bytes
+  # and nothing reads them back, which is what makes a save fit in a preemption grace
+  # period.
+  full_checkpoints: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    # The run directory is ours (checkpoints/<name>), keyed on the Slurm job id so it is
+    # stable across requeue attempts. Hydra must not introduce a second, competing one.
+    dir: .
+  output_subdir: null

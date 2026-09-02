@@ -403,13 +403,6 @@ def cmd_import_legacy(args) -> int:
     return 0
 
 
-def cmd_audit_env(args) -> int:
-    """Report artifacts built on a different body than the run trained on."""
-    from vnl_experiments.artifacts import audit_env
-
-    return audit_env.main(args)
-
-
 def cmd_adopt(args) -> int:
     """Hardlink artifacts from an older producer version onto the current ``spec_id``.
 
@@ -531,13 +524,6 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("import-legacy", help="adopt eval_results/ into the store")
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_import_legacy)
-
-    p = sub.add_parser("audit-env",
-                       help="artifacts built on a different body than was trained")
-    p.add_argument("--out-dir", help="write todo_*/adopt_* run lists + summary.txt here")
-    p.add_argument("--by-analysis", action="store_true",
-                   help="which analysis folders consumed a broken artifact")
-    p.set_defaults(func=cmd_audit_env)
 
     p = sub.add_parser("adopt",
                        help="hardlink artifacts from an older producer version to the "

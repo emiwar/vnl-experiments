@@ -75,10 +75,19 @@ def parse_env_config(env_params: dict):
             cfg.reward_terms[k] = float(v)
 
     # Repair the asset paths — only the cluster *directory* is invalid here, so keep the
-    # run's own XML files rather than the local defaults. See envs/config_io.
-    # NOTE: unlike delays/evaluation.parse_env_config, this copy does not honour
-    # `body_target_frame`; it serves the interactive modular-rodent tools, which do not
-    # produce artifacts. Fix that too before using it for anything measured.
+    # run's own XML files rather than the local defaults. See envs/config_io, which is
+    # shared with delays/evaluation.parse_env_config: the repair is the one part of the
+    # reconstruction that must not differ between the two, and it does not.
+    #
+    # The rest of this function deliberately is *not* shared with that one. It looks like
+    # a drifted copy and is not: `ModularImitation_v4` is a different task with a
+    # different config schema -- flat `reward_terms` of floats keyed `joint_exp_scale`
+    # rather than a dict-of-dicts keyed `joints.weight`, plus `cone` / `impratio` /
+    # `energy_cost` / `include_vel`, and no `body_target_frame` at all. A shared field
+    # table would have to be the union of two disjoint schemas, and would silently write
+    # nothing for whichever half did not apply. (An earlier note here warned that this
+    # copy "does not honour body_target_frame"; that field does not exist in this
+    # schema, so there was nothing to honour.)
     default = default_config()
     cfg.reference_data_path = default.reference_data_path
     resolve_local_xml_paths(cfg, env_params, default)

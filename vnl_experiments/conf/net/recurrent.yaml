@@ -1,0 +1,20 @@
+# @package _global_
+#
+# Recurrent decoder: pre-MLP -> recurrent stack -> post-MLP -> sampler.
+#
+# `rnn_hidden_sizes` gives one width per layer, so its length is the depth; setting it to
+# [] removes the recurrence altogether, which is the reduction configuration used as a
+# control. `rnn_cell` is one of lstm / gru / rnn and appears in the run name, so the three
+# cells stay distinguishable in the run index without parsing config.
+#
+# See conf/net/encdec.yaml for how this group composes.
+
+defaults:
+  # The architecture's full net-config, generated from its `defaults()` (see
+  # vnl_experiments/conf_schema.py), so every key is settable without a `+` prefix.
+  - /net_defaults@net: RodentEncDecRecurrent
+  - _self_
+
+net_spec:
+  architecture: RodentEncDecRecurrent
+

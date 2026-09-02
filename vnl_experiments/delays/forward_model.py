@@ -1,6 +1,6 @@
 """Explicit forward model for the proprioception-delay experiment.
 
-Where ``train_rodent_delays`` lets the decoder *implicitly* compensate for a
+Where the plain encoder-decoder lets the decoder *implicitly* compensate for a
 proprioceptive delay (it is simply fed the delayed proprioception plus an
 efference-copy action buffer), this module makes the compensation *explicit*: a
 learned predictor maps the delayed proprioception and the recent action buffer

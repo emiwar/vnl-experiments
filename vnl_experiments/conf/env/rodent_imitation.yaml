@@ -1,0 +1,52 @@
+# @package _global_
+#
+# The rodent imitation task, as every delays run configures it.
+#
+# The group writes two places, which is what `_global_` is for here: `env_spec` names the
+# task, and `env` holds the config deltas. Selecting `env=rodent_imitation` therefore
+# swaps both together, and `env.*` stays a clean namespace containing only real config
+# fields -- no meta-keys to collide with one.
+
+defaults:
+  # The full field set, generated from AbsoluteImitation.default_config() (see
+  # vnl_experiments/conf_schema.py). Listed first so everything below overrides it, and so
+  # that any field of the task is settable from the command line without a `+` prefix.
+  - /env_defaults@env: AbsoluteImitation
+  - _self_
+
+env_spec:
+  # Key into `vnl_experiments.envs.registry`. Also decides which `default_config()` the
+  # deltas below are applied to, and which class the offline eval path rebuilds.
+  task: AbsoluteImitation
+  # Reference clips are split 80/20; the eval env gets the held-out fifth.
+  clip_split: true
+
+env:
+  # Deltas onto AbsoluteImitation.default_config() ONLY. The full field list lives there
+  # (and, above it, in vnl-playground); restating it here would create a second source of
+  # truth that drifts. Anything absent is deliberately whatever the task default says.
+
+  # MuJoCo Warp, and the buffer sizes the rodent scene needs under it. njmax is *lower*
+  # than the default and naconmax much higher -- the defaults are sized for the jax
+  # backend's contact model.
+  mujoco_impl: warp
+  naconmax: 131072
+  njmax: 256
+
+  # Imitation targets expressed in the reference clip's root frame rather than the
+  # simulated body's. Consumed by AbsoluteImitation itself; setting it on the *net*
+  # config does nothing (see the reference-representation note in analysis/README.md).
+  body_target_frame: reference_root
+
+  # The body: no tail collision geoms. Asset fields name a *file*, not a path -- the
+  # directory is filled in from the installed vnl-playground, which sits somewhere
+  # different on the laptop and on the cluster.
+  walker_xml_path: rodent_no_tail_collisions.xml
+
+  # Reward shaping for imitation: track joint angles and body orientation, not absolute
+  # body positions or joint velocities.
+  reward_terms:
+    bodies_pos:
+      weight: 0.0
+    joints_vel:
+      weight: 0.0

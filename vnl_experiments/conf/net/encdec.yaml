@@ -1,0 +1,22 @@
+# @package _global_
+#
+# Feedforward encoder-decoder: the original delays baseline.
+#
+# `net_spec.architecture` names an entry in `delays.network_builders.ARCHITECTURES` and is
+# what gets written to `net_params.network_class` -- the string old checkpoints are
+# rebuilt from. `net` holds deltas onto that architecture's `defaults()`; leaving it empty
+# means "use the registry defaults", which is the intent here.
+#
+# Any net-config key of the architecture can be set from the command line without being
+# listed here (`net.latent_size=64`): it is validated against the real defaults, which
+# list the available keys on a typo.
+
+defaults:
+  # The architecture's full net-config, generated from its `defaults()` (see
+  # vnl_experiments/conf_schema.py), so every key is settable without a `+` prefix.
+  - /net_defaults@net: RodentEncDecDelays
+  - _self_
+
+net_spec:
+  architecture: RodentEncDecDelays
+
