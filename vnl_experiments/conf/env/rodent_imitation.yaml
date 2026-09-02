@@ -36,6 +36,13 @@ env:
   # Imitation targets expressed in the reference clip's root frame rather than the
   # simulated body's. Consumed by AbsoluteImitation itself; setting it on the *net*
   # config does nothing (see the reference-representation note in analysis/README.md).
+  #
+  # This is the *launch* default, and the one to change if reference_root_open_loop
+  # becomes the standard -- not the `body_target_frame = "current_root"` in
+  # envs/absolute_imitation.default_config(), which is the *reload* default and governs how
+  # a stored config.json that lacks the key is reconstructed. Note that reference_root
+  # still hands the policy an undelayed root tracking error through the `root`/`quat`
+  # sub-keys; only reference_root_open_loop removes it. See that module's docstring.
   body_target_frame: reference_root
 
   # The body: no tail collision geoms. Asset fields name a *file*, not a path -- the

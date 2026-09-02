@@ -320,20 +320,45 @@ filter kwarg: the columns are **absent**, not `True`, on every run predating the
 The run name and tags also carry a `nointent` / `noproprio` token.
 
 **`body_target_frame="reference_root"` does not make the imitation target
-state-independent.** It selects the egocentric frame for the ``body`` sub-key of `task_obs`
-and nothing else. `root` and `quat` are computed above that branch and are, in *both*
-settings, the reference root pose relative to the **current** root — an undelayed root
-position and orientation error, 35 of the 640 `task_obs` numbers, in the units of the
-`root_too_far` (0.1 m) and `root_too_rotated` (60°) terminations. The config docstring's
-"the pure target pose shape, independent of all current state" describes the body targets it
-is about; the class docstring is the accurate one ("The root position/quaternion targets
-remain relative to the current root frame, which is unavoidable for an egocentric
-representation"). This matters for any experiment that delays or ablates the proprioception
-stream and then calls the result feedforward: `task_obs` is neither delayed nor ablated by
-those knobs. `position-control-open-loop/frame_leak.py` measures which sub-keys move when
-the walker is displaced (and confirms the identity `root[0] ==
-rotate(ref_root_pos - root_pos, root_quat)`); copy it rather than re-deriving the claim from
-the source.
+state-independent** — use `reference_root_open_loop` if that is what you want. `reference_root`
+selects the egocentric frame for the `body` sub-key of `task_obs` and nothing else. `root` and
+`quat` are computed above that branch and are, under both `current_root` and `reference_root`,
+the reference root pose relative to the **current** root — an undelayed root position and
+orientation error, 35 of the 640 `task_obs` numbers, in the units of the `root_too_far` (0.1 m)
+and `root_too_rotated` (60°) terminations. The config docstring used to say "the pure target
+pose shape, independent of all current state", which describes the body targets it was about
+and was read as a claim about the whole target.
+
+This matters for any experiment that delays or ablates the proprioception stream and then
+calls the result feedforward: `task_obs` is neither delayed nor ablated by those knobs. It
+surfaced in [`position-control-open-loop/`](position-control-open-loop/), whose `frame_leak.py`
+measures which sub-keys move when the walker is displaced (and confirms the identity
+`root[0] == rotate(ref_root_pos - root_pos, root_quat)`).
+
+**The third value, `reference_root_open_loop`** (added 2026-09-02) anchors `root`/`quat` to the
+*reference* root at the current frame instead, making the whole target a function of
+`(clip, current frame)` with no dependence on the walker. Three things about it are worth
+knowing before selecting on it:
+
+* It is a **value, not a new key**, precisely so that cohorts stay safe: every committed
+  analysis selects the frame by equality (`== "reference_root"`), so all of them exclude
+  open-loop runs without being touched. A separate key would have been the
+  `dec_use_intention` / `dec_use_proprioception` trap again — invisible to existing selectors,
+  and needing a `full_decoder_inputs_mask`-style retrofit in every folder.
+* The default stays `current_root`, so every stored `config.json` reloads to the behaviour it
+  trained with, and the two existing values are numerically untouched (`frame_leak.txt`
+  rebuilds byte-identically across the change).
+* Its runs carry an `openloop` **tag** — not a name token, since this is expected to become
+  the default and a token would then lengthen every run name for nothing. Filter on the tag,
+  or on `env_params.body_target_frame`. The offline env-class resolvers key off
+  `absolute_imitation.BODY_TARGET_FRAMES` rather than a local list — `eval_videos` used to
+  hardcode the two old values and would have silently rebuilt an open-loop run as the base
+  `Imitation` env, whose targets are *relative* to the current state.
+* **It also takes the root error away from the critic.** `build_delay_network` feeds the critic
+  undelayed `task_obs + proprioception`, and proprioception has no root-position error, so the
+  value function loses its most direct predictor of a `root_too_far` termination. Expect the
+  critic to be worse, not just the actor, and do not read a reward drop as purely an actor
+  effect.
 
 **`state == "finished"` silently drops runs that only died in the final eval.** The
 2026-08-11 torque sweep — 46 runs, `ef060b73`, note *"New XML + reference_root."* — trained

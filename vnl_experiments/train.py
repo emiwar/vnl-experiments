@@ -65,6 +65,7 @@ from vnl_experiments.delays.network_builders import (
     get_architecture,
 )
 from vnl_experiments.conf_schema import register as register_schemas
+from vnl_experiments.envs import absolute_imitation
 from vnl_experiments.envs import registry as env_registry
 from vnl_experiments.provenance import repo_versions
 from vnl_playground.tasks.reference_clips import ReferenceClips
@@ -153,6 +154,12 @@ def build_run(cfg: DictConfig) -> RunSetup:
     seed = cfg.seed
 
     env_config = build_env_config(spec.default_config, cfg.env)
+    # `build_env_config` type-checks values but cannot know an enum's members, so a typo
+    # like `refrence_root` composes fine and only fails when the env is constructed. Reject
+    # it here, before the clips are loaded and the GPU is touched. Guarded on presence so
+    # this stays env-agnostic: tasks without an imitation target have no such key.
+    if "body_target_frame" in env_config:
+        absolute_imitation.validate_body_target_frame(env_config.body_target_frame)
     net_config = build_net_config(arch.defaults, cfg.net)
     config = validate_train_config(build_train_config(cfg.train))
 
@@ -198,6 +205,21 @@ def build_run(cfg: DictConfig) -> RunSetup:
         token for key, token in (("dec_use_intention", "nointent"),
                                  ("dec_use_proprioception", "noproprio"))
         if not net_params.get(key, True)
+    )
+
+    # A tag (not a name token) for an imitation-target frame that must not be pooled with
+    # its neighbours. `env-override` below says *something* about the env changed and
+    # `env_params.body_target_frame` says what, but neither is filterable from a WandB run
+    # list, and a `reference_root_open_loop` run is not comparable to a `reference_root` one.
+    #
+    # Deliberately not in `name_stem`, unlike the decoder-input ablations: this is expected
+    # to become the default, and a token on every run's name would then carry no information
+    # while making every name longer. When the default does flip, move the entry here to
+    # whichever value has become the deviant one -- the point of the map is to mark the
+    # minority arm, not this particular frame.
+    env_variant_tags = tuple(
+        tag for value, tag in ((absolute_imitation.OPEN_LOOP_FRAME, "openloop"),)
+        if env_config.get("body_target_frame", None) == value
     )
 
     overrides = _task_overrides()
@@ -247,6 +269,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
         tags=(*arch.tags, "warp", "TrainEvalSplit", arch.name,
               f"delay{cfg.delay}", f"eff{efference_length}",
               *ablations,
+              *env_variant_tags,
               *(("env-override",) if env_overridden else ()),
               *tuple(cfg.wandb.tags)),
         seed=seed,

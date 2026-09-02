@@ -54,6 +54,7 @@ from vnl_playground.tasks.rodent.imitation import (
     default_config as imitation_default_config,
 )
 from vnl_experiments.envs.absolute_imitation import (
+    BODY_TARGET_FRAMES,
     AbsoluteImitation,
     default_config as absolute_default_config,
 )
@@ -183,13 +184,18 @@ ENV_OVERRIDES: dict = {}
 def resolve_env_class(env_params: dict):
     """Pick the env class from the saved config.
 
-    ``AbsoluteImitation`` writes a ``body_target_frame`` of ``current_root`` or
-    ``reference_root``; base ``Imitation`` does not (some buggy configs record
-    ``"neither"`` — treated as base ``Imitation``). Returns
+    ``AbsoluteImitation`` writes a ``body_target_frame``; base ``Imitation`` does not
+    (some buggy configs record ``"neither"`` — treated as base ``Imitation``). Returns
     ``(EnvClass, default_config_fn)``. Both share obs keys/shapes, so the network
     builders are unaffected by the choice.
+
+    The valid values come from ``AbsoluteImitation.BODY_TARGET_FRAMES`` rather than being
+    listed here. They were listed here, and the list went stale the moment a third frame
+    was added: an open-loop run would have resolved to base ``Imitation``, whose targets are
+    *relative* to the current state, and been silently re-simulated on a different task —
+    the 2026-08-18 walker-XML failure in a new costume.
     """
-    if env_params.get("body_target_frame") in ("current_root", "reference_root"):
+    if env_params.get("body_target_frame") in BODY_TARGET_FRAMES:
         return AbsoluteImitation, absolute_default_config
     return Imitation, imitation_default_config
 
