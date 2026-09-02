@@ -1,0 +1,113 @@
+Actuator semantics of rodent_no_tail_collisions.xml
+
+nu = 38 actuators, ctrlrange = (-1.0, 1.0) on all of them, first-order actuator filter tau = 0.040 s
+(the filter is dyntype=FILTER in the XML and the torque conversion does not touch it, so both
+ control modes carry the same ~40 ms actuation lag)
+
+torque_actuators=False (position control): force = kp * (offset + scale*ctrl - qpos)
+actuator                  kp    scale  half_rng   offset  midpoint  match
+lumbar_extend          20.00    0.654     0.654    0.131     0.131  exact
+lumbar_bend            20.00    0.524     0.524    0.000     0.000  exact
+lumbar_twist           20.00    0.524     0.524    0.000     0.000  exact
+cervical_extend        20.00    0.509     0.654    0.102     0.131  approx
+cervical_bend          20.00    0.611     0.524    0.000     0.000  approx
+cervical_twist         20.00    0.611     0.524    0.000     0.000  approx
+caudal_extend           0.10    0.262     0.611    0.000    -0.087  approx
+caudal_bend             0.10    0.262     0.785    0.000     0.262  approx
+hip_L_supinate          0.40    0.611     0.611   -0.087    -0.087  exact
+hip_L_abduct            0.40    0.785     0.785    0.262     0.262  exact
+hip_L_extend            0.60    1.309     1.309   -0.262    -0.262  exact
+knee_L                  0.40    1.379     1.379    0.157     0.157  exact
+ankle_L                 0.40    0.768     1.050    0.628     0.950  approx
+toe_L                   0.05    0.436     0.785    0.436     0.085  approx
+hip_R_supinate          0.40    0.611     0.611   -0.087    -0.087  exact
+hip_R_abduct            0.40    0.785     0.785    0.262     0.262  exact
+hip_R_extend            0.60    1.309     1.309   -0.262    -0.262  exact
+knee_R                  0.40    1.379     1.379    0.157     0.157  exact
+ankle_R                 0.40    0.768     1.050    0.628     0.950  approx
+toe_R                   0.05    0.436     0.785    0.436     0.085  approx
+atlas                   0.05    0.436     0.436    0.349     0.349  exact
+mandible                0.05    0.279     0.279   -0.017    -0.017  exact
+scapula_L_supinate      0.50    0.096     0.096    0.079     0.079  exact
+scapula_L_abduct        0.50    0.262     0.262    0.000     0.000  exact
+scapula_L_extend        0.50    0.035     0.035    0.000     0.000  exact
+shoulder_L              0.30    1.091     1.091   -0.218    -0.218  exact
+shoulder_sup_L          0.30    0.593     0.593    0.541     0.541  exact
+elbow_L                 0.30    1.004     1.004   -0.305    -0.305  exact
+wrist_L                 0.10    1.222     1.222    0.873     0.873  exact
+finger_L                0.05    0.785     0.785    0.785     0.785  exact
+scapula_R_supinate      0.50    0.096     0.096    0.079     0.079  exact
+scapula_R_abduct        0.50    0.262     0.262    0.000     0.000  exact
+scapula_R_extend        0.50    0.035     0.035    0.000     0.000  exact
+shoulder_R              0.30    1.091     1.091   -0.218    -0.218  exact
+shoulder_sup_R          0.30    0.593     0.593    0.541     0.541  exact
+elbow_R                 0.30    1.004     1.004   -0.305    -0.305  exact
+wrist_R                 0.10    1.222     1.222    0.873     0.873  exact
+finger_R                0.05    0.785     0.785    0.785     0.785  exact
+
+29 of 38 actuators map ctrl = -1..+1 onto exactly that joint's own range.
+The other 9 (cervical_extend, cervical_bend, cervical_twist, caudal_extend, caudal_bend, ankle_L, toe_L, ankle_R, toe_R) still map ctrl affinely onto
+an angle, just not onto the full range: max |scale - half_range| = 0.524 rad.
+
+kv (velocity feedback) = [-0.0] -- position feedback only; damping comes from the joints.
+kp values used: [0.05, 0.1, 0.3, 0.4, 0.5, 0.6, 20.0]. The 6 spine/neck joints get kp = 20;
+every limb joint gets kp <= 0.6, i.e. a soft spring rather than a stiff servo.
+
+torque_actuators=True: force = gain * ctrl, no state feedback
+(add_rodent sets gainprm0 = forcerange max and biastype = NONE)
+  bias terms after conversion: [-0.0]  (0 = biastype NONE, so no qpos/qvel term)
+
+Force authority is NOT matched between the modes. The XML's forcerange -- which is what
+the torque conversion turns into the gain -- was not chosen to match kp * range, so each
+joint's peak commandable torque changes when the mode changes:
+actuator              kp*range  torque gain   ratio
+lumbar_extend           26.180       20.000    0.76
+lumbar_bend             20.944       20.000    0.95
+lumbar_twist            20.944       20.000    0.95
+cervical_extend         26.180       20.000    0.76
+cervical_bend           20.944       20.000    0.95
+cervical_twist          20.944       20.000    0.95
+caudal_extend            0.122        0.100    0.82
+caudal_bend              0.157        0.100    0.64
+hip_L_supinate           0.489        0.200    0.41
+hip_L_abduct             0.628        0.200    0.32
+hip_L_extend             1.571        0.300    0.19
+knee_L                   1.103        0.200    0.18
+ankle_L                  0.840        0.200    0.24
+toe_L                    0.079        0.025    0.32
+hip_R_supinate           0.489        0.200    0.41
+hip_R_abduct             0.628        0.200    0.32
+hip_R_extend             1.571        0.300    0.19
+knee_R                   1.103        0.200    0.18
+ankle_R                  0.840        0.200    0.24
+toe_R                    0.079        0.025    0.32
+atlas                    0.044        0.025    0.57
+mandible                 0.028        0.025    0.90
+scapula_L_supinate       0.096        0.250    2.60
+scapula_L_abduct         0.262        0.250    0.95
+scapula_L_extend         0.035        0.250    7.16
+shoulder_L               0.654        0.150    0.23
+shoulder_sup_L           0.356        0.150    0.42
+elbow_L                  0.602        0.150    0.25
+wrist_L                  0.244        0.050    0.20
+finger_L                 0.079        0.025    0.32
+scapula_R_supinate       0.096        0.250    2.60
+scapula_R_abduct         0.262        0.250    0.95
+scapula_R_extend         0.035        0.250    7.16
+shoulder_R               0.654        0.150    0.23
+shoulder_sup_R           0.356        0.150    0.42
+elbow_R                  0.602        0.150    0.25
+wrist_R                  0.244        0.050    0.20
+finger_R                 0.079        0.025    0.32
+
+ratio (torque gain) / (kp * range): min 0.18, median 0.41, max 7.16.
+Position control is the *stiffer* mode at large error on most joints (median ratio < 1),
+but its torque is proportional to the tracking error, so it commands little near the target,
+while torque mode can command its full gain in any state. The two are therefore not a clean
+feedback-loop-only contrast, and report.md carries this as a caveat.
+
+Consequence for this analysis: under position control the action is a target joint
+configuration in normalised joint coordinates, and task_obs carries the reference joint
+angles (absolute, under body_target_frame=reference_root). The map from that part of the
+input to a good action is static and needs no feedback. Under torque control no such map
+exists: the torque that realises a target pose depends on the current state.

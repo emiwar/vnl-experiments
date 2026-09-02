@@ -1,0 +1,36 @@
+Is delay_k inert without the proprioception branch?
+
+A. dec_use_proprioception=False -- the two networks must be IDENTICAL
+   eff=0   delay 0 vs 10: params 3,983,501 vs 3,983,501, weights=same carry=same max|d out|=0.000e+00  -> IDENTICAL
+   eff=5   delay 0 vs 10: params 4,080,781 vs 4,080,781, weights=same carry=same max|d out|=0.000e+00  -> IDENTICAL
+   eff=10  delay 0 vs 10: params 4,178,061 vs 4,178,061, weights=same carry=same max|d out|=0.000e+00  -> IDENTICAL
+
+B. dec_use_proprioception=True -- the two networks must DIFFER, so that A cannot pass vacuously
+   eff=0   delay 0 vs 10: params 4,125,325 vs 4,125,325, weights=same carry=diff max|d out|=1.679e-02  -> DIFFERENT
+   eff=5   delay 0 vs 10: params 4,222,605 vs 4,222,605, weights=same carry=diff max|d out|=1.355e-02  -> DIFFERENT
+   eff=10  delay 0 vs 10: params 4,319,885 vs 4,319,885, weights=same carry=diff max|d out|=1.169e-02  -> DIFFERENT
+
+   (B's weight tree and parameter count *are* the same -- a Delay layer
+    has no parameters. What separates the two is the carry state, which
+    holds the delay buffer, and hence the output.)
+
+C. the no-proprioception runs in runs.csv, grouped by the network they
+   actually built
+   eff=0    3,983,501 params  dkglvuw8 (delay0_eff0), wbyipflf (delay0_eff0), 23267t68 (delay5_eff0)
+   eff=5    4,080,781 params  mbjli503 (delay5_eff5)
+   eff=10   4,178,061 params  3gw1ndwj (delay10_eff10)
+
+   So delay0_eff0_noproprio and delay5_eff0_noproprio are one and the
+   same architecture: their reward difference is a replicate difference,
+   not a delay effect. What separates the rows above is efference_length.
+
+D. the stub's observation widths, checked against the parameter counts
+   the runs themselves recorded in final_eval/params/total
+   proprio=False intention=True  eff=0   built  3,983,501  recorded  3,983,501  -> MATCH
+   proprio=False intention=True  eff=5   built  4,080,781  recorded  4,080,781  -> MATCH
+   proprio=False intention=True  eff=10  built  4,178,061  recorded  4,178,061  -> MATCH
+   proprio=True  intention=False eff=10  built  3,154,509  recorded  3,154,509  -> MATCH
+   proprio=True  intention=True  eff=0   built  4,125,325  recorded  4,125,325  -> MATCH
+   proprio=True  intention=True  eff=10  built  4,319,885  recorded  4,319,885  -> MATCH
+
+FAILURES: none

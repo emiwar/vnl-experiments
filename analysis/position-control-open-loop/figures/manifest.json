@@ -1,0 +1,8 @@
+{
+  "q1_delay_tolerance.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02",
+  "q2_open_loop.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02",
+  "q2a_generalisation.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02",
+  "q2b_delay_inert.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02",
+  "q2c_kl_sweep.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02",
+  "training_curves.png": "position-control-open-loop  \u00b7  data.csv a80beb23  \u00b7  curves.csv 191ff769  \u00b7  vnl-experiments 2ae4a5d  \u00b7  2026-09-02"
+}

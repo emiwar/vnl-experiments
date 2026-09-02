@@ -1,0 +1,53 @@
+Does task_obs depend on the walker's own state under each body_target_frame?
+
+Perturbation: +0.01 added to one qpos slice at a time, then mjx.forward.
+Reported: max |change| in each task_obs sub-key. Exactly 0 means that sub-key does not
+see the perturbed part of the walker's state. The last line of each block checks that
+`root` *is* the root-position error, against the 0.1 m root_too_far threshold.
+
+task_obs sub-key widths (5 reference frames): root 15, quat 20, joint 335, body 270  -> 640 total
+root + quat are 35 of 640 numbers (5.5 %); body is 270.
+
+body_target_frame = 'current_root', base state: at reset (root error ~ 0)
+  perturbed                             root        quat       joint        body
+  root position (qpos[0:3])        1.439e-02   0.000e+00   0.000e+00   1.439e-02
+  root orientation (qpos[3:7])     3.813e-05   1.364e-02   0.000e+00   1.787e-03
+  joint angles (qpos[7:])          0.000e+00   0.000e+00   0.000e+00   0.000e+00
+  root[frame 0] = [0.00041000000783242285, -0.0003800000122282654, 3.9999998989515007e-05];  rotate(ref_root - root, root_quat) = [0.00041000000783242285, -0.0003800000122282654, 3.9999998989515007e-05];  |error| = 0.0006 m
+
+body_target_frame = 'current_root', base state: drifted +0.05 m in x
+  perturbed                             root        quat       joint        body
+  root position (qpos[0:3])        1.439e-02   0.000e+00   0.000e+00   1.439e-02
+  root orientation (qpos[3:7])     4.872e-04   1.364e-02   0.000e+00   1.338e-03
+  joint angles (qpos[7:])          0.000e+00   0.000e+00   0.000e+00   0.000e+00
+  root[frame 0] = [0.027550000697374344, -0.042160000652074814, 0.0042500002309679985];  rotate(ref_root - root, root_quat) = [0.027550000697374344, -0.042160000652074814, 0.0042500002309679985];  |error| = 0.0505 m
+
+body_target_frame = 'reference_root', base state: at reset (root error ~ 0)
+  perturbed                             root        quat       joint        body
+  root position (qpos[0:3])        1.439e-02   0.000e+00   0.000e+00   0.000e+00
+  root orientation (qpos[3:7])     3.813e-05   1.364e-02   0.000e+00   0.000e+00
+  joint angles (qpos[7:])          0.000e+00   0.000e+00   0.000e+00   0.000e+00
+  root[frame 0] = [0.00041000000783242285, -0.0003800000122282654, 3.9999998989515007e-05];  rotate(ref_root - root, root_quat) = [0.00041000000783242285, -0.0003800000122282654, 3.9999998989515007e-05];  |error| = 0.0006 m
+
+body_target_frame = 'reference_root', base state: drifted +0.05 m in x
+  perturbed                             root        quat       joint        body
+  root position (qpos[0:3])        1.439e-02   0.000e+00   0.000e+00   0.000e+00
+  root orientation (qpos[3:7])     4.872e-04   1.364e-02   0.000e+00   0.000e+00
+  joint angles (qpos[7:])          0.000e+00   0.000e+00   0.000e+00   0.000e+00
+  root[frame 0] = [0.027550000697374344, -0.042160000652074814, 0.0042500002309679985];  rotate(ref_root - root, root_quat) = [0.027550000697374344, -0.042160000652074814, 0.0042500002309679985];  |error| = 0.0505 m
+
+Verdict
+  `reference_root` does what its name says, for the *body* targets: they stop depending
+  on the walker's root pose (270 of the 640 task_obs numbers). It changes nothing about
+  `root` and `quat` (35 numbers), which are the reference root pose expressed relative to
+  the CURRENT root in both settings -- an undelayed root position and orientation error, as
+  the identity check on each block's last line confirms. Neither setting lets the joint
+  configuration into task_obs, which is what `absolute` buys and what makes the delay
+  experiment meaningful at all.
+
+  So a `dec_use_proprioception=False` run has no joint-level feedback and no delayed input
+  of any kind, but it does see, fresh every step, how far and how wrongly-oriented its root
+  is relative to the reference -- exactly the two quantities that terminate the episode
+  (`root_too_far` at 0.1 m, `root_too_rotated` at 60 deg).
+
+FAILURES: none

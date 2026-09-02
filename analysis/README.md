@@ -319,6 +319,52 @@ filter kwarg: the columns are **absent**, not `True`, on every run predating the
 `index.select(..., **{"net_params.dec_use_intention": True})` would drop the entire history.
 The run name and tags also carry a `nointent` / `noproprio` token.
 
+**`body_target_frame="reference_root"` does not make the imitation target
+state-independent.** It selects the egocentric frame for the ``body`` sub-key of `task_obs`
+and nothing else. `root` and `quat` are computed above that branch and are, in *both*
+settings, the reference root pose relative to the **current** root — an undelayed root
+position and orientation error, 35 of the 640 `task_obs` numbers, in the units of the
+`root_too_far` (0.1 m) and `root_too_rotated` (60°) terminations. The config docstring's
+"the pure target pose shape, independent of all current state" describes the body targets it
+is about; the class docstring is the accurate one ("The root position/quaternion targets
+remain relative to the current root frame, which is unavoidable for an egocentric
+representation"). This matters for any experiment that delays or ablates the proprioception
+stream and then calls the result feedforward: `task_obs` is neither delayed nor ablated by
+those knobs. `position-control-open-loop/frame_leak.py` measures which sub-keys move when
+the walker is displaced (and confirms the identity `root[0] ==
+rotate(ref_root_pos - root_pos, root_quat)`); copy it rather than re-deriving the claim from
+the source.
+
+**`state == "finished"` silently drops runs that only died in the final eval.** The
+2026-08-11 torque sweep — 46 runs, `ef060b73`, note *"New XML + reference_root."* — trained
+all 600 M steps and then crashed in `run_final_eval`, so WandB records it as `failed`. It is
+the only complete torque delay sweep on the new XML and reference frame (0 to 100 in 23
+steps, `eff == delay`, one launch), and `position-control-open-loop/` was first written
+without any of it, which is what left that analysis with no torque arm past delay 20 and a
+headline it could not check. Gate on the property you mean instead:
+`state == "finished" | summary._step >= config.ppo.total_steps`
+(`pipeline`-free; see `completed_training` in `position-control-open-loop/extract.py`). That
+is exactly discriminating on this XML + frame — of 126 non-finished runs there, those 46 are
+the only ones reaching `total_steps`, and none has a `final_eval/*` key, which is the
+signature. Such runs need an offline `eval` artifact to stand in for the missing inline eval,
+so check coverage before selecting them; mixing an inline `final_eval` with a batch `eval`
+in one figure costs under 0.5 % at the median (measured in
+`position-control-open-loop/eval_calibration.txt`) but is still a mix, and belongs in a
+`reward_source` column rather than in a reader's head.
+
+**A `noproprio` run's `delay_k` is inert, and its name says otherwise.** `build_delay_network`
+puts the `Delay` layer *inside* the proprioception branch, and `dec_use_proprioception=False`
+does not construct that branch — so `delay_k` reaches nothing. `RodentEncDec_delay10_eff10_noproprio`
+is not a delay-10 experiment: at fixed `efference_length` the two networks are
+bit-identical (same parameter count, same weight and carry trees, `max|Δ output| = 0`), which
+`position-control-open-loop/check_delay_inert.py` asserts. What actually varies across those
+runs is `efference_length`, which the launcher ties to `delay_k` by default, so plotting them
+against delay silently plots the efference queue length with the wrong axis label —
+and `delay0_eff0_noproprio` vs `delay5_eff0_noproprio` is a replicate pair, useful as a
+noise floor (3.1 % on held-out reward) rather than a delay contrast. The same applies to any
+future ablation that removes the branch a manipulation lives in: check what the *built*
+network depends on, not what the config records.
+
 **The cluster working copy drifts from the committed script.** The same rule — read
 `env_params`, never the script at the run's commit — applies to *every* env knob. The
 2026-07-09/07-19 new-XML cohort logged `body_target_frame = current_root` while the script

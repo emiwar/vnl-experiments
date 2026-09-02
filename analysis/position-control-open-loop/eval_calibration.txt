@@ -1,0 +1,70 @@
+Held-out (old_eval) reward: inline final_eval vs offline eval artifacts
+
+  inline = summary.final_eval/old_eval/episode_reward/mean
+  v2     = eval artifact eval3ds-347333e3 (producer VERSION 2)
+  v3     = eval artifact eval3ds-382e9e69 (producer VERSION 3, current default)
+
+wandb_id   name                                      reg   inline       v2       v3  v2-inl%  v3-inl%  v3-v2%
+1cpbq1wl   RodentEncDecLSTM_delay0_eff0-20260823-12    n   1837.1   1836.5   1817.4     -0.0     -1.1   -1.04
+vx4zrzed   RodentEncDecLSTM_delay10_eff1-20260824-1    y   1510.9            1522.8               0.8         
+ykovjkpw   RodentEncDecLSTM_delay10_eff1-20260825-0    y   1663.0            1665.6               0.2         
+4ft79293   RodentEncDecLSTM_delay10_eff1-20260825-0    y   1654.3            1635.7              -1.1         
+a214jol0   RodentEncDecLSTM_delay10_eff10-20260824-    y   1767.0            1748.0              -1.1         
+d08in1g9   RodentEncDecLSTM_delay10_eff10-20260825-    y   1912.0            1889.0              -1.2         
+fut020mc   RodentEncDecLSTM_delay5_eff1-20260824-15    y   1983.6            1999.9               0.8         
+y4mcfxeq   RodentEncDecLSTM_delay5_eff5-20260823-12    n   1380.3   1393.7   1393.2      1.0      0.9   -0.04
+kbpfipxq   RodentEncDec_delay0_eff0-20260821-115849    n   1845.8   1830.9   1878.5     -0.8      1.8    2.60
+ame77mw2   RodentEncDec_delay0_eff0-20260824-091609    y   2146.2            2146.2              -0.0         
+usv6hlqd   RodentEncDec_delay10_eff0-20260825-07240    y    886.5             884.2              -0.3         
+5sdstqym   RodentEncDec_delay10_eff1-20260825-06004    y    983.0             982.7              -0.0         
+vo7jiiwr   RodentEncDec_delay10_eff10-20260811-0838    y            1765.2   1778.1                      0.73
+4d06k2pq   RodentEncDec_delay10_eff10-20260821-1019    n   1118.3   1131.9               1.2                  
+jh1zzu36   RodentEncDec_delay10_eff10_nointent-2026    n    833.0    830.1              -0.3                  
+dv8hft01   RodentEncDec_delay10_eff10_nointent-2026    y    864.3             863.6              -0.1         
+zllge7px   RodentEncDec_delay10_eff10_noproprio-202    n    781.1    788.8    809.0      1.0      3.6    2.57
+8kuci8sz   RodentEncDec_delay10_eff10_noproprio-202    y    769.1             775.7               0.9         
+7qbsx2pa   RodentEncDec_delay20_eff20-20260811-0838    y            1285.8   1288.1                      0.18
+zq5dvwvf   RodentEncDec_delay2_eff2-20260811-080832    y            2132.4   2114.0                     -0.86
+9j42qevl   RodentEncDec_delay5_eff1-20260825-060037    y   1211.0            1209.5              -0.1         
+7ur99xil   RodentEncDec_delay5_eff5-20260811-081204    y            1936.6   1953.1                      0.85
+bzm76mrs   RodentEncDec_delay5_eff5-20260824-091609    y   2037.9            2048.0               0.5         
+dgv264dt   RodentForwardModel_delay0_eff0-20260813-    y   2168.6   2169.6               0.0                  
+nsfdsuk2   RodentForwardModel_delay0_eff0_nodetach-    y   2178.0   2178.7               0.0                  
+efc0z8fe   RodentForwardModel_delay0_eff0_nodetach-    y   2131.1   2133.4               0.1                  
+16qfobwj   RodentForwardModel_delay100_eff100_nodet    y    702.3    719.3               2.4                  
+itedqjyt   RodentForwardModel_delay10_eff10-2026081    y   1989.8   1985.8              -0.2                  
+d06nwjty   RodentForwardModel_delay10_eff10-2026082    y   1744.1            1745.3               0.1         
+zgo44kgt   RodentForwardModel_delay10_eff10-2026082    y   1758.9            1762.6               0.2         
+kwk401pl   RodentForwardModel_delay10_eff10_nodetac    y   1760.5   1735.1              -1.4                  
+cgs8q5gj   RodentForwardModel_delay10_eff10_nodetac    y   1734.5   1736.2               0.1                  
+1dbmh27r   RodentForwardModel_delay10_eff10_nodetac    y   1998.1   1983.4              -0.7                  
+k4cwiv1u   RodentForwardModel_delay15_eff15_nodetac    y   1495.3   1504.8               0.6                  
+mwaeczx8   RodentForwardModel_delay1_eff1_nodetach-    y   2139.3   2140.9               0.1                  
+3dfjggpw   RodentForwardModel_delay20_eff20-2026081    y   1748.5   1777.4               1.7                  
+yt776s6d   RodentForwardModel_delay20_eff20_nodetac    y   1297.6   1306.7               0.7                  
+x1wjdvt9   RodentForwardModel_delay20_eff20_nodetac    y   1540.0   1524.7              -1.0                  
+jtjbb7u6   RodentForwardModel_delay2_eff2_nodetach-    y   2120.7   2121.5               0.0                  
+via4qt5i   RodentForwardModel_delay30_eff30_nodetac    y    941.5    942.2               0.1                  
+7qsntx62   RodentForwardModel_delay3_eff3_nodetach-    y   2107.4   2102.9              -0.2                  
+7wpzx8cl   RodentForwardModel_delay50_eff50-2026081    y   1462.7   1465.2               0.2                  
+lxgp2zfn   RodentForwardModel_delay50_eff50_nodetac    y    800.3    802.4               0.3                  
+6jz9o5p4   RodentForwardModel_delay50_eff50_nodetac    y    744.4    752.5               1.1                  
+th9oxbti   RodentForwardModel_delay5_eff5_nodetach-    y   2045.4   2022.5              -1.1                  
+tb05rkir   RodentForwardModel_delay70_eff70_nodetac    y    708.7    709.5               0.1                  
+
+Summary (percent difference; positive = the offline number is higher)
+  v2_vs_inline   n=27  mean +0.18 %  median +0.08 %  range [-1.44, +2.41] %  max |.| 2.41 %
+  v3_vs_inline   n=19  mean +0.25 %  median +0.07 %  range [-1.20, +3.58] %  max |.| 3.58 %
+  v3_vs_v2       n= 8  mean +0.62 %  median +0.46 %  range [-1.04, +2.60] %  max |.| 2.60 %
+  v2_vs_inline   n=21  regularised commits only: mean +0.13 %  max |.| 2.41 %
+  v3_vs_inline   n=15  regularised commits only: mean -0.03 %  max |.| 1.20 %
+  v3_vs_v2       n= 4  regularised commits only: mean +0.23 %  max |.| 0.86 %
+
+Checkpoint the artifacts restored vs the step the run reached: 0 mismatches (so 'the same weights' is checked, not assumed)
+
+Reading: the median discrepancy in every pairing is under 0.5 %. The largest single one is
+3.6 % (2.4 % if the unregularised-commit runs are excluded), and the two biggest V3-vs-V2
+gaps are both unregularised runs -- the case the VERSION 3 bump exists for, so the partition is
+doing its job rather than showing noise. Against a 3.1 % replicate noise floor in this cohort
+and delay effects of 20-70 %, the inline/offline mix in figure 1 is not what any conclusion
+turns on. It is still a mix, and figure 1A draws the two sources with different markers.

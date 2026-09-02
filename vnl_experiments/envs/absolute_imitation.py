@@ -48,6 +48,15 @@ def default_config() -> config_dict.ConfigDict:
     * ``"reference_root"``: reference body positions expressed in the
       *reference* root's egocentric frame. The pure target pose shape,
       independent of all current state.
+
+    **It selects the frame for the ``body`` targets only.** Neither setting touches
+    ``root`` or ``quat``, which are the reference root pose relative to the *current*
+    root either way -- i.e. an undelayed root position and orientation error -- so
+    ``reference_root`` does not make the observation independent of the walker's state.
+    ``analysis/position-control-open-loop/frame_leak.py`` measures exactly which
+    sub-keys move when the walker is displaced, and that folder's Q2 turns on the
+    distinction; do not read "independent of all current state" as a claim about the
+    whole target.
     """
     config = _imitation_default_config()
     config.body_target_frame = "current_root"

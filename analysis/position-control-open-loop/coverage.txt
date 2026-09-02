@@ -1,0 +1,49 @@
+Coverage for 101 runs in position-control-open-loop
+
+index  (spec_id=-): 101/101
+    pos_efference                   9/9   
+    pos_kl_sweep                    4/4   
+    pos_no_efference                1/1   
+    pos_nointent                    1/1   
+    pos_noproprio                   5/5   
+    prev_pos_efference             22/22  
+    prev_torque_efference          22/22  
+    torque_efference               11/11  
+    torque_efference_aug11         23/23  
+    torque_no_efference             1/1   
+    torque_nointent                 1/1   
+    torque_noproprio                1/1   
+
+history:hist2000-533d4b5c  (spec_id=hist2000-533d4b5c): 101/101
+    pos_efference                   9/9   
+    pos_kl_sweep                    4/4   
+    pos_no_efference                1/1   
+    pos_nointent                    1/1   
+    pos_noproprio                   5/5   
+    prev_pos_efference             22/22  
+    prev_torque_efference          22/22  
+    torque_efference               11/11  
+    torque_efference_aug11         23/23  
+    torque_no_efference             1/1   
+    torque_nointent                 1/1   
+    torque_noproprio                1/1   
+
+eval:eval3ds-347333e3  (spec_id=eval3ds-347333e3): 45/101
+    pos_efference                   0/9      *** GAP ***
+    pos_kl_sweep                    0/4      *** GAP ***
+    pos_no_efference                0/1      *** GAP ***
+    pos_nointent                    0/1      *** GAP ***
+    pos_noproprio                   0/5      *** GAP ***
+    prev_pos_efference              0/22     *** GAP ***
+    prev_torque_efference          22/22  
+    torque_efference                0/11     *** GAP ***
+    torque_efference_aug11         23/23  
+    torque_no_efference             0/1      *** GAP ***
+    torque_nointent                 0/1      *** GAP ***
+    torque_noproprio                0/1      *** GAP ***
+
+Missing artifacts. Produce or fetch them with:
+  # 56 runs missing eval:eval3ds-347333e3
+  # other specs held for these runs: eval3ds-66aaff5b (45), legacy-batch (44), eval3ds-n00-04ceda93 (23), eval3ds-n25-da25f356 (23), eval3ds-n00-21b2d9a8 (23), eval3ds-n05-7c60cd50 (23), eval3ds-n10-2726ab9c (23), eval3ds-n02-a4e0be11 (23), eval3ds-n25-9443d2fe (23), eval3ds-n05-ead26b7d (23), eval3ds-n00-6a6b8d4e (23), eval3ds-n10-2d7c9136 (23), legacy-batch-v0 (22), eval3ds-n02-5bcf9203 (10), eval3ds-382e9e69 (9)
+  python -m vnl_experiments.artifacts plan  --kind eval --runs position-control-open-loop/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind eval --runs position-control-open-loop/runs.csv

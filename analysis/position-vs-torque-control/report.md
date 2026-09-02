@@ -1,5 +1,19 @@
 # Position vs torque control — is imitation easier, and does the forward model still win?
 
+> **Followed up, 2026-09-02, by [`position-control-open-loop/`](../position-control-open-loop/).**
+> Re-run on `rodent_no_tail_collisions.xml` + `body_target_frame=reference_root`, this
+> report's **ordering is confirmed and is stronger there**: position control holds 2.5× the
+> torque arm's held-out reward at delay 100 (2.3× here) and fails 5.9× less often per second.
+> What does not survive is "nearly delay-invariant" — position control loses 10 % / 15 % /
+> 21 % of its held-out reward at delays 10 / 20 / 100, where this report shows 4 % / 7 % /
+> 11 %. Two reasons to carry back: the flatter position curve here is partly `current_root`
+> leaking undelayed root pose into the body targets, which `reference_root` removes; and
+> partly the metric — every number in this folder is **eval-on-training-clips**
+> (`eval_env = train_env`, fixed 2026-08-20), which degrades 5–7 pp less with delay than a
+> held-out measurement. The follow-up also shows position control keeps 62–83 % of its reward
+> with **no proprioception at all** (torque control: 36 %), which is the mechanism behind the
+> delay tolerance.
+
 ## Question
 The rodent's actuators can be driven in two modes (`env_params.torque_actuators`):
 **torque control** (`True`, the project default — motors converted to torque-mode actuators)
