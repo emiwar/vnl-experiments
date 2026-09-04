@@ -1,0 +1,85 @@
+Who is eligible, who is in, and what a looser gate would add
+
+1. Does the BUG tag still mean exactly 'unregularised commit'?
+   tagged BUG: 21   unregularised commit: 21   both: 21
+   tagged but not unregularised: 0   unregularised but not tagged: 0
+   -> identical sets, so gating on the tag and gating on the commit are the same rule.
+
+2. Every run in the project tagged noproprio or nointent (38), and where it went
+   jh1zzu36  RodentEncDec_delay10_eff10_nointent-20260821-113 2026-08-21  EXCLUDED: tagged BUG / unregularised commit
+   zllge7px  RodentEncDec_delay10_eff10_noproprio-20260821-14 2026-08-21  EXCLUDED: tagged BUG / unregularised commit
+   1ayy9bfj  RodentEncDec_delay10_eff10_nointent-20260825-060 2026-08-25  -> torque_nointent
+   8kuci8sz  RodentEncDec_delay10_eff10_noproprio-20260825-06 2026-08-25  -> torque_noproprio
+   dv8hft01  RodentEncDec_delay10_eff10_nointent-20260825-071 2026-08-25  -> torque_nointent
+   9hyirkcx  RodentEncDec_delay10_eff10_nointent-job43323571  2026-08-31  -> pos_nointent
+   3gw1ndwj  RodentEncDec_delay10_eff10_noproprio-job43323713 2026-08-31  -> pos_noproprio
+   wbyipflf  RodentEncDec_delay0_eff0_noproprio-job43605123   2026-09-01  -> pos_noproprio
+   dkglvuw8  RodentEncDec_delay0_eff0_noproprio-job43605398   2026-09-01  -> pos_noproprio
+   23267t68  RodentEncDec_delay5_eff0_noproprio-job43642407   2026-09-01  -> pos_noproprio
+   mbjli503  RodentEncDec_delay5_eff5_noproprio-job43642337   2026-09-01  -> pos_noproprio
+   d3dh5qj3  RodentEncDec_delay1_eff1_noproprio-job43642300   2026-09-01  -> pos_noproprio
+   gmmez2k1  RodentEncDec_delay0_eff5_noproprio-20260902-1229 2026-09-02  -> pos_noproprio
+   vbd3cpe4  RodentEncDec_delay0_eff100_noproprio-20260902-15 2026-09-02  -> pos_noproprio
+   rmvhu8le  RodentEncDec_delay0_eff15_noproprio-20260902-152 2026-09-02  -> pos_noproprio
+   erzsvdom  RodentEncDec_delay0_eff3_noproprio-20260902-1526 2026-09-02  -> pos_noproprio
+   ecapg0mv  RodentEncDec_delay0_eff10_noproprio-20260902-152 2026-09-02  -> pos_noproprio
+   29azonig  RodentEncDec_delay0_eff50_noproprio-20260902-152 2026-09-02  -> pos_noproprio
+   6p10mb7v  RodentEncDec_delay0_eff20_noproprio-20260902-152 2026-09-02  -> pos_noproprio
+   nfht1liy  RodentEncDec_delay0_eff3_noproprio-20260902-1624 2026-09-02  -> torque_noproprio
+   4qm7vurb  RodentEncDec_delay0_eff10_noproprio-20260902-162 2026-09-02  -> torque_noproprio
+   6atm5ygj  RodentEncDec_delay0_eff50_noproprio-20260902-163 2026-09-02  -> torque_noproprio
+   e90hvpxp  RodentEncDec_delay0_eff20_noproprio-20260902-163 2026-09-02  -> torque_noproprio
+   kroklpib  RodentEncDec_delay0_eff100_noproprio-20260902-16 2026-09-02  -> torque_noproprio
+   m1enkxz1  RodentEncDec_delay0_eff5_noproprio-20260902-1635 2026-09-02  -> torque_noproprio
+   vl7mfdi0  RodentEncDec_delay0_eff15_noproprio-20260902-163 2026-09-02  -> torque_noproprio
+   jx5h86mk  RodentEncDec_delay0_eff1_noproprio-20260902-2055 2026-09-03  -> pos_noproprio
+   7w26do00  RodentEncDec_delay0_eff2_noproprio-20260902-2055 2026-09-03  -> pos_noproprio
+   wp9ka5kp  RodentEncDec_delay0_eff2_noproprio-20260902-2055 2026-09-03  -> torque_noproprio
+   cxixksnk  RodentEncDec_delay0_eff2_noproprio-20260902-2237 2026-09-03  -> torque_noproprio
+   rfoe9wu2  RodentEncDec_delay0_eff2_noproprio-20260903-0915 2026-09-03  -> pos_noproprio
+   3v2mbdhh  RodentEncDec_delay0_eff10_noproprio-20260903-091 2026-09-03  -> pos_noproprio
+   y63jgg2m  RodentEncDec_delay0_eff100_noproprio-20260903-09 2026-09-03  -> pos_noproprio
+   yv2c0mtg  RodentEncDec_delay0_eff50_noproprio-20260903-091 2026-09-03  -> pos_noproprio
+   7h8m11tp  RodentEncDec_delay0_eff0_noproprio-20260903-1343 2026-09-03  -> torque_noproprio
+   ifru4hhd  RodentEncDec_delay0_eff15_noproprio-20260903-135 2026-09-03  -> pos_noproprio
+   zt2ht2il  RodentEncDec_delay0_eff20_noproprio-20260903-135 2026-09-03  -> pos_noproprio
+   azx3oyin  RodentEncDec_delay0_eff1_noproprio-20260903-1406 2026-09-03  -> torque_noproprio
+   in cohort: 36; tagged BUG / unregularised commit: 2
+
+3. If ONE gate were dropped and the rest kept, who would newly qualify?
+   (62 runs pass every gate; the six CONDITIONS then select 42 of them.
+    The rest are full-proprioception runs at some nonzero delay or efference length --
+    parameter-matched, but they answer the delay question, not this one.)
+   drop env is AbsoluteImitation                                -> +  0 run(s),  0 of them ablated
+   drop walker XML                                              -> +  0 run(s),  0 of them ablated
+   drop body_target_frame                                       -> +  0 run(s),  0 of them ablated
+   drop net_params.network_class present and RodentEncDecDelays -> +  5 run(s),  0 of them ablated
+   drop network sizes                                           -> +  0 run(s),  0 of them ablated
+   drop regularisation hyperparameters                          -> +  4 run(s),  0 of them ablated
+   drop PPO hyperparameters                                     -> + 26 run(s),  0 of them ablated
+   drop seed == 42                                              -> +  0 run(s),  0 of them ablated
+   drop not tagged BUG / not an unregularised commit            -> +  4 run(s),  1 of them ablated
+   drop held-out eval (created >= 2026-08-20)                   -> +  0 run(s),  0 of them ablated
+
+   Only the ablated column can change the swept arms, and it is zero for every gate. The
+   non-ablated entrants would land in the reference conditions, whose spread is already
+   under 0.7 %, and most of them cannot be used anyway: dropping the date gate admits
+   runs whose eval/* is the train split, and dropping the network_class gate admits
+   RodentForwardModel runs, which never recorded that field either.
+
+4. Which efference lengths exist at all, per mode (cohort membership, before usability)
+   position  launched:      [0, 1, 2, 3, 5, 10, 15, 20, 50, 100]
+   position  usable @600M: [0, 1, 2, 5, 10, 15, 20, 50, 100]   missing: [3]
+   position  usable @400M: [0, 1, 2, 3, 5, 10, 15, 20, 50, 100]
+   torque    launched:      [0, 1, 2, 3, 5, 10, 15, 20, 50, 100]
+   torque    usable @600M: [0, 1, 2, 3, 5, 10, 15, 20, 100]   missing: [50]
+   torque    usable @400M: [0, 1, 2, 3, 5, 10, 15, 20, 100]   missing: [50]
+
+   Both arms are complete at the primary 600 M readout except position efference 3 and
+   torque efference 50 -- interior points, not anchors. Position 3 was launched once and
+   crashed at 415 M (its 400 M value is in data.csv and brackets correctly between 2 and
+   5); torque 50 was launched once and died before its first eval. The torque 0 and 1
+   anchors, absent when this folder was first written, arrived in the 2026-09-03 relaunch
+   and are what let the torque arm be read as a recovery curve rather than a flat line.
+
+FAILURES: none

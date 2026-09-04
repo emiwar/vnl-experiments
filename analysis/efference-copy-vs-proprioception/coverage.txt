@@ -1,0 +1,17 @@
+Coverage for 42 runs in efference-copy-vs-proprioception
+
+index  (spec_id=-): 42/42
+    pos_intact                      2/2   
+    pos_nointent                    1/1   
+    pos_noproprio                  21/21  
+    torque_intact                   4/4   
+    torque_nointent                 2/2   
+    torque_noproprio               12/12  
+
+history:hist2000-09fea177  (spec_id=hist2000-09fea177): 42/42
+    pos_intact                      2/2   
+    pos_nointent                    1/1   
+    pos_noproprio                  21/21  
+    torque_intact                   4/4   
+    torque_nointent                 2/2   
+    torque_noproprio               12/12  

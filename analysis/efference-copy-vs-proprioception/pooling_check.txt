@@ -1,0 +1,63 @@
+A. Spread within groups that differ only in something claimed to be inert
+
+   Metric: reward_600M (held-out episode reward, mean of the eval points in (550 M, 600 M]).
+   Spread = (max - min) / mean, in percent. Tolerance = 3.0 %.
+
+   group                   n     mean  spread%   varies                                 bounds
+   position, efference 0   3   1230.7     2.51   delay_k (5, 0, 0)                      delay inertness alone -- one commit, one stack; also the noise floor
+   position, efference 2   2   1701.6     0.61   nothing at all                         pure replicate: same config, commit, stack, delay and seed
+   position, intact        2   1938.6     0.25   git_commit only                        the vnl-experiments commit (and its working copy) alone
+   position, efference 10  2   1702.5     1.36   delay_k (10, 0) + git_commit           delay and commit jointly
+   torque, efference 10    2    750.2     0.99   delay_k (0, 10) + git + nnx-ppo + CUDA everything that varies in the swept arm, at once
+   torque, intact          3   1978.6     0.20   git + nnx-ppo + CUDA                   the whole stack, with the config held identical
+
+   Containment test -- is the inert knob smaller than rerunning?
+     delay_k = 5 vs two delay_k = 0 replicates, position efference 0
+       odd run 23267t68 = 1229.4; replicates span [1215.8, 1246.7] -> INSIDE
+     Inside means the manipulation claimed to be inert moves reward less than simply
+     rerunning the same configuration does, which is a stronger statement than any
+     spread-under-tolerance and needs no threshold to interpret.
+
+B. Every (mode, efference_length) cell with more than one usable run
+
+   cell                      budget  n     mean  spread%   values
+   position, efference 0       600M  3   1230.7     2.51   [1215.8, 1229.4, 1246.7]
+   position, efference 2       600M  2   1701.6     0.61   [1696.4, 1706.8]
+   position, efference 10      600M  2   1702.5     1.36   [1690.9, 1714.0]
+   torque, efference 10        600M  2    750.2     0.99   [746.5, 753.9]
+   position, efference 0       400M  3   1193.3     0.99   [1187.2, 1193.7, 1199.0]
+   position, efference 2       400M  2   1657.3     0.52   [1653.0, 1661.7]
+   position, efference 10      400M  3   1719.1     0.58   [1714.9, 1717.5, 1724.8]
+   position, efference 15      400M  2   1681.1     2.09   [1663.5, 1698.7]
+   position, efference 20      400M  2   1704.7     1.20   [1694.5, 1714.9]
+   position, efference 50      400M  2   1653.4     0.65   [1648.0, 1658.8]
+   torque, efference 10        400M  2    700.4     1.06   [696.7, 704.2]
+
+   Worst spread at the primary readout: 2.51 %. That is this cohort's replicate
+   noise floor, and every effect in report.md is stated against it.
+
+C. Relaunch cross-check: the crashed 2026-09-02 runs vs their 2026-09-03 repeats
+
+   Read at 400 M, the only budget both reach. Independent runs of the same configuration,
+   so agreement here is evidence the relaunched runs -- which carry the whole 600 M result
+   at efference 15, 20, 50 and 100 -- are not systematically different from what crashed.
+
+   cell                       crashed  relaunched   diff%
+   position, efference 3       1697.1 -- not repeated
+   position, efference 10      1717.5      1719.8   +0.14
+   position, efference 15      1663.5      1698.7   +2.12
+   position, efference 20      1694.5      1714.9   +1.20
+   position, efference 50      1658.8      1648.0   -0.65
+
+Reading
+  Every group in A holds, and the containment test passes: pooling across `delay_k` at
+  fixed `efference_length` is sound on trained reward as well as on the built network.
+  Every environment axis that comparability.txt flags -- the vnl-experiments commit, the
+  nnx-ppo commit, the CUDA upgrade -- moves reward by less than the noise floor inside at
+  least one group, which is what had to be measured rather than argued since repos.*.dirty
+  voids the commit hashes themselves.
+
+  C agrees to within the noise floor at every repeated cell, so the relaunch is measuring
+  the same thing the crashed sweep was.
+
+FAILURES: none

@@ -1,0 +1,44 @@
+Is the load-bearing code identical across the cohort's commits?
+
+Per subject and commit: sha256[:12] of the raw bytes, and of the same source with every
+docstring stripped and re-unparsed. The verdict is taken from the second: docstrings
+cannot make it differ, and nothing executable can hide behind them.
+
+Commits, and how many runs of this cohort were built from each:
+  2ae4a5dd  n=27
+  2c147a6a  n= 1
+  4245ae42  n= 3
+  a3450a91  n= 1
+  b7c4b32f  n= 6
+  f4992e21  n= 4
+
+-- raw bytes ---------------------------------------------------------------------------------------------------------
+subject                     2ae4a5dd       2c147a6a       4245ae42       a3450a91       b7c4b32f       f4992e21   verdict
+efference_copy.py       b2757651232e   b2757651232e   b2757651232e   b2757651232e   b2757651232e   b2757651232e   identical
+absolute_imitation.py   2d99572b029b   1a1f99dd4343   1a1f99dd4343   1a1f99dd4343   1a1f99dd4343   1a1f99dd4343   differs
+build_delay_network()   de865c472f45   de865c472f45   de865c472f45   de865c472f45   de865c472f45   de865c472f45   identical
+_parse_net_params()     cc728e5848cf   156ab2ec1f9e   156ab2ec1f9e   156ab2ec1f9e   156ab2ec1f9e   156ab2ec1f9e   differs
+
+-- executable code ---------------------------------------------------------------------------------------------------
+subject                     2ae4a5dd       2c147a6a       4245ae42       a3450a91       b7c4b32f       f4992e21   verdict
+efference_copy.py       e13a955c456a   e13a955c456a   e13a955c456a   e13a955c456a   e13a955c456a   e13a955c456a   identical
+absolute_imitation.py   71bbc34170f9   71bbc34170f9   71bbc34170f9   71bbc34170f9   71bbc34170f9   71bbc34170f9   identical
+build_delay_network()   c801a6923354   c801a6923354   c801a6923354   c801a6923354   c801a6923354   c801a6923354   identical
+_parse_net_params()     7d8077b5cf08   7d8077b5cf08   7d8077b5cf08   7d8077b5cf08   7d8077b5cf08   7d8077b5cf08   identical
+
+Reading
+  Every subject's executable code is identical at every commit in the cohort. The large
+  diffs between these commits (a training-entry-point refactor and the flat-observation
+  dm_control architectures) are additive and touch none of it, so `git_commit` varying
+  inside a condition does not make that condition's runs differently-built.
+
+  Raw bytes do differ for absolute_imitation.py, _parse_net_params(): a script renamed in a docstring
+  (`train_rodent_delays.py` / `train_rodent.py` -> `train.py`), which is why the
+  docstring-stripped hash is the one the verdict reads.
+
+  This bounds the COMMITTED code only. Every run here that recorded repos.*.dirty
+  recorded True, so the working copy had uncommitted edits and the commit does not
+  identify what ran. report.md bounds the remainder empirically instead, from the
+  matched-commit replicate pairs.
+
+FAILURES: none

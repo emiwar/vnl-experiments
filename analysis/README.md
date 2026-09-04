@@ -390,6 +390,44 @@ noise floor (3.1 % on held-out reward) rather than a delay contrast. The same ap
 future ablation that removes the branch a manipulation lives in: check what the *built*
 network depends on, not what the config records.
 
+**A `history` artifact made from a running run is a snapshot, and `ensure` will not replace
+it.** The artifact key is `(kind, wandb_id, spec_id)` with no notion of how far the run had
+got, so a `history` produced while a run was mid-training stays in the store, at that length,
+for ever -- and `artifacts ensure` reports it as present. In
+[`efference-copy-vs-proprioception/`](efference-copy-vs-proprioception/) four runs were
+`running` at 110-190 M when their artifacts were first made and had reached 600 M by the next
+session; rebuilding without noticing would have silently reported four *finished* runs as
+having no usable readout, which looks exactly like more cluster attrition rather than like a
+bug. The sidecar has what you need to detect it -- compare `resolved.max_step` against the
+index's `summary._step` -- so check that before any rebuild that follows new runs finishing,
+and re-produce the stale ones with `artifacts ensure --override`. The same applies to any
+artifact kind whose content depends on how much of the run exists yet; an `eval` of a
+`"last"` checkpoint has the same shape of problem, recorded in its own `resolved.checkpoint_step`.
+
+**A common mid-training budget is biased against whatever trains slower.** Reading every
+arm at a shared step count is the right way to include runs that died before the end -- but
+it is only fair if the swept variable does not change the learning *rate*, and it often
+does. In [`efference-copy-vs-proprioception/`](efference-copy-vs-proprioception/) the
+efference queue is concatenated onto the decoder's input, so `efference_length` 100 means a
+3 832-wide first layer instead of 108: at a 400 M readout the long-queue runs gain +14 % over
+the next 200 M while the short-queue ones gain +0.1 %, so the early readout understates
+exactly one end of the x-axis. The curve's *shape* there is an artefact; its *level* and the
+between-condition ratio are not. Before quoting a shape from an early readout, plot the
+(early -> final) gain against the swept variable for the runs that have both -- and check
+whether the runs missing the final budget are correlated with the swept variable, since if
+they are, that panel cannot be drawn where it is most needed.
+
+**"Read the git diff and confirm it is benign" does not scale, so hash the load-bearing code
+instead.** A cohort spanning a refactor can span 80 files and 10 000 lines with nothing
+relevant changed. `efference-copy-vs-proprioception/code_identity.py` is the pattern: name
+the handful of functions and files that actually build and run the networks, and hash them
+at each commit in the cohort, comparing the source **with docstrings stripped and
+re-unparsed** rather than raw bytes -- two of its four subjects differ in bytes only because
+a script was renamed inside a docstring, and a raw-byte check would report a spurious
+difference and train you to ignore it. Note what this cannot do: when `repos.*.dirty` is
+`True` the commit does not identify the code that ran, so pair the hash with a group of runs
+that are configured identically and differ only in commit/stack, and quote *that* spread.
+
 **The cluster working copy drifts from the committed script.** The same rule — read
 `env_params`, never the script at the run's commit — applies to *every* env knob. The
 2026-07-09/07-19 new-XML cohort logged `body_target_frame = current_root` while the script
