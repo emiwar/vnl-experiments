@@ -11,6 +11,8 @@ So:
 1. How much of the ablation's cost does an efference copy buy back?
 2. Does the **length** of the queue matter, and where does it saturate?
 3. Does the answer differ between **position** and **torque** actuators?
+4. Does any of it survive on the harder **30 s** evaluation clips (``new_eval``), rather
+   than the 5 s clips everything else here is measured on?
 
 Why the answer could plausibly differ by control mode
 -----------------------------------------------------
@@ -288,6 +290,37 @@ INVARIANTS = [
 REWARD_KEYS = ("eval/episode_reward/mean", "episode_reward/mean")
 LIFESPAN_KEYS = ("eval/lifespan/mean", "lifespan_mean")
 
+#: The **30 s** evaluation set, read from the run's own end-of-training eval rather than
+#: from an offline ``eval`` artifact.
+#:
+#: ``new_eval`` is ``assets/art/2020_12_22_1/eval_clips_32x30s.h5`` -- 32 clips of 1 500
+#: mocap frames (30 s at 50 Hz), against the 250-frame (5 s) clips every other number in
+#: this folder uses. It is a different dataset, so **its rewards are not comparable with
+#: any other column here**, only across conditions within itself (README §6): a 30 s
+#: episode accumulates roughly six times the reward of a 5 s one before anything about the
+#: policy is taken into account.
+#:
+#: No artifact is needed because ``train.py``'s ``run_final_eval`` calls
+#: ``evaluation.run_final_eval`` without a ``new_eval_h5`` argument, so it uses the same
+#: ``DEFAULT_NEW_EVAL_H5`` the offline ``EvalProducer`` defaults to, with the same 32 clips.
+#: That equality is checked rather than assumed: the three cohort runs that also hold an
+#: offline ``eval3ds-382e9e69`` artifact report ``n_clips = 32`` there and agree with these
+#: inline numbers to -2.0 / -0.0 / +3.1 % on ``new_eval`` (and to <= 0.9 % on ``old_eval``).
+#:
+#: Two properties of this column that the 600 M reward columns do not share, both of which
+#: the report leans on when reading the figure:
+#:   * it is a **single** evaluation at the end of training, not the mean of five eval
+#:     points over a 50 M window, so it carries the full eval-time sampling noise of a
+#:     variational policy;
+#:   * it is an **inline** measurement for every run, so nothing is mixed -- but it is
+#:     therefore only available for runs that reached their own final eval.
+NEW_EVAL_REWARD = "summary.final_eval/new_eval/episode_reward/mean"
+NEW_EVAL_LIFESPAN = "summary.final_eval/new_eval/lifespan_s/mean"
+NEW_EVAL_SURVIVED = "summary.final_eval/new_eval/termination_rate/survived"
+
+#: Nominal length of a ``new_eval`` clip, for the reward-per-second column.
+NEW_EVAL_CLIP_SECONDS = 30.0
+
 
 def load_curve(store: Store, wandb_id: str) -> pd.DataFrame | None:
     """The run's sampled eval curve as ``step / reward / lifespan``, or None.
@@ -395,6 +428,22 @@ def build_row(run: pd.Series, store: Store) -> dict:
     primary = READOUTS[0][0]
     row[f"usable_{primary}"] = row[f"reward_{primary}"] is not None
     row["usable_400M"] = row["reward_400M"] is not None
+
+    # The 30 s eval set, straight off the run's summary. `first_present` is not used: there
+    # is exactly one key and a rename would be a different measurement, not an alias.
+    def summary(key):
+        value = run.get(key)
+        return None if value is None or pd.isna(value) else round(float(value), 3)
+
+    row["new_eval_reward"] = summary(NEW_EVAL_REWARD)
+    row["new_eval_lifespan_s"] = summary(NEW_EVAL_LIFESPAN)
+    row["new_eval_survived"] = summary(NEW_EVAL_SURVIVED)
+    # Reward per second of episode, so the 30 s and 5 s sets can at least be *discussed*
+    # on one scale even though their totals cannot be compared.
+    row["new_eval_reward_per_s"] = (
+        round(row["new_eval_reward"] / row["new_eval_lifespan_s"], 3)
+        if row["new_eval_reward"] is not None and row["new_eval_lifespan_s"] else None)
+    row["usable_new_eval"] = row["new_eval_reward"] is not None
     return row
 
 

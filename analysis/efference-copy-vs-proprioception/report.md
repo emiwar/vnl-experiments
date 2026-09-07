@@ -17,6 +17,8 @@ copy**, a queue of its own `efference_length` most recent actions.
 1. How much of the ablation's cost does an efference copy buy back?
 2. Does the **length** of the queue matter, and where does it saturate?
 3. Does the answer differ between **position** and **torque** actuators?
+4. Does any of it survive on the harder **30 s** evaluation clips, rather than the 5 s clips
+   everything else here is measured on?
 
 An answer is a reward-vs-`efference_length` curve per control mode, read against two
 measured levels: the same mode's proprioception-intact baseline (what was lost) and its
@@ -74,8 +76,34 @@ substitute for proprioception far better under position control. This is the tes
   itself a result (figure 3). Episode length is capped at ~500 control steps (250 mocap
   frames at 50 Hz, `ctrl_dt = 0.01`), which is the scale for the lifespan panel.
 
+- **The 30 s evaluation set (`new_eval`).** A second, harder test set:
+  `assets/art/2020_12_22_1/eval_clips_32x30s.h5`, 32 clips of 1 500 mocap frames — 30 s at
+  50 Hz — against the 250-frame (5 s) clips behind every other number here. **Its rewards
+  are not comparable with any other column in this folder**, only across conditions within
+  itself (README §6): a 30 s episode accumulates roughly six times the reward of a 5 s one
+  before anything about the policy enters.
+
+  It needs **no offline eval artifact and no cluster job**. `train.py`'s `run_final_eval`
+  calls `evaluation.run_final_eval` without a `new_eval_h5` argument, so it uses the same
+  `DEFAULT_NEW_EVAL_H5` the offline `EvalProducer` defaults to, and every run logs the
+  result to `summary.final_eval/new_eval/*`. **All 30 runs usable at 600 M have it**, so it
+  is an inline measurement for the whole cohort with nothing mixed. That the inline and
+  offline numbers are the same measurement is checked, not assumed: the three cohort runs
+  that also hold an `eval3ds-382e9e69` artifact report `n_clips = 32` there and agree with
+  their inline values to −2.0 %, −0.0 % and +3.1 % on `new_eval` (and to ≤ 0.9 % on
+  `old_eval`), which also confirms `eval_limit_clips` was unset.
+
+  Two properties this column does *not* share with the 600 M reward columns, both of which
+  the reading of figure 1b depends on: it is a **single** evaluation at the end of training
+  rather than the mean of five eval points over a 50 M window, so it carries the full
+  eval-time sampling noise of a variational policy; and on 30 s clips one early termination
+  costs far more reward than on 5 s ones. Between them, the position arm's multi-run cells
+  spread **10.7–18.7 %** here against 2.51 % in figure 1 (torque intact spreads 11.5 %,
+  position intact 5.5 %). See caveat 8.
+
 - **Artifacts:** `REQUIRES = ["index", "history:hist2000-09fea177"]`, **42/42 coverage, no
-  gaps** — see [`coverage.txt`](coverage.txt).
+  gaps** — see [`coverage.txt`](coverage.txt). The 30 s numbers add no requirement: they
+  come from the run summaries in the index.
 
 - **Programmatic comparability:** [`comparability.txt`](comparability.txt). All twelve PPO
   hyperparameters, every network size and regularisation setting, and every `env_params`
@@ -179,6 +207,14 @@ substitute for proprioception far better under position control. This is the tes
    "efference length 10 with no proprioception."
 7. **One seed.** Every run is `seed = 42`, so the 2.51 % floor bounds run-to-run
    nondeterminism, not seed-to-seed variation.
+8. **The 30 s numbers are far noisier than the 5 s ones**, for the two reasons given above
+   — a single unwindowed evaluation, and a long horizon in which one early termination is
+   expensive. Position's replicate cells spread 10.7 % (eff 10), 18.1 % (eff 2) and 18.7 %
+   (eff 0). **So only the step from `efference_length` 0 to the plateau is readable on
+   figure 1b** — +46 % to the plateau mean and +73 % to the peak, both far outside that
+   spread; the wiggles along the plateau, the eff-15 dip in particular, are inside it and
+   are not evidence of anything. The 5 s figures
+   remain the place to read the *shape* of the curve.
 
 ## Figures
 
@@ -191,6 +227,19 @@ length 1, 88 % at length 2, peaking at 90 % at length 5 — then declines gently
 length 100. Torque climbs too, but only from 31 % to 38 %, and its plateau sits just *below*
 its own task-blind reference. Panel B removes the 2 % difference between the two modes'
 intact baselines, which is the only reason panel A is not already a fair comparison.
+
+![Episode reward on the 32-clip, 30-second evaluation set against efference-copy length, per control mode; panel A absolute with the intact baselines, panel B as a fraction of each mode's own intact baseline with the task-blind levels.](figures/efference_sweep_new_eval.png)
+
+**Figure 1b — the same sweep on 30 s clips.** The y axis is *not* comparable with figure 1;
+only within-figure comparisons mean anything. The qualitative answer survives and gets
+larger: position climbs from 34 % of intact with no queue to a plateau averaging 49 %
+(42–58 % across lengths, a range entirely inside the noise), torque from 12 % to at best
+15 %, so the ratio of gap recovered is **10.7×** here against 7.0× on 5 s clips. Both
+modes are absolutely much worse than on the short clips — position's best is 58 % of intact
+where it was 90 % — because errors that a 5 s clip never punishes compound over 30 s. The
+thing to look at in panel B is the red arm lying *on* its own task-blind level across the
+whole sweep. Note the open markers: this figure is noisy (caveat 8), and only the rise out
+of eff 0 should be read from it.
 
 ![Mean lifespan and reward per surviving step against efference-copy length, per control mode, with the same reference levels.](figures/survival_vs_tracking.png)
 
@@ -244,6 +293,15 @@ marginally under torque control — a factor of 7 in how much of the loss it rec
 - **What the modes have in common:** neither reaches its intact baseline, and the shape is
   the same — a steep rise over the first few steps, a plateau, then a shallow decline. What
   differs is only the height of the plateau.
+- **On the 30 s clips the asymmetry is larger, and torque's small recovery stops being
+  interesting.** Position recovers 37 % of the gap there (3 609 → 6 241 against 10 788
+  intact) and torque 3.4 % (1 259 → 1 579 against 10 630) — a 10.7× ratio. The decisive
+  number is not the reward but the survival: **the torque arm never once completes a 30 s
+  clip at any efference length** (`termination_rate/survived` is 0.00 throughout, mean
+  lifespan 3.5–5.9 s of 30), which is indistinguishable from the task-blind runs (4.9 s,
+  0.00). Position's ablated arm survives 3–31 % of clips and lasts 9.8–15.6 s, against
+  25.1–26.4 s and 69–78 % for position intact. So under torque the efference copy buys a
+  little reward on short clips and no usable horizon at all on long ones.
 - **Suggestive, not shown:** torque's peak (750) remains 3.1 % *below* its task-blind
   `nointent` reference (774). Read literally, a torque policy given the imitation target and
   an efference copy but no body feedback still does no better than one given body feedback

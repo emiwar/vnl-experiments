@@ -211,6 +211,73 @@ def figure_sweep(data):
 
 
 # --------------------------------------------------------------------------------------
+# figure 1b -- the same sweep on the 30 s evaluation clips
+# --------------------------------------------------------------------------------------
+
+def figure_new_eval(data):
+    """The sweep again on ``new_eval``: 32 clips of 30 s, against the 5 s clips elsewhere.
+
+    Deliberately the same layout as ``figure_sweep`` so the two can be read side by side --
+    but note the y axes are **not** comparable between the figures. A 30 s episode
+    accumulates about six times the reward of a 5 s one before anything about the policy
+    enters, so only the within-figure comparisons mean anything (README §6).
+
+    Two things make this figure noisier than figure 1, and both are visible in it. Each
+    point is a *single* end-of-training evaluation rather than the mean of five eval points
+    over a 50 M window, so it carries the full sampling noise of a variational policy; and
+    on 30 s clips a single early termination costs far more reward than on 5 s ones. The
+    position arm's multi-run cells spread 11-19 % here against 2.5 % in figure 1, which is
+    why the individual runs are drawn and why the report reads only the eff-0-to-plateau
+    step off this figure and not the shape beyond it.
+    """
+    column = "new_eval_reward"
+    fig, axes = plt.subplots(1, 2, figsize=(9.4, 4.0))
+
+    ax = axes[0]
+    for mode, condition in (("position", "pos_noproprio"), ("torque", "torque_noproprio")):
+        arm = usable(data, condition, column)
+        runs = arm.assign(y=arm[column])
+        _plot_arm(ax, sweep(data, condition, column), mode, runs=runs)
+    _reference_pair(ax, [(level(data, "pos_intact", column), MODE_COLOR["position"],
+                          "position, intact"),
+                         (level(data, "torque_intact", column), MODE_COLOR["torque"],
+                          "torque, intact")], ":")
+    # The two task-blind levels are ~1 300 and ~1 440 on an axis running to ~11 000 -- 1 %
+    # of the panel height apart, and sitting exactly where the torque arm runs. They are
+    # drawn in panel B instead, where the comparison that matters (torque's arm lying on
+    # its own blind level) is actually resolvable.
+    _symlog_x(ax)
+    ax.set_ylabel("Episode reward, 30 s eval clips")
+    ax.set_title("A. Reward on the 30 s evaluation set", loc="left")
+    ax.legend(loc="center right")
+
+    ax = axes[1]
+    for mode, condition, intact in (("position", "pos_noproprio", "pos_intact"),
+                                    ("torque", "torque_noproprio", "torque_intact")):
+        base = level(data, intact, column)
+        points = sweep(data, condition, column)
+        for col in ("mean", "min", "max"):
+            points[col] = points[col] / base
+        arm = usable(data, condition, column)
+        runs = arm.assign(y=arm[column] / base)
+        _plot_arm(ax, points, mode, runs=runs)
+    _reference_pair(ax, [(level(data, "pos_nointent", column)
+                          / level(data, "pos_intact", column),
+                          MODE_COLOR["position"], "position, no target"),
+                         (level(data, "torque_nointent", column)
+                          / level(data, "torque_intact", column),
+                          MODE_COLOR["torque"], "torque, no target")], (0, (1, 3)))
+    _reference(ax, 1.0, "0.35", "proprioception intact (both modes)", ":", va="top")
+    _symlog_x(ax)
+    ax.set_ylim(0, 1.06)
+    ax.set_ylabel("Fraction of the same mode's intact baseline")
+    ax.set_title("B. As a fraction of what was lost", loc="left")
+
+    fig.tight_layout()
+    return fig
+
+
+# --------------------------------------------------------------------------------------
 # figure 2 -- survival vs tracking quality
 # --------------------------------------------------------------------------------------
 
@@ -382,6 +449,7 @@ def main() -> None:
 
     built = {
         "efference_sweep.png": figure_sweep(data),
+        "efference_sweep_new_eval.png": figure_new_eval(data),
         "survival_vs_tracking.png": figure_decomposition(data),
         "budget_check.png": figure_budget_check(data),
         "training_curves.png": figure_curves(data, curves),
