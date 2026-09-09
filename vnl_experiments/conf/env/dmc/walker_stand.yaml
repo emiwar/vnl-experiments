@@ -24,6 +24,16 @@ defaults:
 env_spec:
   task: WalkerStand
 
+  # Run-name convention: the task leads, because this family has nine of them and a name
+  # without it says nothing about which problem was solved. Matches the naming the
+  # existing `nnx-ppo-delays` runs use.
+  name_template: "{task}_{net}_delay{delay}_eff{efference}{ablations}"
+
+  # The task name as a tag, as the pre-Hydra script did, so a cohort is selectable by
+  # tag. Deliberately *not* `warp` / `TrainEvalSplit`: there is no clip split to hold
+  # out, so the latter would assert something untrue.
+  tags: [WalkerStand]
+
 wandb:
   project: nnx-ppo-delays
 

@@ -133,6 +133,36 @@ def _task_overrides() -> list[str]:
         return []
 
 
+def _name_stem(cfg: DictConfig, arch, net_params: dict, efference_length: int,
+               ablations: tuple[str, ...]) -> str:
+    """The run name up to the trailing timestamp or job token.
+
+    The convention is per env family, because the families need different things in a
+    name. A rodent run is one task, so the architecture leads: ``RodentEncDec_delay5_eff5``.
+    A control-suite run is one of nine tasks, so the task has to lead or the name says
+    nothing about which problem was solved: ``WalkerWalk_DelayedMLP_delay5_eff5`` -- which
+    is also the convention the existing `nnx-ppo-delays` runs use.
+
+    ``env_spec.name_template`` holds it, so adding an env family means writing its
+    template in the group file rather than editing this function.
+    """
+    template = cfg.env_spec.get("name_template") or "{net}_delay{delay}_eff{efference}{ablations}"
+    try:
+        return template.format(
+            task=cfg.env_spec.task,
+            net=arch.run_label(net_params),
+            delay=cfg.delay,
+            efference=efference_length,
+            ablations="".join(f"_{t}" for t in ablations),
+            seed=cfg.seed,
+        )
+    except KeyError as e:
+        raise OverrideError(
+            f"env_spec.name_template refers to {e.args[0]!r}, which is not one of "
+            f"task / net / delay / efference / ablations / seed."
+        ) from None
+
+
 def build_run(cfg: DictConfig) -> RunSetup:
     """Build the envs, network, configs and WandB metadata for one run."""
     arch = get_architecture(cfg.net_spec.architecture)
@@ -173,13 +203,15 @@ def build_run(cfg: DictConfig) -> RunSetup:
         # followed by `eval_env = train_env`, so every delays run's WandB `eval/*` series
         # actually measured train-split performance -- see the trap note in
         # analysis/README.md. Do not "simplify" this back.
-        eval_env = spec.build(env_config, clips=test_clips)
+        eval_env = spec.build(env_config, clips=test_clips, for_eval=True)
     else:
         # A self-contained task has no held-out data to hold out, so train and eval see
         # the same env. They are still separate instances, for the same reason as above.
         train_clips = test_clips = None
         train_env = spec.build(env_config)
-        eval_env = spec.build(env_config)
+        # for_eval drops the training-only wrappers (reward scaling, episode truncation),
+        # which would otherwise report scaled reward and short-changed lifespans.
+        eval_env = spec.build(env_config, for_eval=True)
 
     # One source of truth: config.json (for offline reconstruction by the eval scripts),
     # the network built here, and the end-of-training eval's metadata all read this dict.
@@ -237,10 +269,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
         config=config,
         ablations=ablations,
         env_spec=spec,
-        name_stem=(
-            f"{arch.run_label(net_params)}_delay{cfg.delay}_eff{efference_length}"
-            f"{''.join(f'_{t}' for t in ablations)}"
-        ),
+        name_stem=_name_stem(cfg, arch, net_params, efference_length, ablations),
         wandb_config={
             # This payload's shape is load-bearing: the run index flattens it to dotted
             # columns (`env_params.walker_xml_path`, `config.ppo.total_steps`, ...) and
@@ -266,7 +295,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
         # `env-override` marks a run whose env differs from the study's standard config.
         # The comparability protocol (analysis/README.md) reads `env_params`, but a tag is
         # what makes such a run obvious in a run list before anyone thinks to check.
-        tags=(*arch.tags, "warp", "TrainEvalSplit", arch.name,
+        tags=(*arch.tags, *tuple(cfg.env_spec.get("tags", ())), arch.name,
               f"delay{cfg.delay}", f"eff{efference_length}",
               *ablations,
               *env_variant_tags,

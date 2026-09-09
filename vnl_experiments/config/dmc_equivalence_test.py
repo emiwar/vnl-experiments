@@ -127,3 +127,117 @@ def test_the_dmc_groups_pin_the_control_suite_project() -> None:
     )
     # ...and the rodent default is untouched.
     assert composed().wandb.project == "nnx-ppo-rodent-delays"
+
+
+class TestEvalEnvIsNotWrapped:
+    """The training wrappers must not reach the measurement env.
+
+    Both distort what the eval reports, and neither failure is loud:
+
+    * ``RewardScalingWrapper`` multiplies reward by 10, so `eval/episode_reward` comes out
+      in different units than the historical runs -- comparable in shape, wrong in scale.
+    * ``EpisodeWrapper.reset`` seeds ``step_counter`` to a random value in
+      ``[0, max_len/2)``. That phase-spread is deliberate and correct for training (envs
+      must not truncate in lockstep) but on an eval env it means an episode can start 499
+      steps in, so the reported lifespan lands near 750 rather than 1000, with large
+      variance.
+
+    The pre-Hydra script passed the bare env as `eval_env` for exactly this reason.
+    """
+
+    def _envs(self, task="CartpoleSwingup"):
+        spec = env_registry.get(task)
+        cfg = spec.default_config()
+        return spec.build(cfg), spec.build(cfg, for_eval=True)
+
+    def test_train_env_is_wrapped(self) -> None:
+        train, _ = self._envs()
+        assert type(train).__name__ == "RewardScalingWrapper"
+
+    def test_eval_env_is_bare(self) -> None:
+        _, ev = self._envs()
+        name = type(ev).__name__
+        assert "Wrapper" not in name, f"eval env is wrapped in {name}"
+
+    def test_eval_reward_is_unscaled(self) -> None:
+        """A 10x reward would silently rescale every eval curve.
+
+        The two envs cannot be compared by resetting both with the same key --
+        ``EpisodeWrapper.reset`` splits the rng and passes only half to the inner env, so
+        they start from different states. Wrap the eval env by hand instead and step both
+        from *one* state, which isolates the scaling from everything else.
+        """
+        import jax
+
+        spec = env_registry.get("CartpoleSwingup")
+        cfg = spec.default_config()
+        assert cfg.reward_scale == 10.0
+
+        from nnx_ppo.wrappers import reward_scaling_wrapper
+
+        bare = spec.build(cfg, for_eval=True)
+        scaled = reward_scaling_wrapper.RewardScalingWrapper(bare, cfg.reward_scale)
+
+        state = bare.reset(jax.random.key(0))
+        action = jax.numpy.zeros((bare.action_size,))
+        r_bare = float(bare.step(state, action).reward)
+        r_scaled = float(scaled.step(state, action).reward)
+        assert r_scaled == pytest.approx(r_bare * cfg.reward_scale, rel=1e-5)
+
+    def test_eval_episodes_start_at_step_zero(self) -> None:
+        """The randomised start counter is what cut the reported lifespan short."""
+        import jax
+
+        spec = env_registry.get("CartpoleSwingup")
+        cfg = spec.default_config()
+        train, ev = spec.build(cfg), spec.build(cfg, for_eval=True)
+        counters = [int(train.reset(jax.random.key(s)).info["step_counter"])
+                    for s in range(12)]
+        assert max(counters) > 0, "training envs should be phase-spread"
+        # The bare env keeps no counter at all, so nothing truncates the eval episode
+        # before `eval.max_episode_length` does.
+        assert "step_counter" not in ev.reset(jax.random.key(0)).info
+
+
+class TestNamingAndTagsArePerEnvFamily:
+    """Naming and env-family tags are declared by the env group, not hardcoded.
+
+    A control-suite name has to lead with the task -- there are nine of them, and
+    `DelayedMLP_delay5_eff5` does not say which problem was solved. The rodent has one
+    task, so the architecture leads. `TrainEvalSplit` asserts an in-training eval on
+    held-out clips, which is untrue for a task that has no clips.
+    """
+
+    def _setup(self, *overrides):
+        from vnl_experiments import train as entry
+
+        return entry.build_run(composed(*overrides))
+
+    def test_rodent_name_and_tags_are_unchanged(self) -> None:
+        s = self._setup("delay=5")
+        assert s.name_stem == "RodentEncDec_delay5_eff5"
+        assert {"warp", "TrainEvalSplit"} <= set(s.tags)
+
+    def test_dmc_name_leads_with_the_task(self) -> None:
+        s = self._setup("env=dmc/walker_walk", "net=delayed_mlp", "train=dmc", "delay=5")
+        assert s.name_stem == "WalkerWalk_DelayedMLP_delay5_eff5"
+
+    def test_dmc_tags_carry_the_task_and_not_the_rodent_ones(self) -> None:
+        s = self._setup("env=dmc/walker_walk", "net=delayed_mlp", "train=dmc", "delay=5")
+        assert "WalkerWalk" in s.tags
+        assert "TrainEvalSplit" not in s.tags
+        assert "warp" not in s.tags
+
+    def test_ablation_tokens_still_reach_the_name(self) -> None:
+        s = self._setup("delay=0", "efference=3", "net.dec_use_proprioception=false")
+        assert s.name_stem == "RodentEncDec_delay0_eff3_noproprio"
+
+    def test_every_dmc_group_declares_both(self) -> None:
+        """A new group that forgot them would fall back to the rodent convention."""
+        from pathlib import Path
+
+        for f in sorted((Path(__file__).parent.parent / "conf/env/dmc").glob("*.yaml")):
+            cfg = composed(f"env=dmc/{f.stem}", "net=delayed_mlp")
+            assert cfg.env_spec.name_template.startswith("{task}"), f.stem
+            assert cfg.env_spec.task in list(cfg.env_spec.tags), f.stem
+            assert "TrainEvalSplit" not in list(cfg.env_spec.tags), f.stem

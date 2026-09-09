@@ -40,7 +40,9 @@ class EnvSpec(NamedTuple):
 
     #: ``() -> ConfigDict``. The authoritative schema; YAML groups hold deltas onto it.
     default_config: Callable[[], Any]
-    #: ``(config, clips=None) -> env``. Applies whatever wrappers the family needs.
+    #: ``(config, clips=None, for_eval=False) -> env``. Applies whatever wrappers the
+    #: family needs. ``for_eval`` matters because some training wrappers must *not* be
+    #: on the measurement env -- see :func:`_dmc_builder`.
     build: Callable[..., Any]
     #: ``"dict"`` or ``"flat"``; must match the architecture's.
     obs_layout: str = "dict"
@@ -53,7 +55,9 @@ class EnvSpec(NamedTuple):
 
 
 def _imitation_builder(cls):
-    def build(config, *, clips=None):
+    def build(config, *, clips=None, for_eval=False):
+        # The imitation tasks need no wrappers, so train and eval differ only in which
+        # clips they are handed -- which the caller decides.
         return cls(config, clips=clips)
 
     return build
@@ -78,12 +82,26 @@ def _dmc_builder(task: str):
 
     Both read their parameter from the env config rather than closing over a constant, so
     the value is overridable per run *and* recorded in ``config.json``'s ``env_params``.
+
+    **Both are training-only.** ``for_eval=True`` returns the bare env, because each
+    wrapper corrupts the measurement in its own way: reward scaling reports reward in
+    10x units, and ``EpisodeWrapper.reset`` seeds ``step_counter`` to a random value in
+    ``[0, max_len/2)`` -- a deliberate phase-spread so training envs do not truncate in
+    lockstep, but on an eval env it means an episode can begin 499 steps in and the
+    reported lifespan lands near 750 instead of 1000, with large variance.
     """
-    def build(config, *, clips=None):
+    def build(config, *, clips=None, for_eval=False):
         import mujoco_playground
         from nnx_ppo.wrappers import episode_wrapper, reward_scaling_wrapper
 
         env = mujoco_playground.registry.load(task, config=config)
+        if for_eval:
+            # Neither wrapper belongs on the measurement env, and both distort it:
+            # RewardScalingWrapper reports reward in 10x units, and EpisodeWrapper's
+            # randomised start counter truncates the episode early. The eval rollout
+            # bounds itself with `eval.max_episode_length`, so the raw env is both
+            # correct and what the pre-Hydra script used.
+            return env
         env = episode_wrapper.EpisodeWrapper(env, int(config.get("episode_length", 1000)))
         scale = float(config.get("reward_scale", 1.0))
         if scale != 1.0:

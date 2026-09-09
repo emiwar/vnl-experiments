@@ -21,6 +21,17 @@ env_spec:
   # Reference clips are split 80/20; the eval env gets the held-out fifth.
   clip_split: true
 
+  # Run-name convention. One task, so the architecture leads. Fields available:
+  # task / net / delay / efference / ablations / seed.
+  name_template: "{net}_delay{delay}_eff{efference}{ablations}"
+
+  # Tags every run of this family carries, on top of the architecture's own and the
+  # delay/efference ones. `warp` is the MuJoCo backend; `TrainEvalSplit` records that the
+  # in-training eval uses held-out clips rather than the training split (see the
+  # 2026-08-20 fix in analysis/README.md). Both are meaningless for a task with no clips,
+  # which is why they live here rather than in the entry point.
+  tags: [warp, TrainEvalSplit]
+
 env:
   # Deltas onto AbsoluteImitation.default_config() ONLY. The full field list lives there
   # (and, above it, in vnl-playground); restating it here would create a second source of
