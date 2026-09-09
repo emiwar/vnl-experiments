@@ -1,6 +1,6 @@
 # @package _global_
 #
-# dm_control_suite WalkerRun, for delay experiments outside the rodent.
+# dm_control_suite HumanoidWalk, for delay experiments outside the rodent.
 #
 # These tasks are self-contained: no reference clips, no train/test split, and a single
 # flat observation vector rather than the rodent's structured one. That means a flat-obs
@@ -11,18 +11,18 @@
 # existing 90-run delay cohort lives in, without having to remember it on the command
 # line. Override it explicitly if you want a scratch project.
 #
-#   python -m vnl_experiments.train env=dmc/walker_run net=delayed_mlp train=dmc delay=5
+#   python -m vnl_experiments.train env=dmc/humanoid_walk net=delayed_mlp train=dmc delay=5
 
 defaults:
   # The task's full field set, generated from its own default_config() (see
   # vnl_experiments/conf_schema.py), so any field is settable without a `+` prefix.
   # `episode_length` and `reward_scale` are added there too: they belong to the
   # EpisodeWrapper / RewardScalingWrapper rather than to the task.
-  - /env_defaults@env: WalkerRun
+  - /env_defaults@env: HumanoidWalk
   - _self_
 
 env_spec:
-  task: WalkerRun
+  task: HumanoidWalk
 
 wandb:
   project: nnx-ppo-delays

@@ -10,10 +10,14 @@
 # architecture's defaults), which lists what is available if you typo one.
 
 defaults:
+  # `_self_` first, so a config group may override a value set below. That is what lets
+  # `env=dmc/...` pin `wandb.project` to the control-suite project instead of the rodent
+  # one. Command-line overrides are applied after composition either way, so they still
+  # win over both.
+  - _self_
   - env: rodent_imitation
   - net: encdec
   - train: rodent
-  - _self_
 
 # Proprioception delay, in env steps. 0 = no delay.
 delay: 0

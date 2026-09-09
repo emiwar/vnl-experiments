@@ -1,41 +1,57 @@
 # @package train
 #
-# PPO settings for the dm_control_suite tasks. These are far smaller problems than the
-# rodent -- a few tens of millions of steps rather than 600M -- so the budget, the env
-# count and the logging cadence all shrink. As in conf/train/rodent.yaml the load-bearing
-# hyperparameters are pinned rather than inherited, so a change to an nnx-ppo default
-# cannot silently move a comparison.
+# PPO settings for the dm_control_suite delay experiments.
+#
+# These are a faithful transcription of the pre-Hydra `train_delays.py`, which is what the
+# 90 runs in the `nnx-ppo-delays` project (2026-05-29 to 2026-07-08, delays 0-25) were
+# trained with. Keeping them identical is the whole point: a delay sweep is only readable
+# against the runs already in that project, and a changed learning rate or advantage scale
+# would silently make the new points incomparable rather than wrong-looking.
+#
+# The old script derived some of these from `brax_ppo_config(env)` and then overrode most
+# of them inline. Where it overrode, the literal is written here; where it used brax's
+# value, brax's value is written here as a literal too, because brax's defaults are
+# per-env and pinning them is what makes one `train=dmc` mean one thing across envs.
+# Anything genuinely env-specific (episode length, reward scale) lives on the env group.
 
 ppo:
-  n_envs: 2048
-  rollout_length: 20
-  total_steps: 60_000_000
-  learning_rate: 3.0e-4
+  # 8192, not brax's 2048: the old script quadrupled it deliberately.
+  n_envs: 8192
+  # brax's `unroll_length` for every dm_control task.
+  rollout_length: 30
+  # brax says 60M; the old script ran 8x that, commented "Delays might be slower to
+  # train". A delay-25 run is a harder problem than the undelayed baseline brax tuned on.
+  total_steps: 480_000_000
+  learning_rate: 1.0e-4
   discounting_factor: 0.99
   gae_lambda: 0.95
-  clip_range: 0.2
+  clip_range: 0.3
   n_epochs: 4
   n_minibatches: 8
+  critic_loss_weight: 1.0
   normalize_advantages: true
-  gradient_clipping: 1.0
-  logging_level: [LOSSES, THROUGHPUT, ENV_METRICS]
-  logging_percentiles: [0, 25, 50, 75, 100]
+  # The old script logged the actor/critic internals and rollout stats, which is what the
+  # existing delay analyses read. ROLLOUT_OBS is deliberately absent (it dumps the whole
+  # observation pytree).
+  logging_level: [LOSSES, THROUGHPUT, ROLLOUT_STATS, CRITIC_EXTRA, ACTOR_EXTRA]
+  logging_percentiles: null
 
 eval:
   enabled: true
-  every_steps: 2_000_000
+  # brax's 60M / the old script's num_evals=100. Note this is *not* scaled by the 8x
+  # above, so a full run gets 800 evals rather than 100 -- as the old script did.
+  every_steps: 600_000
   n_envs: 256
   max_episode_length: 1000
-  logging_level: [LOSSES, ENV_METRICS]
   logging_percentiles: null
 
 video:
   enabled: true
-  every_steps: 10_000_000
+  every_steps: 6_000_000
   episode_length: 1000
   render_kwargs:
     height: 480
     width: 640
 
-seed: 42
+seed: 1234
 checkpoint_every_steps: 10_000_000
