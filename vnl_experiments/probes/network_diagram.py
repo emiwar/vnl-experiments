@@ -1,6 +1,6 @@
 """Draw the rodent forward-model architecture as a strip under a layer-wise plot.
 
-``analysis/implicit-forward-model/figures/delay_10_layers_obs_decoding_manual.png``
+``analysis/rodent/implicit-forward-model/figures/delay_10_layers_obs_decoding_manual.png``
 carried a hand-drawn version of this, made by editing the exported SVG in a vector
 editor. That is a dead end -- the drawing does not survive re-running the analysis, and
 in that case it did not survive re-exporting the SVG either. This module rebuilds it in
@@ -31,7 +31,7 @@ for a plot drawn *without* a strip.
 The x coordinates are the ones the original figure used -- ``-1`` for the input, then
 1-5 for the predictor, 7-10 for the decoder, 12 for the output -- with a one-unit gap at
 0, 6 and 11 that visually separates the three groups. They come from the layer table in
-``analysis/implicit-forward-model/figure_for_report.ipynb``; ``LAYER_X`` below is the
+``analysis/rodent/implicit-forward-model/figure_for_report.ipynb``; ``LAYER_X`` below is the
 single place they are written down, so a plot and its strip cannot drift apart.
 
 Nothing here reads data, so it has no place in the extract/plot split -- it is styling,

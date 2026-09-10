@@ -56,7 +56,7 @@ from pathlib import Path
 import jax
 
 # The evaluation core is shared with the training scripts' end-of-training eval
-# and with analysis/implicit-forward-model/record_activations.py. These names are
+# and with analysis/rodent/implicit-forward-model/record_activations.py. These names are
 # re-exported (rather than imported where used) so existing `from
 # vnl_experiments.delays.eval_runs import ...` call sites keep working.
 from vnl_experiments.delays.evaluation import (  # noqa: F401
@@ -83,7 +83,8 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval_results"
 # Where the current analyses read from (eval_results/ also holds the previous
 # result set and the activation h5s, so --collect targets the nested dir).
 DEFAULT_COLLECT_DIR = REPO_ROOT / "eval_results" / "eval_results"
-ANALYSIS_GLOB = str(REPO_ROOT / "analysis" / "*" / "data.csv")
+# Question folders live one level deeper than they used to: analysis/<track>/<question>/.
+ANALYSIS_GLOB = str(REPO_ROOT / "analysis" / "*" / "*" / "data.csv")
 
 
 # ---------------------------------------------------------------------------

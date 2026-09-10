@@ -11,7 +11,7 @@ governed the ``body`` sub-key -- which is why these are tests and not a docstrin
 ``_get_imitation_target`` is called unbound on a stand-in that supplies exactly the six
 things it reads. That keeps the tests free of MuJoCo, a GPU and the 505 MB reference-clip
 file while still exercising the real method body, which is where a regression would live.
-``analysis/position-control-open-loop/frame_leak.py`` is the same property measured on the
+``analysis/rodent/position-control-open-loop/frame_leak.py`` is the same property measured on the
 real env; if these tests and that script ever disagree, the stand-in has drifted.
 """
 
@@ -178,7 +178,7 @@ class TestWhatEachFrameLeaks:
         """The regression guard for the two settings every existing run used.
 
         If this ever starts passing as "no leak", the runs in
-        ``analysis/position-control-open-loop/`` stop meaning what that report says.
+        ``analysis/rodent/position-control-open-loop/`` stop meaning what that report says.
         """
         assert self._moved(frame, root_pos=(0.05, 0.0, 0.0))["root"] > 1e-3
         assert self._moved(frame, root_quat=_quat([0, 0, 1], 0.3))["quat"] > 1e-3

@@ -17,12 +17,18 @@ from vnl_experiments.wandb_utils.fetch import (
 from vnl_experiments.wandb_utils.style import (
     CONDITION_STYLE,
     CTRL_DT_MS,
+    MEAN_LINE,
+    REWARD_SOURCES,
+    SEED_LINE,
     add_ms_axis,
     apply_style,
     color_for,
     label_for,
     marker_for,
+    plot_seeds,
     provenance,
+    reward_label,
+    seed_legend_handles,
     write_figure_manifest,
 )
 

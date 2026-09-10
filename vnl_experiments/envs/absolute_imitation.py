@@ -89,7 +89,7 @@ def default_config() -> config_dict.ConfigDict:
     sub-key, which is 270 of the 640 numbers in the rodent's ``task_obs``. The 35 in
     ``root`` / ``quat`` stayed a live, undelayed root-tracking-error signal in both
     settings, so a run with ``dec_use_proprioception=False`` was never actually open
-    loop. ``analysis/position-control-open-loop/`` is where that surfaced, and its
+    loop. ``analysis/rodent/position-control-open-loop/`` is where that surfaced, and its
     ``frame_leak.py`` measures which sub-keys move when the walker is displaced.
 
     It is a third value because every committed analysis selects its cohorts on
@@ -98,7 +98,7 @@ def default_config() -> config_dict.ConfigDict:
     been invisible *to the wrong side* -- every existing ``== "reference_root"`` filter
     would have silently pooled open-loop runs into cohorts that predate them, which is
     the ``dec_use_intention`` / ``dec_use_proprioception`` trap in
-    ``analysis/README.md`` §6 all over again. The cost is that the field name now
+    ``analysis/rodent/README.md`` all over again. The cost is that the field name now
     undersells its scope; the compensation is this docstring and the table in the module
     header. The 2x2 a separate key would have offered also has a dead cell:
     ``current_root`` body targets depend on the current root pose, so pairing them with a

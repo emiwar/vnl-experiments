@@ -31,7 +31,7 @@ Decoder details
   on the held-out test clips. R² is out-of-sample against the train-mean predictor.
 
 Provenance: ported verbatim (arithmetic unchanged) from
-``analysis/implicit-forward-model/decode.py``, which stays frozen with its analysis. The
+``analysis/rodent/implicit-forward-model/decode.py``, which stays frozen with its analysis. The
 additions here are lazy layer loading, store-path opening, explicit metadata, and the
 degeneracy/validity reporting. ``linear_decoding_test.py`` pins the numbers against that
 folder's committed ``data.csv`` -- if a change to this module breaks the old report's

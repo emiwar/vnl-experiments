@@ -3,7 +3,7 @@
 Two levels:
 
 * synthetic fixtures with known answers, which run anywhere;
-* a reproduction of rows from ``analysis/implicit-forward-model/data.csv``, which runs only
+* a reproduction of rows from ``analysis/rodent/implicit-forward-model/data.csv``, which runs only
   where that analysis's activation recordings are still on disk. That analysis is written up
   and frozen; if this module stops reproducing its numbers, its report is no longer
   reproducible and the change needs a `DECODE_VERSION` bump and a re-run, not a shrug.
@@ -23,7 +23,8 @@ from vnl_experiments.probes import pathways
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LEGACY_ACTIVATIONS = REPO_ROOT / "eval_results" / "activations"
-LEGACY_DATA = REPO_ROOT / "analysis" / "implicit-forward-model" / "data.csv"
+LEGACY_DATA = (REPO_ROOT / "analysis" / "rodent" / "implicit-forward-model"
+               / "data.csv")
 
 
 # ---------------------------------------------------------------------------

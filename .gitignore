@@ -16,4 +16,5 @@ eval_results_bad/
 # Run lists written by `artifacts audit-env --out-dir`; regenerable from the audit.
 /artifact_repair/
 # Per-run decode caches inside an analysis folder (the committed data.csv is the snapshot).
-analysis/*/.decode-cache/
+# Question folders are analysis/<track>/<question>/, so match at any depth.
+**/.decode-cache/

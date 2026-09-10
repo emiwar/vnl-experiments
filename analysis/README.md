@@ -16,9 +16,25 @@ Three layers support this. Read §1–§3 once; §4 onwards is the day-to-day wo
    checkpoints ─produce─▶  $VNL_ARTIFACTS/         (§2 artifact store — evals, curves,
                             │                          activations, videos)
                             ▼
-                     analysis/<question>/          (§3 the question folder)
+                     analysis/<track>/<question>/  (§3 the question folder)
                        extract.py → data.csv → plot.py → figures/ → report.md
 ```
+
+### Two tracks
+
+Question folders live under the experiment track they belong to. The tracks are separate
+WandB projects with different reward scales, different eval vocabularies and different
+control timesteps, so a figure pooling them is almost always a mistake — the split is
+there to make that mistake visible rather than convenient.
+
+| track | subject | project | read first |
+|---|---|---|---|
+| [`rodent/`](rodent/) | mocap imitation by the simulated rodent | `nnx-ppo-rodent-delays` | [`rodent/README.md`](rodent/README.md) |
+| [`dm_control_suite/`](dm_control_suite/) | dm_control tasks with delays | `nnx-ppo-delays` | [`dm_control_suite/README.md`](dm_control_suite/README.md) |
+
+This file is the machinery, and applies to both. Each track's README carries its project,
+its reward vocabulary and its own trap list; **read the track README before starting a
+question in it**, not only this one.
 
 ---
 
@@ -183,7 +199,7 @@ analysis/<question-slug>/
 └── report.md
 ```
 
-Start from the template: `cp -r analysis/_template analysis/<question-slug>`.
+Start from the template: `cp -r analysis/_template/<track> analysis/<track>/<question-slug>`.
 
 ### The freeze/refresh gate
 
@@ -290,75 +306,16 @@ a GPU-model split — is written up as a **caveat** in `report.md`.
 
 ## 5. `report.md`
 
-See [`_template/report.md`](_template/report.md). It must contain the question, the
+See [`_template/report.md`](_template/rodent/report.md). It must contain the question, the
 condition table, the coverage and comparability verdicts (including the manual half), the
 figures with a sentence each on what to look at, hedged conclusions, and follow-ups.
 
 ## 6. Traps
 
 Things that have already produced a wrong or nearly-wrong conclusion. Read before
-starting.
-
-**`body_target_frame` lives on the env, not the network.** `AbsoluteImitation` reads
-`config["env_params"]["body_target_frame"]`. The copy under
-`config["net_params"]["body_target_frame"]` is **inert** — the training scripts set it on
-`net_config`, where nothing reads it, and it was only logged. Every AbsoluteImitation run
-before 2026-07-06 therefore trained with `current_root` regardless of what `net_params`
-shows. Always filter and label on `env_params`. This invalidated the reference-root vs
-current-root comparison in [`imitation-target-representation/`](imitation-target-representation/).
-
-**A decoder-input ablation looks exactly like the standard efference baseline.**
-`net_params.dec_use_intention=False` / `dec_use_proprioception=False` (added 2026-08-21)
-drop the intention or the proprioception stream from the enc-dec decoder. Such a run keeps
-the standard `{enc,dec,critic}_hidden_sizes`, keeps `efference_length == delay_k`, and
-carries the `TrainEvalSplit` tag — so it passes every test the "standard efference
-baseline" cohorts apply and joins them silently. Every folder that selects that cohort now
-gates on `pipeline.full_decoder_inputs(net)` (dict form, for the live-fetch extractors) or
-`& pipeline.full_decoder_inputs_mask(df)` (index form). Use those rather than a plain
-filter kwarg: the columns are **absent**, not `True`, on every run predating the flags, so
-`index.select(..., **{"net_params.dec_use_intention": True})` would drop the entire history.
-The run name and tags also carry a `nointent` / `noproprio` token.
-
-**`body_target_frame="reference_root"` does not make the imitation target
-state-independent** — use `reference_root_open_loop` if that is what you want. `reference_root`
-selects the egocentric frame for the `body` sub-key of `task_obs` and nothing else. `root` and
-`quat` are computed above that branch and are, under both `current_root` and `reference_root`,
-the reference root pose relative to the **current** root — an undelayed root position and
-orientation error, 35 of the 640 `task_obs` numbers, in the units of the `root_too_far` (0.1 m)
-and `root_too_rotated` (60°) terminations. The config docstring used to say "the pure target
-pose shape, independent of all current state", which describes the body targets it was about
-and was read as a claim about the whole target.
-
-This matters for any experiment that delays or ablates the proprioception stream and then
-calls the result feedforward: `task_obs` is neither delayed nor ablated by those knobs. It
-surfaced in [`position-control-open-loop/`](position-control-open-loop/), whose `frame_leak.py`
-measures which sub-keys move when the walker is displaced (and confirms the identity
-`root[0] == rotate(ref_root_pos - root_pos, root_quat)`).
-
-**The third value, `reference_root_open_loop`** (added 2026-09-02) anchors `root`/`quat` to the
-*reference* root at the current frame instead, making the whole target a function of
-`(clip, current frame)` with no dependence on the walker. Three things about it are worth
-knowing before selecting on it:
-
-* It is a **value, not a new key**, precisely so that cohorts stay safe: every committed
-  analysis selects the frame by equality (`== "reference_root"`), so all of them exclude
-  open-loop runs without being touched. A separate key would have been the
-  `dec_use_intention` / `dec_use_proprioception` trap again — invisible to existing selectors,
-  and needing a `full_decoder_inputs_mask`-style retrofit in every folder.
-* The default stays `current_root`, so every stored `config.json` reloads to the behaviour it
-  trained with, and the two existing values are numerically untouched (`frame_leak.txt`
-  rebuilds byte-identically across the change).
-* Its runs carry an `openloop` **tag** — not a name token, since this is expected to become
-  the default and a token would then lengthen every run name for nothing. Filter on the tag,
-  or on `env_params.body_target_frame`. The offline env-class resolvers key off
-  `absolute_imitation.BODY_TARGET_FRAMES` rather than a local list — `eval_videos` used to
-  hardcode the two old values and would have silently rebuilt an open-loop run as the base
-  `Imitation` env, whose targets are *relative* to the current state.
-* **It also takes the root error away from the critic.** `build_delay_network` feeds the critic
-  undelayed `task_obs + proprioception`, and proprioception has no root-position error, so the
-  value function loses its most direct predictor of a `root_too_far` termination. Expect the
-  critic to be worse, not just the actor, and do not read a reward drop as purely an actor
-  effect.
+starting. These are the ones that apply whatever is being trained; the traps peculiar to a
+task live with it, in [`rodent/README.md`](rodent/README.md) and
+[`dm_control_suite/README.md`](dm_control_suite/README.md), and are just as mandatory.
 
 **`state == "finished"` silently drops runs that only died in the final eval.** The
 2026-08-11 torque sweep — 46 runs, `ef060b73`, note *"New XML + reference_root."* — trained
@@ -377,24 +334,11 @@ in one figure costs under 0.5 % at the median (measured in
 `position-control-open-loop/eval_calibration.txt`) but is still a mix, and belongs in a
 `reward_source` column rather than in a reader's head.
 
-**A `noproprio` run's `delay_k` is inert, and its name says otherwise.** `build_delay_network`
-puts the `Delay` layer *inside* the proprioception branch, and `dec_use_proprioception=False`
-does not construct that branch — so `delay_k` reaches nothing. `RodentEncDec_delay10_eff10_noproprio`
-is not a delay-10 experiment: at fixed `efference_length` the two networks are
-bit-identical (same parameter count, same weight and carry trees, `max|Δ output| = 0`), which
-`position-control-open-loop/check_delay_inert.py` asserts. What actually varies across those
-runs is `efference_length`, which the launcher ties to `delay_k` by default, so plotting them
-against delay silently plots the efference queue length with the wrong axis label —
-and `delay0_eff0_noproprio` vs `delay5_eff0_noproprio` is a replicate pair, useful as a
-noise floor (3.1 % on held-out reward) rather than a delay contrast. The same applies to any
-future ablation that removes the branch a manipulation lives in: check what the *built*
-network depends on, not what the config records.
-
 **A `history` artifact made from a running run is a snapshot, and `ensure` will not replace
 it.** The artifact key is `(kind, wandb_id, spec_id)` with no notion of how far the run had
 got, so a `history` produced while a run was mid-training stays in the store, at that length,
 for ever -- and `artifacts ensure` reports it as present. In
-[`efference-copy-vs-proprioception/`](efference-copy-vs-proprioception/) four runs were
+[`efference-copy-vs-proprioception/`](rodent/efference-copy-vs-proprioception/) four runs were
 `running` at 110-190 M when their artifacts were first made and had reached 600 M by the next
 session; rebuilding without noticing would have silently reported four *finished* runs as
 having no usable readout, which looks exactly like more cluster attrition rather than like a
@@ -407,7 +351,7 @@ artifact kind whose content depends on how much of the run exists yet; an `eval`
 **A common mid-training budget is biased against whatever trains slower.** Reading every
 arm at a shared step count is the right way to include runs that died before the end -- but
 it is only fair if the swept variable does not change the learning *rate*, and it often
-does. In [`efference-copy-vs-proprioception/`](efference-copy-vs-proprioception/) the
+does. In [`efference-copy-vs-proprioception/`](rodent/efference-copy-vs-proprioception/) the
 efference queue is concatenated onto the decoder's input, so `efference_length` 100 means a
 3 832-wide first layer instead of 108: at a 400 M readout the long-queue runs gain +14 % over
 the next 200 M while the short-queue ones gain +0.1 %, so the early readout understates
@@ -434,135 +378,8 @@ that are configured identically and differ only in commit/stack, and quote *that
 at their recorded commits (`201d6e11`, `0560d402`) said `reference_root`; the cluster tree
 had been edited, a state only committed later as `456fbd7`. WandB stored no `diff.patch`,
 so the logged config is the only record of what ran. Same for `torque_actuators` and
-`walker_xml_path`. See [`collision-model-xml/`](collision-model-xml/). (`ef060b7`,
+`walker_xml_path`. See [`collision-model-xml/`](rodent/collision-model-xml/). (`ef060b7`,
 2026-08-11, has since set `reference_root` in both training scripts.)
-
-**Every offline rebuild used to silently swap the walker XML** (fixed 2026-08-18). A
-checkpoint records the *cluster* path of its XML, which does not exist on a laptop, so
-`parse_env_config` repaired it — by taking the local default, `consts.RODENT_XML_PATH` =
-`rodent.xml`. A run trained on `rodent_no_tail_collisions.xml` was therefore re-simulated on
-a **different body**, in three independent copies of the same block
-(`delays/evaluation.py`, `delays/eval_videos.py`, `tools/checkpoint_utils.py`) and so in
-every `eval`, `activations` and `video` artifact of the new-XML cohort. The inline
-end-of-training eval was unaffected — it is handed the live `env_config` — which is exactly
-why the discrepancy hid: offline `old_eval` reward sat 2 % / 13 % / 27 % / 42 % below inline
-at delays 0 / 10 / 20 / 50, with survival 0.23 vs 0.67 at delay 50, and nothing in the
-artifact said which body it had used.
-
-Three lasting consequences:
-
-* `envs/config_io.resolve_local_xml_paths` now repairs the *directory* while keeping the
-  *file*, and warns loudly when the run's own XML is genuinely unavailable locally.
-* Producers stamp `resolved.walker_xml_path` / `arena_xml_path`. **An absent stamp means
-  pre-fix**, which is what makes the damage decidable after the fact.
-* `artifacts audit-env` classifies every stored artifact as broken / adoptable / repaired
-  and writes the re-production run lists. It found 363 eval, 16 activation and 16 video
-  artifacts built on the wrong body; the analyses resting on them were
-  [`action-noise-robustness/`](action-noise-robustness/) (all six eval specs),
-  [`collision-model-xml/`](collision-model-xml/) (67/149 runs) and
-  [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) (16/29). It reports zero once a
-  folder is repointed, so it doubles as the done-check — it reads *pinned* spec ids only, not
-  every id a script mentions, so a retirement note in a comment does not keep a fixed folder
-  flagged.
-
-The general lesson is narrower than "check your paths": **a reconstruction that repairs an
-input must record what it chose.** Any field a rebuild silently substitutes is a field no
-downstream analysis can audit.
-
-A second lesson, from how long this survived: **verifying provenance against the record that
-was already trusted is not verification.** `collision-model-xml/report.md` stated that "every
-eval was verified to have used the run's own body and frame" — and it had been, by comparing
-the run's stored config against itself. Nothing in that check could see what the eval process
-actually loaded. Post-fix, the equivalent check reads `resolved.walker_xml_path` off the
-artifact and compares it to `env_params.walker_xml_path` from the index — two independently
-written records. `assert_artifact_body` in `collision-model-xml/extract.py` and
-`xml-ceiling-vs-convergence/extract.py` is the pattern; copy it into any folder that spans two
-bodies.
-
-**Outcome, 2026-08-19.** [`collision-model-xml/`](collision-model-xml/) carries a retraction:
-its headline result ("the new body falls over far more often; survival collapses") was the
-artefact, and the corrected data reverses it. The v1 evals understated new-XML held-out reward
-by 3.8 % at delay 0 rising to 77 % at delays 90–100, while the 79 old-XML runs are
-bit-identical across the fix — so the bug acted on exactly one arm of every contrast in that
-folder. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) went the other way: its
-curve-based primary result never moved (curves come from `history`), and the newly-usable evals
-gave it a held-out measurement it had been missing on 25 of 29 runs.
-
-**The in-training `eval/*` series measured the *train* split** (fixed 2026-08-20). Both
-delays training scripts built a held-out env and then threw it away:
-
-```python
-eval_env = AbsoluteImitation(env_config, clips=test_clips)
-eval_env = train_env          # <- train_rodent_delays.py:173, train_rodent_forward_model.py:188
-```
-
-(Those scripts were replaced by `vnl_experiments/train.py` in the 2026-09-01 Hydra
-migration; the line references are to their last state in git history. The corrected
-construction, and a comment saying not to re-simplify it, live in `build_run` there.)
-
-The override dates from the file's creation (`e5bbf3f`, 2026-06-01), so **every delays run
-to date** reported in-training eval on the clips it was training on. What that touches:
-
-* **Affected: the WandB `eval/*` metrics** — `eval/episode_reward/*`, `eval/lifespan/*`,
-  `eval/net/*`, `eval/env/*`. These are what the `history` artifact captures, so any
-  curve-based result is a train-split learning curve, not a generalisation measurement.
-* **Not affected: the offline `eval` artifacts, nor the inline end-of-training eval**
-  (`evaluation.run_final_eval`). Both are handed `train_clips` / `test_clips` explicitly and
-  build their own envs via `build_datasets`, so their `train` / `old_eval` / `new_eval`
-  datasets were always genuinely separated. Held-out numbers taken from the store are sound.
-
-The comparability consequence belongs with §4: `eval/*` means *train-split* before the fix
-and *held-out* after it. **Never pool or contrast `eval/*` across 2026-08-20** — a post-fix
-run will look worse for reasons that have nothing to do with what it is testing. Add
-`created_at` (or `git_commit`) to `INVARIANTS` in any folder whose runs straddle the date,
-and prefer the offline `eval` artifacts for anything held-out.
-
-Action: audit any question folder whose primary result rests on `history`-derived `eval/*`
-curves. [`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) is the first to check —
-§6 already records that its primary result is curve-based from `history` — and the check is
-whether "held-out" is claimed anywhere for a number that came from a curve. The fix itself
-changes no stored artifact and needs no `VERSION` bump.
-
-**19 runs trained with the regularisation switched off** (2026-08-21 to 2026-08-24).
-`delays.network_builders._parse_net_params` ran `int(v)` on every value, and
-`int(0.01) == 0` in Python, so every sub-1.0 float was truncated to zero. The parser
-existed to decode the stringified `config.json` on the **eval** side, where those four
-values only touch a regularisation term and a reported metric. The 2026-08-21 registry
-refactor put **training** on the same path, and from then until the fix every run trained
-with:
-
-| net_param | config says | actually used |
-|---|---|---|
-| `entropy_weight` | 0.01 | **0** — no entropy bonus |
-| `kl_weight` | 0.001 | **0** — no KL penalty |
-| `min_std` | 0.1 | **0** — no policy-std floor |
-| `latent_min_std` | 0.01 | **0** |
-
-The result is premature entropy collapse: on `old_eval` the action std fell 0.167 -> 0.049
-(below the floor that was supposed to be enforced — that impossibility is what exposed the
-bug), the bottleneck KL rose 21.7 -> 146.0, `root_too_far` terminations went 1.2 % -> 18.3 %,
-and reward fell **14 % at delay 0 and 36 % at delay 10** against the matched 2026-08-11
-runs. It hits every architecture equally, so the affected LSTM runs say nothing about
-recurrence.
-
-**The logged config does not show it.** `net_params` records the intended 0.01 / 0.001 /
-0.1 — the truncation happens after the config is written — so no column distinguishes a
-broken run and no comparability report can flag one. The discriminator is the commit:
-`pipeline.UNREGULARIZED_COMMITS`, with `pipeline.regularized_training_mask(df)` as the row
-mask. `created_at` is **not** a safe proxy: `dgmexgcj` trained on 2026-08-21 from the
-earlier `afbeea0` and is fine.
-
-The general lesson is the sibling of the walker-XML one: **a value that is recorded before
-it is transformed is not a record of what ran.** `env_params` is authoritative because the
-env reads it directly; `net_params` was not, because a parser sat between it and the
-network. Where a config passes through coercion, the thing worth asserting is the value the
-*module* ended up with — which is what `network_builders_test.ParseNetParamsTest` now does.
-
-`eval`, `activations` and `video` went to `VERSION = 3` on 2026-08-24, because the fix
-restores `latent_min_std` and the bottleneck samples at eval time, shifting the actions
-slightly (mean |delta| 5.4e-4, max 1.2e-2; critic values unchanged). Old artifacts stay
-valid at their pinned `spec_id`s and need re-producing only for a formal old-vs-new
-comparison. `history` is unaffected and keeps `VERSION = 1`.
 
 **Eval reproducibility is host-dependent** (measured 2026-08-24). On the **cluster** the
 offline eval is exactly reproducible: across 56 runs that hold two independently produced
@@ -608,25 +425,7 @@ nodes, ~1.6–1.8× apart, and node-to-node spread within one model is a few per
 speed comparison must be restricted to one GPU model and matched on the experimental axis;
 prefer medians over the history series to the final summary value, and drop the first
 ~10 % of samples (XLA compilation). Where the cluster cells disagree, add a controlled
-local benchmark — see [`collision-model-xml/benchmark_xml.py`](collision-model-xml/benchmark_xml.py).
-
-**Two clocks in the eval datasets.** `clip_length` is in **mocap frames @ 50 Hz** (250 →
-5 s, 1500 → 30 s), but the policy runs at `ctrl_dt = 0.01 s` (100 Hz). Rollouts are
-`ceil(frames / (ctrl_dt·mocap_hz)) + 2` control steps — 502 for train/`old_eval`, 3002 for
-`new_eval`. `lifespan_steps` and delays are in control steps (1 step = 10 ms).
-
-The three eval datasets are: **`train`**, the 80 % training split (the clips the policy
-trained on); **`old_eval`**, the held-out 20 % split (unseen clips, same 250-frame length);
-and **`new_eval`**, 32 fresh 1500-frame clips. Each record carries, per dataset,
-`episode_reward`, `lifespan_steps`, per-reason `termination_rate` (incl. `survived`),
-per-step `errors` and network `net_metrics` (e.g. `fm_pred_mse`), plus hierarchical
-`param_counts`.
-
-**Raw reward is comparable within a dataset, not across.** Cumulative `episode_reward`
-scales with clip length (~6× on `new_eval`). Across datasets use `reward_per_step` and the
-per-second `hazard_rate` = `(1 − survived) / mean-alive-time` (failure terminations only;
-end-of-clip truncations are censored, not events). Prefer the hazard to a raw survival
-fraction: survival penalises longer clips for having more chances to fail.
+local benchmark — see [`collision-model-xml/benchmark_xml.py`](rodent/collision-model-xml/benchmark_xml.py).
 
 **The eval is not bit-reproducible.** MuJoCo Warp's GPU physics is nondeterministic, and
 over a 502-step rollout that amplifies: re-evaluating the same checkpoint with the same
@@ -643,7 +442,7 @@ in the last 50 M steps** — five points, at the 10 M-step eval cadence — not 
 one. This is not cosmetic: `collision-model-xml`'s headline PG-FM deficit at delay 50 is
 −15.2 % from the final point and −7.9 % from the window, on the same two runs. The
 independent noise bound is ±2.9 %, measured in
-[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/) from pairs of runs that share
+[`xml-ceiling-vs-convergence/`](rodent/xml-ceiling-vs-convergence/) from pairs of runs that share
 a configuration.
 
 **Inline and batch evals may measure different weights.** Training runs evaluate
@@ -660,22 +459,57 @@ comparison prefer a single batch re-evaluation of the whole cohort under one eva
 — and note that crashed, preempted and resumed runs never reach the inline eval, so
 `eval_runs.py` remains the way to fill those gaps.
 
-## 7. The legacy directories
+## 7. Plotting conventions
 
-`eval_results/eval_results/` (263 batch eval JSONs), `eval_results/old_eval_results/` (an
-older batch) and `eval_results/activations/` (13 files, 22 GB, keyed by run *name*) have
-been adopted into the store by `artifacts import-legacy`, **hardlinked** so nothing was
-duplicated. They appear under fixed, unhashed spec ids — `legacy-batch`, `legacy-batch-v0`,
-`legacy-<dataset>` — because their true specs were never recorded and inventing a hash
-would imply a precision that does not exist. The originals can be deleted once
-`artifacts verify` is clean; `eval_runs.py --collect` still gathers inline `eval.json`
-files into `eval_results/eval_results/`, so re-run `import-legacy` after a collect.
+`plot.py` reads only the CSVs (§3) and calls `apply_style()` once. Beyond that, four
+standing preferences. The first three are about honesty of the y-axis; the last is about a
+condition meaning the same thing everywhere.
 
-Analyses written before this pipeline (everything except
-[`collision-model-xml/`](collision-model-xml/),
-[`xml-ceiling-vs-convergence/`](xml-ceiling-vs-convergence/),
-[`explicit-vs-implicit-fm-2g/`](explicit-vs-implicit-fm-2g/) and
-[`explicit-vs-implicit-fm-budgets/`](explicit-vs-implicit-fm-budgets/)) still read
-`eval_results/`
-directly and fetch from WandB in their `extract.py`. They remain valid and their CSVs are
-unchanged; convert one to the layout above when you next need to touch it.
+**Prefer raw reward on the y-axis.** Use a derived measure — fraction of maximum, a
+difference, a percent of some baseline — only when it is unavoidable. Reward does not map
+linearly onto competence: the distance from 50 to 100 is not the distance from 250 to 300,
+nor the distance from 500 to 1000, so a ratio silently asserts a linearity the task does
+not have. When a derived axis really is unavoidable, say in `report.md` in one line *why*
+it was, and keep a raw-reward panel alongside it wherever the figure has room.
+
+The usual reason to reach for a ratio is that the arms have different scales — different
+tasks, different clip lengths, different reward weights. Prefer **small multiples**: one
+panel per scale with raw reward on each y-axis and a shared x-axis. That answers "which is
+better, and by how much" without asserting that a 10 % gain means the same thing in two
+places.
+
+**Name the reward source in the label, every time.** Which reward is being shown — the
+training split, a held-out eval set, an out-of-distribution set, an inline end-of-training
+number, an offline artifact — belongs in the axis label and in the report text, not in the
+reader's memory. Use `style.reward_label(source)` so the phrasing is the same everywhere:
+
+```python
+ax.set_ylabel(reward_label("old_eval"))       # "Episode reward (held-out, old_eval)"
+ax.set_ylabel(reward_label("dmc_eval"))       # "Episode reward (eval episodes, unscaled)"
+```
+
+Two of the worst bugs in §6 and in the per-track trap lists — the in-training `eval/*`
+train-split bug, and the dm_control eval scaling — were invisible precisely because
+"reward" was written where "which reward" was meant.
+
+**Show every seed.** Where a condition has more than one seed (or any similar repetition),
+draw the mean as a solid line and each seed as a thin, semi-transparent line, so the
+reader sees the spread the mean was taken over rather than trusting it:
+
+```python
+from vnl_experiments.wandb_utils.style import plot_seeds
+plot_seeds(ax, group, x="delay_k", y="reward_mean", seed_col="seed", condition="encdec")
+```
+
+`plot_seeds` averages replicates *within* a (seed, x) cell first, so each seed contributes
+one curve and the mean weights seeds equally rather than weighting the seed that happened
+to be run twice. It adds one "individual seed" proxy entry to the legend, not one per
+seed. Collapsing seeds to a mean alone is only acceptable when the spread is reported
+some other way, and a single-seed condition should not be drawn as if it were a mean.
+
+**One condition, one colour, everywhere.** Add the condition to `CONDITION_STYLE` in
+`wandb_utils/style.py` and use `color_for` / `marker_for` / `label_for`, rather than
+defining a local colour dict — a local dict is how the same manipulation ends up two
+colours in two figures. For a delay axis in physical units use
+`add_ms_axis(ax, max_x, ctrl_dt_ms=...)`; the default is the rodent's 10 ms and the
+control suite runs at 25.

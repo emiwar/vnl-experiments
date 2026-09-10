@@ -7,7 +7,7 @@ One implementation, three callers:
   ``{ckpt_dir}/eval.json``;
 * ``eval_runs.py`` rebuilds a network from a checkpoint and calls the same
   function, writing ``eval_results/{wandb_id}.json``;
-* ``analysis/implicit-forward-model/record_activations.py`` reuses the env /
+* ``analysis/rodent/implicit-forward-model/record_activations.py`` reuses the env /
   config / dataset construction (:func:`build_datasets`) for its own
   activation-stacking rollout.
 

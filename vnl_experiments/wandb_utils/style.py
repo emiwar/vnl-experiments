@@ -3,6 +3,16 @@
 Every ``plot.py`` should call :func:`apply_style` once at the top, and use
 :data:`CONDITION_STYLE` (via :func:`color_for` / :func:`marker_for`) so that a
 given experimental condition keeps the same colour and marker in every figure.
+
+A condition's colour belongs *here*, not in a dict local to one folder: three of the
+position/torque analyses each define the same ``MODE_COLOR`` privately, which is how one
+manipulation ends up two colours in two figures. Add the key to :data:`CONDITION_STYLE`
+instead.
+
+The other three conventions this module exists to make easy -- see
+``analysis/README.md`` §7 -- are :func:`reward_label` (name *which* reward is on the
+axis), :func:`plot_seeds` (mean solid, seeds thin) and the ``ctrl_dt_ms`` argument of
+:func:`add_ms_axis` (the two tracks have different control timesteps).
 """
 
 from __future__ import annotations
@@ -19,8 +29,35 @@ import seaborn as sns
 
 _STYLE_FILE = Path(__file__).with_name("vnl.mplstyle")
 
-# 1 control step = 10 ms (ctrl_dt = 0.01 s). Used for the secondary ms axis.
+#: The rodent's control step: 1 step = 10 ms (``ctrl_dt = 0.01 s``). The default for the
+#: secondary ms axis. **dm_control_suite runs at ``ctrl_dt = 0.025``**, so those plots must
+#: pass ``add_ms_axis(..., ctrl_dt_ms=25)`` -- the default would mislabel by 2.5x silently.
 CTRL_DT_MS = 10
+
+#: How a reward number is described on an axis, per source. Reward is close to meaningless
+#: without this: the two worst measurement bugs in the project -- the in-training ``eval/*``
+#: series that was really the train split, and the dm_control eval that was scaled 10x and
+#: truncated -- both hid because a figure said "reward" where it meant "which reward".
+REWARD_SOURCES: dict[str, str] = {
+    # Rodent: the three offline eval datasets.
+    "train": "train split",
+    "old_eval": "held-out, old_eval",
+    "new_eval": "held-out 30 s clips, new_eval",
+    # Rodent: the run's own in-training series. Before 2026-08-20 this measured the
+    # *train* split whatever it is called -- see rodent/README.md.
+    "inline": "in-training eval",
+    "final": "inline end-of-training eval",
+    # dm_control_suite. Its "eval" is fresh episodes of the same task, not a held-out
+    # set, and the training reward carries reward_scale = 10.
+    "dmc_eval": "eval episodes, unscaled",
+    "dmc_train": r"training rollouts, reward_scale $\times$10",
+}
+
+#: Per-seed vs mean line weights. A condition with more than one seed is drawn as thin
+#: semi-transparent per-seed lines under a solid mean, so the reader sees the spread the
+#: mean was taken over. See :func:`plot_seeds`.
+SEED_LINE = dict(lw=0.9, alpha=0.35)
+MEAN_LINE = dict(lw=2.2, alpha=0.95)
 
 # Canonical colour + marker per condition. Keep these stable so figures across
 # different questions are directly comparable. Colours are the matplotlib cycle
@@ -69,6 +106,13 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "ablate_proprioception": {"color": "C6", "marker": "P",
                               "label": "No proprioception"},
     "ablate_efference": {"color": "C0", "marker": "s", "label": "No efference copy"},
+    # dm_control_suite flat-observation architectures (2026-09-10). Each reuses the hue
+    # of its rodent analogue -- `encdec` C1, `forward_model` C2, `recurrent` C9 -- so an
+    # architecture reads the same colour whichever track a figure is from.
+    "delayed_mlp": {"color": "C1", "marker": "o", "label": "MLP (DelayedMLP)"},
+    "flat_forward_model": {"color": "C2", "marker": "^",
+                           "label": "Explicit forward model"},
+    "flat_recurrent": {"color": "C9", "marker": "D", "label": "Recurrent"},
 }
 
 
@@ -88,6 +132,65 @@ def marker_for(condition: str) -> str:
 
 def label_for(condition: str) -> str:
     return CONDITION_STYLE.get(condition, {}).get("label", condition)
+
+
+def reward_label(source: str, *, metric: str = "Episode reward",
+                 per_step: bool = False) -> str:
+    """A y-axis label that names *which* reward is plotted.
+
+    ``reward_label("old_eval")`` -> ``"Episode reward (held-out, old_eval)"``. Pass a
+    source not in :data:`REWARD_SOURCES` and it is used verbatim, so an unusual source is
+    still named rather than dropped.
+
+    Use this rather than a bare ``"Mean episode reward"``: eight different phrasings of
+    that string are in the committed figures, none of which says what was measured.
+    """
+    described = REWARD_SOURCES.get(source, source)
+    name = f"{metric} per step" if per_step else metric
+    return f"{name} ({described})"
+
+
+def plot_seeds(ax, df, *, x: str, y: str, seed_col: str = "seed",
+               condition: str | None = None, color: str | None = None,
+               scale: float = 1.0, label: str | None = None, marker_size: float = 3.5):
+    """Draw one thin line per seed plus a solid mean, and return the mean series.
+
+    Replicates within a ``(seed, x)`` cell are averaged **first**, so each seed
+    contributes exactly one curve and the mean weights seeds equally rather than
+    weighting whichever seed happened to be run twice.
+
+    A single-seed condition is drawn as a mean line only -- one thin line under one solid
+    line of the same colour reads as a spread that was never measured. Add the legend
+    proxies with :func:`seed_legend_handles` once per figure, not once per condition.
+    """
+    import pandas as pd
+
+    color = color if color is not None else color_for(condition or "")
+    sub = df.dropna(subset=[y])
+    if sub.empty:
+        return pd.Series(dtype=float)
+
+    per_seed = sub.groupby([seed_col, x])[y].mean().mul(scale)
+    seeds = per_seed.index.get_level_values(0).unique()
+    if len(seeds) > 1:
+        for s in seeds:
+            curve = per_seed.loc[s].sort_index()
+            ax.plot(curve.index, curve.values, color=color, **SEED_LINE)
+
+    mean = per_seed.groupby(x).mean().sort_index()
+    ax.plot(mean.index, mean.values, color=color,
+            marker=marker_for(condition or ""), ms=marker_size,
+            label=label if label is not None else label_for(condition or ""),
+            **MEAN_LINE)
+    return mean
+
+
+def seed_legend_handles(color: str = "0.4") -> list:
+    """Proxy legend entries explaining the thin lines. One pair per figure."""
+    from matplotlib.lines import Line2D
+
+    return [Line2D([], [], color=color, **SEED_LINE, label="individual seed"),
+            Line2D([], [], color=color, **MEAN_LINE, label="mean across seeds")]
 
 
 def _short_hash(path: Path) -> str:
@@ -131,18 +234,20 @@ def write_figure_manifest(here: Path | str, entries: dict[str, str]) -> Path:
     return path
 
 
-def add_ms_axis(ax, max_x: float):
+def add_ms_axis(ax, max_x: float, ctrl_dt_ms: float = CTRL_DT_MS):
     """Add a top x-axis expressing the bottom 'delay (steps)' axis in milliseconds.
 
-    Returns the twin axis. Mirrors the bottom axis limits and converts tick labels
-    using :data:`CTRL_DT_MS`.
+    Returns the twin axis. Mirrors the bottom axis limits and converts tick labels using
+    ``ctrl_dt_ms``, which defaults to the rodent's :data:`CTRL_DT_MS`. **Pass 25 for
+    dm_control_suite** (``ctrl_dt = 0.025``); the default would label a 10-step delay as
+    100 ms where it is 250, and nothing would raise.
     """
     ax2 = ax.twiny()
     ticks = ax.get_xticks()
     ticks = ticks[(ticks >= 0) & (ticks <= max_x * 1.1)]
     ax2.set_xlim(ax.get_xlim())
     ax2.set_xticks(ticks)
-    ax2.set_xticklabels([f"{int(t * CTRL_DT_MS)}" for t in ticks])
+    ax2.set_xticklabels([f"{int(t * ctrl_dt_ms)}" for t in ticks])
     ax2.set_xlabel("Observation delay (ms)")
     sns.despine(ax=ax2, top=False, right=True, left=True, bottom=True)
     return ax2

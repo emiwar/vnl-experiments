@@ -39,10 +39,10 @@ JAX caches are cleared between runs. Check ``nvidia-smi`` before launching.
 
 Usage (from repo root)::
 
-    ../.venv/bin/python analysis/implicit-forward-model/record_activations.py \
+    ../.venv/bin/python analysis/rodent/implicit-forward-model/record_activations.py \
         --datasets old_eval --limit-clips 8 --max-steps 200   # quick smoke test
 
-    ../.venv/bin/python analysis/implicit-forward-model/record_activations.py \
+    ../.venv/bin/python analysis/rodent/implicit-forward-model/record_activations.py \
         --datasets old_eval new_eval                          # full probe set
 """
 
@@ -84,7 +84,8 @@ from vnl_experiments.delays.evaluation import (
 from vnl_experiments.delays.network_builders import build_network, load_network
 
 HERE = Path(__file__).resolve().parent
-DEFAULT_RUN_LIST = REPO_ROOT / "analysis" / "implicit-forward-model" / "run_list.txt"
+DEFAULT_RUN_LIST = (REPO_ROOT / "analysis" / "rodent" / "implicit-forward-model"
+                    / "run_list.txt")
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "eval_results" / "activations"
 
 

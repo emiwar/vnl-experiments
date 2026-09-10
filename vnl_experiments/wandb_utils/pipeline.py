@@ -137,7 +137,12 @@ def parse_args(description: str = "", argv: Sequence[str] | None = None):
     parser.add_argument("--check", action="store_true",
                         help="rebuild frozen and diff against the committed CSVs; "
                              "exit non-zero if they differ")
-    parser.add_argument("--project", default=index.DEFAULT_PROJECT)
+    # No default: the folder pins its own project (`project=args.project or PROJECT`),
+    # so a dm_control analysis cannot silently read the rodent index because a flag was
+    # forgotten. There is more than one project now, and an empty cohort is the *good*
+    # outcome of that mistake -- the bad one is rodent runs matching a generic selector.
+    parser.add_argument("--project", default=None,
+                        help="override the project pinned in this extract.py")
     args = parser.parse_args(argv)
     if args.sync:
         args.refresh = True
@@ -241,6 +246,11 @@ def resolve_selection(here: Path, conditions: Mapping[str, Mapping[str, Any]], *
     looks those ids up in the index -- so adding runs to WandB cannot change a committed
     figure behind your back.
     """
+    if project is None:
+        raise ValueError(
+            "project is None. `parse_args` no longer defaults it, because there is more "
+            "than one project; pin the folder's own and pass "
+            "`project=args.project or PROJECT`.")
     if sync:
         index.sync(project)
     df = index.load(project)
