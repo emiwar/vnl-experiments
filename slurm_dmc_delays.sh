@@ -16,6 +16,8 @@
 # Usage (arguments are Hydra overrides, passed straight through):
 #   sbatch slurm_dmc_delays.sh env=dmc/cartpole_swingup net=delayed_mlp train=dmc delay=5
 #   sbatch slurm_dmc_delays.sh env=dmc/walker_walk net=flat_forward_model train=dmc delay=10
+#   sbatch slurm_dmc_delays.sh env=dmc/walker_walk net=flat_recurrent train=dmc delay=10 \
+#       net.rnn_cell=gru
 #
 # For a whole delay sweep:
 #   python -m vnl_experiments.sweep --script slurm_dmc_delays.sh \

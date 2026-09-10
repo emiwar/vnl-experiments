@@ -69,7 +69,9 @@ from nnx_ppo.networks.variational import VariationalBottleneck
 from vnl_experiments.delays.efference_copy import EfferenceCopy
 from vnl_experiments.delays.make_delayed_networks import (
     make_delayed_mlp_actor_critic,
+    make_delayed_recurrent_actor_critic,
     make_forward_model_actor_critic,
+    make_recurrent_stack,
 )
 from vnl_experiments.delays.forward_model import ForwardModel
 
@@ -210,9 +212,12 @@ def _flat_shared_defaults(**extra):
     every ``config.json`` -- the same trap as the inert ``body_target_frame`` on the net
     config. The widths default narrower than the rodent's because these tasks are far
     smaller.
+
+    For the same reason the *actor* widths are not set here: ``FlatRecurrent`` splits
+    them into a pre/post pair around its recurrent stack and has no plain
+    ``actor_hidden_sizes`` to record. Each architecture passes its own.
     """
     return config_dict.create(
-        actor_hidden_sizes=[256] * 4,
         critic_hidden_sizes=[256] * 5,
         activation="swish",
         normalize_obs=True,
@@ -226,15 +231,41 @@ def _flat_shared_defaults(**extra):
 
 def flat_delay_defaults():
     """Defaults for ``DelayedMLP``: actor-only-delayed MLP with a privileged critic."""
-    return _flat_shared_defaults()
+    return _flat_shared_defaults(actor_hidden_sizes=[256] * 4)
 
 
 def flat_forward_model_defaults():
     """Defaults for ``FlatForwardModel``: explicit predictor of the undelayed obs."""
     return _flat_shared_defaults(
+        actor_hidden_sizes=[256] * 4,
         predictor_hidden_sizes=[256] * 4,
         fm_loss_weight=1.0,
         detach_prediction=True,
+    )
+
+
+def flat_recurrent_defaults():
+    """Defaults for ``FlatRecurrent``: the flat-obs recurrent actor.
+
+    The dm_control analogue of :func:`recurrent_defaults`, and the same shape --
+    two pre layers, one recurrent layer, two post layers -- at the flat family's
+    narrower width. The ``rnn_*`` keys are named identically to the rodent's on
+    purpose, so an analysis can select ``net_params.rnn_hidden_sizes`` across both
+    families; the MLP widths follow the flat family's ``actor_`` naming instead,
+    since there is no decoder here to name them after.
+
+    ``rnn_hidden_sizes=[]`` removes the recurrence and reduces this architecture to
+    ``DelayedMLP`` with the concatenated pre/post widths -- a debugging
+    configuration, not a condition to train. A run with no recurrent layers still
+    records ``network_class = "FlatRecurrent"``, so filter on
+    ``net_params.rnn_hidden_sizes`` rather than trusting the class name.
+    """
+    return _flat_shared_defaults(
+        actor_pre_hidden_sizes=[256] * 2,
+        rnn_cell="lstm",                     # one of RNN_CELLS
+        rnn_hidden_sizes=[256],              # one width per layer; len = depth
+        rnn_trainable_initial_state=False,
+        actor_post_hidden_sizes=[256] * 2,
     )
 
 
@@ -276,6 +307,47 @@ def build_flat_forward_model_network(net_params: dict, env, rngs: nnx.Rngs):
         predictor_hidden_sizes=p.get("predictor_hidden_sizes"),
         fm_loss_weight=p.get("fm_loss_weight", 1.0),
         detach_prediction=p.get("detach_prediction", True),
+        activation=_ACTIVATIONS[p.get("activation", "swish")],
+        normalize_obs=p.get("normalize_obs", True),
+        initializer_scale=p.get("initializer_scale", 1.0),
+        entropy_weight=p.get("entropy_weight", 1e-2),
+        min_std=p.get("min_std", 1e-3),
+        std_scale=p.get("std_scale", 1.0),
+    )
+
+
+def build_flat_recurrent_network(net_params: dict, env, rngs: nnx.Rngs):
+    """``FlatRecurrent`` from saved net_params: the flat-obs recurrent actor.
+
+    ``DelayedMLP`` with its actor MLP replaced by
+    ``pre-MLP -> recurrent stack -> post-MLP``, so the two differ in exactly one
+    factor. The cell is chosen by the ``rnn_cell`` net-param (see ``RNN_CELLS``).
+
+    This architecture postdates the ``p.get`` back-compat rule in the module
+    docstring: it has no checkpoints written before any of its keys existed, so
+    its fallbacks simply mirror :func:`flat_recurrent_defaults`. They must still
+    stay put once runs exist.
+    """
+    p = _parse_net_params(net_params)
+
+    cell_name = str(p.get("rnn_cell", "lstm")).lower()
+    if cell_name not in RNN_CELLS:
+        raise ValueError(
+            f"Unknown rnn_cell {cell_name!r}; expected one of {sorted(RNN_CELLS)}."
+        )
+
+    return make_delayed_recurrent_actor_critic(
+        obs_size=env.observation_size,
+        action_size=env.action_size,
+        actor_pre_hidden_sizes=p.get("actor_pre_hidden_sizes", [256] * 2),
+        rnn_hidden_sizes=p.get("rnn_hidden_sizes", [256]),
+        actor_post_hidden_sizes=p.get("actor_post_hidden_sizes", [256] * 2),
+        critic_hidden_sizes=p.get("critic_hidden_sizes", [256] * 5),
+        delay_k=p.get("delay_k", 0),
+        efference_length=p.get("efference_length", 0),
+        cell_cls=RNN_CELLS[cell_name],
+        rngs=rngs,
+        rnn_trainable_initial_state=p.get("rnn_trainable_initial_state", False),
         activation=_ACTIVATIONS[p.get("activation", "swish")],
         normalize_obs=p.get("normalize_obs", True),
         initializer_scale=p.get("initializer_scale", 1.0),
@@ -563,28 +635,19 @@ def build_recurrent_network(net_params: dict, env, rngs: nnx.Rngs):
         proprio_branch_layers.append(Delay(jp.zeros(proprio_size), k_steps=delay_k))
     proprio_branch = Sequential(proprio_branch_layers)
 
-    # Pre-MLP projects into the recurrent stack; activation_last_layer=True so the
-    # cell sees a nonlinear embedding rather than a bare affine map.
-    decoder_layers = list(
-        make_mlp_layers([decoder_in] + pre_hidden, rngs, activation,
-                        activation_last_layer=True)
-    )
-    # Each cell is an independent module with its own carry, so consecutive
-    # widths need not match: layer i maps its predecessor's width to its own.
-    width = pre_hidden[-1] if pre_hidden else decoder_in
-    for hidden in rnn_hidden_sizes:
-        decoder_layers.append(cell_cls(
-            in_features=width,
-            hidden_features=hidden,
-            rngs=rngs,
-            trainable_initial_state=rnn_trainable_initial_state,
-        ))
-        width = hidden
-    # `width` is the pre-MLP output when rnn_hidden_sizes is empty, which is what
-    # makes the no-recurrence reduction line up with the feedforward decoder.
-    decoder_layers += make_mlp_layers(
-        [width] + post_hidden + [action_size * 2], rngs, activation,
-        activation_last_layer=False,
+    # pre-MLP -> cells -> post-MLP, shared with the flat-obs recurrent architecture
+    # so the two differ only in what surrounds the stack. No kernel_init here: this
+    # path has never passed one and its initialisation must not shift.
+    decoder_layers = make_recurrent_stack(
+        in_features=decoder_in,
+        out_features=action_size * 2,
+        pre_hidden=pre_hidden,
+        rnn_hidden_sizes=rnn_hidden_sizes,
+        post_hidden=post_hidden,
+        cell_cls=cell_cls,
+        rngs=rngs,
+        activation=activation,
+        trainable_initial_state=rnn_trainable_initial_state,
     )
     decoder_layers.append(NormalTanhSampler(
         rngs, entropy_weight=entropy_weight, min_std=min_std, std_scale=std_scale))
@@ -642,6 +705,28 @@ def recurrent_param_groups(nets) -> dict:
     }
 
 
+def flat_recurrent_param_groups(nets) -> dict:
+    """``rnn`` count for the flat-obs recurrent architecture.
+
+    The generic path in ``evaluation.param_counts`` reaches for
+    ``adapter.action.layers[0].components``, i.e. a ``Concat``/``Map`` head that
+    this architecture does not have -- its first action layer is a ``Delay`` (or
+    the ``EfferenceCopy`` itself when ``delay_k == 0``). Without this hook that
+    lookup raises and the caller warns. ``total`` / ``actor`` / ``critic`` are
+    already supplied by the caller, so only the recurrent share is added here.
+    """
+    from vnl_experiments.delays.evaluation import _count_params
+
+    adapter = next((l for l in nets.layers if isinstance(l, PPOAdapter)), None)
+    if adapter is None:
+        return {}
+    efference = next(l for l in adapter.action.layers
+                     if isinstance(l, EfferenceCopy))
+    rnn_layers = [l for l in efference.inner.layers
+                  if isinstance(l, tuple(RNN_CELLS.values()))]
+    return {"rnn": sum(_count_params(l) for l in rnn_layers)}
+
+
 # ---------------------------------------------------------------------------
 # The registry
 # ---------------------------------------------------------------------------
@@ -683,6 +768,11 @@ class Architecture:
 def _recurrent_label(net_params: dict) -> str:
     """``RodentEncDecLSTM`` / ``...GRU`` / ``...RNN`` -- the cell is the headline."""
     return f"RodentEncDec{str(net_params.get('rnn_cell', 'lstm')).upper()}"
+
+
+def _flat_recurrent_label(net_params: dict) -> str:
+    """``DelayedLSTM`` / ``DelayedGRU`` / ``DelayedRNN``, beside ``DelayedMLP``."""
+    return f"Delayed{str(net_params.get('rnn_cell', 'lstm')).upper()}"
 
 
 ARCHITECTURES: dict[str, Architecture] = {
@@ -729,6 +819,16 @@ ARCHITECTURES: dict[str, Architecture] = {
             build=build_flat_forward_model_network,
             short_name="FlatForwardModel",
             tags=("MLP", "ForwardModel", "FlatObs"),
+            obs_layout="flat",
+        ),
+        Architecture(
+            name="FlatRecurrent",
+            defaults=flat_recurrent_defaults,
+            build=build_flat_recurrent_network,
+            short_name="DelayedRNNStack",   # fallback only; `label` names the cell
+            tags=("Recurrent", "FlatObs"),
+            label=_flat_recurrent_label,
+            param_groups=flat_recurrent_param_groups,
             obs_layout="flat",
         ),
     )

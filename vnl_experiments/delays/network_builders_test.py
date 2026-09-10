@@ -97,12 +97,16 @@ SMALL = {
     "efference_length": "5",
 }
 
-FLAT_SMALL = {
-    "actor_hidden_sizes": [32],
+#: Flat-obs keys shared by all three dm_control architectures. `actor_hidden_sizes`
+#: is *not* among them: FlatRecurrent splits the actor into a pre/post pair, and an
+#: unread key in a test config hides a typo in the one that is read.
+FLAT_SMALL_BASE = {
     "critic_hidden_sizes": [32],
     "delay_k": "5",
     "efference_length": "5",
 }
+
+FLAT_SMALL = {**FLAT_SMALL_BASE, "actor_hidden_sizes": [32]}
 
 CASES = {
     "RodentEncDecDelays": ({**SMALL, "dec_hidden_sizes": [24]}, 3899),
@@ -125,6 +129,15 @@ CASES = {
     "FlatForwardModel": (
         {**FLAT_SMALL, "predictor_hidden_sizes": [24]},
         5232,
+    ),
+    "FlatRecurrent": (
+        {
+            **FLAT_SMALL_BASE,
+            "rnn_hidden_sizes": [16],
+            "actor_pre_hidden_sizes": [24],
+            "actor_post_hidden_sizes": [24],
+        },
+        6043,
     ),
 }
 
@@ -579,6 +592,136 @@ class RecurrentArchitectureTest(parameterized.TestCase):
         }
         self.assertLess(counts["rnn"], counts["gru"])
         self.assertLess(counts["gru"], counts["lstm"])
+
+
+class FlatRecurrentArchitectureTest(parameterized.TestCase):
+    """``FlatRecurrent`` -- the dm_control analogue of the recurrent decoder.
+
+    It shares its stack-building code with the rodent (``make_recurrent_stack``),
+    so this class covers what is *not* shared: the flat-obs wrapping, the naming,
+    and the reduction to ``DelayedMLP``.
+    """
+
+    @staticmethod
+    def _actor(nets):
+        """The layers inside the EfferenceCopy: pre -> cells -> post -> sampler."""
+        adapter = nets.layers[-1]
+        efference = next(l for l in adapter.action.layers
+                         if isinstance(l, EfferenceCopy))
+        return efference.inner.layers
+
+    @classmethod
+    def _rnn_layers(cls, nets):
+        return [l for l in cls._actor(nets)
+                if isinstance(l, tuple(nb.RNN_CELLS.values()))]
+
+    @parameterized.named_parameters(*RNN_CELL_NAMES)
+    def test_every_cell_builds_and_advances(self, cell):
+        nets, _ = build("FlatRecurrent", {"rnn_cell": cell})
+        obs = flat_stub_obs()
+        first = nets(nets.initialize_state(BATCH), obs)
+        self.assertEqual(first.output.actions.shape, (BATCH, ACTION_SIZE))
+        rnn = self._rnn_layers(nets)
+        self.assertLen(rnn, 1)
+        self.assertIsInstance(rnn[0], nb.RNN_CELLS[cell])
+        # Same input twice from different carries must give different outputs.
+        second = nets(first.next_state, obs)
+        self.assertFalse(jp.allclose(first.output.actions, second.output.actions))
+
+    @parameterized.named_parameters(*RNN_CELL_NAMES)
+    def test_run_label_names_the_cell(self, cell):
+        """The run name is the only place the cell is visible in the run index."""
+        arch = nb.ARCHITECTURES["FlatRecurrent"]
+        self.assertEqual(arch.run_label({"rnn_cell": cell}),
+                         f"Delayed{cell.upper()}")
+
+    def test_unknown_cell_is_rejected(self):
+        with self.assertRaises(ValueError):
+            build("FlatRecurrent", {"rnn_cell": "transformer"})
+
+    def test_depth_and_non_uniform_widths(self):
+        """Cells are independent modules, so the stack may taper."""
+        nets, _ = build("FlatRecurrent", {"rnn_hidden_sizes": [32, 16, 8]})
+        rnn = self._rnn_layers(nets)
+        self.assertEqual([l.in_features for l in rnn], [24, 32, 16])  # 24 = pre-MLP out
+        self.assertEqual([l.hidden_features for l in rnn], [32, 16, 8])
+        out = nets(nets.initialize_state(BATCH), flat_stub_obs())
+        self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
+
+    def test_pipeline_matches_the_flat_family(self):
+        """Actor-only delay, efference queue, privileged undelayed critic."""
+        nets, _ = build("FlatRecurrent")
+        self.assertEqual([type(l) for l in nets.layers],
+                         [Normalizer, PPOAdapter])
+        adapter = nets.layers[-1]
+        self.assertEqual([type(l) for l in adapter.action.layers],
+                         [Delay, EfferenceCopy])
+        # The critic is a plain MLP: no cells, and no Delay in front of it.
+        critic_modules = [m for _, m in nnx.iter_graph(adapter.value)]
+        self.assertFalse(any(isinstance(m, tuple(nb.RNN_CELLS.values()))
+                             for m in critic_modules))
+        self.assertFalse(any(isinstance(m, Delay) for m in critic_modules))
+
+    def test_delay_layer_presence_follows_delay_k(self):
+        for delay_k, expect_delay in (("5", True), ("0", False)):
+            nets, _ = build("FlatRecurrent", {"delay_k": delay_k})
+            action_layers = nets.layers[-1].action.layers
+            self.assertEqual(any(isinstance(l, Delay) for l in action_layers),
+                             expect_delay, f"delay_k={delay_k}")
+
+    def test_efference_zero_is_passthrough(self):
+        """`efference=0` is the 'recurrence instead of efference copy' condition."""
+        nets, _ = build("FlatRecurrent", {"efference_length": "0"})
+        out = nets(nets.initialize_state(BATCH), flat_stub_obs())
+        self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
+
+    def test_always_a_sequential_without_the_normalizer(self):
+        """``evaluation.param_counts`` reaches for ``nets.layers``."""
+        nets, _ = build("FlatRecurrent", {"normalize_obs": "False"})
+        self.assertEqual([type(l) for l in nets.layers], [PPOAdapter])
+
+    def test_empty_rnn_reduces_to_delayed_mlp(self):
+        """The reduction that makes `rnn_hidden_sizes=[]` worth allowing.
+
+        With no cells the actor is pre-MLP -> post-MLP -> sampler. The pre-MLP
+        activates its last layer and the post-MLP does not, so splitting
+        ``actor_hidden_sizes`` across the pair must give a structurally identical
+        network to ``DelayedMLP``. If this fails, the stack is mis-wired
+        independently of the cells.
+        """
+        recurrent, _ = build("FlatRecurrent", {
+            "rnn_hidden_sizes": [],
+            "actor_pre_hidden_sizes": [24, 18],
+            "actor_post_hidden_sizes": [12],
+        })
+        feedforward, _ = build("DelayedMLP", {"actor_hidden_sizes": [24, 18, 12]})
+        self.assertEqual(param_shapes(recurrent), param_shapes(feedforward))
+        self.assertEmpty(self._rnn_layers(recurrent))
+        out = recurrent(recurrent.initialize_state(BATCH), flat_stub_obs())
+        self.assertEqual(out.output.actions.shape, (BATCH, ACTION_SIZE))
+
+    def test_param_groups_hook_reports_the_recurrent_share(self):
+        nets, _ = build("FlatRecurrent")
+        groups = nb.flat_recurrent_param_groups(nets)
+        self.assertEqual(set(groups), {"rnn"})
+        self.assertGreater(groups["rnn"], 0)
+        self.assertLess(groups["rnn"], param_count(nets))
+
+    def test_param_counts_emits_no_warning(self):
+        """Without the hook the generic path would warn: no Concat/Map head here."""
+        from vnl_experiments.delays import evaluation
+
+        nets, _ = build("FlatRecurrent")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            counts = evaluation.param_counts(nets, "FlatRecurrent")
+        self.assertEqual(counts["rnn"], nb.flat_recurrent_param_groups(nets)["rnn"])
+        self.assertGreater(counts["critic"], 0)
+
+    def test_defaults_have_no_inert_actor_hidden_sizes(self):
+        """An unread key recorded in every config.json is a documented trap."""
+        self.assertNotIn("actor_hidden_sizes", nb.flat_recurrent_defaults())
+        self.assertIn("actor_hidden_sizes", nb.flat_delay_defaults())
 
 
 if __name__ == "__main__":
