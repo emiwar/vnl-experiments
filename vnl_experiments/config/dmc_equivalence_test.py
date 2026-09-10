@@ -241,3 +241,65 @@ class TestNamingAndTagsArePerEnvFamily:
             assert cfg.env_spec.name_template.startswith("{task}"), f.stem
             assert cfg.env_spec.task in list(cfg.env_spec.tags), f.stem
             assert "TrainEvalSplit" not in list(cfg.env_spec.tags), f.stem
+
+
+class TestVideoCameraFollowsThePlant:
+    """The locomoting tasks must render from a tracking camera.
+
+    `mjx_env.render_array` falls back to camera ``-1`` -- a *static* free camera aimed
+    at the model's origin -- when none is given. A walker that has run eight metres
+    downfield is then simply not in the picture, which is what every control-suite
+    video did before this was set. Each dm_control XML already ships a `trackcom`
+    camera; the group just has to name it, and the name is the XML's, so it is set per
+    env rather than once on `train=dmc`.
+    """
+
+    #: Camera per group, or None for a task whose plant cannot leave the frame:
+    #: cartpole's rail is limited to +-1.8 m and ball_in_cup's cup is spring-anchored,
+    #: and neither model defines a `side` camera to name anyway.
+    EXPECTED = {
+        "walker_walk": "side", "walker_run": "side", "walker_stand": "side",
+        "cheetah_run": "side",
+        "humanoid_walk": "side", "humanoid_stand": "side",
+        "cartpole_balance": None, "cartpole_swingup": None, "ball_in_cup": None,
+    }
+
+    @staticmethod
+    def _groups():
+        return sorted(p.stem for p in
+                      (Path(__file__).parent.parent / "conf/env/dmc").glob("*.yaml"))
+
+    def test_the_table_covers_every_group(self) -> None:
+        """A new group has to make the choice rather than silently inherit -1."""
+        assert set(self._groups()) == set(self.EXPECTED)
+
+    @pytest.mark.parametrize("group", sorted(EXPECTED))
+    def test_group_sets_the_expected_camera(self, group: str) -> None:
+        cfg = composed(f"env=dmc/{group}", "net=delayed_mlp", "train=dmc")
+        camera = cfg.train.video.render_kwargs.get("camera")
+        assert camera == self.EXPECTED[group]
+
+    @pytest.mark.parametrize(
+        "group", sorted(g for g, c in EXPECTED.items() if c is not None))
+    def test_the_camera_exists_and_actually_tracks(self, group: str) -> None:
+        """Named cameras are resolved at render time, so a typo fails mid-training.
+
+        Asserting the mode as well as the name is what makes this a guard: a camera
+        that exists but is bolted to the world would leave the video exactly as
+        broken as camera -1.
+        """
+        import mujoco
+
+        cfg = composed(f"env=dmc/{group}", "net=delayed_mlp", "train=dmc")
+        spec = env_registry.get(cfg.env_spec.task)
+        model = spec.build(spec.default_config(), for_eval=True).mj_model
+        names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_CAMERA, i)
+                 for i in range(model.ncam)]
+        camera = cfg.train.video.render_kwargs.camera
+        assert camera in names, f"{group}: {camera!r} not among {names}"
+        assert model.cam(camera).mode == mujoco.mjtCamLight.mjCAMLIGHT_TRACKCOM
+
+    def test_the_rodent_camera_is_untouched(self) -> None:
+        """The rodent sets its own camera on `train=rodent`; this must not shadow it."""
+        cfg = composed()
+        assert cfg.train.video.render_kwargs.camera == "close_profile-rodent"

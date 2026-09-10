@@ -38,3 +38,12 @@ wandb:
   project: nnx-ppo-delays
 
 env: {}
+
+# The model's own tracking camera (mode="trackcom" in the dm_control XML). Without
+# it playground renders from camera -1, a *static* free camera, and the plant walks
+# clean out of frame. Set per env because the name is the XML's: the cartpole and
+# ball_in_cup models have no "side" camera, and they stay in frame anyway.
+train:
+  video:
+    render_kwargs:
+      camera: side
