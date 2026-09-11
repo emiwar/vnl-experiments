@@ -132,7 +132,7 @@ def test_the_dmc_groups_pin_the_control_suite_project() -> None:
 class TestEvalEnvIsNotWrapped:
     """The training wrappers must not reach the measurement env.
 
-    Both distort what the eval reports, and neither failure is loud:
+    Two of the three distort what the eval reports, and neither failure is loud:
 
     * ``RewardScalingWrapper`` multiplies reward by 10, so `eval/episode_reward` comes out
       in different units than the historical runs -- comparable in shape, wrong in scale.
@@ -143,6 +143,11 @@ class TestEvalEnvIsNotWrapped:
       variance.
 
     The pre-Hydra script passed the bare env as `eval_env` for exactly this reason.
+
+    ``NaNGuardWrapper`` is the third, and is kept off eval for a different reason: it
+    would barely distort anything, but a simulator divergence costs one NaN eval point
+    rather than the whole run, so there is no reason to move the numbers the cohort is
+    compared on. See `_dmc_builder`.
     """
 
     def _envs(self, task="CartpoleSwingup"):

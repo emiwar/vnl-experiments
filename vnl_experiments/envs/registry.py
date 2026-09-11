@@ -66,7 +66,7 @@ def _imitation_builder(cls):
 def _dmc_builder(task: str):
     """Construct a dm_control_suite task with the wrappers it needs to be trainable.
 
-    Two wrappers, both load-bearing:
+    Three wrappers, all load-bearing:
 
     ``EpisodeWrapper``
         dm_control_suite envs from the registry never set ``done``: left unwrapped they
@@ -80,28 +80,46 @@ def _dmc_builder(task: str):
         dropping it changes the effective learning rate and makes runs incomparable to the
         existing `nnx-ppo-delays` cohort. Set ``env.reward_scale=1.0`` to disable.
 
-    Both read their parameter from the env config rather than closing over a constant, so
-    the value is overridable per run *and* recorded in ``config.json``'s ``env_params``.
+    ``NaNGuardWrapper``
+        MJX diverges every few hundred million steps, and whether the resulting reward is
+        finite is luck (see `vnl_experiments.envs.nan_guard`). A non-finite one is fatal:
+        it turns every gradient NaN in a single update. This makes the diverged step a
+        plain zero-reward termination, which is what the survivable case already looks
+        like. It wraps *innermost* so ``EpisodeWrapper`` folds its ``done`` in with
+        ``truncated`` still False -- a termination, matching the task's own NaN handling.
 
-    **Both are training-only.** ``for_eval=True`` returns the bare env, because each
-    wrapper corrupts the measurement in its own way: reward scaling reports reward in
-    10x units, and ``EpisodeWrapper.reset`` seeds ``step_counter`` to a random value in
+    The first two read their parameter from the env config rather than closing over a
+    constant, so the value is overridable per run *and* recorded in ``config.json``'s
+    ``env_params``.
+
+    **All three are training-only.** ``for_eval=True`` returns the bare env. The first
+    two corrupt the measurement: reward scaling reports reward in 10x units, and
+    ``EpisodeWrapper.reset`` seeds ``step_counter`` to a random value in
     ``[0, max_len/2)`` -- a deliberate phase-spread so training envs do not truncate in
     lockstep, but on an eval env it means an episode can begin 499 steps in and the
-    reported lifespan lands near 750 instead of 1000, with large variance.
+    reported lifespan lands near 750 instead of 1000, with large variance. The NaN guard
+    is left off eval for a different reason: a divergence there costs one NaN eval point
+    rather than the whole run, and the eval numbers are the quantity the `nnx-ppo-delays`
+    cohort is compared on, so it is not worth changing them for a ~1-in-1e9-steps event.
+    Revisit if the divergence rate ever rises.
     """
     def build(config, *, clips=None, for_eval=False):
         import mujoco_playground
         from nnx_ppo.wrappers import episode_wrapper, reward_scaling_wrapper
 
+        from vnl_experiments.envs.nan_guard import NaNGuardWrapper
+
         env = mujoco_playground.registry.load(task, config=config)
         if for_eval:
-            # Neither wrapper belongs on the measurement env, and both distort it:
-            # RewardScalingWrapper reports reward in 10x units, and EpisodeWrapper's
-            # randomised start counter truncates the episode early. The eval rollout
-            # bounds itself with `eval.max_episode_length`, so the raw env is both
-            # correct and what the pre-Hydra script used.
+            # None of the three belongs on the measurement env. RewardScalingWrapper
+            # reports reward in 10x units and EpisodeWrapper's randomised start counter
+            # truncates the episode early; the NaN guard would not distort much, but it
+            # would still move the numbers this project's cohort is compared on, for an
+            # event rare enough that a NaN eval point is the cheaper failure. The eval
+            # rollout bounds itself with `eval.max_episode_length`, so the raw env is
+            # both correct and what the pre-Hydra script used.
             return env
+        env = NaNGuardWrapper(env)
         env = episode_wrapper.EpisodeWrapper(env, int(config.get("episode_length", 1000)))
         scale = float(config.get("reward_scale", 1.0))
         if scale != 1.0:
