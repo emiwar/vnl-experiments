@@ -34,9 +34,16 @@ HERE = Path(__file__).resolve().parent
 FIGURES = HERE / "figures"
 DATA = HERE / "data.csv"
 
-#: 1 control step = 25 ms here (ctrl_dt = 0.025), NOT the rodent's 10. The default would
-#: mislabel the ms axis by 2.5x and raise nothing.
-CTRL_DT_MS = 25
+#: Control-step duration per task -- dm_control sets it per task, so this is NOT one
+#: number for the track: CartpoleSwingup runs at 100 Hz and the locomotion tasks at 40 Hz.
+#: The `add_ms_axis` default is the rodent's 10 and would mislabel silently.
+CTRL_DT_MS = {          # from EnvSpec.default_config().ctrl_dt -- verified, not assumed
+    "CartpoleBalance": 10, "CartpoleSwingup": 10, "CheetahRun": 10,
+    "BallInCup": 20,
+    "WalkerStand": 25, "WalkerWalk": 25, "WalkerRun": 25,
+    "HumanoidStand": 25, "HumanoidWalk": 25,
+}
+DEFAULT_CTRL_DT_MS = 25
 
 
 def fig_per_task(df: pd.DataFrame) -> plt.Figure:
@@ -63,7 +70,8 @@ def fig_per_task(df: pd.DataFrame) -> plt.Figure:
         # Each panel keeps its own y-scale: a WalkerWalk return and a CheetahRun return
         # are different quantities, which is the whole reason for small multiples.
         if sub["delay_k"].notna().any():
-            add_ms_axis(ax, sub["delay_k"].max(), ctrl_dt_ms=CTRL_DT_MS)
+            add_ms_axis(ax, sub["delay_k"].max(),
+                        ctrl_dt_ms=CTRL_DT_MS.get(task, DEFAULT_CTRL_DT_MS))
     for ax in flat[len(tasks):]:
         ax.set_visible(False)
 

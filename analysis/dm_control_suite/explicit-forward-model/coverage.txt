@@ -1,0 +1,9 @@
+Coverage for 47 runs in explicit-forward-model
+
+index  (spec_id=-): 47/47
+    delayed_mlp                    29/29  
+    flat_forward_model             18/18  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 47/47
+    delayed_mlp                    29/29  
+    flat_forward_model             18/18  

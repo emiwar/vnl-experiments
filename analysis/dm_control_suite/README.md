@@ -15,7 +15,7 @@ rodent is not.
 | WandB project | `nnx-ppo-delays`, pinned by every env group (`conf/env/dmc/*.yaml`) |
 | Run index | `../_runs/nnx-ppo-delays.jsonl` |
 | Template | `cp -r ../_template/dm_control_suite analysis/dm_control_suite/<question-slug>` |
-| Control step | `ctrl_dt = 0.025 s` — 1 step = **25 ms**, *not* the rodent's 10 |
+| Control step | **per task**: 10 / 20 / 25 ms — see the table under Traps, and never the rodent's 10 by default |
 | Tasks | `WalkerWalk` `WalkerRun` `WalkerStand` `CheetahRun` `HumanoidWalk` `HumanoidStand` `CartpoleBalance` `CartpoleSwingup` `BallInCup` |
 | Networks | `DelayedMLP`, `FlatForwardModel`, `FlatRecurrent` (flat-obs; the rodent's are dict-obs) |
 
@@ -78,14 +78,14 @@ The general ones are in [`../README.md` §6](../README.md#6-traps) and apply her
 particularly the nondeterminism ones, since these tasks are also MuJoCo. Below are the
 ones peculiar to this track.
 
-**Training reward is 10× the task reward, and the eval series changed meaning on
-2026-09-10.** `reward_scale = 10.0` (a brax default, carried over deliberately so the new
-runs stay comparable with the 90-run cohort) is applied by `RewardScalingWrapper` around
-the training env. Until 2026-09-10 the *eval* env inherited the training wrappers, so
-`eval/*` was scaled too — and worse, `EpisodeWrapper.reset` seeds `step_counter` to a
-random value in `[0, max_len/2)`, a phase spread that is correct for training and wrong
-for measurement, so an eval episode could begin 499 steps in. Measured on one WalkerWalk
-run at the moment of the fix:
+**Training reward is 10× the task reward, and the eval series changed meaning at commit
+`971ab99` (2026-09-09).** `reward_scale = 10.0` (a brax default, carried over deliberately
+so the new runs stay comparable with the 90-run cohort) is applied by
+`RewardScalingWrapper` around the training env. Before `971ab99` the *eval* env inherited
+the training wrappers, so `eval/*` was scaled too — and worse, `EpisodeWrapper.reset`
+seeds `step_counter` to a random value in `[0, max_len/2)`, a phase spread that is correct
+for training and wrong for measurement, so an eval episode could begin 499 steps in.
+Measured on one WalkerWalk run at the moment of the fix:
 
 | | before (wrapped eval) | after (bare eval) |
 |---|---|---|
@@ -93,16 +93,42 @@ run at the moment of the fix:
 | episode reward | 1343.9 ± 221.3 | 157.1 ± 1.9 |
 
 Note the reward *std* collapsing 100-fold: most of what looked like eval variance was
-episode-length noise. **Never pool or contrast `eval/*` across 2026-09-10.** Add
-`created_at` to `INVARIANTS` for any cohort that straddles it, and say which side of it a
-number came from — this is exactly the shape of the rodent's 2026-08-20 train-split bug,
-and it hid for the same reason: "reward" was recorded where "which reward" was meant.
+episode-length noise. **Never pool or contrast `eval/*` across `971ab99`.** Gate on the
+**commit**, not `created_at`: runs from both sides were created on 2026-09-09, so a date
+filter silently mixes them. `explicit-forward-model/extract.py` is the worked example —
+it excludes twelve `d168093` cartpole runs, one of which reports 6147 where its post-fix
+twins report ~830. This is the shape of the rodent's 2026-08-20 train-split bug, and it
+hid for the same reason: "reward" was recorded where "which reward" was meant.
 Training-side metrics are unaffected; the training stack was always
 `RewardScalingWrapper → EpisodeWrapper → task`.
 
-**1 control step is 25 ms here.** `style.CTRL_DT_MS` is the rodent's 10, so
-`add_ms_axis(ax, max_x)` on a dm_control figure mislabels the top axis by 2.5× and raises
-nothing. Always pass `add_ms_axis(ax, max_x, ctrl_dt_ms=25)`.
+**The control step is per task, not per track.** One delay step is 10 ms on one panel and
+25 ms on the next:
+
+| ctrl_dt | ms / step | tasks |
+|---|---|---|
+| 0.01 | 10 | CartpoleBalance, CartpoleSwingup, CheetahRun |
+| 0.02 | 20 | BallInCup |
+| 0.025 | 25 | WalkerStand, WalkerWalk, WalkerRun, HumanoidStand, HumanoidWalk |
+
+`style.CTRL_DT_MS` is the rodent's 10 and `add_ms_axis(ax, max_x)` silently uses it, so
+pass the task's own value — `add_ms_axis(ax, max_x, ctrl_dt_ms=25)`. Take it from
+`env_params.ctrl_dt` in the run record rather than assuming a track-wide number; the
+table above is the current registry, not a promise.
+
+**The `history` producer's WandB project is a spec field defaulting to the rodent
+project.** `artifacts ensure --kind history` on a control-suite run list will fail with
+`Could not find run …/nnx-ppo-rodent-delays/<id>`. Override it, and pin the resulting
+spec id in the folder:
+
+```bash
+python -m vnl_experiments.artifacts ensure --kind history \
+    --runs analysis/dm_control_suite/<q>/runs.csv \
+    --set project='"emiwar-team/nnx-ppo-delays"'      # -> hist2000-8b97281e
+```
+
+Because the project is hashed into the spec, this is safe rather than merely necessary:
+control-suite and rodent curves get different spec ids and can never be pooled.
 
 **Raw reward is not comparable across tasks.** Nine tasks with different reward
 structures; a WalkerWalk return and a CartpoleBalance return are different quantities.

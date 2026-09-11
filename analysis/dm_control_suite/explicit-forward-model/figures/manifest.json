@@ -1,0 +1,5 @@
+{
+  "cartpole_best_vs_final.png": "explicit-forward-model  \u00b7  data.csv 86992c76  \u00b7  vnl-experiments 5773d24  \u00b7  2026-09-10",
+  "reward_vs_delay.png": "explicit-forward-model  \u00b7  data.csv 86992c76  \u00b7  vnl-experiments 5773d24  \u00b7  2026-09-10",
+  "training_curves.png": "explicit-forward-model  \u00b7  curves.csv de2fe052  \u00b7  vnl-experiments 5773d24  \u00b7  2026-09-10"
+}

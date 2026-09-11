@@ -1,0 +1,180 @@
+
+######################################################################
+# CartpoleSwingup  (n=18)
+######################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=15)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='flat_forward_model'  (n=3)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=18)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+######################################################################
+# WalkerWalk  (n=14)
+######################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=6)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='flat_forward_model'  (n=8)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=14)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+######################################################################
+# HumanoidWalk  (n=15)
+######################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=8)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='flat_forward_model'  (n=7)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=15)
+======================================================================
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  config.ppo.n_envs                 : [8192]
+  config.ppo.total_steps            : [480000000]
+  config.ppo.learning_rate          : [0.0001]
+  summary._step                     : [480215040.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
