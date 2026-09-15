@@ -15,6 +15,11 @@ it. The two families currently registered differ in more than their config:
   vector, and -- importantly -- never terminate on their own, so they need an
   ``EpisodeWrapper`` to produce episodes at all.
 
+They also differ in how a preempted run resumes: a light checkpoint omits the env states,
+so they have to be redrawn, and "spread the episode phases out" means something different
+for a clip than for a fixed-length episode. That is ``resume_reset`` below; it is the last
+thing in the training path that was rodent-only.
+
 ``obs_layout`` is checked against the chosen network's, so a rodent architecture asked to
 train on a dm_control task fails at startup with a sentence rather than a shape error
 inside the first forward pass.
@@ -52,6 +57,17 @@ class EnvSpec(NamedTuple):
     #: The env class, for the clip-based final eval, which builds its own instances.
     #: None for a task that has no held-out split to evaluate on.
     cls: Any = None
+    #: ``(env, env_config, n_envs, key) -> (env_states, note)``. How to draw a fresh
+    #: population of env states with their episode phases spread out, for a resume from a
+    #: light checkpoint (one that omitted the env states). ``note`` is a one-line
+    #: description of what was drawn, for the resume log.
+    #:
+    #: Deliberately has **no default**: a family that does not say how to do this would
+    #: resume with every env at the same point in its episode, and a population marching
+    #: in lockstep looks like a training artefact rather than a bug. ``train.py``'s
+    #: ``validate_resumable`` rejects a spec without one at startup, so the failure lands
+    #: on attempt 1 rather than on the first preemption hours later.
+    resume_reset: Callable[..., Any] | None = None
 
 
 def _imitation_builder(cls):
@@ -61,6 +77,62 @@ def _imitation_builder(cls):
         return cls(config, clips=clips)
 
     return build
+
+
+def _imitation_resume_reset(env, env_config, n_envs: int, key):
+    """Fresh imitation env states, with episode phases spread over the clip.
+
+    ``start_frame`` is passed explicitly, so the env's own ``config.start_frame_range``
+    (only the first 44 of 250 mocap frames for these runs) is bypassed for *this* reset
+    and used as normal for every reset during the rollout afterwards. Drawing it over the
+    whole valid range makes the time each env has left in its episode uniform, so the
+    population does not march in lockstep after a resume.
+
+    ``_last_valid_frame`` is the env's own definition of the last frame an episode may
+    start at. Re-deriving the formula here would be one silent drift away from spreading
+    over the wrong range, so we ask the env; if vnl-playground renames it, this fails
+    loudly at startup rather than quietly mis-resetting.
+    """
+    import jax
+    from flax import nnx
+
+    reset_key, frame_key = jax.random.split(key)
+    last_valid_frame = int(env._last_valid_frame())
+    frames = jax.random.randint(frame_key, (n_envs,), 0, last_valid_frame + 1)
+    env_states = nnx.vmap(
+        lambda k, f: env.reset(k, start_frame=f)
+    )(jax.random.split(reset_key, n_envs), frames)
+    return env_states, f"start_frame ~ U[0, {last_valid_frame}] over {n_envs} envs"
+
+
+def _dmc_resume_reset(env, env_config, n_envs: int, key):
+    """Fresh dm_control env states, with episode phases spread over the whole episode.
+
+    ``EpisodeWrapper.reset`` already spreads the phase, but only over
+    ``[0, max_len // 2)`` -- so a freshly reset population has *nothing* in the second
+    half of its episode, where a population that has been running a while keeps about two
+    thirds of its mass (occupancy is proportional to ``min(phase + 1, max_len // 2)``).
+    Resuming that way would leave the whole population unable to truncate for ~500 steps
+    and then truncate in a burst.
+
+    Overwriting ``step_counter`` over the full range is the direct analogue of what
+    :func:`_imitation_resume_reset` does with ``start_frame``: bypass the narrow default
+    spread for this one reset, and let every reset during the rollout afterwards use it as
+    normal. ``truncated`` needs no fixing up -- the draw excludes ``max_len`` itself, so no
+    env starts already truncated.
+    """
+    import jax
+    from flax import nnx
+
+    reset_key, phase_key = jax.random.split(key)
+    env_states = nnx.vmap(env.reset)(jax.random.split(reset_key, n_envs))
+    max_len = int(env_config.get("episode_length", 1000))
+    counter = env_states.info["step_counter"]
+    phases = jax.random.randint(phase_key, (n_envs,), 0, max_len).astype(counter.dtype)
+    env_states = env_states.replace(
+        info={**env_states.info, "step_counter": phases}
+    )
+    return env_states, f"step_counter ~ U[0, {max_len}) over {n_envs} envs"
 
 
 def _dmc_builder(task: str):
@@ -189,15 +261,17 @@ def _dmc_spec(task: str) -> EnvSpec:
         build=_dmc_builder(task),
         obs_layout="flat",
         uses_clips=False,
+        resume_reset=_dmc_resume_reset,
     )
 
 
 ENVS: dict[str, EnvSpec] = {
     "Imitation": EnvSpec(imitation_default_config, _imitation_builder(Imitation),
-                        cls=Imitation),
+                        cls=Imitation, resume_reset=_imitation_resume_reset),
     "AbsoluteImitation": EnvSpec(absolute_default_config,
                                  _imitation_builder(AbsoluteImitation),
-                                 cls=AbsoluteImitation),
+                                 cls=AbsoluteImitation,
+                                 resume_reset=_imitation_resume_reset),
     # dm_control_suite tasks, by their mujoco_playground registry name. Add more as
     # they are needed -- the entry is the only code a new one requires. The set below is
     # every env the `nnx-ppo-delays` project already has runs for, plus CheetahRun and

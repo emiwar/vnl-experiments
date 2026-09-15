@@ -41,6 +41,32 @@ python -m vnl_experiments.sweep --script slurm_dmc_delays.sh \
     env=dmc/cheetah_run net=delayed_mlp train=dmc delay=0,1,2,5,10,20
 ```
 
+### Preemption and requeue
+
+`slurm_dmc_requeue.sh` is the same thing on `gpu_requeue`, which is nearly free but kills
+and requeues a job whenever the node's owner wants it back. Worth it when a run will not
+fit a dedicated allocation comfortably — HumanoidWalk at 1 G steps is ~8.8 h on an A100
+against a 12 h limit. It takes the same overrides; the trainer keys the run directory and
+the WandB run on the Slurm job id, so every attempt continues one curve.
+
+Two things about a resumed curve are worth knowing before reading one, because both are
+visible in it and neither is a bug. A light checkpoint (the default) omits the env states,
+so on resume:
+
+* **Episode phase is redrawn, not continued.** Each env restarts its episode with the
+  phase drawn over the whole episode length — see `EnvSpec.resume_reset` in
+  `envs/registry.py`. The truncation rate therefore has a transient that washes out within
+  one episode (≤ 1000 steps, against a 480 M–1 G budget).
+* **The network carry is zeroed.** The actor's delay and efference queues, and a
+  `FlatRecurrent` run's RNN state, start empty, so for the first `delay_k` steps after each
+  resume the actor sees zeros where observations should be. At `delay_k ≤ 25` that is a
+  ~25-step transient per preemption.
+
+`requeue.full_checkpoints=true` keeps the env states instead and resumes exactly, at the
+cost of a much larger save — the env states are ~94 % of the bytes, and for a contact-rich
+task at `n_envs = 8192` that has not been measured, so check it fits the preemption grace
+period before relying on it.
+
 ## There are two eras of run, and they do not share a schema
 
 90 runs (2026-05-29 → 2026-07-08, delays 0–25) were trained by the pre-Hydra

@@ -17,7 +17,13 @@ interrupted:
 * ``requeue.enabled=true``, for ``gpu_requeue``: the run directory is keyed on the Slurm
   job id so it is stable across preemptions, checkpoints omit the env states (94 % of the
   bytes) so a save fits in the grace period, and an interrupted attempt exits 42 asking
-  the batch script to requeue it. See ``slurm_rodent_requeue.sh``.
+  the batch script to requeue it. See ``slurm_rodent_requeue.sh`` and
+  ``slurm_dmc_requeue.sh``.
+
+Either mode works for any registered env family. The one family-specific piece of the
+resume is how to spread episode phase when redrawing the env states a light checkpoint
+left out; that lives on ``EnvSpec.resume_reset`` (see ``envs/registry.py``), and a family
+without one is refused at startup rather than on the first preemption.
 """
 
 import os
@@ -187,6 +193,11 @@ def build_run(cfg: DictConfig) -> RunSetup:
             f"{arch.name} expects {arch.obs_layout!r}. Pick a network whose layout "
             f"matches: {sorted(a.name for a in ARCHITECTURES.values() if a.obs_layout == spec.obs_layout)}"
         )
+    if cfg.requeue.enabled:
+        # Before the clips are loaded and the GPU is touched, for the same reason as the
+        # layout check above: a preemption-safe run that cannot resume is worse than one
+        # that refuses to start.
+        validate_resumable(spec, cfg.env_spec.task)
 
     efference_length = cfg.efference if cfg.efference is not None else cfg.delay
     seed = cfg.seed
@@ -418,27 +429,36 @@ def run_plain(cfg: DictConfig, setup: RunSetup) -> int:
 # Preemption-safe training
 # ---------------------------------------------------------------------------
 
-def spread_env_states(train_env, nets, n_envs: int, key):
-    """Fresh env and carry states, with episode phases spread over the clip.
+def spread_env_states(setup: RunSetup, n_envs: int, key):
+    """Fresh env and carry states for a resume, with episode phases spread out.
 
-    ``start_frame`` is passed explicitly, so the env's own ``config.start_frame_range``
-    (only the first 44 of 250 mocap frames for these runs) is bypassed for *this* reset
-    and used as normal for every reset during the rollout afterwards. Drawing it over the
-    whole valid range makes the time each env has left in its episode uniform, so the
-    population does not march in lockstep after a resume.
-
-    ``_last_valid_frame`` is the env's own definition of the last frame an episode may
-    start at. Re-deriving the formula here would be one silent drift away from spreading
-    over the wrong range, so we ask the env; if vnl-playground renames it, this fails
-    loudly at startup rather than quietly mis-resetting.
+    How to spread them is the env family's business -- over a mocap clip for the imitation
+    tasks, over a fixed-length episode for dm_control -- so it lives on the family's
+    ``EnvSpec.resume_reset``. What is generic, and stays here, is that the network carry
+    cannot be redrawn at all: ``initialize_state`` zeroes it, so the actor's delay and
+    efference queues (and any RNN carry) start empty and refill over the next ``delay_k``
+    steps. That transient is the price of a light checkpoint.
     """
-    reset_key, frame_key = jax.random.split(key)
-    last_valid_frame = int(train_env._last_valid_frame())
-    frames = jax.random.randint(frame_key, (n_envs,), 0, last_valid_frame + 1)
-    env_states = nnx.vmap(
-        lambda k, f: train_env.reset(k, start_frame=f)
-    )(jax.random.split(reset_key, n_envs), frames)
-    return env_states, nets.initialize_state(n_envs), last_valid_frame
+    env_states, note = setup.env_spec.resume_reset(
+        setup.train_env, setup.env_config, n_envs, key)
+    return env_states, setup.nets.initialize_state(n_envs), note
+
+
+def validate_resumable(spec, task: str) -> None:
+    """Refuse a preemption-safe run whose env family cannot redraw its env states.
+
+    Called from :func:`build_run` when ``requeue.enabled``, because the alternative is
+    finding out on the first preemption -- after the env build, the compile and however
+    many hours of training the node happened to grant.
+    """
+    if spec.resume_reset is None:
+        raise OverrideError(
+            f"requeue.enabled=true, but {task!r}'s EnvSpec has no `resume_reset`. A "
+            f"resume from a light checkpoint has to redraw the env states, and only the "
+            f"env family knows how to spread their episode phases; without it every env "
+            f"would resume at the same point in its episode. Add a `resume_reset=` to "
+            f"the entry in envs/registry.py, or run with requeue.full_checkpoints=true "
+            f"to keep the env states in the checkpoint instead.")
 
 
 def warn_on_config_drift(stored, rebuilt) -> None:
@@ -515,11 +535,9 @@ def restore(step_dir: str, setup: RunSetup, *, n_envs: int):
         # is *in* the checkpoint, not by the config, so flipping full_checkpoints
         # mid-run resumes fine either way.
         key = jax.random.fold_in(jax.random.key(setup.seed), step)
-        env_states, network_states, last_frame = spread_env_states(
-            setup.train_env, setup.nets, n_envs, key
-        )
-        print(f"  env states redrawn with start_frame ~ U[0, {last_frame}] "
-              f"over {n_envs} envs")
+        env_states, network_states, note = spread_env_states(setup, n_envs, key)
+        print(f"  env states redrawn: {note}")
+        print("  network carry (delay / efference queues, any RNN state) zeroed")
         state = dataclasses.replace(
             state, env_states=env_states, network_states=network_states
         )

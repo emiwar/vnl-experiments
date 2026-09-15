@@ -23,10 +23,11 @@
 #   python -m vnl_experiments.sweep --script slurm_dmc_delays.sh \
 #       env=dmc/cartpole_swingup net=delayed_mlp train=dmc delay=0,1,2,5,10,20
 #
-# There is no requeue variant: at ~6 h these fit inside a dedicated allocation, and the
-# preemption machinery is only worth its complexity for the 12 h rodent runs. If you do
-# want gpu_requeue, slurm_rodent_requeue.sh takes the same overrides -- it is a generic
-# pass-through -- just add train=dmc and the env/net groups.
+# For the preemptible partition use slurm_dmc_requeue.sh, which takes the same overrides.
+# Prefer it when a run will not fit a dedicated allocation comfortably -- HumanoidWalk at
+# 1 G steps is ~8.8 h on an A100 against a 12 h limit -- or simply because gpu_requeue is
+# nearly free. (Do *not* use slurm_rodent_requeue.sh for this: it would launch, but it
+# asks for 48 GB and reports itself as a rodent job.)
 
 source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
 export MUJOCO_GL=egl
