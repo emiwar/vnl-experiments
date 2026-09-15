@@ -9,6 +9,12 @@ The old script derived a few values from `brax_ppo_config(env)` and overrode the
 inline; both are asserted here. `conf/train/dmc.yaml` pins brax's values as literals
 rather than reading them at runtime, so this test is also what catches brax changing a
 default underneath us.
+
+**Two values deliberately no longer match the old script**: the eval and video cadences,
+changed on 2026-09-15. They are measurement cadences, not optimisation: they change how
+often a curve is sampled and how much wall clock that costs, and change nothing about the
+weights a run arrives at. They are pinned in their own test below rather than dropped, so
+the divergence stays a decision with a date on it and cannot drift further unnoticed.
 """
 
 from __future__ import annotations
@@ -70,11 +76,47 @@ def test_logging_level_matches(train_config) -> None:
     assert train_config.ppo.logging_level == OLD_LOGGING_LEVEL
 
 
-def test_eval_and_video_cadence_match(train_config) -> None:
-    assert train_config.eval.every_steps == 600_000     # brax 60M / num_evals=100
+#: What the pre-Hydra script used, kept so the divergence below stays legible and so a
+#: cohort spanning 2026-09-15 can be identified by these numbers in its logged config.
+LEGACY_CADENCE = {"eval_every_steps": 600_000, "video_every_steps": 6_000_000}
+
+
+def test_eval_shape_matches_the_historical_run(train_config) -> None:
+    """How an eval is *measured* must not drift -- only how often it is taken.
+
+    These two set what one eval point means: 256 episodes of at most 1000 steps. Change
+    either and the eval curves either side are different quantities, which is the thing
+    `every_steps` is explicitly allowed to be and these are not.
+    """
     assert train_config.eval.n_envs == 256
     assert train_config.eval.max_episode_length == 1000
-    assert train_config.video.every_steps == 6_000_000  # brax 60M / 10
+    assert train_config.video.episode_length == 1000
+
+
+def test_measurement_cadences_are_the_2026_09_15_values(train_config) -> None:
+    """Deliberately not the old script's. See the module docstring and dmc.yaml.
+
+    600_000 was brax's 60M / `num_evals = 100` and was never rescaled when `total_steps`
+    was multiplied by 8, so a 480M run took 800 evals rather than the 100 the number was
+    chosen to give -- and on the locomotion tasks that was 58-62 % of the wall clock,
+    against 22-27 % for training itself
+    (`analysis/dm_control_suite/where-the-wall-clock-goes/`). 6_000_000 for video was
+    brax's 60M / 10, unrescaled the same way.
+
+    The values are asserted rather than merely commented because the *count* is what the
+    choice was about: 4.8M and 30M give exactly 100 evals and 16 videos over the 480M
+    budget, and a later edit to `total_steps` that quietly changed those counts is the
+    same class of mistake this whole file exists to catch.
+    """
+    assert train_config.eval.every_steps == 4_800_000
+    assert train_config.video.every_steps == 30_000_000
+    assert train_config.eval.every_steps != LEGACY_CADENCE["eval_every_steps"]
+
+    budget = train_config.ppo.total_steps
+    assert budget % train_config.eval.every_steps == 0
+    assert budget % train_config.video.every_steps == 0
+    assert budget // train_config.eval.every_steps == 100
+    assert budget // train_config.video.every_steps == 16
 
 
 def test_brax_reference_values_have_not_moved() -> None:

@@ -13,6 +13,10 @@ periodic cadences worth what they cost?
 An answer is a per-run budget in hours that adds up to the measured wall clock, plus the
 unit cost of one eval, one video and one checkpoint, so the cadences can be priced.
 
+> **Outcome:** the cadences were changed on 2026-09-15 as a result of this (conclusion 4).
+> Every run measured below ran at the *old* `eval.every_steps: 600_000` /
+> `video.every_steps: 6_000_000`, which is what makes the numbers here the before-picture.
+
 ## Method
 
 Nothing logs a time budget, but enough is logged to reconstruct one exactly.
@@ -197,15 +201,16 @@ of 10 M saves **0.01 h** — the bar is invisible, which is the finding.
    the last checkpoint. The hour-long checkpoint on 09-14 was the filesystem, not the
    checkpoint.
 
-4. **Suggested change, if the eval curve stays usable.** Set `eval.every_steps: 4_800_000`
-   and `video.every_steps: 30_000_000`. That is 100 eval points and 16 videos per 480 M
-   run, and it returns **61–66 % of the wall clock** on the locomotion tasks, 30–37 % on
-   Cartpole, and 5–6 % on CheetahRun. The cost is resolution: eval points go from every
-   0.6 M steps to every 4.8 M. Since the existing analyses read `history` artifacts
-   sampled to ~2 000 rows and quote the mean over the last 50 M steps, 100 points looks
-   ample — but the 90-run legacy cohort was also evaluated at 600 k, so a curve-shape
-   comparison against it would be at different resolutions. Worth one deliberate decision
-   rather than a silent change.
+4. **Change made, 2026-09-15**: `conf/train/dmc.yaml` now sets
+   `eval.every_steps: 4_800_000` and `video.every_steps: 30_000_000` — 100 eval points and
+   16 videos per 480 M run. On these measurements that returns **61–66 % of the wall
+   clock** on the locomotion tasks, 30–37 % on Cartpole and 5–6 % on CheetahRun. Nothing
+   else moved: same `eval.n_envs`, same `max_episode_length`, same reward, same
+   optimisation, so eval *values* stay poolable across the change and only a statement
+   about fine-resolution curve *shape* needs gating on `config.eval.every_steps`. The pin
+   and the reasoning are in `vnl_experiments/config/dmc_equivalence_test.py`, and the era
+   boundary is recorded in `../README.md`. `checkpoint_every_steps` was deliberately left
+   at 10 M.
 
 5. **Separately: CheetahRun's PPO step is ~10x slower than every other task's, and this
    is not explained.** 9.6 s per iteration on H200 (14.8 s on A100) against 0.77 s for
@@ -226,13 +231,16 @@ of 10 M saves **0.01 h** — the bar is invisible, which is the finding.
   `rodent/collision-model-xml/benchmark_xml.py`. If it is the contact buffer, a 10x
   speed-up on that task is on the table and every cadence argument above is noise
   beside it.
-- Decide the eval cadence deliberately, and if it changes, note in
-  `dm_control_suite/README.md` that eval-curve *resolution* now differs across eras, the
-  way the reward-scale and eval-wrapper eras are already recorded.
+- ~~Decide the eval cadence deliberately and record the era boundary.~~ Done
+  2026-09-15; see conclusion 4. Worth re-running this analysis once a few runs exist at
+  the new cadence, to confirm the budget lands where the projection says it does — the
+  projection prices events at their measured median, but it assumes the unit costs do not
+  change, and nothing has tested that at a different cadence.
 - The eval itself is latency-bound, not throughput-bound: 256 envs x 1 000 sequential
   steps. Raising `eval.n_envs` would cost almost nothing per eval and would shrink the
-  eval's own variance — which the track README notes is large. Worth measuring before
-  choosing a cadence, since it changes the trade.
+  eval's own variance — which the track README notes is large. That is now the right knob
+  to reach for if 100 points per run turns out to be noisy, rather than putting the
+  cadence back.
 - Run this on the rodent track (`nnx-ppo-rodent-delays`). The `timing` producer defaults
   to that project already; nothing here is dm_control-specific except the cadences.
 
