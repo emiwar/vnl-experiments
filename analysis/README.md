@@ -78,6 +78,7 @@ gitignored):
 artifacts/eval/<wandb_id>/<spec_id>.json
                           <spec_id>.meta.json     ← how it was made
           history/<wandb_id>/<spec_id>.csv.gz
+          timing/<wandb_id>/<spec_id>.csv.gz
           activations/<wandb_id>/<spec_id>.h5
           video/<wandb_id>/<spec_id>.mp4  (+ .h5, .stats.json)
 ```
@@ -100,14 +101,26 @@ python -m vnl_experiments.artifacts pull   --kind eval --runs analysis/<q>/runs.
 python -m vnl_experiments.artifacts verify
 ```
 
-### The four kinds
+### The five kinds
 
 | kind | what | cost | where it can run |
 |---|---|---|---|
 | `history` | sampled training curves + throughput, per run | seconds | anywhere (WandB) |
+| `timing` | per-iteration wall clock + the three throughput gauges | seconds | anywhere (WandB) |
 | `eval` | offline re-evaluation on train / `old_eval` / `new_eval` | minutes, GPU | needs a checkpoint |
 | `activations` | per-layer unit activations on one dataset | minutes, 1–2 GB each | needs a checkpoint |
 | `video` | rendered rollout mp4 + qpos h5 + stats | minutes, GPU | needs a checkpoint |
+
+`history` and `timing` overlap in what they fetch but not in what they are for, and they
+are separate kinds for a mechanical reason, not a stylistic one: WandB's sampled history
+drops any row where a requested key is missing, so one `run.history(keys=[...])` call for
+metrics logged at different cadences returns only their *intersection*. `history` asks for
+the reward series and gets it aligned; `timing` needs the train / eval / video gauges,
+which fire every iteration, every ~2.4 iterations and every ~24 iterations, so it fetches
+them separately and joins on `_step`. Read a `timing` artifact through
+`wandb_utils/timing.py`, which reconstructs a per-run budget (training / eval / video /
+checkpoint / everything else) from it and the run's config — see
+[`dm_control_suite/where-the-wall-clock-goes/`](dm_control_suite/where-the-wall-clock-goes/).
 
 Activations and videos are the artifacts most worth reusing across questions: they are
 question-independent and expensive, so record once, `pull` selectively, and let several

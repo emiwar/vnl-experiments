@@ -142,19 +142,47 @@ pass the task's own value — `add_ms_axis(ax, max_x, ctrl_dt_ms=25)`. Take it f
 `env_params.ctrl_dt` in the run record rather than assuming a track-wide number; the
 table above is the current registry, not a promise.
 
-**The `history` producer's WandB project is a spec field defaulting to the rodent
-project.** `artifacts ensure --kind history` on a control-suite run list will fail with
-`Could not find run …/nnx-ppo-rodent-delays/<id>`. Override it, and pin the resulting
+**The `history` and `timing` producers' WandB project is a spec field defaulting to the
+rodent project.** `artifacts ensure --kind history` on a control-suite run list will fail
+with `Could not find run …/nnx-ppo-rodent-delays/<id>`. Override it, and pin the resulting
 spec id in the folder:
 
 ```bash
 python -m vnl_experiments.artifacts ensure --kind history \
     --runs analysis/dm_control_suite/<q>/runs.csv \
     --set project='"emiwar-team/nnx-ppo-delays"'      # -> hist2000-8b97281e
+python -m vnl_experiments.artifacts ensure --kind timing \
+    --runs analysis/dm_control_suite/<q>/runs.csv \
+    --set project='"emiwar-team/nnx-ppo-delays"'      # -> timing20000-3089bf7d
 ```
 
 Because the project is hashed into the spec, this is safe rather than merely necessary:
 control-suite and rodent curves get different spec ids and can never be pooled.
+
+**The eval cadence is 8x more frequent than the number it came from, and on the
+locomotion tasks eval costs more wall clock than training.** `conf/train/dmc.yaml` says it
+in its own comment: `eval.every_steps: 600_000` is brax's 60 M budget over the old
+script's `num_evals = 100`, and it was not rescaled when `total_steps` was multiplied by
+8 — so a 480 M run runs **800** evals, not 100. An eval is 1 000 sequential steps of only
+256 envs, which is latency-bound, so on WalkerWalk / HumanoidWalk / HopperHop one eval
+costs 4–11 s against 0.6–2 s for a PPO step over 8 192 envs. Measured across 116 runs
+(2026-09), **eval is 58–62 % of the wall clock and the PPO step 22–27 %**; video is
+8–16 %; checkpointing is 0.1–0.9 % and is not worth touching. The cadence is deliberately
+left as-is for now so the new runs stay comparable with the 90-run legacy cohort, which
+was also evaluated at 600 k — but a run that "took much longer than expected" is very
+likely just this. See
+[`where-the-wall-clock-goes/`](where-the-wall-clock-goes/), and note that changing the
+cadence would make eval-curve *resolution* another thing that differs across eras.
+
+**CheetahRun's PPO step is ~10x slower than any other task's, and nobody knows why.**
+9.6 s per iteration on an H200 against 0.77 s for WalkerWalk at the same `n_envs`,
+`rollout_length` and network — while WalkerWalk does ten physics substeps per control step
+to CheetahRun's one, and while CheetahRun's *eval* (256 envs) is ~5x faster than
+WalkerWalk's. It is steady to ±1 % from the third iteration, so it is not compilation. A
+CheetahRun run is therefore ~91 % PPO step, and none of the cadence advice above helps it.
+`env_params.nconmax = 100000` with `njmax = 100` is an odd pairing beside WalkerWalk's
+50000/100 and HumanoidWalk's 200000/250, and is the first thing to check. Budget ~10 h for
+a 480 M CheetahRun until this is understood.
 
 **Raw reward is not comparable across tasks.** Nine tasks with different reward
 structures; a WalkerWalk return and a CartpoleBalance return are different quantities.

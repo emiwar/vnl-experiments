@@ -116,6 +116,36 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
 }
 
 
+#: Colour and label per wall-clock bucket, for time-budget figures
+#: (:mod:`vnl_experiments.wandb_utils.timing`). Kept here for the same reason as
+#: :data:`CONDITION_STYLE`: a bucket should be the same colour in every figure that
+#: draws one. The buckets are *not* conditions -- in a budget figure the condition is on
+#: the categorical axis and the colour carries the bucket -- so they get their own dict
+#: rather than entries in ``CONDITION_STYLE``, which would let a condition name collide
+#: with a bucket name.
+#:
+#: Sequential greens for the periodic work (eval / video / checkpoint), grey for
+#: training, and red for time lost to a stall, so a run that went wrong is separable
+#: from a run that is merely busy at a glance.
+BUCKET_STYLE: dict[str, dict[str, str]] = {
+    "train_s": {"color": "#4c72b0", "label": "PPO step (training)"},
+    "eval_s": {"color": "#dd8452", "label": "Eval rollouts"},
+    "video_s": {"color": "#937860", "label": "Video render + upload"},
+    "checkpoint_s": {"color": "#55a868", "label": "Checkpoint writes"},
+    "overhead_s": {"color": "#8c8c8c", "label": "Other in-loop time"},
+    "startup_tail_s": {"color": "#c7c7c7", "label": "Startup, compile, tail"},
+    "stall_s": {"color": "#c44e52", "label": "Stalled (cluster outage)"},
+}
+
+
+def bucket_color(bucket: str) -> str:
+    return BUCKET_STYLE.get(bucket, {}).get("color", "C7")
+
+
+def bucket_label(bucket: str) -> str:
+    return BUCKET_STYLE.get(bucket, {}).get("label", bucket)
+
+
 def apply_style() -> None:
     """Apply the shared seaborn theme + matplotlib style. Call once per script."""
     sns.set_theme(style="ticks")

@@ -1,0 +1,25 @@
+Coverage for 116 runs in where-the-wall-clock-goes
+
+index  (spec_id=-): 116/116
+    CartpoleSwingup@a100           38/38  
+    CartpoleSwingup@h200            4/4   
+    CheetahRun@a100                 1/1   
+    CheetahRun@h200                 8/8   
+    HopperHop-warp@h200             1/1   
+    HopperHop@h200                  4/4   
+    HumanoidWalk@a100              15/15  
+    HumanoidWalk@h200               8/8   
+    WalkerWalk@a100                17/17  
+    WalkerWalk@h200                20/20  
+
+timing:timing20000-3089bf7d  (spec_id=timing20000-3089bf7d): 116/116
+    CartpoleSwingup@a100           38/38  
+    CartpoleSwingup@h200            4/4   
+    CheetahRun@a100                 1/1   
+    CheetahRun@h200                 8/8   
+    HopperHop-warp@h200             1/1   
+    HopperHop@h200                  4/4   
+    HumanoidWalk@a100              15/15  
+    HumanoidWalk@h200               8/8   
+    WalkerWalk@a100                17/17  
+    WalkerWalk@h200                20/20  

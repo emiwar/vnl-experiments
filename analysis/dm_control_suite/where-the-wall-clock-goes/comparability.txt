@@ -1,0 +1,307 @@
+======================================================================
+Group condition='CartpoleSwingup@a100'  (n=38)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : []
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel', 'FlatRecurrent']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+
+======================================================================
+Group condition='CartpoleSwingup@h200'  (n=4)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : []
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+
+======================================================================
+Group condition='CheetahRun@a100'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2']
+
+======================================================================
+Group condition='CheetahRun@h200'  (n=8)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2']
+
+======================================================================
+Group condition='HopperHop-warp@h200'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['cam0']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['warp']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['540e3565bd702a006469a933017be28fc1830b2b']
+
+======================================================================
+Group condition='HopperHop@h200'  (n=4)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['cam0']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['540e3565bd702a006469a933017be28fc1830b2b']
+
+======================================================================
+Group condition='HumanoidWalk@a100'  (n=15)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2']  *** VARIES ***
+
+======================================================================
+Group condition='HumanoidWalk@h200'  (n=8)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk@a100'  (n=17)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk@h200'  (n=20)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['side']
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax']
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2']  *** VARIES ***
+
+======================================================================
+All runs  (n=116)
+======================================================================
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  config.video.every_steps          : [6000000]
+  config.video.episode_length       : [1000]
+  config.video.render_kwargs.height : [480]
+  config.video.render_kwargs.width  : [640]
+  config.video.render_kwargs.camera : ['cam0', 'side']  *** VARIES ***
+  config.checkpoint_every_steps     : [10000000]
+  env_params.impl                   : ['jax', 'warp']  *** VARIES ***
+  env_params.episode_length         : [1000.0]
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel', 'FlatRecurrent']  *** VARIES ***
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  cuda_version                      : ['13.3']
+  os                                : ['Linux-4.18.0-553.155.1.el8_10.x86_64-x86_64-with-glibc2.28']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  git_commit                        : ['540e3565bd702a006469a933017be28fc1830b2b', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***

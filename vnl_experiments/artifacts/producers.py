@@ -138,6 +138,121 @@ class HistoryProducer(Producer):
 
 
 # --------------------------------------------------------------------------------------
+# timing
+# --------------------------------------------------------------------------------------
+
+
+class TimingProducer(Producer):
+    """Per-iteration wall-clock series for one run: what the training loop spent time on.
+
+    ``history`` answers "how did reward evolve"; this answers "where did the wall clock
+    go". It records, for every PPO iteration the run logged, the three throughput gauges
+    ``train_ppo`` emits and the wandb ``_runtime`` stamp of the row, from which
+    :mod:`vnl_experiments.wandb_utils.timing` reconstructs a per-iteration budget
+    (training / eval / video / checkpoint / everything else).
+
+    Why this is a separate kind rather than a ``history`` spec override: ``history``
+    issues **one** ``run.history(keys=[...])`` call, and WandB drops any row where a
+    requested key is missing, so asking for the three gauges together returns only their
+    intersection -- the ~80 rows on which a video happened to be rendered, i.e. 4 % of
+    the iterations and none of the wall clock. The three series are logged at three
+    different cadences and have to be fetched separately and joined on ``_step``, which
+    is what this producer does.
+
+    Two properties of the raw series matter enough to state here, because the artifact
+    stores them uncorrected:
+
+    * ``runtime_s`` is the row's wandb ``_runtime``, which is stamped when the row is
+      *committed* -- not when it was logged. It therefore lags the iteration it belongs
+      to by a fixed number of rows. The lag is recovered per run (and verified, to
+      milliseconds) by :func:`~vnl_experiments.wandb_utils.timing.iteration_costs`; it is
+      not baked in here, so a future change to how wandb commits rows does not
+      retroactively corrupt stored artifacts.
+    * Rows are one per *logged* iteration. The step-0 log (which carries the initial
+      eval, video and checkpoint) has no ``train_sps``, so it is absent; everything
+      before the first surviving row lands in the analysis's startup bucket.
+
+    Cheap and network-only: three sampled-history calls, ~1.5 s per run, no checkpoint
+    and no GPU. ``samples`` is an upper bound on rows and defaults high enough to return
+    *every* iteration of a 2 G-step dm_control run (8 138 of them), because the
+    reconstruction differences successive ``_runtime`` stamps and a sampled subset would
+    silently merge the cost of the iterations it skipped.
+    """
+
+    KIND = "timing"
+    VERSION = 1
+    PARALLEL_SAFE = True
+    EXT = ".csv.gz"
+    #: The gauges, in the order the columns are written. Each is fetched on its own.
+    GAUGES = {
+        "train_sps": "throughput/train_sps",
+        "eval_sps": "throughput/eval_sps",
+        "video_sps": "throughput/video_sps",
+    }
+    DEFAULTS = {
+        "samples": 20000,
+        # A spec field, and deliberately the rodent project by default, exactly as for
+        # `history`: the project is hashed into the spec_id, so a control-suite timing
+        # artifact and a rodent one can never be pooled, and a dm_control analysis that
+        # forgets the override fails loudly instead of reading the wrong project.
+        "project": "emiwar-team/nnx-ppo-rodent-delays",
+    }
+
+    def prefix(self, spec: Mapping[str, Any]) -> str:
+        return f"timing{spec['samples']}"
+
+    def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
+                ctx: Mapping[str, Any]) -> dict[str, Any]:
+        import wandb
+
+        api = ctx.get("wandb_api") or wandb.Api(timeout=120)
+        run = api.run(f"{spec['project']}/{wandb_id}")
+        logged = set(run.summary.keys())
+
+        # `_runtime` rides along with the densest gauge (train_sps, one row per
+        # iteration) rather than being fetched alone: asked for on its own it returns a
+        # row for *every* log including step 0, which would not line up with the gauges.
+        frame: pd.DataFrame | None = None
+        present: list[str] = []
+        for column, key in self.GAUGES.items():
+            if key not in logged:
+                continue
+            want = [key, "_runtime"] if frame is None else [key]
+            part = run.history(keys=want, samples=spec["samples"], pandas=True)
+            if part.empty:
+                continue
+            part = part.set_index("_step").rename(columns={key: column,
+                                                           "_runtime": "runtime_s"})
+            present.append(column)
+            frame = part if frame is None else frame.join(part, how="outer")
+
+        if frame is None:
+            frame = pd.DataFrame(columns=["_step", "runtime_s", *self.GAUGES])
+        else:
+            frame = frame.sort_index().reset_index()
+            for column in self.GAUGES:
+                if column not in frame:
+                    frame[column] = float("nan")
+            frame = frame[["_step", "runtime_s", *self.GAUGES]]
+        frame.to_csv(out_path, index=False, compression="gzip")
+
+        counts = {f"n_{c}": int(frame[c].notna().sum()) for c in self.GAUGES} \
+            if len(frame) else {f"n_{c}": 0 for c in self.GAUGES}
+        return {
+            "rows": int(len(frame)),
+            "gauges": present,
+            "max_step": int(frame["_step"].max()) if len(frame) else None,
+            "max_runtime_s": (float(frame["runtime_s"].max())
+                              if len(frame) and frame["runtime_s"].notna().any()
+                              else None),
+            # A run whose rows were sampled rather than returned whole cannot be
+            # differenced; `iteration_costs` refuses it, and this is how to see why.
+            "truncated": bool(len(frame) >= spec["samples"]),
+            **counts,
+        }
+
+
+# --------------------------------------------------------------------------------------
 # eval
 # --------------------------------------------------------------------------------------
 
@@ -423,8 +538,8 @@ class VideoProducer(Producer):
 
 
 PRODUCERS: dict[str, Producer] = {
-    p.KIND: p() for p in (HistoryProducer, EvalProducer, ActivationsProducer,
-                          VideoProducer)
+    p.KIND: p() for p in (HistoryProducer, TimingProducer, EvalProducer,
+                          ActivationsProducer, VideoProducer)
 }
 
 
