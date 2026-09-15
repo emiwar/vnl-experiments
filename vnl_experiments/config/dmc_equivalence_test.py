@@ -119,6 +119,22 @@ class TestWrapperParameters:
             assert "reward_scale" in cfg, name
             assert "episode_length" in cfg, name
 
+    def test_every_registered_dmc_env_defaults_to_torque_control(self) -> None:
+        """The servo fields are injected the same way, and must default to inert.
+
+        `servo_kp = 0.0` is what makes the model identical to the one playground ships, so
+        an entry that lost the field would silently be a different plant from the rest of
+        the cohort. See envs/servo_control.md.
+        """
+        for name, spec in env_registry.ENVS.items():
+            if spec.obs_layout != "flat":
+                continue
+            cfg = spec.default_config()
+            assert cfg.servo_kp == 0.0, name
+            assert cfg.servo_damping_ratio == 1.0, name
+            assert cfg.servo_center == "qpos0", name
+            assert cfg.servo_unlimited_half_range == 0.0, name
+
 
 def test_the_dmc_groups_pin_the_control_suite_project() -> None:
     """So a control-suite run cannot land in the rodent project by forgetting a flag."""
@@ -267,6 +283,13 @@ class TestVideoCameraFollowsThePlant:
         "cheetah_run": "side",
         "humanoid_walk": "side", "humanoid_stand": "side",
         "cartpole_balance": None, "cartpole_swingup": None, "ball_in_cup": None,
+        # Hopper travels, but its XML has no `side` camera; `cam0` and `back` are both
+        # trackcom. Reacher and Finger are anchored to the world and cannot leave the frame
+        # -- and neither defines a trackcom camera to name anyway (reacher's `hand` is
+        # mode="track", finger's `cam0`/`cam1` are static).
+        "hopper_stand": "cam0", "hopper_hop": "cam0",
+        "reacher_easy": None, "reacher_hard": None,
+        "finger_turn_easy": None, "finger_turn_hard": None,
     }
 
     @staticmethod

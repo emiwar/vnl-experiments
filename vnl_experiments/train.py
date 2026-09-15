@@ -66,6 +66,7 @@ from vnl_experiments.delays.network_builders import (
 )
 from vnl_experiments.conf_schema import register as register_schemas
 from vnl_experiments.envs import absolute_imitation
+from vnl_experiments.envs import actuator_mode
 from vnl_experiments.envs import registry as env_registry
 from vnl_experiments.provenance import repo_versions
 from vnl_playground.tasks.reference_clips import ReferenceClips
@@ -134,19 +135,25 @@ def _task_overrides() -> list[str]:
 
 
 def _name_stem(cfg: DictConfig, arch, net_params: dict, efference_length: int,
-               ablations: tuple[str, ...]) -> str:
+               ablations: tuple[str, ...], env_config) -> str:
     """The run name up to the trailing timestamp or job token.
 
     The convention is per env family, because the families need different things in a
     name. A rodent run is one task, so the architecture leads: ``RodentEncDec_delay5_eff5``.
-    A control-suite run is one of nine tasks, so the task has to lead or the name says
+    A control-suite run is one of fifteen tasks, so the task has to lead or the name says
     nothing about which problem was solved: ``WalkerWalk_DelayedMLP_delay5_eff5`` -- which
     is also the convention the existing `nnx-ppo-delays` runs use.
 
     ``env_spec.name_template`` holds it, so adding an env family means writing its
     template in the group file rather than editing this function.
+
+    ``{kp}`` renders as empty at ``servo_kp = 0``, so every torque-control run keeps the
+    name it would have had before the servo existed and the `nnx-ppo-delays` cohort stays
+    name-compatible. Without the token every cell of a stiffness sweep would share a stem
+    and be separated only by the timestamp.
     """
     template = cfg.env_spec.get("name_template") or "{net}_delay{delay}_eff{efference}{ablations}"
+    servo_kp = float(env_config.get("servo_kp", 0.0))
     try:
         return template.format(
             task=cfg.env_spec.task,
@@ -155,11 +162,12 @@ def _name_stem(cfg: DictConfig, arch, net_params: dict, efference_length: int,
             efference=efference_length,
             ablations="".join(f"_{t}" for t in ablations),
             seed=cfg.seed,
+            kp=f"_kp{servo_kp:g}" if servo_kp else "",
         )
     except KeyError as e:
         raise OverrideError(
             f"env_spec.name_template refers to {e.args[0]!r}, which is not one of "
-            f"task / net / delay / efference / ablations / seed."
+            f"task / net / delay / efference / ablations / seed / kp."
         ) from None
 
 
@@ -254,6 +262,14 @@ def build_run(cfg: DictConfig) -> RunSetup:
         if env_config.get("body_target_frame", None) == value
     )
 
+    # Joint stiffness gets its own tag as well as a name token. `env-override` below would
+    # otherwise be the only mark on a stiffness sweep, and its documented meaning is "this
+    # run deviates from the study's standard config, be careful" -- true of every cell, and
+    # so it would make a deliberate cohort look suspect rather than selectable.
+    servo_kp = float(env_config.get("servo_kp", 0.0))
+    if servo_kp:
+        env_variant_tags += (f"kp{servo_kp:g}",)
+
     overrides = _task_overrides()
     env_overridden = [o for o in overrides if o.startswith("env.")]
 
@@ -269,7 +285,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
         config=config,
         ablations=ablations,
         env_spec=spec,
-        name_stem=_name_stem(cfg, arch, net_params, efference_length, ablations),
+        name_stem=_name_stem(cfg, arch, net_params, efference_length, ablations, env_config),
         wandb_config={
             # This payload's shape is load-bearing: the run index flattens it to dotted
             # columns (`env_params.walker_xml_path`, `config.ppo.total_steps`, ...) and
@@ -290,6 +306,11 @@ def build_run(cfg: DictConfig) -> RunSetup:
             "config": dataclasses.asdict(config),
             "net_params": net_params,
             "env_params": env_config.to_dict(),
+            # `servo_kp` is a *normalised* stiffness, so it does not by itself determine the
+            # plant: the per-joint kp/kv/centre depend on the model. Recording the derived
+            # values makes the physics recoverable from the run record rather than only from
+            # the XML. Empty dict for a torque-controlled run. See envs/servo_control.md.
+            **({"servo": actuator_mode.servo_report(eval_env)} if servo_kp else {}),
             **({"overrides": overrides} if overrides else {}),
         },
         # `env-override` marks a run whose env differs from the study's standard config.

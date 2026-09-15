@@ -1,6 +1,6 @@
 # @package _global_
 #
-# dm_control_suite HumanoidWalk, for delay experiments outside the rodent.
+# dm_control_suite HopperHop, for delay experiments outside the rodent.
 #
 # These tasks are self-contained: no reference clips, no train/test split, and a single
 # flat observation vector rather than the rodent's structured one. That means a flat-obs
@@ -11,28 +11,33 @@
 # existing 90-run delay cohort lives in, without having to remember it on the command
 # line. Override it explicitly if you want a scratch project.
 #
-#   python -m vnl_experiments.train env=dmc/humanoid_walk net=delayed_mlp train=dmc delay=5
+# Unstable and contact-rich: the regime where feedback delay is most costly and where
+# the 'intrinsic limb impedance handles it first' prediction is strongest.
+#
+#   python -m vnl_experiments.train env=dmc/hopper_hop net=delayed_mlp train=dmc delay=5
 
 defaults:
   # The task's full field set, generated from its own default_config() (see
   # vnl_experiments/conf_schema.py), so any field is settable without a `+` prefix.
   # `episode_length` and `reward_scale` are added there too: they belong to the
-  # EpisodeWrapper / RewardScalingWrapper rather than to the task.
-  - /env_defaults@env: HumanoidWalk
+  # EpisodeWrapper / RewardScalingWrapper rather than to the task, as are the `servo_*`
+  # fields, which belong to the model. See envs/servo_control.md.
+  - /env_defaults@env: HopperHop
   - _self_
 
 env_spec:
-  task: HumanoidWalk
+  task: HopperHop
 
-  # Run-name convention: the task leads, because this family has nine of them and a name
+  # Run-name convention: the task leads, because this family has fifteen of them and a name
   # without it says nothing about which problem was solved. Matches the naming the
-  # existing `nnx-ppo-delays` runs use.
+  # existing `nnx-ppo-delays` runs use. `{kp}` renders as empty at servo_kp=0, so a
+  # torque-control run is named exactly as the existing cohort is.
   name_template: "{task}_{net}_delay{delay}_eff{efference}{ablations}{kp}"
 
   # The task name as a tag, as the pre-Hydra script did, so a cohort is selectable by
   # tag. Deliberately *not* `warp` / `TrainEvalSplit`: there is no clip split to hold
   # out, so the latter would assert something untrue.
-  tags: [HumanoidWalk]
+  tags: [HopperHop]
 
 wandb:
   project: nnx-ppo-delays
@@ -41,9 +46,9 @@ env: {}
 
 # The model's own tracking camera (mode="trackcom" in the dm_control XML). Without
 # it playground renders from camera -1, a *static* free camera, and the plant walks
-# clean out of frame. Set per env because the name is the XML's: the cartpole and
-# ball_in_cup models have no "side" camera, and they stay in frame anyway.
+# clean out of frame. Set per env because the name is the XML's: hopper has no "side"
+# camera, and the anchored plants (reacher, finger) stay in frame anyway.
 train:
   video:
     render_kwargs:
-      camera: side
+      camera: cam0

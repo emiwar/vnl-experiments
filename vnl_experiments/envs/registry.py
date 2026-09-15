@@ -107,9 +107,20 @@ def _dmc_builder(task: str):
         import mujoco_playground
         from nnx_ppo.wrappers import episode_wrapper, reward_scaling_wrapper
 
+        from vnl_experiments.envs import actuator_mode
         from vnl_experiments.envs.nan_guard import NaNGuardWrapper
 
         env = mujoco_playground.registry.load(task, config=config)
+        # Control mode is a property of the *plant*, so it is applied before the for_eval
+        # branch: train and eval must simulate the same physics. At servo_kp=0 this returns
+        # the env untouched. See envs/servo_control.md.
+        env = actuator_mode.apply_servo(
+            env,
+            kp=float(config.get("servo_kp", 0.0)),
+            damping_ratio=float(config.get("servo_damping_ratio", 1.0)),
+            center=str(config.get("servo_center", "qpos0")),
+            unlimited_half_range=float(config.get("servo_unlimited_half_range", 0.0)),
+        )
         if for_eval:
             # None of the three belongs on the measurement env. RewardScalingWrapper
             # reports reward in 10x units and EpisodeWrapper's randomised start counter
@@ -158,6 +169,15 @@ def _dmc_default_config(task: str):
             cfg.episode_length = int(getattr(params, "episode_length", 1000) or 1000)
         if "reward_scale" not in cfg:
             cfg.reward_scale = float(getattr(params, "reward_scaling", 1.0) or 1.0)
+        # Joint control mode. These belong to the *model*, not to the task, so the playground
+        # config has no field for them -- but they have to be overridable per run and
+        # recorded in env_params, for the same reason the two wrapper fields above are.
+        # servo_kp is a dimensionless normalised stiffness and 0.0 leaves the model exactly
+        # as shipped; the whole argument is in envs/servo_control.md.
+        cfg.servo_kp = 0.0
+        cfg.servo_damping_ratio = 1.0
+        cfg.servo_center = "qpos0"
+        cfg.servo_unlimited_half_range = 0.0
         return cfg
 
     return default_config
@@ -191,6 +211,17 @@ ENVS: dict[str, EnvSpec] = {
     "WalkerStand": _dmc_spec("WalkerStand"),
     "WalkerWalk": _dmc_spec("WalkerWalk"),
     "WalkerRun": _dmc_spec("WalkerRun"),
+    # Added for the joint-stiffness (equilibrium-point) sweep: small, cheap bodies where a
+    # peripheral servo is a plausible model of muscle mechanics. Reacher is the two-joint
+    # arm the lambda model was posed about, Hopper is unstable and contact-rich, Finger
+    # manipulates an unactuated external object. envs/servo_control.md section 3 lists what
+    # is idiosyncratic about each -- HopperStand's action-dependent reward in particular.
+    "ReacherEasy": _dmc_spec("ReacherEasy"),
+    "ReacherHard": _dmc_spec("ReacherHard"),
+    "HopperStand": _dmc_spec("HopperStand"),
+    "HopperHop": _dmc_spec("HopperHop"),
+    "FingerTurnEasy": _dmc_spec("FingerTurnEasy"),
+    "FingerTurnHard": _dmc_spec("FingerTurnHard"),
 }
 
 
