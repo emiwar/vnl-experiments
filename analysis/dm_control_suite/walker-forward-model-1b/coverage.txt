@@ -1,0 +1,9 @@
+Coverage for 32 runs in walker-forward-model-1b
+
+index  (spec_id=-): 32/32
+    delayed_mlp                    16/16  
+    flat_forward_model             16/16  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 32/32
+    delayed_mlp                    16/16  
+    flat_forward_model             16/16  

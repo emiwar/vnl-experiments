@@ -1,0 +1,6 @@
+{
+  "budget_480m_replication.png": "walker-forward-model-1b  \u00b7  data.csv d0626789  \u00b7  vnl-experiments 9e216ae  \u00b7  2026-09-15",
+  "reward_and_steps_vs_delay.png": "walker-forward-model-1b  \u00b7  data.csv d0626789  \u00b7  vnl-experiments 9e216ae  \u00b7  2026-09-15",
+  "threshold_sensitivity.png": "walker-forward-model-1b  \u00b7  data.csv d0626789  \u00b7  vnl-experiments 9e216ae  \u00b7  2026-09-15",
+  "training_curves.png": "walker-forward-model-1b  \u00b7  curves.csv ad4e3f60  \u00b7  vnl-experiments 9e216ae  \u00b7  2026-09-15"
+}

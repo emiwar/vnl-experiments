@@ -1,0 +1,92 @@
+Did the one functional code difference inside this cohort ever change the physics?
+
+The problem
+-----------
+``comparability.txt`` flags ``git_commit``, ``repos.nnx_ppo.commit`` and
+``repos.vnl_experiments.dirty`` as varying, and at the 1e9 budget the variation sits
+**inside the MLP arm**: 3 of its 10 runs (delays 10/20/25, seed 43) ran at ``f9c8960`` /
+nnx-ppo ``1725d20``, the other 7 and *all* 8 forward-model runs at ``9e216ae`` /
+``5314279``. Worse, at those three delays commit and seed are the same split, so they
+cannot be separated by configuration alone.
+
+Reading the diffs (three commits, all small) leaves exactly one change that could alter a
+trajectory:
+
+* ``f9c8960`` adds ``train.video.render_kwargs.camera: side`` to six env configs. Render
+  path only -- it cannot reach the physics or the loss.
+* nnx-ppo ``1725d20 -> 5314279`` adds non-finite *counters* plus a ``check_diagnostics``
+  that raises. ``optimizer.update`` is called identically; the update math is untouched.
+  (A run that completed 1e9 steps under ``5314279`` therefore also *proves* it saw no
+  non-finite reward, observation, action or gradient -- the check would have killed it.)
+* ``9e216ae`` adds ``NaNGuardWrapper`` to the training env stack. **This one can change a
+  trajectory** -- but only on a step where MJX has already diverged, which is what this
+  script checks for.
+
+The check
+---------
+``NaNGuardWrapper`` turns a diverged step into ``done=1`` with ``truncated`` left False --
+a *termination*. dm_control_suite's WalkerWalk never terminates on its own, so under
+``EpisodeWrapper`` every episode end in a healthy run is a **truncation**. Hence
+
+    rollout_batch/done_rate > rollout_batch/truncation_rate  <=>  something terminated
+
+and the only thing that can terminate is a divergence. The same signal works on the
+pre-guard side, because the dm_control tasks already set
+``done = isnan(qpos).any() | isnan(qvel).any()`` themselves -- the guard changed what the
+*reward* does on that step, not whether ``done`` fires.
+
+So: if ``done_rate == truncation_rate`` at every logged iteration of every run, no run in
+this cohort ever diverged, the guard never fired, and the three stacks are functionally
+identical **on these runs** -- which is a stronger statement than a clean commit hash,
+and one that survives ``repos.vnl_experiments.dirty = True`` (README §6: a dirty flag
+voids the hash, so the hash cannot be the argument).
+
+These two keys are not in the pinned ``history`` spec, and adding them would change
+``HISTORY_SPEC_ID`` and unpin the 4.8e8 curves this folder shares with
+``../explicit-forward-model/``. So this script queries WandB directly and commits its
+verdict as ``nan_guard_inert.txt``. Same role as
+``rodent/efference-copy-vs-proprioception/code_identity.py``: a one-off comparability
+check whose *output* is the committed artifact.
+
+==============================================================================
+Per run: max over logged iterations of (done_rate - truncation_rate).
+Tolerance 4.069e-07 = a tenth of one terminated step in a 245760-transition rollout batch.
+==============================================================================
+  msj9aand  delayed_mlp         delay=0   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  ln7wa5w0  delayed_mlp         delay=5   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  sbt8k29r  delayed_mlp         delay=7   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  eldxqhi6  delayed_mlp         delay=10  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  t3sip7o4  delayed_mlp         delay=15  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  nr9ad1y5  delayed_mlp         delay=20  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  ojyv7y0b  flat_forward_model  delay=0   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  byx8gn30  flat_forward_model  delay=2   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  6xh19whl  flat_forward_model  delay=5   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  0y0gvn9t  flat_forward_model  delay=7   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  ihmu33v6  flat_forward_model  delay=7   seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  2r98flil  flat_forward_model  delay=10  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  s3m12gft  flat_forward_model  delay=15  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  06qarzob  flat_forward_model  delay=20  seed=42 budget= 480M  971ab99  iters=1954  max(done-trunc)=+0.000e+00  OK
+  jp5jehho  delayed_mlp         delay=0   seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  qt2rwbr3  delayed_mlp         delay=5   seed=43 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  8yg1tuyy  delayed_mlp         delay=5   seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  lrrbnmz9  delayed_mlp         delay=10  seed=43 budget=1000M  f9c8960  iters=2000  max(done-trunc)=+0.000e+00  OK
+  e9e1text  delayed_mlp         delay=10  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  d8tw15kf  delayed_mlp         delay=15  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  wb3qdz5g  delayed_mlp         delay=20  seed=43 budget=1000M  f9c8960  iters=2000  max(done-trunc)=+0.000e+00  OK
+  qvvivhpj  delayed_mlp         delay=20  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  klx83qee  delayed_mlp         delay=25  seed=43 budget=1000M  f9c8960  iters=2000  max(done-trunc)=+0.000e+00  OK
+  vl2lu8ge  delayed_mlp         delay=25  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  emgexiis  flat_forward_model  delay=0   seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  kv9n0wke  flat_forward_model  delay=10  seed=43 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  jkl1pbwo  flat_forward_model  delay=10  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  q0hmxbcn  flat_forward_model  delay=15  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  gqmlj9v3  flat_forward_model  delay=20  seed=43 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  q6qw38i6  flat_forward_model  delay=20  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  b3n2s2e8  flat_forward_model  delay=25  seed=43 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+  ux5zpb3v  flat_forward_model  delay=25  seed=46 budget=1000M  9e216ae  iters=2000  max(done-trunc)=+0.000e+00  OK
+
+==============================================================================
+INERT: no run in this cohort ever terminated an episode, so MJX never diverged, so NaNGuardWrapper never fired. The three code stacks in this
+cohort are functionally identical on these runs, and the varying git_commit / nnx_ppo.commit / dirty flags in comparability.txt do not
+threaten the arm contrast.
+==============================================================================

@@ -1,0 +1,327 @@
+
+##############################################################################
+# budget = 1,000,000,000 steps  (primary)  n=18
+##############################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=10)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+======================================================================
+Group condition='flat_forward_model'  (n=8)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [True]
+
+======================================================================
+All runs  (n=18)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+##############################################################################
+# budget = 480,000,000 steps  (support: delay-5 hole + 3rd seed)  n=14
+##############################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=6)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+======================================================================
+Group condition='flat_forward_model'  (n=8)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+======================================================================
+All runs  (n=14)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+##############################################################################
+# BOTH BUDGETS POOLED  n=32
+# Expected to flag exactly config.ppo.total_steps and summary._step.
+# Anything else here is a second difference between the cohorts and
+# must be written up as a caveat in report.md.
+##############################################################################
+======================================================================
+Group condition='delayed_mlp'  (n=16)
+======================================================================
+  config.ppo.total_steps            : [1000000000, 480000000]  *** VARIES ***
+  summary._step                     : [1000243200.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+======================================================================
+Group condition='flat_forward_model'  (n=16)
+======================================================================
+  config.ppo.total_steps            : [1000000000, 480000000]  *** VARIES ***
+  summary._step                     : [1000243200.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+======================================================================
+All runs  (n=32)
+======================================================================
+  config.ppo.total_steps            : [1000000000, 480000000]  *** VARIES ***
+  summary._step                     : [1000243200.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  config.eval.every_steps           : [600000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+
+##############################################################################
+# DESIGN GRID
+##############################################################################
+
+budget = 1,000,000,000  (runs per arm x delay)
+delay               0   5   10  15  20  25
+condition                                 
+delayed_mlp          1   2   2   1   2   2
+flat_forward_model   1   0   2   1   2   2
+  holes: [('flat_forward_model', 5)]
+
+budget = 480,000,000  (runs per arm x delay)
+delay               0   2   5   7   10  15  20
+condition                                     
+delayed_mlp          1   0   1   1   1   1   1
+flat_forward_model   1   1   1   2   1   1   1
+  holes: [('delayed_mlp', 2)]
