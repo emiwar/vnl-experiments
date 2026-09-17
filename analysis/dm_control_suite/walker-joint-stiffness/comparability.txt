@@ -1,0 +1,139 @@
+======================================================================
+Group condition='servo'  (n=12)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.servo_damping_ratio    : [1.0]
+  env_params.servo_center           : ['range']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  config.eval.every_steps           : [4800000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [True]
+
+======================================================================
+Group condition='torque'  (n=6)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.servo_damping_ratio    : [1.0]
+  env_params.servo_center           : ['range']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  config.eval.every_steps           : [4800000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [True]
+
+======================================================================
+All runs  (n=18)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.servo_damping_ratio    : [1.0]
+  env_params.servo_center           : ['range']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  config.eval.every_steps           : [4800000]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [True]
+
+##############################################################################
+# DESIGN GRID
+##############################################################################
+runs per servo_kp x delay
+delay     0  5
+servo_kp      
+0.00      3  3
+0.25      0  1
+0.50      1  1
+1.00      2  1
+4.00      1  1
+8.00      1  1
+16.00     1  1
+
+  empty cells : [(0.25, 0)]
+  n=1   cells : [(0.25, 5), (0.5, 0), (0.5, 5), (1.0, 5), (4.0, 0), (4.0, 5), (8.0, 0), (8.0, 5), (16.0, 0), (16.0, 5)]
+
+  A single-seed cell has no spread of its own. The largest seed spread observed
+  anywhere in this cohort is the reference for what counts as resolved.
+
+##############################################################################
+# WITHIN-CELL SPREAD
+##############################################################################
+reward_final by cell
+                count        mean         min         max      spread
+servo_kp delay                                                       
+0.00     0          3  976.618621  976.428334  976.887240    0.458907
+         5          3  964.029199  961.849687  965.139948    3.290261
+0.25     5          1   60.270573   60.270573   60.270573    0.000000
+0.50     0          1  145.401235  145.401235  145.401235    0.000000
+         5          1  136.161663  136.161663  136.161663    0.000000
+1.00     0          2  647.622342  476.248740  818.995944  342.747203
+         5          1  329.360254  329.360254  329.360254    0.000000
+4.00     0          1  957.940912  957.940912  957.940912    0.000000
+         5          1  955.478172  955.478172  955.478172    0.000000
+8.00     0          1  965.251565  965.251565  965.251565    0.000000
+         5          1  694.318240  694.318240  694.318240    0.000000
+16.00    0          1  976.665644  976.665644  976.665644    0.000000
+         5          1  786.314481  786.314481  786.314481    0.000000
+
+  cells with >1 seed: 3
+  largest spread among them: 342.7
+

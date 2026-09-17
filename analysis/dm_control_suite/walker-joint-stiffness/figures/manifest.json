@@ -1,0 +1,5 @@
+{
+  "convergence.png": "Reward gained in the last 1e8 steps",
+  "curves.png": "Eval-reward learning curves, per delay",
+  "stiffness.png": "End-of-training reward vs servo_kp, per delay"
+}

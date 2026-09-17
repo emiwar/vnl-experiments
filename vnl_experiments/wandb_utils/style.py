@@ -109,6 +109,11 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     # dm_control_suite flat-observation architectures (2026-09-10). Each reuses the hue
     # of its rodent analogue -- `encdec` C1, `forward_model` C2, `recurrent` C9 -- so an
     # architecture reads the same colour whichever track a figure is from.
+    # Joint control mode (2026-09-16). `torque` reuses `delayed_mlp`'s C1 deliberately:
+    # every delay analysis in this project so far *is* torque control, so the baseline
+    # keeps the colour the reader already associates with it.
+    "torque": {"color": "C1", "marker": "o", "label": "Torque control (servo_kp = 0)"},
+    "servo": {"color": "C3", "marker": "D", "label": "Joint servo (equilibrium point)"},
     "delayed_mlp": {"color": "C1", "marker": "o", "label": "MLP (DelayedMLP)"},
     "flat_forward_model": {"color": "C2", "marker": "^",
                            "label": "Explicit forward model"},

@@ -1,0 +1,9 @@
+Coverage for 18 runs in walker-joint-stiffness
+
+index  (spec_id=-): 18/18
+    servo                          12/12  
+    torque                          6/6   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 18/18
+    servo                          12/12  
+    torque                          6/6   

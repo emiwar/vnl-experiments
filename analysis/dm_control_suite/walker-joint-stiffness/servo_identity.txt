@@ -1,0 +1,40 @@
+servo runs: 12   torque runs: 6
+
+1. per-joint kp_ref = kp / servo_kp, over every servo run
+   right_hip    [95.492966]  expected 95.492966  OK
+   left_hip     [95.492966]  expected 95.492966  OK
+   right_knee   [38.197186]  expected 38.197186  OK
+   left_knee    [38.197186]  expected 38.197186  OK
+   right_ankle  [25.464791]  expected 25.464791  OK
+   left_ankle   [25.464791]  expected 25.464791  OK
+
+2. dead_ctrl_fraction under servo_center = range
+   right_hip    [0.]  OK
+   left_hip     [0.]  OK
+   right_knee   [0.]  OK
+   left_knee    [0.]  OK
+   right_ankle  [0.]  OK
+   left_ankle   [0.]  OK
+
+3. torque runs carry no servo parameters
+   right_hip    all NaN: True  OK
+   left_hip     all NaN: True  OK
+   right_knee   all NaN: True  OK
+   left_knee    all NaN: True  OK
+   right_ankle  all NaN: True  OK
+   left_ankle   all NaN: True  OK
+
+4. settling time (hip, the slowest joint) against the delay it faces
+   servo_kp= 0.25  delay  5 (125 ms)   t_settle = 1565.2 ms   servo SLOWER than the loop
+   servo_kp=  0.5  delay  0 (  0 ms)   t_settle = 1106.8 ms   servo SLOWER than the loop
+   servo_kp=  0.5  delay  5 (125 ms)   t_settle = 1106.8 ms   servo SLOWER than the loop
+   servo_kp=    1  delay  0 (  0 ms)   t_settle =  782.6 ms   servo SLOWER than the loop
+   servo_kp=    1  delay  5 (125 ms)   t_settle =  782.6 ms   servo SLOWER than the loop
+   servo_kp=    4  delay  0 (  0 ms)   t_settle =  391.3 ms   servo SLOWER than the loop
+   servo_kp=    4  delay  5 (125 ms)   t_settle =  391.3 ms   servo SLOWER than the loop
+   servo_kp=    8  delay  0 (  0 ms)   t_settle =  276.7 ms   servo SLOWER than the loop
+   servo_kp=    8  delay  5 (125 ms)   t_settle =  276.7 ms   servo SLOWER than the loop
+   servo_kp=   16  delay  0 (  0 ms)   t_settle =  195.7 ms   servo SLOWER than the loop
+   servo_kp=   16  delay  5 (125 ms)   t_settle =  195.7 ms   servo SLOWER than the loop
+
+PASS: the actuator was identical in every run of this cohort.
