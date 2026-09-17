@@ -2,22 +2,27 @@
 
 The problem
 -----------
-``comparability.txt`` flags ``git_commit``, ``repos.nnx_ppo.commit`` and
-``repos.vnl_experiments.dirty`` as varying, and at the 1e9 budget the variation sits
-**inside the MLP arm**: 3 of its 10 runs (delays 10/20/25, seed 43) ran at ``f9c8960`` /
-nnx-ppo ``1725d20``, the other 7 and *all* 8 forward-model runs at ``9e216ae`` /
-``5314279``. Worse, at those three delays commit and seed are the same split, so they
-cannot be separated by configuration alone.
+``comparability.txt``'s DESIGN AXES section shows ``git_commit``,
+``repos.nnx_ppo.commit`` and ``repos.vnl_experiments.dirty`` all varying, and the
+variation is **not balanced across the arms**: the MLP arm spans four vnl-experiments
+commits and the forward-model arm two, and at some delays commit and seed coincide, so
+configuration alone cannot separate them. ``repos.vnl_experiments.dirty`` is ``True`` on
+most runs, which per README §6 voids the commit hash outright -- so the hashes cannot be
+the argument even where they agree.
 
-Reading the diffs (three commits, all small) leaves exactly one change that could alter a
+Reading the diffs across the cohort's commits leaves exactly one change that could alter a
 trajectory:
 
-* ``f9c8960`` adds ``train.video.render_kwargs.camera: side`` to six env configs. Render
-  path only -- it cannot reach the physics or the loss.
+* ``f9c8960`` adds ``train.video.render_kwargs.camera`` to six env configs. Render path
+  only -- it cannot reach the physics or the loss.
 * nnx-ppo ``1725d20 -> 5314279`` adds non-finite *counters* plus a ``check_diagnostics``
   that raises. ``optimizer.update`` is called identically; the update math is untouched.
-  (A run that completed 1e9 steps under ``5314279`` therefore also *proves* it saw no
-  non-finite reward, observation, action or gradient -- the check would have killed it.)
+  (A run that completed under ``5314279`` therefore also *proves* it saw no non-finite
+  reward, observation, action or gradient -- the check would have killed it.)
+* ``540e356`` adds ``servo_kp``; ``b487eed`` adds requeue/``resume_reset``; ``7bedb5c``
+  lowers the eval and video cadence. None of these touches the training step for a run
+  with ``servo_kp = 0`` (``apply_servo`` returns before writing any field), and
+  ``extract.py`` admits only such runs.
 * ``9e216ae`` adds ``NaNGuardWrapper`` to the training env stack. **This one can change a
   trajectory** -- but only on a step where MJX has already diverged, which is what this
   script checks for.
@@ -36,10 +41,13 @@ pre-guard side, because the dm_control tasks already set
 *reward* does on that step, not whether ``done`` fires.
 
 So: if ``done_rate == truncation_rate`` at every logged iteration of every run, no run in
-this cohort ever diverged, the guard never fired, and the three stacks are functionally
-identical **on these runs** -- which is a stronger statement than a clean commit hash,
-and one that survives ``repos.vnl_experiments.dirty = True`` (README §6: a dirty flag
-voids the hash, so the hash cannot be the argument).
+this cohort ever diverged, the guard never fired, and every code stack in the cohort is
+functionally identical **on these runs** -- which is a stronger statement than a clean
+commit hash, and one that survives ``repos.vnl_experiments.dirty = True`` (README §6: a
+dirty flag voids the hash, so the hash cannot be the argument).
+
+It also covers the requeued runs for free: a resume redraws episode phases but never sets
+``done``, so a resume that had somehow corrupted the population would show up here too.
 
 These two keys are not in the pinned ``history`` spec, and adding them would change
 ``HISTORY_SPEC_ID`` and unpin the 4.8e8 curves this folder shares with
@@ -99,8 +107,8 @@ def main() -> None:
             f"{'OK' if ok else f'*** {n_over} ITERATIONS WITH TERMINATIONS ***'}")
 
     verdict = ("INERT: no run in this cohort ever terminated an episode, so MJX never "
-               "diverged, so NaNGuardWrapper never fired. The three code stacks in this\n"
-               "cohort are functionally identical on these runs, and the varying "
+               "diverged, so NaNGuardWrapper never fired. Every code stack in this\n"
+               "cohort is functionally identical on these runs, and the varying "
                "git_commit / nnx_ppo.commit / dirty flags in comparability.txt do not\n"
                "threaten the arm contrast."
                if not bad else

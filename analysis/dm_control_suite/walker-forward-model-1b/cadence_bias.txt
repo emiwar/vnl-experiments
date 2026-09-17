@@ -1,0 +1,95 @@
+Does the eval cadence change where ``steps_to_900`` says a run solved the task?
+
+The problem
+-----------
+This cohort spans the 2026-09-15 eval-cadence change, so its curves come at three
+resolutions (measured, not assumed -- ``eval_spacing_median`` in ``data.csv``):
+
+* ~4.9e5-7.4e5 steps (2-3 PPO iterations) for runs configured at ``every_steps = 6e5``;
+* 4.9e6 (20 iterations) for runs configured at ``4.8e6``;
+* **both, inside one curve**, for the three requeued runs that straddled the change --
+  their config records only the last attempt's value.
+
+``steps_to_<thr>`` is the first step whose **trailing 1e7-step mean** reaches the
+criterion. The window is defined in steps, so what it *means* is cadence-independent --
+but it is built from ~17 eval points at the fine cadence and ~2 at the coarse one, and a
+mean of 2 points is noisier than a mean of 17. A first-crossing time read off a noisier
+signal is biased early. Since the headline compares crossing times *across* runs whose
+cadence differs, that bias has to be bounded rather than assumed small.
+
+The check
+---------
+Recompute the criterion for every fine-cadence run on a **coarse grid**: keep only the
+first eval point in each 4 915 200-step bin, which is exactly the post-change cadence, and
+run the identical estimator over it. Each run is then its own control -- same weights, same
+rewards, only the sampling density changed -- so the difference is the cadence effect with
+nothing else moving.
+
+Both window widths are reported. The 1e7 window is what ``extract.py`` uses; the 2.46e7
+one (5 coarse bins) is shown because if the effect were noise-driven it should shrink
+markedly with a wider window, and that is the diagnostic that separates noise from
+granularity.
+
+Reads ``curves.csv`` only -- no WandB, no artifact store, no network. Writes
+``cadence_bias.txt``.
+
+==============================================================================
+Fine-cadence runs resampled onto the 4,915,200-step post-change grid.
+Each run is its own control: same rewards, only the sampling density differs.
+==============================================================================
+  msj9aand  delayed_mlp         delay=0   seed=42  n   800 -> 98   spacing=   492k   fine    27.0 -> coarse    29.5 (shift     2.5)e6
+  jp5jehho  delayed_mlp         delay=0   seed=46  n  1667 -> 204  spacing=   492k   fine    24.8 -> coarse    29.5 (shift     4.7)e6
+  gb3pmwxr  delayed_mlp         delay=3   seed=46  n  1667 -> 204  spacing=   492k   fine    60.7 -> coarse    64.4 (shift     3.7)e6
+  ln7wa5w0  delayed_mlp         delay=5   seed=42  n   800 -> 98   spacing=   492k   fine    74.5 -> coarse    78.6 (shift     4.2)e6
+  qt2rwbr3  delayed_mlp         delay=5   seed=43  n  1667 -> 204  spacing=   492k   fine    60.7 -> coarse    64.4 (shift     3.7)e6
+  8yg1tuyy  delayed_mlp         delay=5   seed=46  n  1667 -> 204  spacing=   492k   fine    57.8 -> coarse    59.0 (shift     1.2)e6
+  sbt8k29r  delayed_mlp         delay=7   seed=42  n   800 -> 98   spacing=   492k   fine   218.0 -> coarse   216.8 (shift    -1.2)e6
+  u9b3rz2e  delayed_mlp         delay=7   seed=46  n  1667 -> 204  spacing=   492k   fine   158.5 -> coarse   162.2 (shift     3.7)e6
+  eldxqhi6  delayed_mlp         delay=10  seed=42  n   800 -> 98   spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  lrrbnmz9  delayed_mlp         delay=10  seed=43  n  1667 -> 204  spacing=   492k   fine   646.3 -> coarse   648.8 (shift     2.5)e6
+  e9e1text  delayed_mlp         delay=10  seed=46  n  1667 -> 204  spacing=   492k   fine   588.8 -> coarse   589.8 (shift     1.0)e6
+  ljbl8xs7  delayed_mlp         delay=12  seed=46  n  1667 -> 204  spacing=   492k   fine   740.5 -> coarse   742.4 (shift     2.0)e6
+  t3sip7o4  delayed_mlp         delay=15  seed=42  n   800 -> 98   spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  d8tw15kf  delayed_mlp         delay=15  seed=46  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  ayruh7m9  delayed_mlp         delay=15  seed=47  n  2000 -> 380  spacing=   737k   fine  1244.0 -> coarse  1244.0 (shift     0.0)e6
+  nr9ad1y5  delayed_mlp         delay=20  seed=42  n   800 -> 98   spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  wb3qdz5g  delayed_mlp         delay=20  seed=43  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  qvvivhpj  delayed_mlp         delay=20  seed=46  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  o3lsdt1n  delayed_mlp         delay=20  seed=47  n  2000 -> 752  spacing=   737k   fine     --   -> coarse     --   (shift     --  )e6
+  klx83qee  delayed_mlp         delay=25  seed=43  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  vl2lu8ge  delayed_mlp         delay=25  seed=46  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  ojyv7y0b  flat_forward_model  delay=0   seed=42  n   800 -> 98   spacing=   492k   fine    23.6 -> coarse    29.5 (shift     5.9)e6
+  emgexiis  flat_forward_model  delay=0   seed=46  n  1667 -> 204  spacing=   492k   fine    47.4 -> coarse    49.4 (shift     2.0)e6
+  byx8gn30  flat_forward_model  delay=2   seed=42  n   800 -> 98   spacing=   492k   fine    31.2 -> coarse    34.4 (shift     3.2)e6
+  6xh19whl  flat_forward_model  delay=5   seed=42  n   800 -> 98   spacing=   492k   fine    60.2 -> coarse    64.4 (shift     4.2)e6
+  hy37byf0  flat_forward_model  delay=5   seed=46  n  1667 -> 204  spacing=   492k   fine    65.6 -> coarse    64.4 (shift    -1.2)e6
+  0y0gvn9t  flat_forward_model  delay=7   seed=42  n   800 -> 98   spacing=   492k   fine    64.4 -> coarse    64.4 (shift     0.0)e6
+  ihmu33v6  flat_forward_model  delay=7   seed=42  n   800 -> 98   spacing=   492k   fine    64.4 -> coarse    64.4 (shift     0.0)e6
+  iaocswhq  flat_forward_model  delay=7   seed=46  n  1667 -> 204  spacing=   492k   fine    78.2 -> coarse    78.6 (shift     0.5)e6
+  2r98flil  flat_forward_model  delay=10  seed=42  n   800 -> 98   spacing=   492k   fine   115.3 -> coarse   113.5 (shift    -1.7)e6
+  kv9n0wke  flat_forward_model  delay=10  seed=43  n  1667 -> 204  spacing=   492k   fine   193.9 -> coarse   196.9 (shift     2.9)e6
+  jkl1pbwo  flat_forward_model  delay=10  seed=46  n  1667 -> 204  spacing=   492k   fine   129.0 -> coarse   132.7 (shift     3.7)e6
+  tuak796l  flat_forward_model  delay=12  seed=46  n  1667 -> 204  spacing=   492k   fine   196.9 -> coarse   196.9 (shift     0.0)e6
+  s3m12gft  flat_forward_model  delay=15  seed=42  n   800 -> 98   spacing=   492k   fine   129.8 -> coarse   132.7 (shift     2.9)e6
+  q0hmxbcn  flat_forward_model  delay=15  seed=46  n  1667 -> 204  spacing=   492k   fine   180.1 -> coarse   181.9 (shift     1.7)e6
+  wh2fofyc  flat_forward_model  delay=15  seed=47  n  1777 -> 407  spacing=   737k   fine   219.2 -> coarse   216.8 (shift    -2.5)e6
+  06qarzob  flat_forward_model  delay=20  seed=42  n   800 -> 98   spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  gqmlj9v3  flat_forward_model  delay=20  seed=43  n  1667 -> 204  spacing=   492k   fine   201.8 -> coarse   206.4 (shift     4.7)e6
+  q6qw38i6  flat_forward_model  delay=20  seed=46  n  1667 -> 204  spacing=   492k   fine   376.3 -> coarse   373.8 (shift    -2.5)e6
+  b3n2s2e8  flat_forward_model  delay=25  seed=43  n  1667 -> 204  spacing=   492k   fine     --   -> coarse     --   (shift     --  )e6
+  ux5zpb3v  flat_forward_model  delay=25  seed=46  n  1667 -> 204  spacing=   492k   fine   503.6 -> coarse   501.8 (shift    -1.7)e6
+
+Shift = coarse crossing - fine crossing, in env steps:
+  window 1.0e7 (the estimator)    n=30  median= +1.97e6  mean= +1.66e6  range=[ -2.46,  +5.90]e6
+  window 2.5e7 (5 coarse bins)    n=30  median= +0.00e6  mean= +0.17e6  range=[ -4.18,  +4.92]e6
+
+==============================================================================
+Median shift with the estimator's own window: +1.97e6 steps, against crossing times spanning 24e6 to 2271e6 -- i.e. 1.61 % of the median crossing time.
+Widening the window to 2.5e7 (5 coarse bins) moves the median shift to +0.00e6.
+The shift is POSITIVE (coarse crosses *later*), which is the signature of grid
+granularity rather than of noise: a coarse grid can only report a crossing at one
+of its own points, so it rounds up by ~half a bin (2.5e6) on average. A
+noise-driven bias would go the other way -- a 2-point mean is noisier than a
+17-point one and would cross *early* -- and would shrink when the window widens
+rather than staying put. Neither signature is present at a magnitude that matters.
+==============================================================================

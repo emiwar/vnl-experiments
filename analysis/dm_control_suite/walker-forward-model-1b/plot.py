@@ -7,35 +7,45 @@ Reads only the committed CSVs in this folder -- no WandB, no artifact store, no 
 
 Figures
 -------
-  reward_and_steps_vs_delay.png  main: both readouts vs delay, 1e9 cohort
-  budget_480m_replication.png    supp: the same two panels on the 4.8e8 cohort (3rd seed,
-                                 and the only forward-model run at delay 5)
-  training_curves.png            supp: the eval series behind both readouts, delays 10-25
+  reward_and_steps_vs_delay.png  main: both readouts vs delay, every run >= 1e9 steps
+  budget_480m_replication.png    supp: the same two panels on the 4.8e8 cohort (seed 42)
+  training_curves.png            supp: the eval series behind both readouts
   threshold_sensitivity.png      supp: time-to-criterion at 800 / 900 / 950
 
 Conventions this file is careful about
 --------------------------------------
-**Raw reward on the y-axis** (README §7). Both arms are on one task with one reward
+**Raw reward on the reward y-axis** (README §7). Both arms are on one task with one reward
 function, so there is nothing to normalise away and no excuse for a ratio. The task
 maximum (1e3, by construction: 1e3 steps x a reward in [0, 1]) is drawn as a reference
 line instead of divided through.
 
-**Every seed as a thin line**, via ``plot_seeds``. This is not decoration here: the two
-forward-model runs at delay 25 land 1.9e2 apart (9.5e2 vs 7.5e2), and the mean of those
-two is a number that describes neither run.
+**The time-to-criterion axis is logarithmic, and that is not the same concession.** §7's
+rule is about *reward*, which does not map linearly onto competence, so a reward ratio
+asserts a linearity the task does not have. Steps are a physical count: ratios are exactly
+what is meaningful ("the MLP takes 5.7x longer"), and the quantity spans 2.1e1 to 2.3e3
+million steps -- two decades. On a linear axis everything below delay 12 would be pressed
+into the bottom 2 % of the panel. Note the consequence for reading the *mean* line: it is
+an arithmetic mean drawn on a log axis, so it sits above the visual midpoint of its seeds.
+The report quotes per-run values and ranges for this panel, not the mean line.
 
-**Censoring is drawn, never dropped.** A run that never reaches the criterion has no
-time-to-criterion, and if such runs are simply absent then the MLP's line stops at delay
-10 and reads as missing data rather than as failure -- while the surviving mean reads as
-"the MLP solves it in 6e8 steps", which is true only of the delays where it solves it at
-all. So: a cell whose runs *all* miss the criterion is plotted as open markers on the
-training-budget line; a cell where only *some* miss it (only the forward model at delay
-25) has its solved seeds drawn individually and is **excluded from the mean line**, which
-therefore breaks. A mean over the subset that happened to succeed is the one number this
-panel must not show.
+**Every seed as a thin line**, via ``plot_seeds``. Not decoration here: the two MLP runs at
+delay 20 with a 4e9 budget disagree about whether the task is solvable at all (one crosses
+at 2.3e9, the other never does), and the two forward-model runs at delay 25 land 1.9e2
+reward apart.
 
-**The two budgets are never averaged together**, only faceted -- see ``extract.py``. The
-MLP is the slower arm, so a shared 4.8e8 readout flatters the forward model.
+**Censoring is drawn, never dropped, and at each run's own budget.** A run that never
+reaches the criterion has no time-to-criterion. If such runs are simply absent, the MLP's
+line stops at delay 12 and reads as missing data rather than as failure. And since the
+cohort spans 1e9 to 4e9, *how much* budget a censored run had is part of the claim --
+"did not solve it in 4e9" is much stronger than "did not solve it in 1e9" -- so each
+censored marker is parked at its own budget rather than on a shared line. A cell where
+only *some* runs miss the criterion is **excluded from the mean line**, which therefore
+breaks: a mean over the subset that happened to succeed is the one number this panel must
+not show.
+
+**The 4.8e8 cohort is never averaged with the primary one**, only faceted -- see
+``extract.py``. The MLP is the slower arm, so a shared short readout flatters the forward
+model.
 """
 
 from pathlib import Path
@@ -44,6 +54,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
+from matplotlib.ticker import FixedLocator
 
 from vnl_experiments.wandb_utils.style import (
     add_ms_axis,
@@ -65,7 +76,9 @@ CURVES = HERE / "curves.csv"
 
 ARMS = ["delayed_mlp", "flat_forward_model"]
 
-PRIMARY_BUDGET = 1_000_000_000
+#: The step every primary-cohort reward is read at. Must match ``extract.READOUT_STEP``;
+#: asserted against ``data.csv`` in ``main``.
+READOUT_STEP = 1_000_000_000
 SUPPORT_BUDGET = 480_000_000
 
 #: WalkerWalk runs at ctrl_dt = 0.025 s, so one delay step is 25 ms -- **not** the
@@ -81,10 +94,11 @@ THRESHOLDS = (800, 900, 950)
 #: [0, 1]. Drawn as a reference line rather than used as a denominator (README §7).
 TASK_MAX = 1000
 
-#: Delays for the training-curve panels: the range over which the two arms separate.
-CURVE_DELAYS = (10, 15, 20, 25)
+#: Delays for the training-curve panels: where the arms separate, and where the extended
+#: runs live.
+CURVE_DELAYS = (12, 15, 20, 25)
 
-STEP_M = 1e6  # steps -> "millions of steps" for the y-axis
+STEP_M = 1e6  # steps -> "millions of steps"
 
 
 def _solved_col(thr: int) -> str:
@@ -104,10 +118,9 @@ def _cell_status(df: pd.DataFrame, arm: str, thr: int) -> pd.DataFrame:
 def _spread(delay: float, n: int, arm: str, width: float = 0.42) -> np.ndarray:
     """``n`` x-positions near ``delay``, so co-located markers stay countable.
 
-    Censored runs all sit at the same y (the budget line), so without this two censored
-    seeds are one marker and the panel understates how many runs failed. The per-arm
-    offset keeps the two arms' censored markers from landing on top of each other where
-    both fail at the same delay.
+    Censored runs that share a delay *and* a budget sit at the same point, so without
+    this two censored seeds are one marker and the panel understates how many runs
+    failed. The per-arm offset keeps the two arms apart where both fail at one delay.
     """
     centre = delay + (ARMS.index(arm) - (len(ARMS) - 1) / 2) * width
     if n <= 1:
@@ -118,54 +131,67 @@ def _spread(delay: float, n: int, arm: str, width: float = 0.42) -> np.ndarray:
 def _integer_delay_ticks(ax, df: pd.DataFrame) -> None:
     """Tick the delays that were actually run.
 
-    The 4.8e8 grid is 0/2/5/7/10/15/20, which matplotlib's default locator renders as
-    2.5-step ticks -- an axis whose labels name delays that do not exist.
+    The grids are 0/3/5/7/10/12/15/20/25 and 0/2/5/7/10/15/20, which matplotlib's default
+    locator renders on a round 2.5-step grid -- an axis whose labels name delays that do
+    not exist.
     """
     ax.set_xticks(sorted(df["delay"].unique()))
 
 
-def _reward_panel(ax, df: pd.DataFrame, budget: int) -> None:
-    """Raw end-of-training reward vs delay, one line per arm."""
+def _reward_panel(ax, df: pd.DataFrame, y: str, *, extend: bool) -> None:
+    """Raw reward vs delay, one line per arm.
+
+    ``extend``: additionally show where the runs with more than ``READOUT_STEP`` steps
+    *ended up*, as an open marker joined to their 1e9 value by a vertical line. Without
+    it the panel silently discards the whole point of those runs -- the MLP at delay 15
+    reads 7.8e2 at 1e9 and 9.6e2 at 2e9, and only the second number says the MLP gets
+    there at all.
+    """
     for arm in ARMS:
         sub = df[df["condition"] == arm]
         if sub.empty:
             continue
-        plot_seeds(ax, sub, x="delay", y="reward_final", condition=arm, marker_size=5)
+        plot_seeds(ax, sub, x="delay", y=y, condition=arm, marker_size=5)
 
-    # Reference lines labelled on the *right*: both arms start near the task maximum at
-    # delay 0, so a left-hand label sits on top of them.
+    if extend:
+        ext = df[df["budget"] > READOUT_STEP]
+        for _, r in ext.iterrows():
+            color = color_for(r["condition"])
+            ax.annotate(
+                "", xy=(r["delay"], r["reward_final"]), xytext=(r["delay"], r[y]),
+                arrowprops=dict(arrowstyle="-|>", color=color, lw=1.0, alpha=0.75,
+                                shrinkA=0, shrinkB=0))
+            ax.plot(r["delay"], r["reward_final"], marker=marker_for(r["condition"]),
+                    mfc="none", mec=color, mew=1.3, ms=7, ls="none", zorder=5)
+
     ax.axhline(TASK_MAX, color="0.55", lw=0.8, ls=":", zorder=0)
     ax.text(0.985, TASK_MAX, "task maximum ", color="0.45", fontsize=7.5,
             va="bottom", ha="right", transform=ax.get_yaxis_transform())
     ax.axhline(HEADLINE_THRESHOLD, color="0.55", lw=0.8, ls="--", zorder=0)
-    ax.text(0.985, HEADLINE_THRESHOLD, f"{HEADLINE_THRESHOLD} criterion ", color="0.45",
-            fontsize=7.5, va="bottom", ha="right", transform=ax.get_yaxis_transform())
+    ax.text(0.015, HEADLINE_THRESHOLD, f" {HEADLINE_THRESHOLD} criterion", color="0.45",
+            fontsize=7.5, va="bottom", ha="left", transform=ax.get_yaxis_transform())
 
     ax.set_xlabel("Observation delay (steps)")
     ax.set_ylabel(reward_label("dmc_eval"))
-    ax.set_title(f"End-of-training reward\n(mean of eval points in the last 5e7 steps)",
-                 fontsize=9.5)
     ax.set_ylim(0, TASK_MAX * 1.06)
     _integer_delay_ticks(ax, df)
     add_ms_axis(ax, df["delay"].max(), ctrl_dt_ms=CTRL_DT_MS)
 
 
-def _steps_panel(ax, df: pd.DataFrame, budget: int, thr: int = HEADLINE_THRESHOLD,
+def _steps_panel(ax, df: pd.DataFrame, thr: int = HEADLINE_THRESHOLD,
                  title: bool = True) -> list:
-    """Steps to reach the criterion vs delay, with censored cells drawn.
+    """Steps to reach the criterion vs delay, log y, with censored runs at their budget.
 
-    Returns the legend proxies for whichever censoring cases actually occur, so a panel
-    with no censoring does not carry an explanation of censoring.
+    Returns the legend proxies for whichever censoring cases occur, so a panel with no
+    censoring does not carry an explanation of censoring.
     """
-    proxies, saw_censored, saw_partial = [], False, False
-    budget_m = budget / STEP_M
+    proxies, censored = [], False
 
     for arm in ARMS:
         status = _cell_status(df, arm, thr)
         sub = df[df["condition"] == arm]
         full = status.index[status["n_solved"] == status["n"]]
         part = status.index[(status["n_solved"] > 0) & (status["n_solved"] < status["n"])]
-        none = status.index[status["n_solved"] == 0]
         color = color_for(arm)
 
         # Mean + per-seed lines, over the cells where *every* run reached the criterion.
@@ -178,76 +204,97 @@ def _steps_panel(ax, df: pd.DataFrame, budget: int, thr: int = HEADLINE_THRESHOL
         # Cells where some runs solved and some did not: the solved runs individually,
         # never a mean over them.
         for d in part:
-            cell = sub[sub["delay"] == d]
-            solved = cell[cell[_solved_col(thr)]]
-            ax.scatter(_spread(d, len(solved), arm), solved[_steps_col(thr)] / STEP_M,
-                       facecolors=color, edgecolors=color, marker=marker_for(arm),
-                       s=26, zorder=5)
-            n_cens = int((~cell[_solved_col(thr)]).sum())
-            ax.scatter(_spread(d, n_cens, arm), np.full(n_cens, budget_m),
+            solved = sub[(sub["delay"] == d) & sub[_solved_col(thr)]]
+            ax.scatter(_spread(d, len(solved), arm),
+                       solved[_steps_col(thr)] / STEP_M, facecolors=color,
+                       edgecolors=color, marker=marker_for(arm), s=26, zorder=5)
+
+        # Every censored run, at its own budget, grouped so that runs sharing a delay and
+        # a budget are spread apart and therefore countable.
+        for (d, budget), g in sub[~sub[_solved_col(thr)].astype(bool)].groupby(
+                ["delay", "budget"]):
+            ax.scatter(_spread(d, len(g), arm), np.full(len(g), budget / STEP_M),
                        facecolors="none", edgecolors=color, marker=marker_for(arm),
                        s=34, lw=1.3, zorder=5)
-            saw_partial = True
+            censored = True
 
-        # Cells where nothing reached the criterion, parked on the budget line.
-        for d in none:
-            n_cens = int(status.loc[d, "n"])
-            ax.scatter(_spread(d, n_cens, arm), np.full(n_cens, budget_m),
-                       facecolors="none", edgecolors=color, marker=marker_for(arm),
-                       s=34, lw=1.3, zorder=5)
-            saw_censored = True
-
-    ax.axhline(budget_m, color="0.55", lw=0.8, ls="--", zorder=0)
-    # Labelled on the *left*: the censored markers pile up at the high delays on the
-    # right, which is exactly where this line is most crowded.
-    ax.text(0.015, budget_m, " training budget", color="0.45", fontsize=7.5,
-            va="bottom", ha="left", transform=ax.get_yaxis_transform())
-    if saw_censored or saw_partial:
+    for budget in sorted(df["budget"].unique()):
+        ax.axhline(budget / STEP_M, color="0.55", lw=0.8, ls="--", zorder=0)
+        ax.text(0.015, budget / STEP_M, f" {budget / 1e9:g}e9 budget", color="0.45",
+                fontsize=7.5, va="bottom", ha="left",
+                transform=ax.get_yaxis_transform())
+    if censored:
         # Deliberately not "never reached {thr}": this panel is reused across three
         # criteria, and a label naming one of them was silently wrong on the other two.
-        proxies.append(Line2D([], [], color="0.4", ls="none", marker="o",
-                              mfc="none", mew=1.3, ms=6,
-                              label="never reached criterion (censored,\n"
-                                    "one marker per run)"))
+        proxies.append(Line2D([], [], color="0.4", ls="none", marker="o", mfc="none",
+                              mew=1.3, ms=6,
+                              label="never reached criterion (censored at the\n"
+                                    "budget it is drawn at; one marker per run)"))
+    ax.set_yscale("log")
+    ax.set_ylim(15, df["budget"].max() / STEP_M * 2.2)
+    ax.yaxis.set_major_locator(FixedLocator([20, 50, 100, 200, 500, 1000, 2000, 4000]))
+    ax.yaxis.set_major_formatter(lambda v, _: f"{v:g}")
+    ax.yaxis.set_minor_formatter(lambda v, _: "")
     ax.set_xlabel("Observation delay (steps)")
-    ax.set_ylabel(f"Steps to reach {thr} reward ($\\times 10^6$)")
+    ax.set_ylabel(f"Steps to reach {thr} reward ($\\times 10^6$, log)")
     if title:
         ax.set_title(f"Time to solve\n(first step whose trailing 1e7-step mean "
                      f"reaches {thr})", fontsize=9.5)
-    ax.set_ylim(0, budget_m * 1.13)
     _integer_delay_ticks(ax, df)
     add_ms_axis(ax, df["delay"].max(), ctrl_dt_ms=CTRL_DT_MS)
     return proxies
 
 
-def fig_vs_delay(df: pd.DataFrame, budget: int, subtitle: str):
-    """The two readouts side by side, for one budget."""
-    sub = df[df["budget"] == budget]
-    fig, axes = plt.subplots(1, 2, figsize=(10.4, 4.3))
-    _reward_panel(axes[0], sub, budget)
-    proxies = _steps_panel(axes[1], sub, budget)
+def fig_primary(df: pd.DataFrame):
+    """The two readouts side by side, every run with at least READOUT_STEP steps."""
+    sub = df[df["cohort"] == "primary"]
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.5))
+    _reward_panel(axes[0], sub, "reward_at_1b", extend=True)
+    axes[0].set_title("Reward at a common 1e9 steps\n(arrows: where the 2e9/4e9 runs "
+                      "ended up)", fontsize=9.5)
+    proxies = _steps_panel(axes[1], sub)
 
-    # One figure-level legend below both panels rather than two in-axes ones. Both
-    # panels are full in every corner at some delay -- the reward panel's curves cross
-    # the lower left and the time panel's budget line owns the top -- and an in-axes
-    # legend ended up over the MLP's curve in whichever one it was put.
     handles, _ = axes[0].get_legend_handles_labels()
     extra = seed_legend_handles() if sub.groupby("condition")["seed"].nunique().max() > 1 \
         else []
-    fig.legend(handles=handles + extra + proxies, fontsize=8, ncol=len(handles + extra
-               + proxies), loc="lower center", bbox_to_anchor=(0.5, 0.0), frameon=False)
-
-    fig.suptitle(f"WalkerWalk: explicit forward model vs delayed MLP  --  {subtitle}",
-                 fontsize=11)
-    fig.tight_layout(rect=(0, 0.11, 1, 0.97))
+    budget_proxy = [Line2D([], [], color="0.4", ls="none", marker="o", mfc="none",
+                           mew=1.3, ms=6, label="endpoint of a 2e9 / 4e9 run")]
+    fig.legend(handles=handles + extra + budget_proxy + proxies, fontsize=8, ncol=3,
+               loc="lower center", bbox_to_anchor=(0.5, 0.0), frameon=False)
+    fig.suptitle("WalkerWalk: explicit forward model vs delayed MLP  --  "
+                 "all runs of 1e9 steps or more (seeds 43, 46-49)", fontsize=11)
+    fig.tight_layout(rect=(0, 0.16, 1, 0.96))
     return fig
 
 
-def fig_training_curves(curves: pd.DataFrame):
-    """The eval series both readouts are computed from, at the delays that separate."""
-    sub = curves[curves["budget"] == PRIMARY_BUDGET]
-    fig, axes = plt.subplots(1, len(CURVE_DELAYS), figsize=(3.5 * len(CURVE_DELAYS), 3.6),
-                             sharey=True)
+def fig_support(df: pd.DataFrame):
+    """The 4.8e8 cohort: a third seed, on a budget too short to read as a level."""
+    sub = df[df["cohort"] == "support"]
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 4.5))
+    _reward_panel(axes[0], sub, "reward_final", extend=False)
+    axes[0].set_title("End-of-training reward at 4.8e8\n(mean of eval points in the "
+                      "last 5e7 steps)", fontsize=9.5)
+    proxies = _steps_panel(axes[1], sub)
+
+    handles, _ = axes[0].get_legend_handles_labels()
+    fig.legend(handles=handles + proxies, fontsize=8, ncol=3, loc="lower center",
+               bbox_to_anchor=(0.5, 0.0), frameon=False)
+    fig.suptitle("WalkerWalk at 4.8e8 steps, seed 42  --  a third seed on a budget "
+                 "shorter than the MLP needs (not pooled with the figure above)",
+                 fontsize=10.5)
+    fig.tight_layout(rect=(0, 0.13, 1, 0.96))
+    return fig
+
+
+def fig_training_curves(curves: pd.DataFrame, df: pd.DataFrame):
+    """The eval series both readouts come from, at the delays that separate the arms.
+
+    Each panel keeps its own x-range (the budgets differ by 4x across panels), so the
+    1e9-step detail is not squashed to make room for a 4e9 run in a neighbouring panel.
+    """
+    sub = curves[curves["cohort"] == "primary"]
+    fig, axes = plt.subplots(1, len(CURVE_DELAYS),
+                             figsize=(3.6 * len(CURVE_DELAYS), 3.7), sharey=True)
     for ax, delay in zip(axes, CURVE_DELAYS):
         cell = sub[sub["delay"] == delay]
         for arm in ARMS:
@@ -255,43 +302,48 @@ def fig_training_curves(curves: pd.DataFrame):
                 ax.plot(run["step"] / 1e9, run["reward_mean"], color=color_for(arm),
                         lw=0.7, alpha=0.75)
         ax.axhline(HEADLINE_THRESHOLD, color="0.55", lw=0.8, ls="--", zorder=0)
-        ax.axvline(SUPPORT_BUDGET / 1e9, color="0.55", lw=0.8, ls=":", zorder=0)
-        ax.set_title(f"delay {delay} ({delay * CTRL_DT_MS} ms)", fontsize=9.5)
+        ax.axvline(READOUT_STEP / 1e9, color="0.35", lw=0.9, ls=":", zorder=0)
+        n = df[(df["cohort"] == "primary") & (df["delay"] == delay)]
+        ax.set_title(f"delay {delay} ({delay * CTRL_DT_MS} ms)\n"
+                     f"MLP n={(n.condition == 'delayed_mlp').sum()}, "
+                     f"FM n={(n.condition == 'flat_forward_model').sum()}", fontsize=9.5)
         ax.set_xlabel("Environment steps ($\\times 10^9$)")
         ax.set_ylim(0, TASK_MAX * 1.06)
+        ax.set_xlim(0, cell["step"].max() / 1e9 * 1.02)
     axes[0].set_ylabel(reward_label("dmc_eval"))
-    axes[0].text(SUPPORT_BUDGET / 1e9, 40, " 4.8e8: the\n sibling\n analysis'\n budget",
-                 fontsize=7, color="0.4", va="bottom", ha="left")
+    axes[0].text(READOUT_STEP / 1e9, 30, " 1e9\n readout", fontsize=7, color="0.35",
+                 va="bottom", ha="left")
     axes[-1].legend(handles=[Line2D([], [], color=color_for(a), lw=1.4,
                                     label=label_for(a)) for a in ARMS]
                     + [Line2D([], [], color="0.55", lw=0.8, ls="--",
                               label=f"{HEADLINE_THRESHOLD} criterion")],
-                    fontsize=7.8, loc="lower right", framealpha=0.9)
-    fig.suptitle("WalkerWalk at 1e9 steps: every run's eval series (one line per run)",
-                 fontsize=11)
-    fig.tight_layout(rect=(0, 0.035, 1, 0.95))
+                    fontsize=7.6, loc="lower right", framealpha=0.9)
+    fig.suptitle("WalkerWalk: every primary-cohort run's eval series (one line per run; "
+                 "note the per-panel x-range)", fontsize=11)
+    fig.tight_layout(rect=(0, 0.035, 1, 0.94))
     return fig
 
 
 def fig_threshold_sensitivity(df: pd.DataFrame):
     """Does the arm ordering depend on where the criterion is put? (No.)"""
-    sub = df[df["budget"] == PRIMARY_BUDGET]
-    fig, axes = plt.subplots(1, len(THRESHOLDS), figsize=(3.6 * len(THRESHOLDS), 3.8),
+    sub = df[df["cohort"] == "primary"]
+    fig, axes = plt.subplots(1, len(THRESHOLDS), figsize=(3.7 * len(THRESHOLDS), 4.0),
                              sharey=True)
     proxies = []
     for ax, thr in zip(axes, THRESHOLDS):
-        proxies = _steps_panel(ax, sub, PRIMARY_BUDGET, thr=thr, title=False) or proxies
+        proxies = _steps_panel(ax, sub, thr=thr, title=False) or proxies
         ax.set_title(f"criterion = {thr}", fontsize=9.5)
         ax.set_ylabel("")
-    axes[0].set_ylabel(f"Steps to criterion ($\\times 10^6$)")
+    axes[0].set_ylabel("Steps to criterion ($\\times 10^6$, log)")
     handles, _ = axes[0].get_legend_handles_labels()
-    # Figure-level and below the axes: three panels of the same quantity leave no
-    # in-axes corner free at the 800 criterion, and one legend serves all three anyway.
     fig.legend(handles=handles + proxies, fontsize=8, ncol=3, loc="lower center",
                bbox_to_anchor=(0.5, 0.0), frameon=False)
-    fig.suptitle("WalkerWalk at 1e9 steps: time-to-criterion is ordered the same "
-                 "wherever the bar is put", fontsize=11)
-    fig.tight_layout(rect=(0, 0.13, 1, 0.94))
+    # Deliberately not "ordered the same": at delay 0-5 the two arms swap places between
+    # the 800 and 950 panels, which is within the seed spread and not worth a claim. What
+    # is stable across all three bars is the crossover and the censoring pattern.
+    fig.suptitle("WalkerWalk, runs >= 1e9 steps: where the criterion is put changes the "
+                 "numbers, not the crossover or who gets censored", fontsize=11)
+    fig.tight_layout(rect=(0, 0.14, 1, 0.94))
     return fig
 
 
@@ -317,15 +369,25 @@ def main() -> None:
             f"ctrl_dt in data.csv is {ctrl_dt}, but the ms axis is drawn with "
             f"CTRL_DT_MS = {CTRL_DT_MS}. Fix CTRL_DT_MS rather than the axis label.")
 
+    # `reward_at_1b` is only a like-for-like readout if every primary run has one; an
+    # all-NaN column would make `plot_seeds` silently draw nothing.
+    primary = df[df["cohort"] == "primary"]
+    if primary["reward_at_1b"].isna().any():
+        raise SystemExit(
+            "primary-cohort rows with no reward_at_1b: "
+            f"{primary.loc[primary['reward_at_1b'].isna(), 'wandb_id'].tolist()}. "
+            f"Re-run extract.py; the main panel would otherwise drop them without saying "
+            f"so.")
+    if not (primary["budget"] >= READOUT_STEP).all():
+        raise SystemExit(
+            f"a primary-cohort run has a budget below READOUT_STEP ({READOUT_STEP:,}); "
+            f"plot.py and extract.py disagree about what 'primary' means.")
+
     manifest = {}
     for name, builder, inputs in [
-        ("reward_and_steps_vs_delay",
-         lambda: fig_vs_delay(df, PRIMARY_BUDGET,
-                              "1e9-step budget, seeds 43 & 46"), (DATA,)),
-        ("budget_480m_replication",
-         lambda: fig_vs_delay(df, SUPPORT_BUDGET,
-                              "4.8e8-step budget, seed 42 (replication)"), (DATA,)),
-        ("training_curves", lambda: fig_training_curves(curves), (CURVES,)),
+        ("reward_and_steps_vs_delay", lambda: fig_primary(df), (DATA,)),
+        ("budget_480m_replication", lambda: fig_support(df), (DATA,)),
+        ("training_curves", lambda: fig_training_curves(curves, df), (CURVES, DATA)),
         ("threshold_sensitivity", lambda: fig_threshold_sensitivity(df), (DATA,)),
     ]:
         fig = builder()
