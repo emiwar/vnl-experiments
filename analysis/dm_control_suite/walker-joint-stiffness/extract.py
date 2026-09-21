@@ -8,9 +8,10 @@ so the actuator would be the only *undelayed* feedback path in an otherwise dela
 ``servo_kp`` (``envs/servo_control.md``) turns WalkerWalk's torque motors into position
 servos to test it.
 
-This is the **first pilot**: is the servo trainable at all, over what stiffness range, and
-is there any sign of a delay interaction. It is not a test of the hypothesis, for the
-reason in "What this pilot cannot answer" below.
+Started as a viability pilot (delays 0 and 5 only, where it could not have answered the
+hypothesis -- torque control loses just 1.2 % over that range, so there was no delay damage
+to repair). The 2026-09-17 extension added ``servo_kp`` 32/48/64 and **delay 10**, which is
+where torque control first falls apart, and that is where the comparison became informative.
 
 The two conditions
 ------------------
@@ -55,24 +56,31 @@ Reward is ``eval/*``, which is post-``971ab99`` here: unscaled and full-length. 
 dm_control "eval" is a fresh episode of the *same* task -- there is no held-out set in this
 track, so this is not a generalisation measure.
 
-What this pilot cannot answer
------------------------------
-**The delays are too small for the hypothesis to be testable.** Torque control loses only
-~1.3 % going from delay 0 to delay 5 (9.77e2 -> 9.64e2). There is essentially no delay
-damage for peripheral stiffness to repair, so "does stiffness buy delay tolerance" cannot
-be answered from these runs in either direction. WalkerWalk at 25 ms/step needs delay >= 15
-before torque control is meaningfully hurt, and delay 20 needs ~4e9 steps to train
-(``o3lsdt1n``, ``owmz54wv`` -- outside this cohort). What this pilot *does* establish is the
-viable stiffness range and the cost of the servo at matched delay, which is what the next
-sweep needs in order to be affordable.
+The budget caveat, which is the main thing limiting the conclusion
+-----------------------------------------------------------------
+At 4.8e8 the **torque** arm at delay 10 is the one that has not converged: it ends at 6.95e2
+and is still gaining +4.5e1 per 1e8 steps, while ``servo_kp`` 48/64 have settled (+2.7,
++2.6) at 9.6e2. So the +2.7e2 gap at matched budget is in large part a *rate* difference,
+which is README §6's "common mid-training budget" trap -- here pointing in the servo's
+favour.
+
+Torque runs at 1e9 exist outside this cohort and reach ~9.44e2 at delay 10 (``e9e1text``
+9.46e2, ``biin3y95`` 9.43e2, ``lrrbnmz9`` 9.43e2, run-summary final points, not windowed).
+They are deliberately **not** pooled in -- the servo arm was never run at 1e9, so admitting
+them would make budget the confound -- and are quoted in report.md as a ceiling instead. Read
+against that ceiling the servo's advantage is ~+2e1 rather than +2.7e2, at half the budget.
 
 Design holes, and single-seed cells
 -----------------------------------
-Only ``servo_kp`` 0 has three seeds; 1 has two at delay 0; every other cell is n=1. The
-design is also not rectangular: ``servo_kp = 0.25`` was run at delay 5 only. Both are
-reported in ``comparability.txt``'s design grid rather than smoothed over, and the report
-treats any single-cell difference smaller than the seed spread at ``servo_kp = 1`` (3.4e2,
-the largest observed) as unresolved.
+Only ``servo_kp = 0`` has more than one seed (4 at delay 0, 4 at delay 5, 1 at each of 7/10/
+15/20); ``servo_kp = 1`` has two at delay 0; **every other cell is n=1**. The design is not
+rectangular either: the soft stiffnesses (0.25-1) were run only at delays 0/5, the stiff ones
+(32-64) at 0/5/10, and the torque arm alone reaches delays 15 and 20. All of this is in
+``comparability.txt``'s design grid rather than smoothed over. The largest seed spread
+anywhere in the cohort is 3.4e2 (``servo_kp = 1``, delay 0: 4.76e2 vs 8.19e2), but variance
+is strongly regime-dependent -- in the solved regime the torque seeds span < 5 -- so the
+noise floor for a given comparison has to be read from its own regime, not from that
+maximum.
 
 Run it
 ------
@@ -112,8 +120,15 @@ TASK = "WalkerWalk"
 NETWORK = "DelayedMLP"
 BUDGET = 480_000_000
 
-#: The launch marker for this pilot. Inert at servo_kp = 0 -- see the module docstring.
+#: Identifies the stiffness-sweep launch. Inert at servo_kp = 0 -- see the module
+#: docstring -- so it is a launch label, never a physical property.
 LAUNCH_CENTER = "range"
+
+#: Default exploration width; the project sweeps this elsewhere under identical run names.
+MIN_STD = 0.001
+
+#: Runs at or before this commit evaluated on the *training* env, wrappers and all.
+PRE_EVAL_FIX_COMMIT = "d168093"
 
 #: End-of-training reward is the mean of the eval points in the last this-many steps.
 FINAL_WINDOW_STEPS = 50_000_000
@@ -125,30 +140,78 @@ LATE_WINDOW_STEPS = 50_000_000
 #: Window over which `max_drawdown_late` looks for a peak-to-trough fall.
 DRAWDOWN_WINDOW_STEPS = 200_000_000
 
+#: Common eval grid for the time-to-criterion readout: the *coarsest* cadence in the cohort
+#: (the stiffness sweep's 4.8e6). See `on_common_grid` for why this is not optional.
+GRID_STEPS = 4_800_000
+
+#: Trailing window the criterion is read off, in steps: 5 grid points after regridding.
+SMOOTH_WINDOW_STEPS = 24_000_000
+
+#: Reward criteria for time-to-solve. dm_control returns are bounded in [0, 1000] by
+#: construction (1000 steps x a per-step reward in [0, 1]) and the benchmark literature
+#: reports curves rather than declaring a task solved, so there is no published number to
+#: inherit. 900 is this project's convention, shared with `walker-forward-model-1b/`: it
+#: sits clearly above where these runs plateau when they fail (6e1-8.1e2) and clearly below
+#: where they plateau when they succeed (9.4e2-9.8e2). 800 and 950 are extracted alongside
+#: so `plot.py` and the report can show the ordering does not depend on the choice.
+THRESHOLDS = (800, 900, 950)
+HEADLINE_THRESHOLD = 900
+
 
 def _cohort(df: pd.DataFrame) -> pd.Series:
-    """Everything in this one launch, before splitting on stiffness.
+    """Every WalkerWalk MLP run at the 4.8e8 budget that is comparable on reward.
 
-    Gated on the *configuration*, not on the run name or the WandB notes. The WalkerWalk
-    runs this deliberately excludes are all torque runs from other launches at other
-    budgets (1e9/2e9/4e9) and other seeds, which would otherwise enter as extra `torque`
-    rows at a budget the servo arm was never run at -- README §6's "common mid-training
-    budget" trap, pointing the wrong way.
+    Gated on the *configuration*, never on the run name or the WandB note. **Budget is
+    pinned to 4.8e8 rather than made a facet**: the 1e9 / 2e9 / 4e9 torque runs exist and
+    are tempting as extra baseline, but the servo arm was never run at those budgets, and
+    the servo learns at a visibly different rate -- so admitting them would be README §6's
+    "common mid-training budget" trap with the budget itself as the confound. The 1e9
+    torque points are quoted in report.md as a *ceiling* caveat instead of plotted here.
+
+    Two launches are pooled, which is what gives delay 10 a torque baseline at all:
+
+    * the stiffness sweep (``7bedb5cc``, 2026-09-16/17), which carries ``servo_center``;
+    * the torque delay sweep (``971ab99e``, 2026-09-09), which predates ``servo_kp`` and
+      so has no servo fields -- its env is the unpatched task, i.e. torque control.
+
+    That pooling is licensed two ways. The sibling
+    ``walker-forward-model-1b/nan_guard_inert.py`` already read every diff between these
+    commits and found only render-path, diagnostics-only and ``servo_kp`` changes (inert at
+    0), and proved no run in that cohort ever diverged. And it is checked *empirically*
+    here: the two launches overlap at delays 0 and 5, and ``launch_overlap`` in `main`
+    compares them.
     """
     return (
         df["env"].eq(TASK)
         & df["net_params.network_class"].eq(NETWORK)
         & df["config.ppo.total_steps"].eq(BUDGET)
-        & df["env_params.servo_center"].eq(LAUNCH_CENTER)
+        & df["net_params.min_std"].eq(MIN_STD)
+        # Pre-fix runs evaluated on the *training* env: `eval/*` scaled x10 and truncated
+        # by EpisodeWrapper's random phase. Gated on the commit, not the date -- both sides
+        # of the fix were created on 2026-09-09 (track README).
+        & ~df["git_commit"].str.startswith(PRE_EVAL_FIX_COMMIT, na=False)
+        # Excludes the pre-Hydra 9e1-run era outright: those have no `net_params.*` at all.
+        & df["net_params.delay_k"].notna()
         # `state == "finished"` alone silently drops runs that trained fully and died in
         # the final eval (README §6). Gate on the property meant: reached its budget.
         & (df["state"].eq("finished") | df["summary._step"].ge(BUDGET))
     )
 
 
+def _kp(df: pd.DataFrame) -> pd.Series:
+    """``servo_kp``, with *absent* read as 0.
+
+    A run predating ``540e356`` has no ``env_params.servo_kp`` column value at all, and its
+    env is the unpatched Playground task -- which is exactly what ``servo_kp = 0`` means.
+    This is the one place the two spellings of "torque control" are unified; everywhere
+    else the column is already numeric.
+    """
+    return df["env_params.servo_kp"].fillna(0.0)
+
+
 CONDITIONS = {
-    "torque": lambda df: _cohort(df) & df["env_params.servo_kp"].eq(0.0),
-    "servo": lambda df: _cohort(df) & df["env_params.servo_kp"].gt(0.0),
+    "torque": lambda df: _cohort(df) & _kp(df).eq(0.0),
+    "servo": lambda df: _cohort(df) & _kp(df).gt(0.0),
 }
 
 #: Must be constant for a kp-to-kp comparison to be fair. `servo_kp` is of course absent:
@@ -171,7 +234,6 @@ INVARIANTS = [
     "env_params.ctrl_dt",
     "env_params.sim_dt",
     "env_params.servo_damping_ratio",
-    "env_params.servo_center",
     "net_params.min_std",
     "net_params.entropy_weight",
     "net_params.actor_hidden_sizes",
@@ -211,6 +273,76 @@ def reward_series(hist: pd.DataFrame | None) -> pd.DataFrame | None:
     return out.rename(columns={"_step": "step", key: "value"}).sort_values("step")
 
 
+def on_common_grid(series: pd.DataFrame, cadence: int = GRID_STEPS) -> pd.DataFrame:
+    """One eval point per ``cadence`` steps, whichever sample lies nearest each grid step.
+
+    **This is what makes the time-to-criterion comparable across the two launches.** The
+    2026-09-09 torque delay sweep logged eval every 6e5 steps (800 points) and the stiffness
+    sweep every 4.8e6 (100 points) -- an 8x difference. A trailing mean defined in *steps*
+    would therefore average 8x more samples for the torque arm, making its criterion
+    strictly harder to trigger on an upward fluctuation. Since torque is the baseline arm at
+    every delay past 5, that bias would flatter the servo, which is the direction this
+    analysis must not be wrong in.
+
+    Picking the *nearest single sample* rather than averaging within the bin keeps the noise
+    properties identical too: every grid point is one 256-episode eval in both launches.
+    ``steps_to_*`` is then quantised to 4.8e6 steps (1 % of the budget) for every run
+    equally. ``main`` reports how far this moves the dense runs' answers.
+    """
+    steps = series["step"].to_numpy()
+    grid = np.arange(cadence, steps.max() + 1, cadence)
+    idx = np.abs(steps[None, :] - grid[:, None]).argmin(axis=1)
+    keep = series.iloc[np.unique(idx)]
+    return keep.sort_values("step").reset_index(drop=True)
+
+
+def trailing_mean(steps: np.ndarray, values: np.ndarray,
+                  window: int = SMOOTH_WINDOW_STEPS) -> np.ndarray:
+    """Mean of every sample in ``(s - window, s]``, for each s in ``steps``.
+
+    Trailing rather than centred: a centred window reads the future, and a criterion read
+    off raw eval points fires on noise. The window is in *steps*, so it means the same thing
+    at any budget -- and after :func:`on_common_grid` it also spans the same number of
+    samples in both launches. Positions whose window is not yet fully covered by the run are
+    NaN, so a run whose first eval point happens to land high cannot "solve" the task at
+    step 0.
+    """
+    lo = np.searchsorted(steps, steps - window, side="right")
+    csum = np.concatenate([[0.0], np.cumsum(values)])
+    hi = np.arange(1, len(steps) + 1)
+    out = (csum[hi] - csum[lo]) / (hi - lo)
+    return np.where(steps >= window, out, np.nan)
+
+
+def time_to_criterion(series: pd.DataFrame) -> dict:
+    """``steps_to_<thr>`` / ``solved_<thr>`` / ``smooth_max``, on the common grid.
+
+    A run that never reaches a criterion is **censored, not missing**: ``solved_*`` is False
+    and ``steps_to_*`` is blank, while ``smooth_max`` records how close it got, so the plots
+    can draw it rather than let the line simply stop (which reads as absent data). At delay
+    10 that distinction *is* the result -- torque never reaches 900 and the stiff servos do.
+    """
+    grid = on_common_grid(series)
+    steps = grid["step"].to_numpy()
+    smooth = trailing_mean(steps, grid["value"].to_numpy())
+    out = {"smooth_max": float(np.nanmax(smooth)) if np.isfinite(smooth).any() else None,
+           "grid_points": int(len(steps))}
+    for thr in THRESHOLDS:
+        reached = np.where(smooth >= thr)[0]
+        out[f"solved_{thr}"] = bool(len(reached))
+        out[f"steps_to_{thr}"] = int(steps[reached[0]]) if len(reached) else None
+    return out
+
+
+def native_time_to_criterion(series: pd.DataFrame) -> dict:
+    """The same thing without regridding -- kept only to measure what regridding cost."""
+    steps = series["step"].to_numpy()
+    smooth = trailing_mean(steps, series["value"].to_numpy())
+    reached = np.where(smooth >= HEADLINE_THRESHOLD)[0]
+    return {f"steps_to_{HEADLINE_THRESHOLD}_native":
+            int(steps[reached[0]]) if len(reached) else None}
+
+
 def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
     row = {
         "condition": run["condition"],
@@ -220,8 +352,15 @@ def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
         "created_at": run["created_at"],
         "git_commit": run["git_commit"],
         "gpu": run["gpu"],
-        "servo_kp": float(run["env_params.servo_kp"]),
-        "servo_center": run["env_params.servo_center"],
+        "servo_kp": 0.0 if pd.isna(run.get("env_params.servo_kp"))
+                    else float(run["env_params.servo_kp"]),
+        "servo_center": run.get("env_params.servo_center"),
+        # Which launch a run came from. The two are pooled deliberately (see _cohort) and
+        # `launch_overlap` checks they agree where they overlap, so this column is what
+        # makes that check -- and any future doubt about it -- possible from data.csv alone.
+        "launch": ("kp_sweep" if run.get("env_params.servo_center") == LAUNCH_CENTER
+                   else "delay_sweep_0909"),
+        "eval_every_steps": run.get("config.eval.every_steps"),
         "servo_damping_ratio": run.get("env_params.servo_damping_ratio"),
         "delay": int(run["net_params.delay_k"]),
         "efference_length": int(run["net_params.efference_length"]),
@@ -245,7 +384,11 @@ def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
 
     blank = {"reward_final": None, "reward_final_n": 0, "reward_max": None,
              "late_gain": None, "max_drawdown_late": None,
-             "curve_points": 0, "curve_max_step": None}
+             "curve_points": 0, "curve_max_step": None,
+             "smooth_max": None, "grid_points": 0,
+             f"steps_to_{HEADLINE_THRESHOLD}_native": None}
+    blank.update({f"steps_to_{t}": None for t in THRESHOLDS})
+    blank.update({f"solved_{t}": None for t in THRESHOLDS})
     if series is None or series.empty:
         row.update(blank)
         return row
@@ -277,17 +420,63 @@ def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
         curve_points=int(len(steps)),
         curve_max_step=int(steps.max()),
     )
+    row.update(time_to_criterion(series))
+    row.update(native_time_to_criterion(series))
     return row
 
 
 def build_curves(run: pd.Series, series: pd.DataFrame | None) -> list[dict]:
+    """The eval series on the common grid, plus the trailing mean the criterion uses.
+
+    ``reward_smooth`` is written here rather than recomputed in ``plot.py`` so the curve a
+    figure draws and the number ``steps_to_900`` reports are the same object. The grid is
+    the same one :func:`time_to_criterion` reads, so a curve in this file is directly the
+    evidence for that run's time-to-criterion.
+    """
     if series is None or series.empty:
         return []
+    grid = on_common_grid(series)
+    steps = grid["step"].to_numpy()
+    values = grid["value"].to_numpy()
+    smooth = trailing_mean(steps, values)
+    kp = (0.0 if pd.isna(run.get("env_params.servo_kp"))
+          else float(run["env_params.servo_kp"]))
     return [{"wandb_id": run["wandb_id"], "condition": run["condition"],
-             "servo_kp": float(run["env_params.servo_kp"]),
+             "servo_kp": kp,
              "delay": int(run["net_params.delay_k"]), "seed": int(run["seed"]),
-             "step": int(s), "reward_mean": float(v)}
-            for s, v in zip(series["step"], series["value"])]
+             "step": int(s), "reward_mean": float(v),
+             "reward_smooth": None if not np.isfinite(m) else float(m)}
+            for s, v, m in zip(steps, values, smooth)]
+
+
+def launch_overlap(df: pd.DataFrame) -> str:
+    """Do the two pooled launches agree where they overlap?
+
+    This is the load-bearing comparability check of the whole analysis. Delay 10 has a
+    torque baseline only because the 2026-09-09 torque delay sweep is pooled with the
+    2026-09-16/17 stiffness sweep, and those launches differ in commit, in eval cadence
+    (6e5 vs 4.8e6) and in whether the ``servo_*`` fields exist at all. They also overlap at
+    delays 0 and 5 -- so the agreement there is a direct measurement of what the pooling
+    costs, rather than an argument from reading diffs.
+    """
+    t = df[df.condition == "torque"]
+    lines = ["\ntorque reward_final by (delay, launch)"]
+    tab = t.pivot_table(index="delay", columns="launch", values="reward_final",
+                        aggfunc=["mean", "count"])
+    lines.append(tab.to_string())
+    both = t.groupby("delay")["launch"].nunique()
+    shared = both[both > 1].index.tolist()
+    lines.append(f"\n  delays present in both launches: {shared}")
+    for delay in shared:
+        g = t[t.delay == delay].groupby("launch")["reward_final"].mean()
+        diff = g.max() - g.min()
+        lines.append(f"    delay {delay:2d}: "
+                     + "  ".join(f"{k}={v:.1f}" for k, v in g.items())
+                     + f"   |diff| = {diff:.1f}")
+    lines.append("\n  Read against the within-launch seed spread at the same delay: if the\n"
+                 "  between-launch difference is no larger, the launches are poolable on\n"
+                 "  reward and the delay-10 baseline stands.\n")
+    return "\n".join(lines)
 
 
 def design_grid(df: pd.DataFrame) -> str:
@@ -367,13 +556,16 @@ def main() -> None:
 
     grid = design_grid(df)
     spread = seed_spread(df)
+    overlap = launch_overlap(df)
     print(grid)
     print(spread)
+    print(overlap)
 
     report = (comparability_report(runs, invariant_cols=INVARIANTS,
                                    group_col="condition")
               + "\n\n" + "#" * 78 + "\n# DESIGN GRID\n" + "#" * 78 + grid
-              + "\n" + "#" * 78 + "\n# WITHIN-CELL SPREAD\n" + "#" * 78 + spread + "\n")
+              + "\n" + "#" * 78 + "\n# WITHIN-CELL SPREAD\n" + "#" * 78 + spread
+              + "\n" + "#" * 78 + "\n# CROSS-LAUNCH OVERLAP\n" + "#" * 78 + overlap + "\n")
     if not args.check:
         (HERE / "comparability.txt").write_text(report)
 

@@ -1,5 +1,5 @@
 ======================================================================
-Group condition='servo'  (n=12)
+Group condition='servo'  (n=24)
 ======================================================================
   config.ppo.total_steps            : [480000000]
   summary._step                     : [480215040.0]
@@ -16,7 +16,6 @@ Group condition='servo'  (n=12)
   env_params.ctrl_dt                : [0.025]
   env_params.sim_dt                 : [0.0025]
   env_params.servo_damping_ratio    : [1.0]
-  env_params.servo_center           : ['range']
   net_params.min_std                : [0.001]
   net_params.entropy_weight         : [0.01]
   net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
@@ -31,7 +30,7 @@ Group condition='servo'  (n=12)
   repos.vnl_experiments.dirty       : [True]
 
 ======================================================================
-Group condition='torque'  (n=6)
+Group condition='torque'  (n=12)
 ======================================================================
   config.ppo.total_steps            : [480000000]
   summary._step                     : [480215040.0]
@@ -48,22 +47,21 @@ Group condition='torque'  (n=6)
   env_params.ctrl_dt                : [0.025]
   env_params.sim_dt                 : [0.0025]
   env_params.servo_damping_ratio    : [1.0]
-  env_params.servo_center           : ['range']
   net_params.min_std                : [0.001]
   net_params.entropy_weight         : [0.01]
   net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   net_params.normalize_obs          : [True]
-  config.eval.every_steps           : [4800000]
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
-  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
-  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
-  repos.vnl_experiments.dirty       : [True]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
 
 ======================================================================
-All runs  (n=18)
+All runs  (n=36)
 ======================================================================
   config.ppo.total_steps            : [480000000]
   summary._step                     : [480215040.0]
@@ -80,36 +78,38 @@ All runs  (n=18)
   env_params.ctrl_dt                : [0.025]
   env_params.sim_dt                 : [0.0025]
   env_params.servo_damping_ratio    : [1.0]
-  env_params.servo_center           : ['range']
   net_params.min_std                : [0.001]
   net_params.entropy_weight         : [0.01]
   net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   net_params.normalize_obs          : [True]
-  config.eval.every_steps           : [4800000]
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
-  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
-  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
-  repos.vnl_experiments.dirty       : [True]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
 
 ##############################################################################
 # DESIGN GRID
 ##############################################################################
 runs per servo_kp x delay
-delay     0  5
-servo_kp      
-0.00      3  3
-0.25      0  1
-0.50      1  1
-1.00      2  1
-4.00      1  1
-8.00      1  1
-16.00     1  1
+delay     0   5   7   10  15  20
+servo_kp                        
+0.00       4   4   1   1   1   1
+0.25       0   1   0   0   0   0
+0.50       1   1   0   0   0   0
+1.00       2   1   0   0   0   0
+4.00       1   1   0   1   0   0
+8.00       1   1   0   1   0   0
+16.00      1   1   0   1   0   0
+32.00      1   1   0   1   0   0
+48.00      1   1   0   1   0   0
+64.00      1   1   0   1   0   0
 
-  empty cells : [(0.25, 0)]
-  n=1   cells : [(0.25, 5), (0.5, 0), (0.5, 5), (1.0, 5), (4.0, 0), (4.0, 5), (8.0, 0), (8.0, 5), (16.0, 0), (16.0, 5)]
+  empty cells : [(0.25, 0), (0.25, 7), (0.25, 10), (0.25, 15), (0.25, 20), (0.5, 7), (0.5, 10), (0.5, 15), (0.5, 20), (1.0, 7), (1.0, 10), (1.0, 15), (1.0, 20), (4.0, 7), (4.0, 15), (4.0, 20), (8.0, 7), (8.0, 15), (8.0, 20), (16.0, 7), (16.0, 15), (16.0, 20), (32.0, 7), (32.0, 15), (32.0, 20), (48.0, 7), (48.0, 15), (48.0, 20), (64.0, 7), (64.0, 15), (64.0, 20)]
+  n=1   cells : [(0.0, 7), (0.0, 10), (0.0, 15), (0.0, 20), (0.25, 5), (0.5, 0), (0.5, 5), (1.0, 5), (4.0, 0), (4.0, 5), (4.0, 10), (8.0, 0), (8.0, 5), (8.0, 10), (16.0, 0), (16.0, 5), (16.0, 10), (32.0, 0), (32.0, 5), (32.0, 10), (48.0, 0), (48.0, 5), (48.0, 10), (64.0, 0), (64.0, 5), (64.0, 10)]
 
   A single-seed cell has no spread of its own. The largest seed spread observed
   anywhere in this cohort is the reference for what counts as resolved.
@@ -120,8 +120,12 @@ servo_kp
 reward_final by cell
                 count        mean         min         max      spread
 servo_kp delay                                                       
-0.00     0          3  976.618621  976.428334  976.887240    0.458907
-         5          3  964.029199  961.849687  965.139948    3.290261
+0.00     0          4  976.812060  976.428334  977.392378    0.964045
+         5          4  964.771442  961.849687  966.998170    5.148483
+         7          1  949.826166  949.826166  949.826166    0.000000
+         10         1  695.019981  695.019981  695.019981    0.000000
+         15         1  407.789770  407.789770  407.789770    0.000000
+         20         1  540.232203  540.232203  540.232203    0.000000
 0.25     5          1   60.270573   60.270573   60.270573    0.000000
 0.50     0          1  145.401235  145.401235  145.401235    0.000000
          5          1  136.161663  136.161663  136.161663    0.000000
@@ -129,11 +133,45 @@ servo_kp delay
          5          1  329.360254  329.360254  329.360254    0.000000
 4.00     0          1  957.940912  957.940912  957.940912    0.000000
          5          1  955.478172  955.478172  955.478172    0.000000
+         10         1  700.408264  700.408264  700.408264    0.000000
 8.00     0          1  965.251565  965.251565  965.251565    0.000000
          5          1  694.318240  694.318240  694.318240    0.000000
+         10         1  710.444386  710.444386  710.444386    0.000000
 16.00    0          1  976.665644  976.665644  976.665644    0.000000
          5          1  786.314481  786.314481  786.314481    0.000000
+         10         1  808.702187  808.702187  808.702187    0.000000
+32.00    0          1  975.928134  975.928134  975.928134    0.000000
+         5          1  966.355025  966.355025  966.355025    0.000000
+         10         1  940.062378  940.062378  940.062378    0.000000
+48.00    0          1  978.684998  978.684998  978.684998    0.000000
+         5          1  966.076100  966.076100  966.076100    0.000000
+         10         1  961.404807  961.404807  961.404807    0.000000
+64.00    0          1  978.939370  978.939370  978.939370    0.000000
+         5          1  921.468750  921.468750  921.468750    0.000000
+         10         1  962.420138  962.420138  962.420138    0.000000
 
   cells with >1 seed: 3
   largest spread among them: 342.7
+
+##############################################################################
+# CROSS-LAUNCH OVERLAP
+##############################################################################
+torque reward_final by (delay, launch)
+                   mean                        count         
+launch delay_sweep_0909    kp_sweep delay_sweep_0909 kp_sweep
+delay                                                        
+0            977.392378  976.618621              1.0      3.0
+5            966.998170  964.029199              1.0      3.0
+7            949.826166         NaN              1.0      NaN
+10           695.019981         NaN              1.0      NaN
+15           407.789770         NaN              1.0      NaN
+20           540.232203         NaN              1.0      NaN
+
+  delays present in both launches: [0, 5]
+    delay  0: delay_sweep_0909=977.4  kp_sweep=976.6   |diff| = 0.8
+    delay  5: delay_sweep_0909=967.0  kp_sweep=964.0   |diff| = 3.0
+
+  Read against the within-launch seed spread at the same delay: if the
+  between-launch difference is no larger, the launches are poolable on
+  reward and the delay-10 baseline stands.
 

@@ -1,5 +1,8 @@
 {
-  "convergence.png": "Reward gained in the last 1e8 steps",
+  "convergence.png": "Late gain and max drawdown vs servo_kp",
   "curves.png": "Eval-reward learning curves, per delay",
-  "stiffness.png": "End-of-training reward vs servo_kp, per delay"
+  "delay.png": "Reward vs delay, per stiffness (headline)",
+  "stiffness.png": "Reward vs servo_kp, per delay",
+  "time_to_900_delay.png": "Steps to reward 900 vs delay, per stiffness",
+  "time_to_900_stiffness.png": "Steps to criterion vs stiffness, and criterion sensitivity at delay 10"
 }

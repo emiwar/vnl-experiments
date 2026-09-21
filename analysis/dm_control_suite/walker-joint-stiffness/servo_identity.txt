@@ -1,4 +1,4 @@
-servo runs: 12   torque runs: 6
+servo runs: 24   torque runs: 12
 
 1. per-joint kp_ref = kp / servo_kp, over every servo run
    right_hip    [95.492966]  expected 95.492966  OK
@@ -32,9 +32,21 @@ servo runs: 12   torque runs: 6
    servo_kp=    1  delay  5 (125 ms)   t_settle =  782.6 ms   servo SLOWER than the loop
    servo_kp=    4  delay  0 (  0 ms)   t_settle =  391.3 ms   servo SLOWER than the loop
    servo_kp=    4  delay  5 (125 ms)   t_settle =  391.3 ms   servo SLOWER than the loop
+   servo_kp=    4  delay 10 (250 ms)   t_settle =  391.3 ms   servo SLOWER than the loop
    servo_kp=    8  delay  0 (  0 ms)   t_settle =  276.7 ms   servo SLOWER than the loop
    servo_kp=    8  delay  5 (125 ms)   t_settle =  276.7 ms   servo SLOWER than the loop
+   servo_kp=    8  delay 10 (250 ms)   t_settle =  276.7 ms   servo SLOWER than the loop
    servo_kp=   16  delay  0 (  0 ms)   t_settle =  195.7 ms   servo SLOWER than the loop
    servo_kp=   16  delay  5 (125 ms)   t_settle =  195.7 ms   servo SLOWER than the loop
+   servo_kp=   16  delay 10 (250 ms)   t_settle =  195.7 ms   servo faster than the loop
+   servo_kp=   32  delay  0 (  0 ms)   t_settle =  138.3 ms   servo SLOWER than the loop
+   servo_kp=   32  delay  5 (125 ms)   t_settle =  138.3 ms   servo SLOWER than the loop
+   servo_kp=   32  delay 10 (250 ms)   t_settle =  138.3 ms   servo faster than the loop
+   servo_kp=   48  delay  0 (  0 ms)   t_settle =  113.0 ms   servo SLOWER than the loop
+   servo_kp=   48  delay  5 (125 ms)   t_settle =  113.0 ms   servo faster than the loop
+   servo_kp=   48  delay 10 (250 ms)   t_settle =  113.0 ms   servo faster than the loop
+   servo_kp=   64  delay  0 (  0 ms)   t_settle =   97.8 ms   servo SLOWER than the loop
+   servo_kp=   64  delay  5 (125 ms)   t_settle =   97.8 ms   servo faster than the loop
+   servo_kp=   64  delay 10 (250 ms)   t_settle =   97.8 ms   servo faster than the loop
 
 PASS: the actuator was identical in every run of this cohort.
