@@ -16,7 +16,7 @@ rodent is not.
 | Run index | `../_runs/nnx-ppo-delays.jsonl` |
 | Template | `cp -r ../_template/dm_control_suite analysis/dm_control_suite/<question-slug>` |
 | Control step | **per task**: 10 / 20 / 25 ms — see the table under Traps, and never the rodent's 10 by default |
-| Tasks | `WalkerWalk` `WalkerRun` `WalkerStand` `CheetahRun` `HumanoidWalk` `HumanoidStand` `CartpoleBalance` `CartpoleSwingup` `BallInCup` |
+| Tasks | `WalkerWalk` `WalkerRun` `WalkerStand` `CheetahRun` `HumanoidWalk` `HumanoidStand` `CartpoleBalance` `CartpoleSwingup` `BallInCup`, plus the small bodies added for the joint-stiffness sweep: `ReacherEasy` `ReacherHard` `HopperStand` `HopperHop` `FingerTurnEasy` `FingerTurnHard`. `envs/registry.py` is the list; this one goes stale |
 | Networks | `DelayedMLP`, `FlatForwardModel`, `FlatRecurrent` (flat-obs; the rodent's are dict-obs) |
 
 `train.py` passes no wandb entity, so the full `entity/project` string is whatever your
@@ -133,13 +133,27 @@ hid for the same reason: "reward" was recorded where "which reward" was meant.
 Training-side metrics are unaffected; the training stack was always
 `RewardScalingWrapper → EpisodeWrapper → task`.
 
+**There are two seeds, and `seed` is not the one PPO uses.** `train.py` draws the
+network initialisation from the top-level `seed` (wandb `seed`, Hydra default 42) and
+hands `train.seed` (wandb `config.seed`, Hydra default **1234**) to `train_ppo`, where it
+keys the env resets, the rollouts and the eval episodes. A launch that passes only
+`seed=N` therefore changes the init and leaves the PPO stream at 1234, and two batches
+launched that way are *not* independent replicates of each other's rollouts. The
+ReacherHard cohort has one batch of each kind: nine baseline runs at (init 42, ppo 1234)
+because `seed=` was never passed, and ten forward-model runs at (init 42, ppo 42). Group
+seeds on the **pair** — `f"i{seed}/p{config.seed}"`, as
+[`reacher-hard-first-look/extract.py`](reacher-hard-first-look/extract.py) does — because
+grouping on `seed` alone pools those two batches into one "seed 42" cell and reports a
+cross-architecture contrast as if it were paired. Sweep scripts should pass both
+(`seed=N train.seed=N`), which is what the later batches do.
+
 **The control step is per task, not per track.** One delay step is 10 ms on one panel and
 25 ms on the next:
 
 | ctrl_dt | ms / step | tasks |
 |---|---|---|
 | 0.01 | 10 | CartpoleBalance, CartpoleSwingup, CheetahRun |
-| 0.02 | 20 | BallInCup |
+| 0.02 | 20 | BallInCup, ReacherEasy, ReacherHard, HopperStand, HopperHop, FingerTurnEasy, FingerTurnHard |
 | 0.025 | 25 | WalkerStand, WalkerWalk, WalkerRun, HumanoidStand, HumanoidWalk |
 
 `style.CTRL_DT_MS` is the rodent's 10 and `add_ms_axis(ax, max_x)` silently uses it, so

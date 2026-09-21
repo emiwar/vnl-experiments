@@ -1,0 +1,9 @@
+Coverage for 37 runs in reacher-hard-first-look
+
+index  (spec_id=-): 37/37
+    delayed_mlp                    27/27  
+    flat_forward_model             10/10  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 37/37
+    delayed_mlp                    27/27  
+    flat_forward_model             10/10  

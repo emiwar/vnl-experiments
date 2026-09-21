@@ -1,0 +1,21 @@
+Seed-to-seed spread, delayed_mlp arm (reward_final, dmc_eval)
+
+ delay   n     mean      sd   range  seeds
+     0   3    973.4     2.7     4.7  i42/p1234=977, i43/p43=972, i45/p45=972
+     2   3    965.1     6.6    11.8  i42/p1234=969, i43/p43=957, i45/p45=969
+     5   3    950.7    10.3    19.1  i42/p1234=955, i43/p43=939, i45/p45=958
+     7   3    942.7     2.8     5.6  i42/p1234=940, i43/p43=945, i45/p45=943
+    10   3    897.6    63.0   112.9  i42/p1234=938, i43/p43=930, i45/p45=825
+    12   3    872.5   102.6   185.9  i42/p1234=754, i43/p43=923, i45/p45=940
+    15   3    892.1    38.2    67.1  i42/p1234=915, i43/p43=913, i45/p45=848
+    20   3    886.3    59.7   111.9  i42/p1234=818, i43/p43=910, i45/p45=930
+    25   3    847.3    80.8   160.6  i42/p1234=858, i43/p43=762, i45/p45=922
+
+pooled within-delay sd (rms over delays) : 54.0 reward
+grand mean over delays                   : 914.2 reward
+pooled sd as a fraction of the mean      : 5.9 %
+sd of the mean of 3 seeds                         : 31.2 reward
+
+Any arm-vs-arm difference smaller than the pooled sd is inside seed noise.
+The forward-model arm has ONE seed setting, so its points carry the full
+single-run spread, not the smaller spread of a 3-seed mean.
