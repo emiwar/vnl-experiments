@@ -665,6 +665,21 @@ def load_per_clip_eval(store: Store, run: pd.Series) -> dict | None:
     if actual is not None and step != int(actual):
         raise ValueError(f"{run['wandb_id']}: per-clip eval restored step {step}, run "
                          f"reached {int(actual)}")
+    # Forward-looking companion to `assert_artifact_actuator`: artifacts produced from
+    # 2026-09-23 stamp the actuator the env was rebuilt with, so it can be compared
+    # against the independently written WandB config at load time rather than inferred
+    # from a physical consequence. Absence means the artifact predates the stamp, which
+    # is not an error -- the physical check covers those.
+    stamped_actuator = (entry.resolved or {}).get("torque_actuators")
+    if stamped_actuator is not None:
+        trained = bool(run["env_params.torque_actuators"])
+        if bool(stamped_actuator) != trained:
+            raise ValueError(
+                f"{run['wandb_id']}: per-clip eval was simulated with "
+                f"torque_actuators={bool(stamped_actuator)} but the run trained with "
+                f"{trained}. The checkpoint's config.json disagrees with WandB; the "
+                f"index is authoritative (see `assert_artifact_actuator`).")
+
     # Per-clip quantities are the ones eval nondeterminism hits hardest, and on this
     # laptop the same checkpoint spans ~1.2 % between passes while the cluster is exact
     # (analysis/README.md §6). A cohort with one laptop-produced member would carry noise
@@ -678,21 +693,31 @@ def load_per_clip_eval(store: Store, run: pd.Series) -> dict | None:
 
 
 def term_reason(flags: dict[str, float], survived: bool) -> str:
-    """The single reason this clip ended, as a string for the CSV.
+    """The reason this clip ended, as one string -- a genuine partition of the episodes.
 
-    Asserts at most one reason fired. They are computed independently in the env and
-    could in principle co-occur on the terminating step; if that ever happens, a silent
-    ``argmax`` would hide it and every stacked bar downstream would be subtly wrong.
+    The env evaluates every termination predicate independently on the terminating step
+    (``rodent/base.py`` ORs them into ``any``), so **more than one can fire at once** and
+    the per-reason rates in ``termination_rate`` are *not* a partition: summed with
+    ``survived`` they exceed 1 in 19 of this cohort's 51 (run, dataset) cells, by up to
+    0.6 %.
+
+    Measured over 13 984 episodes here: 72.75 % survived, 21.81 % ``root_too_far``,
+    4.85 % ``root_too_rotated``, 0.38 % ``pose_error``, and **0.21 % fired
+    ``root_too_far`` and ``root_too_rotated`` together** (no other combination, and
+    ``nan_termination`` never fired at all). Rather than pick one by precedence -- the
+    reasons are not causally ordered, and a silent ``argmax`` would misattribute a
+    concurrent failure to whichever happened to be listed first -- a co-occurrence gets
+    its own ``a+b`` label. That keeps the column an exact partition, so a stacked bar
+    built from it sums to 1 by construction, and leaves the overlap visible as its own
+    (thin) band rather than hidden.
     """
     fired = [r for r in TERMINATIONS if flags.get(r, 0.0) > 0.5]
-    if len(fired) > 1:
-        raise ValueError(f"more than one termination reason fired: {fired}")
     if fired:
-        return fired[0]
+        return "+".join(fired)
     if survived:
         return "survived"
-    # `terminations/any` fired but no named reason did -- possible in principle if the
-    # env gains a reason this folder does not know about.
+    # `terminations/any` fired but no named reason did -- only possible if the env gains
+    # a reason this folder does not know about, which is worth seeing rather than hiding.
     return "unknown"
 
 
@@ -751,7 +776,10 @@ def build_clip_rows(run: pd.Series, record: dict, labels: pd.DataFrame) -> list[
             for term in REWARD_TERMS:
                 key = f"rewards/{term}"
                 if key in env:
-                    row[f"rt_{term}"] = float(env[key][i])
+                    # Only the per-alive-step form. The episode total is exactly
+                    # `rtps_<term> * lifespan_steps`, so carrying both would add ten
+                    # redundant columns to a 14 000-row committed CSV. `data.csv` keeps
+                    # the totals at the run level, where they are 51 rows.
                     row[f"rtps_{term}"] = float(env[key][i]) / denom
             rows.append(row)
     return rows
@@ -779,41 +807,138 @@ def assert_clips_are_paired(clips: pd.DataFrame) -> str:
     return "clip axis identical across runs:\n" + "\n".join(lines)
 
 
-#: How far the per-clip artifacts may sit from the independent inline `final_eval`
-#: numbers before it counts as a discrepancy rather than as eval nondeterminism. The
-#: two are different measurements of the same weights -- inline runs on the in-memory
-#: network at `total_steps`, the artifact restores the newest checkpoint -- and MuJoCo
-#: Warp is not bit-reproducible, so some gap is expected. README §6 measures ~1 % on the
-#: cluster and ~3 % for a single eval point; 8 % is loose enough not to fire on that and
-#: tight enough to catch an artifact that evaluated the wrong thing.
-AGGREGATE_TOLERANCE = 0.08
+#: How far a per-clip artifact may sit from the independent inline ``final_eval`` number
+#: before it counts as a discrepancy rather than as eval nondeterminism -- **per dataset**,
+#: because what one clip can do to the mean differs by an order of magnitude between them.
+#:
+#: The two are different measurements of the same weights: inline runs on the in-memory
+#: network at ``total_steps``, the artifact restores the newest checkpoint (asserted equal
+#: in `load_per_clip_eval`), and MuJoCo Warp's GPU physics is not bit-reproducible, so a
+#: clip near the failure boundary can survive in one pass and die in the other.
+#:
+#: Measured across this cohort: ``train`` (673 clips) agrees to 0.90 % worst case and
+#: 0.12 % median, ``old_eval`` (169 clips) to 1.53 % / 0.22 %, but ``new_eval`` (32 clips
+#: of 30 s) to only 15.2 % / 3.0 %. That is not a different kind of error, it is the same
+#: error with a 21x smaller denominator: a surviving 30 s clip banks ~12 000 reward against
+#: a few hundred for an early death, so one clip of 32 flipping moves the mean ~10 %. The
+#: survival bound below is what pins that reading -- the three cells that exceed 8 % differ
+#: by 1, 1 and 3 clips of survival, and reward delta correlates 0.70 with survival delta.
+REWARD_TOLERANCE = {"train": 0.03, "old_eval": 0.03, "new_eval": 0.20}
+
+#: Episodes whose survival may differ between the two passes. This is the mechanistic
+#: quantity -- what actually varies is *which clips lived* -- so it is the bound that says
+#: the two passes measured the same policy, independently of how much the reward mean
+#: happened to move.
+#:
+#: Neither a flat count nor a flat fraction works, because the two regimes are different:
+#: on 32 clips a single flip is already 3.1 % (discreteness dominates), while on 673 clips
+#: flips accumulate roughly in proportion to n. So the bound is the larger of a small
+#: absolute floor and a fraction. Measured maxima across this cohort: 3 of 32
+#: (``new_eval``), 6 of 169 (``old_eval``), 10 of 673 (``train``) -- i.e. 9.4 %, 3.6 % and
+#: 1.5 %, all comfortably inside it, while a pass that had restored a different
+#: checkpoint would flip far more.
+SURVIVAL_FLOOR_CLIPS = 4
+SURVIVAL_TOLERANCE_FRAC = 0.05
+
+
+def survival_tolerance(n_clips: int) -> float:
+    return max(SURVIVAL_FLOOR_CLIPS, SURVIVAL_TOLERANCE_FRAC * n_clips)
 
 
 def assert_per_clip_matches_aggregate(clips: pd.DataFrame, data: pd.DataFrame) -> str:
     """Cross-check the per-clip artifacts against the inline numbers in ``data.csv``.
 
-    The per-clip block is a different *run* of the same measurement on the same weights,
-    so its clip-mean reward should land on the inline value. This is the check that the
-    artifact evaluated the checkpoint it claims to -- the provenance asserts in
+    The per-clip block is an independent *run* of the same measurement on the same
+    weights, so it should land on the inline value. This is the check that the artifact
+    evaluated the checkpoint it claims to: the provenance asserts in
     `load_per_clip_eval` compare recorded strings, while this compares numbers, and only
-    the second would catch a checkpoint directory holding weights from another run.
+    the second would catch a checkpoint directory holding another run's weights.
+
+    Two bounds, because the reward mean alone cannot distinguish "measured something else"
+    from "one long clip fell over this time" -- see `REWARD_TOLERANCE`.
     """
-    have = data[data.reward.notna()].set_index(["wandb_id", "dataset"])["reward"]
-    got = clips.groupby(["wandb_id", "dataset"], observed=True)["episode_reward"].mean()
-    joined = pd.concat([have.rename("inline"), got.rename("per_clip")], axis=1).dropna()
-    if joined.empty:
+    idx = ["wandb_id", "dataset"]
+    inline = data[data.reward.notna()].set_index(idx)[["reward", "survived", "n_clips"]]
+    got = clips.groupby(idx, observed=True).agg(
+        pc_reward=("episode_reward", "mean"), pc_survived=("survived", "mean"),
+        pc_n=("clip_index", "size"))
+    j = inline.join(got, how="inner").dropna(subset=["reward", "pc_reward"])
+    if j.empty:
         return "per-clip vs inline: no overlapping (run, dataset) pairs to compare"
-    rel = ((joined["per_clip"] - joined["inline"]).abs() / joined["inline"].abs())
-    worst = float(rel.max())
-    if worst > AGGREGATE_TOLERANCE:
-        bad = joined[rel > AGGREGATE_TOLERANCE]
+
+    j["rel"] = (j.pc_reward - j.reward).abs() / j.reward.abs()
+    j["tol"] = [REWARD_TOLERANCE[d] for _, d in j.index]
+    j["surv_clips"] = (j.pc_survived - j.survived).abs() * j.pc_n
+
+    bad_reward = j[j.rel > j.tol]
+    j["surv_tol"] = [survival_tolerance(int(n)) for n in j.pc_n]
+    bad_surv = j[j.surv_clips > j.surv_tol]
+    if len(bad_reward) or len(bad_surv):
         raise SystemExit(
-            f"per-clip eval disagrees with the inline final_eval by up to "
-            f"{100 * worst:.1f}% (tolerance {100 * AGGREGATE_TOLERANCE:.0f}%):\n"
-            + bad.to_string())
-    return (f"per-clip vs inline final_eval: max relative difference "
-            f"{100 * worst:.2f}% over {len(joined)} (run, dataset) pairs "
-            f"(tolerance {100 * AGGREGATE_TOLERANCE:.0f}%, eval is not bit-reproducible)")
+            "per-clip eval disagrees with the inline final_eval beyond what eval\n"
+            "nondeterminism explains:\n"
+            + pd.concat([bad_reward, bad_surv]).drop_duplicates().to_string())
+
+    lines = ["per-clip vs inline final_eval (independent passes, same weights):"]
+    for dataset, sub in j.groupby(level="dataset", observed=True):
+        lines.append(
+            f"  {dataset:9s} n_clips={int(sub.pc_n.iloc[0]):4d}  reward within "
+            f"{100 * sub.rel.max():5.2f}% (median {100 * sub.rel.median():4.2f}%, "
+            f"tol {100 * sub.tol.iloc[0]:.0f}%)  survival within "
+            f"{sub.surv_clips.max():.0f} clip(s) (tol {sub.surv_tol.iloc[0]:.0f})")
+    return "\n".join(lines)
+
+
+#: Control cost per alive step separates the two actuators by a factor of ~6 with no
+#: overlap: position runs span -0.123..-0.099 and torque runs -0.020..-0.005 across this
+#: cohort. The gap is physical -- `control_cost` is `0.02 * sum(action^2)` and a position
+#: action is a joint-angle target held near the reference while a torque action idles near
+#: zero -- so it is a *measurement* of which actuator was simulated, independent of any
+#: recorded config.
+ACTUATOR_BOUNDARY = -0.05
+
+
+def assert_artifact_actuator(clips: pd.DataFrame, runs: pd.DataFrame) -> str:
+    """Assert each artifact was simulated with the actuator the run actually trained on.
+
+    This exists because of a near-miss on 2026-09-23. ``7w26do00``'s checkpoint
+    ``config.json`` had been overwritten in place by a *torque* run's config -- 61 of its
+    62 config leaves still matched the WandB record, and the 62nd was
+    ``torque_actuators``. ``parse_env_config`` reads that field from the checkpoint, so an
+    offline rebuild would have simulated a position-trained policy with torque actuators
+    and filed it under ``pos_noproprio_eff2``, in the one folder whose parent question is
+    position versus torque. It was caught only because the same corruption left a stray
+    trailing byte and the producer raised ``JSONDecodeError``; a clean overwrite would
+    have produced silently.
+
+    The provenance asserts in `load_per_clip_eval` could not have caught it -- they compare
+    strings the *same* file supplied. This compares a physical consequence of the choice
+    against the run's WandB-logged actuator, which is two independently written records,
+    and it works on artifacts produced before the ``resolved.torque_actuators`` stamp
+    existed.
+    """
+    claimed = runs.set_index("wandb_id")["mode"] if "mode" in runs else None
+    modes = clips.groupby("wandb_id", observed=True)["mode"].first()
+    cost = clips[clips.dataset == "old_eval"].groupby(
+        "wandb_id", observed=True)["rtps_control_cost"].mean()
+    joined = pd.concat([modes.rename("claimed"), cost.rename("cost")], axis=1).dropna()
+    joined["implied"] = np.where(joined.cost > ACTUATOR_BOUNDARY, "torque", "position")
+    bad = joined[joined.claimed != joined.implied]
+    if len(bad):
+        raise SystemExit(
+            "an eval artifact was simulated with the wrong actuator -- its control cost "
+            "per alive step does not match the actuator the run trained with:\n"
+            + bad.to_string()
+            + "\n\nThe run's `env_params.torque_actuators` in the index is authoritative; "
+              "the checkpoint's config.json is not (see this function's docstring).")
+    # Report the margin, so a future cohort that narrows the gap is visible rather than
+    # silently relying on a threshold that no longer separates.
+    pos = joined.loc[joined.implied == "position", "cost"]
+    tor = joined.loc[joined.implied == "torque", "cost"]
+    margin = (f"position {pos.min():.4f}..{pos.max():.4f}, "
+              f"torque {tor.min():.4f}..{tor.max():.4f}") if len(pos) and len(tor) else "n/a"
+    return (f"artifact actuator matches the trained actuator for all {len(joined)} runs "
+            f"(control cost per alive step: {margin}; boundary {ACTUATOR_BOUNDARY})")
 
 
 def build_behaviour_rows(clips: pd.DataFrame) -> pd.DataFrame:
@@ -1018,6 +1143,7 @@ def main() -> None:
                                   ignore_index=True)
         verdicts.append(assert_clips_are_paired(clips))
         verdicts.append(assert_per_clip_matches_aggregate(clips, df))
+        verdicts.append(assert_artifact_actuator(clips, runs))
         behaviour = build_behaviour_rows(clips).sort_values(
             ["condition", "wandb_id", "dataset", "level", "behaviour"],
             ignore_index=True)

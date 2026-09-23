@@ -268,6 +268,16 @@ def _asset_provenance(ckpt_dir: Path, env_class_hint: str | None) -> dict[str, s
     re-simulated on ``rodent.xml``; nothing in the artifact said which body it used, which
     is why it went unnoticed for a month. An absent ``walker_xml_path`` in ``resolved``
     marks an artifact made before that fix.
+
+    ``torque_actuators`` is stamped here for the same reason, added 2026-09-23 after a
+    near-miss: ``7w26do00``'s checkpoint ``config.json`` had been overwritten in place by
+    a *torque* run's config, so an offline rebuild would have simulated a position-trained
+    policy with torque actuators and reported it as a position run. That file happened to
+    also carry a stray trailing byte, and the resulting ``JSONDecodeError`` is the only
+    reason anyone looked -- without it the artifact would have produced cleanly and been
+    wrong in exactly the way the position-vs-torque question cannot survive. The env reads
+    this field from the checkpoint, so stamping it is what lets an analysis compare it
+    against the independently written WandB config. An absent stamp means pre-2026-09-23.
     """
     from vnl_experiments.delays.evaluation import resolve_env_class
     from vnl_experiments.envs.config_io import local_xml_names
@@ -278,7 +288,13 @@ def _asset_provenance(ckpt_dir: Path, env_class_hint: str | None) -> dict[str, s
     env_params = json.loads(config_path.read_text()).get("env_params", {})
     _, default_config_fn = resolve_env_class(env_class_hint or "", env_params,
                                              "AbsoluteImitation")
-    return local_xml_names(env_params, default_config_fn())
+    out = dict(local_xml_names(env_params, default_config_fn()))
+    if "torque_actuators" in env_params:
+        v = env_params["torque_actuators"]
+        # Same coercion `parse_env_config` applies, so the stamp is the value the env
+        # actually got rather than the raw JSON.
+        out["torque_actuators"] = v if isinstance(v, bool) else v == "True"
+    return out
 
 
 class EvalProducer(Producer):

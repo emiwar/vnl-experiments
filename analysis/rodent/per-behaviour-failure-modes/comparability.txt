@@ -1,6 +1,18 @@
 reward_terms sum vs episode_reward: max relative residual 4.06e-07 over 51/51 (run, dataset) rows with a reward
 
-stages: A (index) always; B (per-clip) 0/17 runs; C (trace) 0/17 runs
+clip axis identical across runs:
+  train: 16 runs share one clip axis of 673 clips
+  old_eval: 16 runs share one clip axis of 169 clips
+  new_eval: 16 runs share one clip axis of 32 clips
+
+per-clip vs inline final_eval (independent passes, same weights):
+  train     n_clips= 673  reward within  0.90% (median 0.12%, tol 3%)  survival within 10 clip(s) (tol 34)
+  old_eval  n_clips= 169  reward within  1.53% (median 0.25%, tol 3%)  survival within 6 clip(s) (tol 8)
+  new_eval  n_clips=  32  reward within 15.18% (median 3.12%, tol 20%)  survival within 3 clip(s) (tol 4)
+
+artifact actuator matches the trained actuator for all 16 runs (control cost per alive step: position -0.1234..-0.1034, torque -0.0219..-0.0086; boundary -0.05)
+
+stages: A (index) always; B (per-clip) 16/17 runs; C (trace) 0/17 runs
 
 ======================================================================
 Group condition='pos_intact'  (n=2)

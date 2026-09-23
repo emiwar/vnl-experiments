@@ -127,20 +127,23 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "fm_torque": {"color": "C2", "marker": "^", "label": "Forward model + torque"},
     "mlp_servo": {"color": "C3", "marker": "D", "label": "MLP + servo"},
     "fm_servo": {"color": "C4", "marker": "s", "label": "Forward model + servo"},
-    # Per-behaviour failure modes (2026-09-21). The cells are (actuator x decoder input),
-    # so the hue carries the *decoder input* and the marker the actuator -- filled marker
-    # for position, open-ish shapes for torque -- which keeps the two axes of the cohort
-    # separable in a figure whose x-axis is already spent on behaviour. `ablate_*` hues
-    # above are reused on purpose: `pos_noproprio_*` is `ablate_proprioception` (C6) and
-    # `pos_nointent` is `ablate_intention` (C3), so an ablation reads the same colour here
-    # as in the folders that swept it.
+    # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
+    # circle = position, open triangle = torque). The hue was initially the decoder input,
+    # so that the two axes of the cohort stayed separable on an x-axis already spent on
+    # behaviour -- but with eight series in one line plot two conditions sharing a hue
+    # proved illegible, so `torque_noproprio_eff2` was given its own (C4, 2026-09-23).
+    # The two `*_nointent` floors do still share C3: they land on top of each other in
+    # every figure because they measure the same thing, so one hue is informative there.
+    # `ablate_*` hues above are reused on purpose: `pos_noproprio_*` is
+    # `ablate_proprioception` (C6) and `pos_nointent` is `ablate_intention` (C3), so an
+    # ablation reads the same colour here as in the folders that swept it.
     "pos_intact": {"color": "C0", "marker": "o", "label": "Position, all inputs"},
     "torque_intact": {"color": "C0", "marker": "^", "label": "Torque, all inputs"},
     "pos_noproprio_eff2": {"color": "C6", "marker": "o",
                            "label": "Position, no proprioception, efference 2"},
     "pos_noproprio_eff0": {"color": "C5", "marker": "o",
                            "label": "Position, no proprioception, no efference"},
-    "torque_noproprio_eff2": {"color": "C6", "marker": "^",
+    "torque_noproprio_eff2": {"color": "C4", "marker": "^",
                               "label": "Torque, no proprioception, efference 2"},
     "torque_delay10": {"color": "C2", "marker": "^",
                        "label": "Torque, proprioception delayed 10"},

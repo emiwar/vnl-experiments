@@ -151,6 +151,37 @@ noise floor (3.1 % on held-out reward) rather than a delay contrast. The same ap
 future ablation that removes the branch a manipulation lives in: check what the *built*
 network depends on, not what the config records.
 
+**A checkpoint's `config.json` can disagree with WandB, and the env believes the
+checkpoint** (found 2026-09-23). `7w26do00`'s `config.json` had been overwritten in place,
+without truncation, by a *torque* run's config. The torque variant is exactly one byte
+shorter (`true` vs `false`), so the write left the original's final `}` behind and the file
+raised `JSONDecodeError: Extra data`. That error is the only reason it was noticed: 61 of
+its 62 config leaves still matched WandB, and the 62nd was `env_params.torque_actuators`.
+
+`parse_env_config` reads that field from the checkpoint, so a clean overwrite — one byte
+longer or the same length — would have produced an artifact that simulated a
+position-trained policy with **torque actuators** and filed it as a position run, in the
+folder whose whole question is position versus torque. It would have looked successful.
+This is the walker-XML trap above in a different field, and it generalises: `env_params`
+is authoritative *as WandB logged it*, not as the checkpoint stores it, and an offline
+rebuild reads the checkpoint.
+
+What to do about it:
+
+* `_asset_provenance` stamps `resolved.torque_actuators` from 2026-09-23, and an analysis
+  should assert it against the index (`load_per_clip_eval` in
+  [`per-behaviour-failure-modes/`](per-behaviour-failure-modes/) is the pattern). An absent
+  stamp means the artifact predates the fix.
+* That stamp is not sufficient on its own, because it records what the *same suspect file*
+  supplied. Pair it with a check on a physical consequence: `assert_artifact_actuator`
+  compares control cost per alive step, which separates the actuators by a factor of ~6
+  with no overlap (position −0.123…−0.099, torque −0.020…−0.005) because `control_cost` is
+  `0.02·Σ action²` and a position action is a held joint-angle target while a torque action
+  idles near zero. It needs nothing from the producer, so it validates old artifacts too.
+* The unparseable cases are cheap to sweep for
+  (`for f in $CKPT/*/config.json; do python -c 'import json,sys;json.load(open(sys.argv[1]))' "$f" || echo "$f"; done`).
+  The parseable-but-wrong ones are not, which is why the two guards above exist.
+
 **Every offline rebuild used to silently swap the walker XML** (fixed 2026-08-18). A
 checkpoint records the *cluster* path of its XML, which does not exist on a laptop, so
 `parse_env_config` repaired it — by taking the local default, `consts.RODENT_XML_PATH` =
