@@ -1,12 +1,11 @@
 # Which behaviours does position-control-without-proprioception actually fail at?
 
-> **Status: Stages A and B complete (16 of 17 runs), Stage C outstanding.** The
-> per-behaviour question the folder was built for is **answered, and the answer inverts
-> the hypothesis** — see [the conclusion](#conclusion). Stage C (per-frame behaviour on
-> the 30 s clips, and what the animal was doing at the instant of failure) needs one more
-> cluster job; [Stage C](#stage-c-what-is-still-missing) has the command. One run of the
-> subject condition (`7w26do00`) failed to produce, so that cell is n = 1 — caveat 1 says
-> what that costs.
+> **Status: all three stages complete, on 16 of 17 runs.** The per-behaviour question the
+> folder was built for is **answered, and the answer inverts the hypothesis** — see
+> [the conclusion](#conclusion). One run of the subject condition (`7w26do00`) still has
+> no artifacts because its checkpoint config is corrupt; caveat 1 says what that costs and
+> [the near-miss section](#the-run-that-failed-to-produce-and-the-near-miss-it-exposed)
+> says why it is worth reading even though the run is not essential.
 
 ## Question
 
@@ -27,8 +26,8 @@ behaviourally heterogeneous. Three decompositions of the same runs:
    ~100 % and ~70 % rather than a uniform 88 %? *(Stage B — **no**, and every comparison
    condition behaves that way instead.)*
 3. **At the moment of failure.** What was the reference animal doing when the episode
-   ended — which is not the same question as which clips scored badly. *(Stage C,
-   outstanding.)*
+   ended — which is not the same question as which clips scored badly. *(Stage C —
+   **rearing**, for every policy including the intact ones.)*
 
 ### The interpretation rule, fixed before the numbers were looked at
 
@@ -131,18 +130,18 @@ to matter more than expected — see the conclusion.
 2. **Six of nine cells are n = 1**, including both task-blind floors, which the rescaling
    in figure 5B depends on. The floors are the least-replicated and most load-bearing
    measurements here.
-2. **One seed.** Every run is `seed = 42`, so nothing here bounds seed-to-seed variation.
+3. **One seed.** Every run is `seed = 42`, so nothing here bounds seed-to-seed variation.
    The parent folder measures a 2.51 % run-to-run floor on this cohort's reward at this
    budget; read every difference below against that.
-3. **`vo7jiiwr` is selected against a weaker record.** It predates
+4. **`vo7jiiwr` is selected against a weaker record.** It predates
    `net_params.network_class` / `efference_length` / `dec_use_*` being logged, so the only
    thing separating it from the `RodentForwardModel` run at the same delay in the same
    launch is the `EncDec` tag — a documented departure from "tags are not evidence",
    justified because the tag is the only surviving record. It is kept in its own condition
    and excluded from every primary figure.
-4. **`train` is the policy's own training split** and is shown for power, not for
+5. **`train` is the policy's own training split** and is shown for power, not for
    generalisation. It agrees with `old_eval` throughout.
-5. **The `new_eval` numbers are a single unwindowed evaluation** on 32 clips where one
+6. **The `new_eval` numbers are a single unwindowed evaluation** on 32 clips where one
    early termination is expensive, so read its trends and not its point values.
 7. **`new_eval` cannot be broken down by behaviour at clip level.** Its 30 s clips are
    behaviour *mixtures*: the modal MotionMapper behaviour covers a median of only **32 %**
@@ -155,6 +154,11 @@ to matter more than expected — see the conclusion.
    ever co-occurred. Figure 3 stacks the raw independent rates and so overflows slightly;
    the per-behaviour version (figure 9) uses an exact partition with the overlap as its own
    band.
+9. **The video is an illustration, not a measurement.** Four of 32 clips, fixed by the
+   render spec rather than chosen; one rollout per tile, which on clip 0 differs from the
+   measured pass by 20 s; one run per condition, and for the subject that run is the better
+   of its two (`+485` on `new_eval`) because the other has no artifacts. Its captions are
+   smoothed to 0.5 s for legibility. Nothing in `report.md` is derived from it.
 
 ## Figures
 
@@ -265,7 +269,127 @@ Survival for the subject is 0.88/0.90/0.93/0.80/0.88/0.73 against the matched co
 failures are `root_too_rotated` (orientation) with almost no `root_too_far`, while the
 torque control's dynamic failures are overwhelmingly `root_too_far` (falling behind).
 
+### Stage C — per-frame behaviour on the 30 s clips
+
+![Reward per alive step against MotionMapper behaviour on new_eval, one series per condition.](figures/frames_by_behaviour.png)
+
+**Figure 11 — the `new_eval` replication, and it agrees.** Steps binned by which of 13
+MotionMapper behaviours the reference was in, on 30 s clips that average 13 behaviours
+each and are 46 % "still" against the snippet set's 0 %. Different clips, different
+taxonomy, different granularity. `pos_noproprio_eff2` runs just below the two intact arms
+with the *same shape* — including their dip at RearMid/RearHigh, which says rearing is
+intrinsically harder to track for every policy. As a fraction of intact on the same coarse
+group: 93 % groom, 95 % still, 83 % rear, 92 % locomote, against `torque_delay10`'s
+96 / 96 / 82 / 94. Both are flat; neither is selective on the quality axis, exactly as
+figure 9B found on the 5 s clips.
+
+![Share of alive time per coarse behaviour, and terminations per unit time spent in each.](figures/failure_context.png)
+
+**Figure 12 — what the animal was doing when it failed.** Each termination attributed to
+the modal behaviour over the preceding 0.5 s, plotted as enrichment: terminations per unit
+time spent, so 1.0 means "fails here exactly as often as it is here". The answer is the
+same for everyone:
+
+| condition | still | rear | locomote | n |
+|---|---|---|---|---|
+| `pos_intact` | 0.38 | **3.39** | 1.03 | 16 |
+| `torque_intact` | 0.42 | **3.21** | 1.05 | 29 |
+| `pos_noproprio_eff2` | 0.44 | **2.70** | 1.08 | 23 |
+| `torque_delay10` | 0.34 | **3.24** | 1.12 | 79 |
+| `pos_noproprio_eff0` | 0.13 | **3.32** | 1.39 | 91 |
+| `pos_nointent` | — | 2.42 | 1.81 | 32 |
+
+**Rearing is where episodes end**, ~3× over-represented relative to time spent, for the
+fully intact policies as much as for the ablated ones. Stillness is 2–8× protective and
+locomotion is neutral. The ablations do not move *where* failures happen; they move how
+many there are. Grooming is absent because no condition failed in it more than once —
+it is 1.8 % of alive time here, so `new_eval` cannot answer that part; the 5 s clips can
+(figure 10), and 64 of their 169 clips are grooming.
+
+### The same three policies side by side
+
+[`make_video.py`](make_video.py) tiles four already-rendered `video` artifacts
+(`vid4c-3929eb92`, four `new_eval` clips, `auto_reset=false`) into a 66 s 2x2 comparison at
+`eval_videos/collage_2x2_noproprio_vs_delay10.mp4` — gitignored like every mp4 in the
+store, which is why the stills below are committed:
+
+```bash
+../../../../.venv/bin/python analysis/rodent/per-behaviour-failure-modes/make_video.py
+../../../../.venv/bin/python analysis/rodent/per-behaviour-failure-modes/make_video.py --check
+```
+
+The tiles are the raw Camera-4 footage of the same clips, `pos_intact` (`16jfo5vu`),
+the subject (`rfoe9wu2`) and the reward-matched control (`u3lywvaj`). Two reading aids are
+drawn on: the reference tile carries the **coarse MotionMapper behaviour** of the animal
+being imitated, and a policy's label **turns red and says when its episode ended** — with
+`auto_reset` off a terminated policy keeps being simulated, so a dead tile flails on and is
+otherwise indistinguishable from a live one.
+
+![Four stills from the 2x2 collage, one per clip, each grabbed one second after the first tile in that clip failed.](figures/video_contact_sheet.png)
+
+**Figure 13 — one still per clip, each taken 1 s after the first tile in that clip fell.**
+The rule is fixed in the script rather than chosen per frame, and the stills are downscaled
+2x from the mp4, which is the thing to actually watch. (It is the one figure here not in
+`figures/manifest.json`, which [`plot.py`](plot.py) owns and rewrites; its provenance stamp
+is in [`video_audit.txt`](video_audit.txt) instead.) Episode ends, in seconds:
+
+| clip | what the reference is doing | pos, all inputs | pos, no proprio | torque, 100 ms late |
+|---|---|---|---|---|
+| 0 | rears at 0.3 s and stays up to 4.9 s | fell 4.0 (`RearLow`) | fell 0.6 (`RearMid`) | fell 0.5 (`Amble`) |
+| 1 | walks, then rears 1.2–8.9 s | fell 18.7 (`Walk`) | fell 3.4 (`RearSniff`) | fell 7.1 (`RearSniff`) |
+| 2 | still and prone, with 9 s of walking | **survived 30** | fell 10.8 (`Walk`) | fell 10.4 (`Walk`) |
+| 3 | walks, then still from 9 s | fell 3.0 (`ProneSniff`) | fell 2.9 (`ProneSniff`) | fell 2.5 (`ProneSniff`) |
+
+Four things in it are worth the 66 seconds, and all four are figures 8–12 in a form that
+can be watched rather than read:
+
+- **Clip 0 is figure 12 as a single event.** The reference rears almost immediately and
+  holds it for 4.5 s; both ablations are down within 0.6 s and the intact ceiling lasts
+  4.0 s, still inside the rear. (The attribution differs between them by the analysis's own
+  0.5 s-window rule — at 0.5 s the window is half pre-rear locomotion — which is a fair
+  reminder that a window near t = 0 is a weak measurement.)
+- **Clip 2 is the discriminating clip and it is the sedentary one.** The position ceiling
+  tracks all 30 s of a mostly still, prone clip; both ablations are gone by 11 s, both
+  during `Walk`. The hypothesis this folder was built to test predicts the opposite —
+  sedentary clips are where the ablation was supposed to be free.
+- **Clip 3 ends every policy within 3.1 s**, the intact one included. Per-clip outcome is
+  not policy quality: some of these 30 s clips are simply not trackable by anything here.
+- **Nothing visibly separates the two ablations.** They fail at similar times on all four
+  clips and in the same postures, which is the flatness of figures 8 and 11 — one arm
+  missing proprioception entirely, the other getting it 100 ms late, and no difference you
+  can see.
+
+**A render is its own rollout, and on one of these clips that matters.** Three independent
+GPU passes over the same weights exist for each tile — the per-clip `eval` artifact behind
+`clips.csv`, the `trace` behind `failure_context.csv`, and this render. Nine of the twelve
+(tile, clip) pairs agree to within 1 s. Three do not, and two of those are clip 0:
+`16jfo5vu` fell at 4.0 s in the trace and in the render but survived **23.8 s** in the eval
+pass, and `u3lywvaj` fell at 0.5 s in both but lasted 14.4 s in the eval pass. (The third
+is `u3lywvaj` on clip 1, which spans 3.0 / 3.3 / 7.1 s.) Clip 0's outcome hinges on one
+manoeuvre — the opening rear — and MuJoCo Warp is not bit-reproducible across passes, so it
+lands either side of it. That is the caveat-1 nondeterminism at its worst case rather than
+its median, and it is the reason this section has no number in it that is not also in a
+CSV: the per-pass table is in [`video_audit.txt`](video_audit.txt).
+
 ## Conclusion
+
+### Stage C — failures happen during rearing, whatever the policy knows
+
+- **Rearing is ~3× over-represented at the moment of failure for every condition**,
+  including both fully intact policies (3.39 and 3.21). Stillness is 2–8× protective,
+  locomotion neutral. An ablation changes *how many* episodes end, not *where* they end.
+  So "what was the rodent doing when it failed" has an answer, and it is a fact about the
+  task rather than about the ablation: getting up on the hind legs is where this body
+  loses the reference, and no decoder input studied here changes that.
+- **The 30 s clips replicate the 5 s result in a different taxonomy.** Tracking quality as
+  a fraction of intact on the same behaviour group: the subject is 93 / 95 / 83 / 92 % on
+  groom / still / rear / locomote, the matched torque control 96 / 96 / 82 / 94. Both flat,
+  neither selective — the same conclusion as figure 9B, from per-frame MotionMapper labels
+  on clips that share nothing with the snippet set.
+- **Rearing is intrinsically hard, not selectively hard.** Both intact arms dip there too
+  (83 % and 82 % is measured *against* `pos_intact`, which itself scores 3.75–3.91 per step
+  on RearMid/RearHigh against 4.24–4.29 on locomotion). A behaviour profile read without
+  the ceiling beside it would have called this an ablation effect.
 
 ### Stage B — the hypothesis is refuted, and inverted
 
@@ -340,40 +464,13 @@ score by almost exactly the same aggregate mechanism.**
   17 in spread. Matching two policies on a mean, and then on a term-by-term decomposition
   of that mean, still did not make them the same policy.
 
-## Stage C: what is still missing
+## What is still missing
 
-Stage B landed on 2026-09-23. `EvalProducer` gained a `per_clip` spec key (default `None`,
-so `eval3ds-382e9e69` and the 393 stored artifacts are untouched and `VERSION` stays at 3 —
-the `action_noise` precedent from `analysis/README.md` §2), and 16 of 17 runs were produced
-on the cluster and pulled. The one failure is `7w26do00`; see caveat 1 for what that costs
-and the note below for the likely cause.
-
-**Stage C — per-step traces.** A new artifact kind, `trace` (`VERSION = 1`, HDF5, one per
-(run, dataset), 3–10 MB). It records every env metric per step plus `reward`, `alive` and
-`running`, including `current_frame` — so the reference frame a step was tracking is *read*
-rather than inferred. Two things need it, both about `new_eval`, whose 30 s clips are
-behaviour mixtures no per-clip label can describe (caveat 7):
-
-* **behaviour-resolved reward inside a clip** — reward per alive step while the reference
-  was in each of the 13 MotionMapper behaviours, which is the `new_eval` replication of
-  figure 6 with a different taxonomy and different clips;
-* **what the animal was doing at the instant of failure** — the termination step maps to a
-  reference frame and hence to a behaviour, plus the modal behaviour over the preceding
-  0.5 s. This is the original question that no amount of per-clip data answers.
-
-```bash
-python -m vnl_experiments.artifacts plan --kind trace \
-    --runs analysis/rodent/per-behaviour-failure-modes/runs.csv --out todo_trace.txt
-scp todo_trace.txt cannon:$SCRATCH/vnl-experiments/
-sbatch -p gpu_h200 slurm_eval.sh todo_trace.txt trace          # on the cluster
-python -m vnl_experiments.artifacts pull --kind trace \
-    --runs analysis/rodent/per-behaviour-failure-modes/runs.csv
-```
-
-`extract.py` detects the traces and writes `behaviour_frames.csv` and
-`failure_context.csv`; `REQUIRES` grows with them, so `coverage.txt` reads as a plan until
-then and as a guarantee afterwards. The code path is tested against real trace artifacts
-but has not yet run on this cohort.
+All three stages have run on the 16 runs that have artifacts. What remains is
+`7w26do00` — one of the two `pos_noproprio_eff2` replicates — which has neither a
+per-clip eval nor a trace because its checkpoint `config.json` is corrupt. The next
+section is the diagnosis; it is worth reading past the fix, because the corruption was
+one byte away from being silent.
 
 ### The run that failed to produce, and the near-miss it exposed
 
@@ -478,31 +575,41 @@ match the eval clips' source to float32 rounding.
 
 ## Follow-ups
 
-1. **Run Stage C.** The only part of the original question still unanswered is what the
-   animal was doing at the instant of failure, and it needs one cluster job.
-2. **Why is the position servo behaviour-uniform?** This is now the interesting question,
-   and it is mechanistic rather than descriptive. The obvious candidate: under position
-   control the actuator closes a loop on joint angle locally, at the plant, so the policy
-   does not need proprioception to *hold a posture* — only to know which posture it is in.
-   If that is right, the uniform ~15 % loss should be a loss of *timing* rather than of
-   posture, and would show up as a roughly constant phase lag against the reference across
-   behaviours. The traces from Stage C are enough to test it without new runs.
-3. **A second replicate of the subject** (`7w26do00`, see above) and a second seed. The
-   headline interaction is robust to run-to-run noise as measured (spread 27–88 against a
-   375 margin), but it currently rests on one run of one seed.
+1. **Why is the position servo behaviour-uniform?** The descriptive question is answered;
+   this is the mechanistic one, and it is now the most interesting thing here. The obvious
+   candidate: under position control the actuator closes a loop on joint angle locally, at
+   the plant, so the policy does not need proprioception to *hold* a posture — only to know
+   which one it is in. If that is right, the uniform ~15 % loss should be a loss of
+   *timing* rather than of posture, and would show up as a roughly constant phase lag
+   against the reference across behaviours. **The traces already on disk are enough to test
+   it**: `current_frame` and the per-step joint error are both recorded, so a
+   cross-correlation of tracked-joint trajectory against the reference, per behaviour,
+   needs no new compute.
+2. **Rearing is the failure mode, for everyone.** Both intact arms end ~3× more of their
+   episodes in rearing than their time there would predict. That is a property of the task
+   or the body, not of any ablation, and it bounds what any decoder change can buy on these
+   clips. Worth its own question — and `root_too_far` vs `root_too_rotated` at the moment
+   of a rear (the traces have both) would say whether the animal falls behind or topples.
+3. **Recover `7w26do00`** and add a second seed. The headline interaction is robust to
+   run-to-run noise as measured (spread 27–88 against a 375 margin), but the subject cell
+   is one run of one seed.
 4. **A second task-blind run per actuator.** Both floors are n = 1 and figure 5B's
    rescaling divides by them.
 5. **The bimodality deserves its own question.** Outcomes are near-ceiling or catastrophic
-   with little between (figure 8), and what every ablation here costs is the *rate* of
-   collapse. That suggests the interesting variable is a robustness margin, not a
-   representational one — and it would be measurable directly by sweeping a perturbation
-   (`EvalProducer` already has an `action_noise` axis, with a stored sweep at 0–0.25).
+   with little between (figure 8), and what every ablation costs is the *rate* of collapse
+   — confirmed independently at frame resolution (figure 12). That points at a robustness
+   margin rather than a representational one, and `EvalProducer` already has an
+   `action_noise` axis with a stored sweep at 0–0.25 to measure it with.
 6. **Probe the end-effector claim per body.** The Stage A deficit is concentrated in
-   `end_eff`, and the per-clip artifacts already carry all 18 per-body errors — enough to
-   say whether it is the forelimbs, the hindlimbs or the head, with no new compute. They
-   are in the store but deliberately not in `clips.csv`.
-7. **The session file also carries `ephys/spike_counts`** (360 000 × 131 units) on the same
-   frame index as the behaviour labels. Nothing in this project uses it yet.
+   `end_eff`, and the per-clip artifacts carry all 18 per-body errors — enough to say
+   whether it is the forelimbs, the hindlimbs or the head, with no new compute. They are in
+   the store but deliberately not in `clips.csv`.
+7. **Sweep the other checkpoints for the `config.json` corruption.** The mechanism is not
+   specific to this run; the near-miss section has the command and explains why the
+   parseable-but-wrong case needs the two guards rather than a sweep.
+8. **The session file also carries `ephys/spike_counts`** (360 000 × 131 units) on the same
+   frame index as the behaviour labels, and the traces are now on that index too. Nothing
+   in this project uses it yet.
 
 ---
 

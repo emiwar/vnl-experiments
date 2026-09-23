@@ -711,6 +711,146 @@ def fig_failure_modes_by_behaviour(clips: pd.DataFrame) -> plt.Figure:
     return fig
 
 
+# ======================================================================================
+# Stage C: per-frame behaviour on the 30 s clips (needs behaviour_frames / failure_context)
+# ======================================================================================
+
+#: MotionMapper behaviours in a fixed order, sedentary -> dynamic, matching `COARSE_ORDER`
+#: in `behaviour_labels.py`. This is a *different* taxonomy from the six snippet classes
+#: used for the 5 s clips -- comparable only through the coarse grouping.
+#: The coarse grouping, sedentary -> dynamic. Same order as `COARSE_ORDER` in
+#: `behaviour_labels.py`, restated here because plot.py reads only the committed CSVs.
+COARSE_ORDER = ("groom", "still", "rear", "locomote")
+
+MM_ORDER = ("FaceGroom", "AmbleGroom", "ProneStill", "ProneSlow", "ProneSniff", "Hunch",
+            "RearDown", "RearLow", "RearMid", "RearHigh", "RearSniff",
+            "Amble", "Walk", "WalkFast")
+
+#: Minimum alive seconds in a cell before it is drawn. `new_eval` holds only 20.6 s of
+#: grooming in total, and a policy that dies early sees less of it still, so several cells
+#: rest on one or two terminations and a couple of seconds. Below this they are dropped
+#: rather than plotted, because a hazard from 1 event over 1 s reads as a real excursion.
+MIN_ALIVE_S = 15.0
+
+#: Minimum terminations in a cell before an enrichment is drawn for it. Grooming is 1.8 %
+#: of alive time on `new_eval`, and **no condition terminated in it more than once** — so
+#: every grooming point would be a single event plotted on a log axis. Those cells are
+#: dropped and the omission stated, rather than drawn and caveated.
+MIN_TERMINATIONS = 3
+
+
+def _mm_present(frames: pd.DataFrame) -> list[str]:
+    ok = frames.groupby("behaviour", observed=True)["alive_s"].max()
+    return [b for b in MM_ORDER if ok.get(b, 0.0) >= MIN_ALIVE_S]
+
+
+def fig_frames_by_behaviour(frames: pd.DataFrame) -> plt.Figure:
+    """The `new_eval` replication of figure 9B, at frame resolution in a different taxonomy.
+
+    The 5 s analysis binned whole clips by one of six snippet classes; this bins individual
+    *steps* by which of 13 MotionMapper behaviours the reference was in at that step, on
+    clips that average 13 behaviours each and are 46 % "still" against the snippet set's
+    0 %. Different clips, different labels, different granularity — so agreement is
+    replication rather than restatement.
+
+    This is the **quality** axis only. The matching *rate* axis is not drawn per
+    MotionMapper behaviour: `pos_intact` records 16 terminations in total across 32 clips,
+    so most of its 13 cells hold zero or one event and a per-behaviour hazard would be
+    plotting single events on a log scale. The rate story is in `failure_context.png`,
+    binned to the four coarse groups where the counts are 3-46.
+
+    Note that the two intact arms dip at RearMid/RearHigh too: rearing is intrinsically
+    harder to track for every policy, which is why a behaviour profile has to be read
+    against the ceiling rather than flat.
+    """
+    order = _mm_present(frames)
+    x = np.arange(len(order))
+    series = [c for c in BEHAVIOUR_SERIES if c in set(frames.condition)]
+    fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    for condition in series:
+        sub = frames[frames.condition == condition]
+        agg = sub.groupby("behaviour", observed=True).agg(
+            alive_s=("alive_s", "sum"), rps=("reward_per_step", "mean")).reindex(order)
+        drawn = agg.alive_s >= MIN_ALIVE_S
+        ax.plot(x[drawn], agg.rps[drawn],
+                color=color_for(condition), marker=marker_for(condition), ms=5, lw=2.0,
+                mfc="none" if condition.startswith("torque") else None,
+                label=SHORT.get(condition, condition).replace("\n", " "))
+    ax.set_ylabel("Reward per alive step")
+    ax.set_ylim(bottom=0)
+    ax.set_xticks(x)
+    ax.set_xticklabels(order, rotation=45, ha="right", fontsize=7.5)
+    ax.set_xlabel("sedentary " + r"$\longrightarrow$" + " dynamic", fontsize=8)
+    ax.legend(fontsize=6.5, frameon=False, ncol=2, loc="lower left")
+    ax.set_title(f"new_eval: tracking quality by per-frame MotionMapper behaviour\n"
+                 f"(cells with < {MIN_ALIVE_S:g} s of exposure dropped)", fontsize=9)
+    fig.tight_layout()
+    return fig
+
+
+def fig_failure_context(failures: pd.DataFrame, frames: pd.DataFrame) -> plt.Figure:
+    """What the reference animal was doing when the episode ended.
+
+    The question no amount of per-clip data answers, and the reason the `trace` kind
+    exists. Each termination is attributed to the modal MotionMapper behaviour over the
+    0.5 s *before* it — a description of the approach to the failure rather than of the
+    single 10 ms step it happened on.
+
+    Plotted as **enrichment**: the share of terminations in a behaviour divided by the
+    share of alive time spent in it. 1.0 means failures happen there exactly as often as
+    the policy is there, which is what "no preference" looks like; a raw share would mostly
+    re-plot how much of the clip set each behaviour occupies.
+
+    Cells with fewer than `MIN_TERMINATIONS` events are not drawn. In practice that
+    removes grooming entirely: it is 1.8 % of alive time here and no condition failed in
+    it more than once, so `new_eval` cannot say where grooming failures happen. The 5 s
+    clips can (figure 10) — 64 of their 169 clips are grooming.
+    """
+    order = [b for b in COARSE_ORDER if b != "exclude"]
+    x = np.arange(len(order))
+    series = [c for c in BEHAVIOUR_SERIES if c in set(failures.condition)]
+    coarse = frames.set_index("behaviour")["coarse"].to_dict()
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.6),
+                             gridspec_kw={"width_ratios": [1, 1.25]})
+
+    exposure = frames.groupby("coarse", observed=True)["alive_s"].sum()
+    exposure = exposure.reindex(order) / exposure.sum()
+    axes[0].bar(x, exposure.to_numpy(), width=0.6,
+                color=[behaviour_color(b) for b in order])
+    axes[0].set_xticks(x)
+    axes[0].set_xticklabels([behaviour_label(b) for b in order], rotation=30,
+                            ha="right", fontsize=7.5)
+    axes[0].set_ylabel("Share of alive time")
+    axes[0].set_title("A. Where the policies spend their time", fontsize=9, loc="left")
+
+    for i, condition in enumerate(series):
+        sub = failures[failures.condition == condition]
+        mapped = sub.behaviour_window_modal.map(coarse)
+        counts = mapped.value_counts().reindex(order).fillna(0.0)
+        share = mapped.value_counts(normalize=True).reindex(order)
+        enrich = (share / exposure).to_numpy()
+        enrich[counts.to_numpy() < MIN_TERMINATIONS] = np.nan
+        axes[1].plot(x + (i - len(series) / 2) * 0.05, enrich, ls="none",
+                     marker=marker_for(condition), ms=7,
+                     mec=color_for(condition), mew=1.6,
+                     mfc="none" if condition.startswith("torque") else color_for(condition),
+                     label=f"{SHORT.get(condition, condition)} (n={len(sub)})".replace("\n", " "))
+    axes[1].axhline(1.0, color="0.4", lw=1.0, ls="--")
+    axes[1].set_yscale("log")
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels([behaviour_label(b) for b in order], rotation=30,
+                            ha="right", fontsize=7.5)
+    axes[1].set_ylabel("Terminations per unit time spent\n(1 = no preference)")
+    axes[1].set_title("B. Where they fail, relative to where they are", fontsize=9,
+                      loc="left")
+    axes[1].legend(fontsize=6.5, frameon=False, loc="upper left", bbox_to_anchor=(1.02, 1.0))
+    fig.suptitle(f"What the reference animal was doing when the episode ended "
+                 f"(modal behaviour over the preceding 0.5 s, new_eval; "
+                 f"cells with < {MIN_TERMINATIONS} events dropped)", fontsize=9)
+    fig.tight_layout()
+    return fig
+
+
 def main() -> None:
     apply_style()
     FIGURES.mkdir(exist_ok=True)
@@ -750,7 +890,22 @@ def main() -> None:
         print("\nclips.csv not present: the per-behaviour figures need the per-clip eval\n"
               "artifacts. See this folder's report.md for the produce/pull commands.")
 
-    if not (HERE / "behaviour_frames.csv").exists():
+    frames_path, failures_path = HERE / "behaviour_frames.csv", HERE / "failure_context.csv"
+    if frames_path.exists():
+        frames = pd.read_csv(frames_path)
+        failures = pd.read_csv(failures_path)
+        for name, builder, inputs in [
+            ("frames_by_behaviour", lambda: fig_frames_by_behaviour(frames),
+             (frames_path,)),
+            ("failure_context", lambda: fig_failure_context(failures, frames),
+             (failures_path, frames_path)),
+        ]:
+            fig = builder()
+            manifest[f"{name}.png"] = provenance(fig, HERE, *inputs)
+            fig.savefig(FIGURES / f"{name}.png", dpi=200)
+            plt.close(fig)
+            print(f"wrote figures/{name}.png")
+    else:
         print("behaviour_frames.csv not present: the per-frame behaviour figures need the\n"
               "`trace` artifacts. See report.md for the produce/pull commands.")
 

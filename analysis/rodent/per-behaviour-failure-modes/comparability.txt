@@ -10,9 +10,11 @@ per-clip vs inline final_eval (independent passes, same weights):
   old_eval  n_clips= 169  reward within  1.53% (median 0.25%, tol 3%)  survival within 6 clip(s) (tol 8)
   new_eval  n_clips=  32  reward within 15.18% (median 3.12%, tol 20%)  survival within 3 clip(s) (tol 4)
 
-artifact actuator matches the trained actuator for all 16 runs (control cost per alive step: position -0.1234..-0.1034, torque -0.0219..-0.0086; boundary -0.05)
+per-clip eval: actuator matches the trained actuator for all 16 runs (control cost per alive step: position -0.1234..-0.1034, torque -0.0219..-0.0086; boundary -0.05)
 
-stages: A (index) always; B (per-clip) 16/17 runs; C (trace) 0/17 runs
+trace: actuator matches the trained actuator for all 16 runs (control cost per alive step: position -0.1229..-0.0920, torque -0.0218..-0.0046; boundary -0.05)
+
+stages: A (index) always; B (per-clip) 16/17 runs; C (trace) 16/17 runs
 
 ======================================================================
 Group condition='pos_intact'  (n=2)

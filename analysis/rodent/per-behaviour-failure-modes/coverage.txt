@@ -22,8 +22,22 @@ eval:eval3ds-pc-fac96053  (spec_id=eval3ds-pc-fac96053): 16/17
     torque_nointent                 1/1   
     torque_noproprio_eff2           1/1   
 
+trace:trace-new_eval-657f97da  (spec_id=trace-new_eval-657f97da): 16/17
+    pos_intact                      2/2   
+    pos_nointent                    1/1   
+    pos_noproprio_eff0              3/3   
+    pos_noproprio_eff2              1/2      *** GAP ***
+    torque_delay10                  3/3   
+    torque_delay10_aug11            1/1   
+    torque_intact                   3/3   
+    torque_nointent                 1/1   
+    torque_noproprio_eff2           1/1   
+
 Missing artifacts. Produce or fetch them with:
   # 1 runs missing eval:eval3ds-pc-fac96053
   # other specs held for these runs: eval3ds-382e9e69 (3), eval3ds-n00-04ceda93 (1), eval3ds-347333e3 (1), eval3ds-n25-da25f356 (1), eval3ds-n00-21b2d9a8 (1), eval3ds-n02-5bcf9203 (1), eval3ds-n05-7c60cd50 (1), eval3ds-n10-2726ab9c (1), eval3ds-n02-a4e0be11 (1), eval3ds-66aaff5b (1), eval3ds-n25-9443d2fe (1), eval3ds-n05-ead26b7d (1), eval3ds-n00-6a6b8d4e (1), eval3ds-n10-2d7c9136 (1)
   python -m vnl_experiments.artifacts plan  --kind eval --runs per-behaviour-failure-modes/runs.csv
   python -m vnl_experiments.artifacts pull  --kind eval --runs per-behaviour-failure-modes/runs.csv
+  # 1 runs missing trace:trace-new_eval-657f97da
+  python -m vnl_experiments.artifacts plan  --kind trace --runs per-behaviour-failure-modes/runs.csv
+  python -m vnl_experiments.artifacts pull  --kind trace --runs per-behaviour-failure-modes/runs.csv

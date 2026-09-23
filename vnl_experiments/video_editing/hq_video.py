@@ -65,6 +65,11 @@ class HQVideoWriter:
             np.ascontiguousarray(frame, dtype=np.uint8).tobytes())
         self._n += 1
 
+    @property
+    def n_written(self) -> int:
+        """Frames written so far -- i.e. the next frame's index in the output."""
+        return self._n
+
     def close(self) -> int:
         self._proc.stdin.close()
         rc = self._proc.wait()

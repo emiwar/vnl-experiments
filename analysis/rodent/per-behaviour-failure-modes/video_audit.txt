@@ -1,0 +1,51 @@
+=== tile selection ===
+pos_intact: condition mean new_eval reward 10788 over 2 run(s); picked 16jfo5vu (11084, +297)
+    passed over vd2z944s (10491): 297 from the mean vs 297
+pos_noproprio_eff2: condition mean new_eval reward 5365 over 2 run(s); picked rfoe9wu2 (5850, +485)
+    passed over 7w26do00 (4880): no video artifact
+torque_delay10: condition mean new_eval reward 5988 over 3 run(s); picked u3lywvaj (5961, -28)
+    passed over h2l057w2 (6417): 428 from the mean vs 28
+    passed over yki9qy8j (5588): 400 from the mean vs 28
+
+=== guards ===
+reference clips: all 3 renders are eval_clips_32x30s.h5 clips 0..3, bit-identical (max |delta| 0)
+same weights as the CSVs: video and per-clip eval agree on checkpoint_step, walker_xml_path, arena_xml_path, env_class, network_class for all 3 tiles
+    16jfo5vu: step 600064000, rodent_no_tail_collisions.xml, NVIDIA H200
+    rfoe9wu2: step 600064000, rodent_no_tail_collisions.xml, NVIDIA H200
+    u3lywvaj: step 600064000, rodent_no_tail_collisions.xml, NVIDIA H200
+video tiles (via per-clip eval): actuator matches the trained actuator for all 3 runs (control cost per alive step: position -0.1234..-0.1228, torque -0.0216..-0.0216; boundary -0.05)
+
+=== episodes ===
+per-tile, per-clip episode end (s), one column per independent pass:
+
+condition           run        clip    eval   trace   video   behaviour at the traced end
+pos_intact          16jfo5vu      0   23.77    3.96    3.96   RearLow
+pos_intact          16jfo5vu      1   18.69   18.68   18.72   Walk
+pos_intact          16jfo5vu      2   29.89       -   29.89   survived the clip
+pos_intact          16jfo5vu      3    3.30    3.26    3.05   ProneSniff
+pos_noproprio_eff2  rfoe9wu2      0    0.53    0.60    0.59   RearMid
+pos_noproprio_eff2  rfoe9wu2      1    2.77    3.77    3.38   RearSniff
+pos_noproprio_eff2  rfoe9wu2      2   10.20   10.83   10.83   Walk
+pos_noproprio_eff2  rfoe9wu2      3    2.82    3.39    2.93   ProneSniff
+torque_delay10      u3lywvaj      0   14.36    0.51    0.51   Amble
+torque_delay10      u3lywvaj      1    3.00    3.31    7.13   RearSniff
+torque_delay10      u3lywvaj      2   10.45   10.59   10.38   Walk
+torque_delay10      u3lywvaj      3    2.46    2.47    2.46   ProneSniff
+
+Worst disagreement between passes: 19.8 s (pos_intact, clip 0). The video is therefore an illustration of the conditions and not
+a measurement of a clip: read the CSVs for any number, including this one.
+
+Caption track (the reference animal's coarse behaviour, smoothed for display):
+  clip 0: Rearing 0.0-4.9s  Still / prone 4.9-22.4s  Rearing 22.4-24.7s  Still / prone 24.7-28.4s  Locomotion 28.4-30.0s
+  clip 1: Locomotion 0.0-1.2s  Rearing 1.2-8.9s  Locomotion 8.9-13.1s  Rearing 13.1-18.2s  Locomotion 18.2-20.5s  Still / prone 20.5-28.0s  Locomotion 28.0-30.0s
+  clip 2: Still / prone 0.0-1.4s  Locomotion 1.4-11.0s  Still / prone 11.0-12.5s  Locomotion 12.5-13.0s  Still / prone 13.0-25.3s  Rearing 25.3-26.9s  Locomotion 26.9-28.3s  Still / prone 28.3-30.0s
+  clip 3: Locomotion 0.0-1.2s  Still / prone 1.2-3.4s  Locomotion 3.4-9.1s  Still / prone 9.1-22.6s  Rearing 22.6-25.1s  Grooming 25.1-30.0s
+
+=== output ===
+/home/emil/Development/vnl/vnl-experiments/eval_videos/collage_2x2_noproprio_vs_delay10.mp4 (3236 clip frames + 75 fade frames)
+    clip 0: output frames 0..348 (7.0 s)
+    clip 1: output frames 373..1459 (21.7 s)
+    clip 2: output frames 1484..2984 (30.0 s)
+    clip 3: output frames 3009..3311 (6.0 s)
+contact sheet: video_contact_sheet.png at clip 0 t=1.5s, clip 1 t=4.4s, clip 2 t=11.4s, clip 3 t=3.5s
+    (not in figures/manifest.json, which plot.py owns; provenance: per-behaviour-failure-modes  ·  video_captions.csv 70459698  ·  vnl-experiments 2ddc22c  ·  2026-09-23)

@@ -292,6 +292,23 @@ Declare the runs to render, `ensure`/`pull` the `video` artifacts, and link them
 `report.md`. The mp4s stay in the (gitignored) store; commit a still or contact sheet into
 `figures/` if the report needs to stand alone.
 
+Several runs side by side is a **preset** in `video_editing/make_collage.py`, which tiles
+already-rendered videos in lockstep and needs no GPU. Two options there exist because a
+free-run render (`auto_reset=false`) is easy to misread: `mark_deaths` reddens a tile's
+label at the frame its episode ended, since a terminated policy keeps being simulated and
+otherwise looks like a live one, and `captions` draws a segment CSV
+(`clip,start_frame,end_frame,text`) on one designated tile — normally the reference, whose
+behaviour applies to every tile at once. The analysis owns the caption file, the shared
+code only draws it. Worked example, including the guard that the renders' stored reference
+really is the clip set the labels describe:
+[`rodent/per-behaviour-failure-modes/make_video.py`](rodent/per-behaviour-failure-modes/make_video.py).
+
+A collage is an illustration, not a measurement, and the gap is worth stating in the
+report: a render is its own rollout, so on a clip whose outcome hinges on one manoeuvre it
+can differ sharply from the `eval` and `trace` passes the CSVs were built on (measured
+there: 20 s on a 30 s clip). Put the per-clip comparison in an audit file and cite the
+CSVs for every number.
+
 ## 4. Comparability protocol (mandatory — programmatic *and* manual)
 
 Before plotting two conditions together, confirm the runs are directly comparable.

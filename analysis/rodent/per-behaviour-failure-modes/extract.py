@@ -898,7 +898,9 @@ def assert_per_clip_matches_aggregate(clips: pd.DataFrame, data: pd.DataFrame) -
 ACTUATOR_BOUNDARY = -0.05
 
 
-def assert_artifact_actuator(clips: pd.DataFrame, runs: pd.DataFrame) -> str:
+def assert_artifact_actuator(frame: pd.DataFrame, *, label: str,
+                             cost_col: str = "rtps_control_cost",
+                             dataset: str | None = "old_eval") -> str:
     """Assert each artifact was simulated with the actuator the run actually trained on.
 
     This exists because of a near-miss on 2026-09-23. ``7w26do00``'s checkpoint
@@ -917,16 +919,15 @@ def assert_artifact_actuator(clips: pd.DataFrame, runs: pd.DataFrame) -> str:
     and it works on artifacts produced before the ``resolved.torque_actuators`` stamp
     existed.
     """
-    claimed = runs.set_index("wandb_id")["mode"] if "mode" in runs else None
-    modes = clips.groupby("wandb_id", observed=True)["mode"].first()
-    cost = clips[clips.dataset == "old_eval"].groupby(
-        "wandb_id", observed=True)["rtps_control_cost"].mean()
+    sub = frame if dataset is None else frame[frame.dataset == dataset]
+    modes = sub.groupby("wandb_id", observed=True)["mode"].first()
+    cost = sub.groupby("wandb_id", observed=True)[cost_col].mean()
     joined = pd.concat([modes.rename("claimed"), cost.rename("cost")], axis=1).dropna()
     joined["implied"] = np.where(joined.cost > ACTUATOR_BOUNDARY, "torque", "position")
     bad = joined[joined.claimed != joined.implied]
     if len(bad):
         raise SystemExit(
-            "an eval artifact was simulated with the wrong actuator -- its control cost "
+            f"a {label} artifact was simulated with the wrong actuator -- its control cost "
             "per alive step does not match the actuator the run trained with:\n"
             + bad.to_string()
             + "\n\nThe run's `env_params.torque_actuators` in the index is authoritative; "
@@ -937,7 +938,7 @@ def assert_artifact_actuator(clips: pd.DataFrame, runs: pd.DataFrame) -> str:
     tor = joined.loc[joined.implied == "torque", "cost"]
     margin = (f"position {pos.min():.4f}..{pos.max():.4f}, "
               f"torque {tor.min():.4f}..{tor.max():.4f}") if len(pos) and len(tor) else "n/a"
-    return (f"artifact actuator matches the trained actuator for all {len(joined)} runs "
+    return (f"{label}: actuator matches the trained actuator for all {len(joined)} runs "
             f"(control cost per alive step: {margin}; boundary {ACTUATOR_BOUNDARY})")
 
 
@@ -1143,7 +1144,7 @@ def main() -> None:
                                   ignore_index=True)
         verdicts.append(assert_clips_are_paired(clips))
         verdicts.append(assert_per_clip_matches_aggregate(clips, df))
-        verdicts.append(assert_artifact_actuator(clips, runs))
+        verdicts.append(assert_artifact_actuator(clips, label="per-clip eval"))
         behaviour = build_behaviour_rows(clips).sort_values(
             ["condition", "wandb_id", "dataset", "level", "behaviour"],
             ignore_index=True)
@@ -1163,6 +1164,18 @@ def main() -> None:
             failure_rows.extend(fa)
         frames = pd.DataFrame(frame_rows).sort_values(
             ["condition", "wandb_id", "behaviour"], ignore_index=True)
+        # The traces are a *separate* offline rebuild from the per-clip evals, reading the
+        # same checkpoint config, so they need the same physical check rather than
+        # inheriting the evals' verdict. Weighted by alive time so the per-behaviour rows
+        # aggregate back to a per-run control cost.
+        weighted = frames.assign(_w=frames.alive_steps * frames.rtps_control_cost)
+        per_run = (weighted.groupby("wandb_id", observed=True)
+                   .apply(lambda g: g._w.sum() / g.alive_steps.sum(),
+                          include_groups=False).rename("rtps_control_cost").reset_index())
+        per_run = per_run.merge(
+            frames.groupby("wandb_id", observed=True)["mode"].first().reset_index(),
+            on="wandb_id")
+        verdicts.append(assert_artifact_actuator(per_run, label="trace", dataset=None))
         failures = pd.DataFrame(failure_rows).sort_values(
             ["condition", "wandb_id", "clip_index"], ignore_index=True)
 

@@ -1,0 +1,32 @@
+# Caption track for the per-behaviour-failure-modes collage, drawn on the
+# reference tile by video_editing/make_collage.py. Half-open, clip-local frame
+# ranges at 50 fps. Written by make_video.py from behaviour_labels_frames.npz
+# after a 25-frame mode filter -- a DISPLAY smoothing. Every
+# number in report.md uses the raw per-frame labels, never this file.
+clip,start_frame,end_frame,coarse,text
+0,0,244,rear,Rearing
+0,244,1121,still,Still / prone
+0,1121,1237,rear,Rearing
+0,1237,1422,still,Still / prone
+0,1422,1500,locomote,Locomotion
+1,0,58,locomote,Locomotion
+1,58,446,rear,Rearing
+1,446,657,locomote,Locomotion
+1,657,909,rear,Rearing
+1,909,1023,locomote,Locomotion
+1,1023,1401,still,Still / prone
+1,1401,1500,locomote,Locomotion
+2,0,70,still,Still / prone
+2,70,549,locomote,Locomotion
+2,549,624,still,Still / prone
+2,624,649,locomote,Locomotion
+2,649,1266,still,Still / prone
+2,1266,1346,rear,Rearing
+2,1346,1414,locomote,Locomotion
+2,1414,1500,still,Still / prone
+3,0,60,locomote,Locomotion
+3,60,168,still,Still / prone
+3,168,457,locomote,Locomotion
+3,457,1129,still,Still / prone
+3,1129,1257,rear,Rearing
+3,1257,1500,groom,Grooming

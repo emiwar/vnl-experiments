@@ -30,6 +30,7 @@ Run:
 """
 
 import argparse
+import csv
 import json
 import math
 from pathlib import Path
@@ -42,9 +43,16 @@ from vnl_experiments.video_editing.hq_video import HQVideoWriter
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVAL_DIR = REPO_ROOT / "eval_videos"
 ARTIFACT_VIDEO_DIR = REPO_ROOT / "artifacts" / "video"
+ANALYSIS_DIR = REPO_ROOT / "analysis"
 
 # Default artifact video spec: see _artifact for what it pins down.
 VIDEO_SPEC = "vid4c-67714d32"
+
+# The producer-v3 spec of the same four clips (v3 stopped truncating sub-1.0 net
+# params, so the sampled latent -- and hence the actions -- differ slightly from
+# v2; see VideoProducer's docstring). Renders keyed by this spec cannot be mixed
+# with VIDEO_SPEC ones in a grid, because they are different simulations.
+VIDEO_SPEC_V3 = "vid4c-3929eb92"
 
 # Raw Camera-4 footage for new-eval clips 0-3, built by extract_raw_eval_video.py.
 # Same eval h5 (eval_clips_32x30s.h5) and frame count (6075) as both the legacy
@@ -159,6 +167,32 @@ PRESETS = {
              (_artifact("x1wjdvt9"), "200ms delay")],        # delay20_eff20_nodetach-20260813-070304
         ],
     },
+    # --- position servo without proprioception, vs a reward-matched control ---
+    # analysis/rodent/per-behaviour-failure-modes. Three runs whose old_eval means
+    # sit within 1.5 % of each other, so anything visible here is a difference the
+    # mean does not carry. Clip order is the rendered one (`sort_clips: none`) so
+    # the four clips map onto that report's table, and the reference tile carries
+    # the MotionMapper behaviour caption -- see `video_captions.csv` there, which
+    # is also what documents the smoothing. Built by that folder's `make_video.py`,
+    # which checks the artifacts before calling this; prefer running that.
+    "noproprio_vs_delay10": {
+        "output": EVAL_DIR / "collage_2x2_noproprio_vs_delay10.mp4",
+        "trim": True,
+        "sort_clips": "none",
+        "mark_deaths": True,
+        "captions": (ANALYSIS_DIR / "rodent" / "per-behaviour-failure-modes"
+                     / "video_captions.csv"),
+        "caption_cell": (0, 0),
+        "grid": [
+            [REFERENCE,
+             (_artifact("16jfo5vu", VIDEO_SPEC_V3),
+              "Position, all inputs")],                       # delay0_eff0-job43322478
+            [(_artifact("rfoe9wu2", VIDEO_SPEC_V3),
+              "Position, no proprioception"),
+             (_artifact("u3lywvaj", VIDEO_SPEC_V3),
+              "Torque, proprioception 100 ms late")],
+        ],
+    },
 }
 DEFAULT_PRESET = "fm_nodetach"
 
@@ -174,6 +208,13 @@ FADE_FRAMES = 25
 
 # How long to keep rolling after the last tile dies, before fading to the next clip.
 TAIL_S = 3.0
+
+# Label colours (BGR): white while the episode is running, red once it has ended.
+LIVE_COLOUR = (255, 255, 255)
+DEAD_COLOUR = (90, 90, 235)
+
+# Labels shrink to fit their tile rather than being clipped, down to this floor.
+MIN_LABEL_SCALE = 0.55
 
 # A clip's `done` flag is `terminated OR truncated` (imitation.py:210), and
 # truncation fires a few frames short of the clip end (_last_valid_frame). So a
@@ -221,7 +262,9 @@ def build_plan(grid, order_stats, tail_s: float, sort_by: str, fps: int):
     Ordering: clips are sorted easiest-first by the mean over ``order_stats`` of
     either per-clip lifetime or per-clip reward. ``order_stats`` is passed in
     separately from the grid so sibling collages (e.g. the two arms) can share one
-    ordering and stay comparable clip-for-clip.
+    ordering and stay comparable clip-for-clip. ``sort_by="none"`` keeps the
+    rendered order, which is what a collage whose clips are described one by one
+    in a report wants -- reordering them silently would break that mapping.
     """
     tile_stats = _cell_stats(grid)
     if not tile_stats:
@@ -232,14 +275,16 @@ def build_plan(grid, order_stats, tail_s: float, sort_by: str, fps: int):
     horizon_s = clip_frames / fps
     tail = round(tail_s * fps)
 
-    key = {"lifetime": "time_alive_s", "reward": "total_reward"}[sort_by]
-    difficulty = {
+    key = {"lifetime": "time_alive_s", "reward": "total_reward"}.get(sort_by)
+    difficulty = {} if key is None else {
         c: sum(st["per_clip"][c][key] for st in order_stats) / len(order_stats)
         for c in range(n_clips)
     }
+    order = (list(range(n_clips)) if key is None
+             else sorted(range(n_clips), key=lambda c: -difficulty[c]))  # easiest 1st
 
     plan = []
-    for c in sorted(range(n_clips), key=lambda c: -difficulty[c]):  # easiest first
+    for c in order:
         per_clip = [st["per_clip"][c] for st in tile_stats]
         if all(_fell(pc, horizon_s) for pc in per_clip):
             last_death = max(pc["time_alive_s"] for pc in per_clip)
@@ -247,21 +292,108 @@ def build_plan(grid, order_stats, tail_s: float, sort_by: str, fps: int):
         else:
             n = clip_frames
         plan.append((c, n))
-        print(f"  clip {c}: {sort_by} {difficulty[c]:8.2f} -> {n:>4} frames "
+        rank = "" if key is None else f"{sort_by} {difficulty[c]:8.2f} "
+        print(f"  clip {c}: {rank}-> {n:>4} frames "
               f"({n / fps:5.1f}s){'' if n < clip_frames else '  [full]'}")
     return plan
 
 
-def draw_label(tile: np.ndarray, text: str) -> None:
-    """Draw a label with a translucent dark backing box (top-left, in place)."""
-    font, scale, thick = cv2.FONT_HERSHEY_SIMPLEX, 1.0, 2
-    (tw, th), base = cv2.getTextSize(text, font, scale, thick)
+def draw_label(tile: np.ndarray, text: str, *, colour=LIVE_COLOUR,
+               corner: str = "top", scale: float = 1.0) -> None:
+    """Draw a label with a translucent dark backing box (in place).
+
+    ``corner`` is ``"top"`` (the tile's own name) or ``"bottom"`` (the caption
+    track), so the two never collide.
+
+    ``scale`` is shrunk until the text fits the tile, because the text is not fixed:
+    a death mark appends to a label at run time, and silently clipping *that* would
+    hide the one word the frame is there to show.
+    """
+    font, thick = cv2.FONT_HERSHEY_SIMPLEX, 2
     pad = 8
-    x, y = 12, 12 + th
+    while True:
+        (tw, th), base = cv2.getTextSize(text, font, scale, thick)
+        if tw + 2 * pad + 12 <= tile.shape[1] or scale <= MIN_LABEL_SCALE:
+            break
+        scale -= 0.05
+    x = 12
+    y = 12 + th if corner == "top" else tile.shape[0] - 12 - base
     box = tile[y - th - pad: y + base + pad, x - pad: x + tw + pad]
     if box.size:  # blend a dark rectangle behind the text for legibility
         box[:] = (0.35 * box).astype(np.uint8)
-    cv2.putText(tile, text, (x, y), font, scale, (255, 255, 255), thick, cv2.LINE_AA)
+    cv2.putText(tile, text, (x, y), font, scale, colour, thick, cv2.LINE_AA)
+
+
+def read_captions(path: Path) -> dict[int, list[tuple[int, int, str]]]:
+    """Read ``clip,start_frame,end_frame,text`` caption segments, grouped by clip.
+
+    Frame ranges are half-open and **clip-local**, so the file does not depend on
+    the order the collage happens to play the clips in, and rows may be sparse: a
+    frame no segment covers simply gets no caption. ``#`` comment lines are
+    skipped, which is where the owning analysis explains what the text means.
+    """
+    segments: dict[int, list[tuple[int, int, str]]] = {}
+    with open(path, newline="") as fh:
+        rows = csv.DictReader(line for line in fh if not line.startswith("#"))
+        for row in rows:
+            segments.setdefault(int(row["clip"]), []).append(
+                (int(row["start_frame"]), int(row["end_frame"]), row["text"]))
+    return segments
+
+
+class Overlay:
+    """Per-frame annotations drawn on top of the tiles.
+
+    Two independent things, both optional and both driven by files that already
+    sit beside the videos, so this module stays ignorant of what it is labelling:
+
+      * **captions** -- a segment CSV (:func:`read_captions`) drawn bottom-left on
+        one designated cell, normally the reference tile, since a caption
+        describing the *reference* animal applies to every tile at once.
+      * **death marks** -- with ``auto_reset=False`` a terminated episode keeps
+        being simulated, so a dead tile flails on and is otherwise
+        indistinguishable from a live one. Each simulated cell's ``.stats.json``
+        says when it fell (:func:`_fell`, so a truncation at the clip end does not
+        count), and from that frame on its label turns red and says so.
+    """
+
+    def __init__(self, grid, *, captions=None, caption_cell=None,
+                 mark_deaths: bool = False, fps: int = FPS,
+                 clip_frames: int = CLIP_FRAMES):
+        self.captions = captions or {}
+        self.caption_cell = tuple(caption_cell) if caption_cell else None
+        self.fps = fps
+        self.deaths: dict[tuple[int, int], list[int | None]] = {}
+        if not mark_deaths:
+            return
+        horizon_s = clip_frames / fps
+        for r, row in enumerate(grid):
+            for c, cell in enumerate(row):
+                stats = None if cell is None else _load_stats(cell[0])
+                if stats is None:
+                    continue  # the reference tile, or a legacy render with no sidecar
+                self.deaths[(r, c)] = [
+                    round(pc["time_alive_s"] * fps) if _fell(pc, horizon_s) else None
+                    for pc in stats["per_clip"]]
+
+    def label(self, r: int, c: int, text: str, clip, frame: int):
+        """``(text, colour)`` for this tile, reddened once its episode has ended."""
+        deaths = self.deaths.get((r, c))
+        if deaths is None or clip is None or clip >= len(deaths):
+            return text, LIVE_COLOUR
+        death = deaths[clip]
+        if death is None or frame < death:
+            return text, LIVE_COLOUR
+        return f"{text}  -  fell at {death / self.fps:.1f} s", DEAD_COLOUR
+
+    def caption(self, r: int, c: int, clip, frame: int):
+        """The caption for this tile at this frame, or None."""
+        if self.caption_cell != (r, c) or clip is None:
+            return None
+        for start, end, text in self.captions.get(clip, ()):
+            if start <= frame < end:
+                return text
+        return None
 
 
 def open_caps(grid):
@@ -283,8 +415,13 @@ def open_caps(grid):
     return caps, min(counts)
 
 
-def compose(grid, caps, tile_w, tile_h, out_w, out_h):
-    """Read one frame from every cap and lay the labelled tiles out on a canvas."""
+def compose(grid, caps, tile_w, tile_h, out_w, out_h,
+            overlay: "Overlay | None" = None, clip=None, clip_frame: int = 0):
+    """Read one frame from every cap and lay the labelled tiles out on a canvas.
+
+    ``clip`` / ``clip_frame`` locate the composed frame in *clip-local* terms,
+    which is what ``overlay`` needs; they are ignored when there is no overlay.
+    """
     black = np.zeros((tile_h, tile_w, 3), np.uint8)
     canvas = np.zeros((out_h, out_w, 3), np.uint8)
     for r, row in enumerate(grid):
@@ -298,13 +435,24 @@ def compose(grid, caps, tile_w, tile_h, out_w, out_h):
             else:
                 tile = cv2.resize(frame, (tile_w, tile_h),
                                   interpolation=cv2.INTER_AREA)
-                draw_label(tile, cell[1])
+                text, colour = (cell[1], LIVE_COLOUR) if overlay is None else (
+                    overlay.label(r, c, cell[1], clip, clip_frame))
+                draw_label(tile, text, colour=colour)
+                caption = None if overlay is None else (
+                    overlay.caption(r, c, clip, clip_frame))
+                if caption is not None:
+                    draw_label(tile, caption, corner="bottom", scale=0.9)
             canvas[r * tile_h:(r + 1) * tile_h, c * tile_w:(c + 1) * tile_w] = tile
     return canvas
 
 
 def make_collage(grid, output: Path, tile_w: int, tile_h: int, fps: int,
-                 plan=None) -> None:
+                 plan=None, overlay: "Overlay | None" = None) -> list:
+    """Write the collage; return its timeline as ``[(clip_idx, out_start, n)]``.
+
+    The returned map is what a report needs to point at a moment in the output
+    file, since trimming and reordering mean output frame != source frame.
+    """
     rows, cols = len(grid), max(len(r) for r in grid)
     caps, n_frames = open_caps(grid)
     counts = [int(c.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -319,10 +467,17 @@ def make_collage(grid, output: Path, tile_w: int, tile_h: int, fps: int,
     print(f"Collage {rows}x{cols} -> {out_w}x{out_h}, {total} frames @ {fps} fps")
     writer = HQVideoWriter(output, out_w, out_h, fps, pix_fmt="bgr24")
 
+    timeline = []
     if plan is None:
         # Stream the inputs straight through, fades and clip order as rendered.
-        for _ in range(n_frames):
-            writer.write(compose(grid, caps, tile_w, tile_h, out_w, out_h))
+        period = CLIP_FRAMES + FADE_FRAMES
+        timeline = [(c, c * period, min(CLIP_FRAMES, n_frames - c * period))
+                    for c in range((n_frames + period - 1) // period)]
+        for i in range(n_frames):
+            clip, within = divmod(i, period)
+            # The fade frames repeat the clip's last frame; hold its annotations.
+            writer.write(compose(grid, caps, tile_w, tile_h, out_w, out_h,
+                                 overlay, clip, min(within, CLIP_FRAMES - 1)))
     else:
         # Play the planned clips in order, seeking each input to the clip start
         # (verified frame-exact on these files) and fading between segments.
@@ -333,8 +488,10 @@ def make_collage(grid, output: Path, tile_w: int, tile_h: int, fps: int,
                     if cap is not None:
                         cap.set(cv2.CAP_PROP_POS_FRAMES, start)
             canvas = None
-            for _ in range(count):
-                canvas = compose(grid, caps, tile_w, tile_h, out_w, out_h)
+            timeline.append((clip_idx, writer.n_written, count))
+            for within in range(count):
+                canvas = compose(grid, caps, tile_w, tile_h, out_w, out_h,
+                                 overlay, clip_idx, within)
                 writer.write(canvas)
             # Fade the composed canvas (labels included) between clips, matching
             # the per-tile fade the renderer bakes in at clip boundaries.
@@ -348,6 +505,7 @@ def make_collage(grid, output: Path, tile_w: int, tile_h: int, fps: int,
             if cap is not None:
                 cap.release()
     print(f"Wrote {output}")
+    return timeline
 
 
 def main() -> None:
@@ -366,6 +524,8 @@ def main() -> None:
                    help="seconds to keep rolling after the last tile dies")
     p.add_argument("--sort-clips", choices=["none", "lifetime", "reward"],
                    default=None, help="order clips easiest-first by this metric")
+    p.add_argument("--no-overlay", action="store_true",
+                   help="drop the preset's captions and death marks")
     args = p.parse_args()
 
     preset = PRESETS[args.preset]
@@ -389,13 +549,19 @@ def main() -> None:
         if any(st is None for st in order_stats):
             raise FileNotFoundError("missing a .stats.json sidecar for clip ordering")
         print(f"Plan (trim={trim}, sort_clips={sort_by}, tail={args.tail_s}s):")
-        plan = build_plan(grid, order_stats,
-                          args.tail_s if trim else 0.0,
-                          sort_by if sort_by != "none" else "lifetime", args.fps)
+        plan = build_plan(grid, order_stats, args.tail_s if trim else 0.0,
+                          sort_by, args.fps)
         if not trim:  # ordering only: keep every clip whole
             plan = [(c, CLIP_FRAMES) for c, _ in plan]
 
-    make_collage(grid, output, args.tile_w, args.tile_h, args.fps, plan)
+    overlay = None
+    if not args.no_overlay and (preset.get("captions") or preset.get("mark_deaths")):
+        captions = preset.get("captions")
+        overlay = Overlay(grid, mark_deaths=preset.get("mark_deaths", False),
+                          captions=read_captions(captions) if captions else None,
+                          caption_cell=preset.get("caption_cell"), fps=args.fps)
+
+    make_collage(grid, output, args.tile_w, args.tile_h, args.fps, plan, overlay)
 
 
 if __name__ == "__main__":
