@@ -1,0 +1,13 @@
+Coverage for 63 runs in walker-servo-x-forward-model
+
+index  (spec_id=-): 63/63
+    fm_servo                       12/12  
+    fm_torque                      18/18  
+    mlp_servo                      15/15  
+    mlp_torque                     18/18  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 63/63
+    fm_servo                       12/12  
+    fm_torque                      18/18  
+    mlp_servo                      15/15  
+    mlp_torque                     18/18  

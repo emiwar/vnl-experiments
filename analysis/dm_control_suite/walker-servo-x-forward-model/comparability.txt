@@ -1,0 +1,402 @@
+======================================================================
+Group condition='fm_servo'  (n=12)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='fm_torque'  (n=18)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='mlp_servo'  (n=15)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='mlp_torque'  (n=18)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=63)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+--- DESIGN AXES: expected to vary; see report.md ------------------
+======================================================================
+Group condition='fm_servo'  (n=12)
+======================================================================
+  env_params.servo_kp               : [64.0]
+  env_params.servo_center           : ['range']
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [51, 52, 53]  *** VARIES ***
+  config.seed                       : [51, 52, 53]  *** VARIES ***
+
+======================================================================
+Group condition='fm_torque'  (n=18)
+======================================================================
+  env_params.servo_kp               : [0.0]
+  env_params.servo_center           : ['qpos0']
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [43, 46, 47, 48]  *** VARIES ***
+  config.seed                       : [12345, 46, 47, 48]  *** VARIES ***
+
+======================================================================
+Group condition='mlp_servo'  (n=15)
+======================================================================
+  env_params.servo_kp               : [64.0]
+  env_params.servo_center           : ['range']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 5.0, 7.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [51, 52, 53]  *** VARIES ***
+  config.seed                       : [51, 52, 53]  *** VARIES ***
+
+======================================================================
+Group condition='mlp_torque'  (n=18)
+======================================================================
+  env_params.servo_kp               : [0.0]
+  env_params.servo_center           : ['qpos0']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [43, 46, 47]  *** VARIES ***
+  config.seed                       : [12345, 46, 47]  *** VARIES ***
+
+======================================================================
+All runs  (n=63)
+======================================================================
+  env_params.servo_kp               : [0.0, 64.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0', 'range']  *** VARIES ***
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [43, 46, 47, 48, 51, 52, 53]  *** VARIES ***
+  config.seed                       : [12345, 46, 47, 48, 51, 52, 53]  *** VARIES ***
+
+##############################################################################
+# DESIGN GRID
+##############################################################################
+runs per arm x delay
+delay       0   2   3   5   7   10  12  15  20  25
+condition                                         
+fm_servo     1   1   1   3   1   1   1   1   1   1
+fm_torque    1   1   2   2   3   2   2   1   2   2
+mlp_servo    2   2   0   3   2   2   2   1   1   0
+mlp_torque   1   1   2   3   2   3   1   1   2   2
+
+  delays with all four arms present : [0, 2, 5, 7, 10, 12, 15, 20]
+  empty cells                       : [('mlp_servo', 3), ('mlp_servo', 25)]
+  n=1   cells                       : 18 of 40
+
+  Only the complete delays support an interaction readout; a hole means
+  one corner of the 2x2 was never run, not that it failed.
+
+##############################################################################
+# WITHIN-CELL SPREAD
+##############################################################################
+reward_final by cell
+                  count        mean         min         max      spread
+condition  delay                                                       
+fm_servo   0          1  979.744568  979.744568  979.744568    0.000000
+           2          1  980.084794  980.084794  980.084794    0.000000
+           3          1  979.748840  979.748840  979.748840    0.000000
+           5          3  979.298007  978.631259  980.411133    1.779874
+           7          1  977.643610  977.643610  977.643610    0.000000
+           10         1  973.462197  973.462197  973.462197    0.000000
+           12         1  968.776678  968.776678  968.776678    0.000000
+           15         1  964.336276  964.336276  964.336276    0.000000
+           20         1  961.937661  961.937661  961.937661    0.000000
+           25         1  956.125255  956.125255  956.125255    0.000000
+fm_torque  0          1  979.875466  979.875466  979.875466    0.000000
+           2          1  981.770269  981.770269  981.770269    0.000000
+           3          2  979.095967  979.052729  979.139205    0.086476
+           5          2  977.992719  977.551702  978.433735    0.882032
+           7          3  975.334297  974.507130  976.087884    1.580754
+           10         2  969.976087  969.347877  970.604296    1.256419
+           12         2  962.839754  959.482819  966.196689    6.713870
+           15         1  962.615137  962.615137  962.615137    0.000000
+           20         2  952.720618  946.046741  959.394495   13.347754
+           25         2  850.459622  754.780073  946.139172  191.359099
+mlp_servo  0          2  980.137029  979.454046  980.820013    1.365967
+           2          2  977.430240  976.753296  978.107183    1.353887
+           5          3  969.995432  967.762301  973.550776    5.788474
+           7          2  963.252730  963.118397  963.387063    0.268666
+           10         2  951.700603  949.951705  953.449502    3.497797
+           12         2  956.416637  943.973439  968.859836   24.886397
+           15         1  859.099515  859.099515  859.099515    0.000000
+           20         1  812.007208  812.007208  812.007208    0.000000
+mlp_torque 0          1  980.432351  980.432351  980.432351    0.000000
+           2          1  976.746332  976.746332  976.746332    0.000000
+           3          2  972.434803  972.383795  972.485812    0.102018
+           5          3  968.989019  968.779883  969.159215    0.379332
+           7          2  966.854338  966.341211  967.367465    1.026254
+           10         3  942.878817  941.478194  945.185172    3.706978
+           12         1  931.956356  931.956356  931.956356    0.000000
+           15         1  748.727397  748.727397  748.727397    0.000000
+           20         2  577.058044  555.357870  598.758217   43.400347
+           25         2  548.774747  515.462724  582.086771   66.624047
+
+  cells with >1 seed: 20 of 38
+  largest spread among them: 191.4 reward
+  median spread            : 1.7 reward
+
+  Variance is strongly regime-dependent here -- a solved cell's seeds
+  agree to a few reward, a transitioning one's can differ by hundreds --
+  so read a comparison against the spread in *its own* regime, not the
+  maximum.
+
+##############################################################################
+# THE 2x2
+##############################################################################
+reward_final (reward); cells are means over seeds, '-' = some run in the cell never reached the criterion
+ delay    mlp_tq    mlp_sv     fm_tq     fm_sv |  servo|mlp   servo|fm  interaction
+     0     980.4     980.1     979.9     979.7 |       -0.3       -0.1         +0.2
+     2     976.7     977.4     981.8     980.1 |       +0.7       -1.7         -2.4
+     3     972.4         -     979.1     979.7 |          -          -            -
+     5     969.0     970.0     978.0     979.3 |       +1.0       +1.3         +0.3
+     7     966.9     963.3     975.3     977.6 |       -3.6       +2.3         +5.9
+    10     942.9     951.7     970.0     973.5 |       +8.8       +3.5         -5.3
+    12     932.0     956.4     962.8     968.8 |      +24.5       +5.9        -18.5
+    15     748.7     859.1     962.6     964.3 |     +110.4       +1.7       -108.7
+    20     577.1     812.0     952.7     961.9 |     +234.9       +9.2       -225.7
+    25     548.8         -     850.5     956.1 |          -          -            -
+
+steps_to_900 (e6 steps); cells are means over seeds, '-' = some run in the cell never reached the criterion
+ delay    mlp_tq    mlp_sv     fm_tq     fm_sv |  servo|mlp   servo|fm  interaction
+     0      38.6      62.5      57.8      67.3 |      +24.0       +9.6        -14.4
+     2      62.4      98.5      48.2      67.3 |      +36.1      +19.2        -17.0
+     3     148.9         -      62.5      81.8 |          -          -            -
+     5     102.5     635.4      67.3     120.1 |     +532.9      +52.8       -480.1
+     7     180.1      86.6     120.1     110.6 |      -93.5       -9.5        +84.0
+    10     563.4     398.6     172.9      91.4 |     -164.7      -81.5        +83.3
+    12     753.7     283.4     213.7      81.8 |     -470.4     -131.9       +338.5
+    15         -         -     192.2      81.8 |          -          -            -
+    20         -         -     297.7     360.0 |          -          -            -
+    25         -         -         -     825.8 |          -          -            -
+
+  Read the interaction column as: how much the servo buys *on top of* a
+  forward model, minus how much it buys without one. Strongly negative means
+  the two are substitutes; near zero means they add; positive means they
+  compound. Most cells are n=1, so compare against the seed spread above
+  before reading a sign.
+
+##############################################################################
+# REGRIDDING COST
+##############################################################################
+regridding cost on steps_to_900 (common grid minus native cadence)
+  runs with both readouts : 55  (18 fine cadence, 37 coarse)
+  all                     : mean +8.33e6  median +9.58e6  range [+0.00e6, +16.22e6]
+  fine cadence (6e5)      : mean +11.03e6  median +10.81e6  range [+6.64e6, +16.22e6]
+  coarse cadence (4.8e6)  : mean +7.02e6  median +4.92e6  range [+0.00e6, +14.50e6]
+
+  The number that matters is the *difference* between those two groups,
+  because cadence is confounded with the manipulation: every servo run is
+  coarse and most torque runs are fine. It is +4.01e6 steps --
+  i.e. under the native definition the torque arms' crossings would sit
+  that much earlier *relative to* the servo arms than they do here.
+  Against a 1e9-step budget and arm differences of 1e8-5e8 steps that is
+  a percent-scale correction, but it points the wrong way if left out.
+
+  The two definitions also differ in window (2.4e7 vs 1e7), and a
+  wider trailing window lags a rising curve, so the shift above is
+  the *combined* cost of matching both siblings' conventions rather
+  than grid granularity alone.
+
+##############################################################################
+# SERVO IDENTITY
+##############################################################################
+servo runs: 27   torque runs: 36
+per-joint servo physics, over every servo run (servo_kp = 64)
+   right_hip    kp= 6111.550  t_settle=  97.8 ms  dead_ctrl=0.000
+   right_knee   kp= 2444.620  t_settle=  72.4 ms  dead_ctrl=0.000
+   right_ankle  kp= 1629.747  t_settle=  17.6 ms  dead_ctrl=0.000
+   left_hip     kp= 6111.550  t_settle=  97.8 ms  dead_ctrl=0.000
+   left_knee    kp= 2444.620  t_settle=  72.4 ms  dead_ctrl=0.000
+   left_ankle   kp= 1629.747  t_settle=  17.6 ms  dead_ctrl=0.000
+
+   slowest joint is right_hip, t_settle = 97.8 ms; one delay step is 25 ms
+     delay  2 =  50 ms   servo SLOWER than the loop
+     delay  3 =  75 ms   servo SLOWER than the loop
+     delay  5 = 125 ms   servo faster than the loop
+     delay  7 = 175 ms   servo faster than the loop
+     delay 10 = 250 ms   servo faster than the loop
+     delay 12 = 300 ms   servo faster than the loop
+     delay 15 = 375 ms   servo faster than the loop
+     delay 20 = 500 ms   servo faster than the loop
+     delay 25 = 625 ms   servo faster than the loop

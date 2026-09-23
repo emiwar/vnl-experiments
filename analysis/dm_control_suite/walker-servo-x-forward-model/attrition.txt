@@ -1,0 +1,100 @@
+Is the missing-run pattern correlated with the manipulation?
+
+The problem
+-----------
+``extract.py`` requires a run to have *reached* its 1e9 budget, not merely to be labelled
+``finished`` (README §6: ``state == "finished"`` silently drops runs that trained fully and
+died in the final eval, so the gate is on the property meant). Seven candidate runs fail
+that gate, and they are **all in one arm** -- ``fm_servo``, seed 53, delays 2 to 20.
+
+That is precisely the pattern README §6 warns about: *"check whether the runs missing the
+final budget are correlated with the swept variable, since if they are, that panel cannot
+be drawn where it is most needed."* A high-stiffness servo is also exactly the condition
+``envs/servo_control.md`` §3.6 predicts might destabilise training, and a diverged run in
+this project dies rather than finishing. So "all seven missing runs are servo runs" has a
+reading in which the analysis is broken, and it has to be ruled out rather than waved at.
+
+The check
+---------
+Throughput, which is independent of the manipulation and of the reward. A run killed by a
+wall clock on a contended node and a run killed by its own physics look nothing alike in
+``throughput/train_sps``: the first is uniformly slow from the start, the second runs at
+full speed and then stops.
+
+Also reported, because each would point elsewhere if it disagreed:
+
+* **the step each run reached** -- a wall-clock kill lands wherever the clock ran out, so a
+  fixed step across delays that differ 10-fold in difficulty is a scheduling fact, not a
+  learning one;
+* **the wall time each run used** -- identical across the seven is a limit, not a crash;
+* **the node, and what *other arms* achieved on it** -- this is the decisive one. If a
+  torque run on the same host is just as slow, the slowdown cannot be the servo;
+* **delay** -- the swept variable. If the failures piled up at one end of it, no throughput
+  argument would save the panel.
+
+Verdict: the divergence question is settled separately and directly by
+``divergence_check.py``, which reads ``done_rate - truncation_rate`` on the runs that *are*
+in the cohort. This script is about the ones that are not.
+
+==============================================================================
+candidate runs (cohort gates except reached-budget): 70
+  reached 1e9        : 63
+  did not reach 1e9  : 7
+
+attrition per arm x delay
+net_params.delay_k  2.0   5.0   7.0   10.0  12.0  15.0  20.0
+arm                                                         
+fm_servo               1     1     1     1     1     1     1
+
+attrition per arm, against how many candidates that arm had
+  fm_servo   7 of 19
+  fm_torque  0 of 18
+  mlp_servo  0 of 15
+  mlp_torque 0 of 18
+
+==============================================================================
+the runs that did not reach the budget
+==============================================================================
+  id         arm        delay  seed         step      sps  hours  host
+  o4r3683q   fm_servo       2    53    452444160    54099    2.9  holygpu8a29104.rc.fas.harvard.edu
+  6pjllp8z   fm_servo       5    53    450232320    53843    2.9  holygpu8a29104.rc.fas.harvard.edu
+  vzxzz0q0   fm_servo       7    53    452689920    54313    2.9  holygpu8a25404.rc.fas.harvard.edu
+  g7y7z8bn   fm_servo      10    53    450232320    53708    2.9  holygpu8a25404.rc.fas.harvard.edu
+  w1gsuvxg   fm_servo      12    53    454164480    54030    2.9  holygpu8a25404.rc.fas.harvard.edu
+  oh99hxac   fm_servo      15    53    449740800    53481    2.9  holygpu8a25404.rc.fas.harvard.edu
+  d651kx40   fm_servo      20    53    450232320    53373    2.9  holygpu8a25404.rc.fas.harvard.edu
+
+  throughput of the runs that DID reach the budget: median 219003 sps, range [53597, 365020]
+  throughput of the runs that did NOT             : median 53843 sps, range [53373, 54313]
+  ratio of medians                                : 4.07x
+  wall time used by the lost runs                 : 2.9-2.9 h
+  step reached by the lost runs                   : 4.497e+08-4.542e+08
+  nodes                                           : ['holygpu8a25404', 'holygpu8a29104']
+
+  every candidate run on those same nodes, whichever arm:
+    id         arm        delay      sps  hours  requeued  reached
+    d651kx40   fm_servo      20    53373    2.9      True  False
+    oh99hxac   fm_servo      15    53481    2.9      True  False
+    nhw49shh   fm_torque      3    53597    6.4      True  True
+    g7y7z8bn   fm_servo      10    53708    2.9      True  False
+    6pjllp8z   fm_servo       5    53843    2.9      True  False
+    w1gsuvxg   fm_servo      12    54030    2.9      True  False
+    o4r3683q   fm_servo       2    54099    2.9      True  False
+    vzxzz0q0   fm_servo       7    54313    2.9      True  False
+    f3hghsrn   fm_servo       3   173658    2.5      True  True
+
+==============================================================================
+BENIGN: the attrition is entirely in one arm (fm_servo) but is explained without reference to
+the manipulation. All seven ran at 5.3-5.4e4 sps against a cohort median of 2.2e+05 -- a 4.1x
+slowdown -- and all stopped after the same wall time at the same step, across 7 different delays. That is a
+wall-clock kill on contended hardware, not a property of the task: a destabilised servo would have run at
+full speed and then died, and would have concentrated at one end of the delay axis rather than spreading
+evenly across it.
+
+The decisive control is a run in a *different arm* on one of the same nodes, at the same throughput:
+  nhw49shh (fm_torque, delay 3, 53597 sps, 6.4 h, requeued) reached 1e9 anyway.
+So the slowdown is the host, and the only thing the seven servo runs lacked was a requeue.
+
+The gap is in `fm_servo`'s seed count, not in its delay coverage: every delay it lost still has one
+`fm_servo` run from an earlier launch.
+==============================================================================

@@ -101,15 +101,28 @@ python -m vnl_experiments.artifacts pull   --kind eval --runs analysis/<q>/runs.
 python -m vnl_experiments.artifacts verify
 ```
 
-### The five kinds
+### The six kinds
 
 | kind | what | cost | where it can run |
 |---|---|---|---|
 | `history` | sampled training curves + throughput, per run | seconds | anywhere (WandB) |
 | `timing` | per-iteration wall clock + the three throughput gauges | seconds | anywhere (WandB) |
 | `eval` | offline re-evaluation on train / `old_eval` / `new_eval` | minutes, GPU | needs a checkpoint |
+| `trace` | per-step rollout traces on one dataset | minutes, 3–10 MB each | needs a checkpoint |
 | `activations` | per-layer unit activations on one dataset | minutes, 1–2 GB each | needs a checkpoint |
 | `video` | rendered rollout mp4 + qpos h5 + stats | minutes, GPU | needs a checkpoint |
+
+`eval` and `trace` are the same rollout at two resolutions, and the boundary between them
+is worth knowing before reaching for one. `eval` reduces each dataset to cross-clip
+`{mean, std}`; with `per_clip=true` in its spec it additionally keeps the `[n_clips]`
+vectors it already computes (reward, lifespan, every termination flag, every reward term,
+all 18 per-body errors, and the clip's behaviour label where the clip set has one) at a
+new `spec_id` and no `VERSION` change. `trace` keeps every *step*: `[n_clips, n_steps]`
+float32 per env metric, plus `reward`, `alive` and `running`. Reach for `trace` only when
+the question is about *when within an episode* something happened — which behaviour the
+reward was earned during, or what the animal was doing at the moment it failed — because
+a 30 s `new_eval` clip spans ~13 behaviours and no per-clip number can describe it.
+Summing a trace over time reproduces the per-clip vectors exactly, which its test asserts.
 
 `history` and `timing` overlap in what they fetch but not in what they are for, and they
 are separate kinds for a mechanical reason, not a stylistic one: WandB's sampled history
