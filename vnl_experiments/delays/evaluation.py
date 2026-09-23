@@ -425,13 +425,161 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key,
     return cuml_reward, lifespan, env_accum, net_accum
 
 
+def _trace_rollout(env, networks, n_clips: int, n_steps: int, key):
+    """:func:`_rollout`, but emitting every step instead of accumulating it.
+
+    Same protocol -- one latched episode per clip, reset at frame 0, every quantity
+    masked by the **pre-step** ``done`` flag -- so post-termination steps are zeroed
+    rather than carrying whatever the physics produced after the body failed. Keeping the
+    mask identical is what makes the trace verifiable: summing it over time reproduces
+    ``_rollout``'s accumulators exactly, which ``TraceTest`` asserts. It also means a
+    zero in the trace is ambiguous on its own -- it may be a genuine zero or a dead step
+    -- which is why the two flags below are emitted alongside.
+
+    **Two flags, because ``_rollout`` uses two.** It masks its metric accumulators with
+    the *pre*-step ``done`` but increments ``lifespan`` from the *post*-step one, so the
+    terminating step contributes to every reward term and error while not counting
+    towards the lifespan. That is the eval's published semantics and is left alone here,
+    but it means one flag cannot reproduce both:
+
+    * ``alive`` = ``1 - pre-step done``: the steps whose values were accumulated. This is
+      the mask a consumer must use on the traced metrics.
+    * ``running`` = ``1 - post-step done``: sums to ``lifespan_steps`` exactly.
+
+    They differ by exactly one step on any clip that terminated. A consumer that wants
+    "reward per alive step" as the eval reports it divides by the ``running`` sum.
+
+    No ``action_noise``: the noise path exists to study robustness through the *aggregate*,
+    and giving traces their own noise axis would multiply the artifact count for a
+    question nothing is asking yet.
+
+    Returns ``(reward, alive, running, metrics)``, each ``[n_steps, n_clips]``.
+    """
+    keys = jax.random.split(key, n_clips)
+    clip_ids = jp.arange(n_clips)
+    env_states = jax.vmap(
+        lambda k, c: env.reset(k, clip_idx=c, start_frame=0)
+    )(keys, clip_ids)
+    env_states = env_states.replace(done=env_states.done.astype(float))
+    net_states = networks.initialize_state(n_clips)
+
+    def mask(done, x):
+        return jp.where(
+            done.reshape(done.shape + (1,) * (x.ndim - 1)), jp.zeros_like(x), x
+        )
+
+    def step(env, networks, carry):
+        env_state, net_state = carry
+        out = networks(net_state, env_state.obs)
+        next_env_state = jax.vmap(env.step)(env_state, out.output.actions)
+        next_env_state = next_env_state.replace(
+            done=jp.logical_or(next_env_state.done, env_state.done).astype(float)
+        )
+        already_done = env_state.done
+        step_reward = jax.tree.reduce(jp.add, next_env_state.reward)
+        ys = (
+            mask(already_done, step_reward),
+            # The accumulator mask: the episode was still running before this step.
+            1.0 - already_done,
+            # The lifespan predicate: still running after it. See the docstring.
+            1.0 - next_env_state.done,
+            jax.tree.map(lambda m: mask(already_done, m), next_env_state.metrics),
+        )
+        return (next_env_state, out.next_state), ys
+
+    step_scan = nnx.scan(
+        functools.partial(step, env),
+        in_axes=(nnx.StateAxes({...: nnx.Carry}), nnx.Carry),
+        out_axes=(nnx.Carry, 0),
+        length=n_steps,
+    )
+    _, (reward, alive, running, metrics) = step_scan(
+        networks, (env_states, net_states))
+    return reward, alive, running, metrics
+
+
+def trace_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
+                  key, limit_clips: int | None = None,
+                  max_steps: int | None = None) -> dict:
+    """Per-step traces for one dataset, as ``{name: [n_clips, n_steps] float32}``.
+
+    The eval record answers "how well did it do on this clip"; a trace answers "what was
+    it doing at this moment", which is the only way to resolve reward or failure by
+    *behaviour* inside a clip that spans several. The 30 s ``new_eval`` clips average 13
+    MotionMapper behaviours each, so a per-clip number there is a mixture.
+
+    Every env metric is traced rather than a chosen subset, for the same reason the
+    per-clip block keeps ``env_accum`` verbatim: the alternative is a whitelist that
+    quietly decides which questions are askable later. In particular ``current_frame`` is
+    traced, so the reference frame -- and hence the behaviour label -- is *read* at each
+    step rather than inferred from ``step * ctrl_dt * mocap_hz``.
+
+    ``max_steps`` truncates the horizon. It is a memory and time knob only and it makes
+    the trace an *incomplete* record of the episode, so a truncated trace must not be
+    pooled with a full one; the producer records it in the artifact's attributes.
+
+    Arrays are clip-major (``[n_clips, n_steps]``) because every consumer iterates clips,
+    and float32 because these are diagnostics, not the published aggregates.
+    """
+    n = n_clips if limit_clips is None else min(n_clips, limit_clips)
+    steps = n_steps if max_steps is None else min(n_steps, max_steps)
+    trace_jit = nnx.jit(_trace_rollout, static_argnums=(0, 2, 3))
+    networks.eval()
+    reward, alive, running, metrics = trace_jit(env, networks, n, steps, key)
+    networks.train()
+
+    out = {
+        "reward": np.asarray(reward, dtype=np.float32).T,
+        "alive": np.asarray(alive, dtype=np.float32).T,
+        "running": np.asarray(running, dtype=np.float32).T,
+    }
+    for name, leaf in metrics.items():
+        arr = np.asarray(leaf, dtype=np.float32)
+        if arr.ndim != 2:
+            # A vector-valued metric would need its own layout decision; none exists
+            # today, and silently flattening one would produce a mislabelled array.
+            raise ValueError(
+                f"metric {name!r} has shape {arr.shape}, expected [n_steps, n_clips]")
+        out[name] = arr.T
+    return out
+
+
 def _mean_std(x) -> dict:
     a = np.asarray(x, dtype=float)
     return {"mean": float(a.mean()), "std": float(a.std())}
 
 
+def _net_per_clip(net_accum: dict, denom: np.ndarray) -> dict:
+    """Alive-mean of each net-metric leaf, per clip: ``{flat name: [n_clips] array}``.
+
+    Split out of :func:`_flatten_net_metrics` so the per-clip block can report the same
+    numbers the aggregate is taken over, rather than a second computation of them.
+    """
+    out = {}
+    for path, leaf in jtu.tree_leaves_with_path(net_accum):
+        name = "/".join(
+            str(getattr(k, "key", getattr(k, "idx", k))) for k in path
+        )
+        per_clip = np.asarray(leaf, dtype=float)
+        # leaf shape [n_clips, ...]; alive-normalise, then flatten any trailing axes so
+        # every entry is one number per clip.
+        per_clip = per_clip / denom.reshape(denom.shape + (1,) * (per_clip.ndim - 1))
+        out[name] = per_clip.reshape(per_clip.shape[0], -1).mean(axis=1)
+    return out
+
+
 def _flatten_net_metrics(net_accum: dict, denom: np.ndarray) -> dict:
-    """Per-clip alive-mean of each net-metric leaf, reduced to a scalar."""
+    """Per-clip alive-mean of each net-metric leaf, reduced to a scalar.
+
+    Deliberately **not** written as ``_net_per_clip(...).mean()``, even though that is
+    what it means. Reducing per clip and then across clips is only exactly equal to
+    reducing the whole array when float addition is associative, which it is not: for a
+    leaf with trailing axes the two differ in the last bit (measured: ~1e-16 relative on
+    a [673, 38] array). Every leaf in practice is one number per clip, where the two
+    agree bit-for-bit -- but "in practice" is not the standard for a value stored in
+    published artifacts that a later record has to be poolable with. So this keeps the
+    original reduction verbatim, and `_net_per_clip` is purely additive.
+    """
     out = {}
     for path, leaf in jtu.tree_leaves_with_path(net_accum):
         name = "/".join(
@@ -446,7 +594,32 @@ def _flatten_net_metrics(net_accum: dict, denom: np.ndarray) -> dict:
 
 def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
                  key, limit_clips: int | None,
-                 action_noise: float | None = None) -> dict:
+                 action_noise: float | None = None,
+                 per_clip: bool = False, clip_names=None) -> dict:
+    """Roll out one latched episode per clip and reduce it to the dataset record.
+
+    ``per_clip`` additionally keeps the ``[n_clips]`` vectors the rollout already returns,
+    under a ``"per_clip"`` key. Three decisions about that block, because the units are
+    the thing a reader will get wrong:
+
+    * ``env`` holds ``env_accum`` **verbatim and unreduced**, i.e. masked episode *sums*.
+      ``terminations/<reason>`` are 0/1 flags (a reason fires only at the terminating
+      step), ``rewards/<term>`` are episode totals, and every error is a per-step sum that
+      must be divided by ``max(lifespan, 1)`` to become a per-step mean. Reducing them
+      here would re-implement the decisions above once per clip and create a second source
+      of truth; emitting the accumulator means the block reconstructs every published
+      aggregate exactly, which is what ``evaluation_test.PerClipTest`` asserts. It also
+      carries the metrics ``_ERROR_KEYS`` filters out -- notably all 18 per-body
+      ``body_errors/<body>`` -- for free.
+    * ``clip_names`` is recorded with the measurement rather than joined on afterwards.
+      The behaviour label of a clip is a property of the clip set the *producer* loaded,
+      and re-deriving it offline and matching by position is the same class of mistake as
+      the 2026-08-18 walker-XML swap: a reconstruction that repairs an input has to record
+      what it chose. ``None`` (the ``new_eval`` set, which carries no labels) is recorded
+      as ``None``, so the absence is stated inside every artifact.
+    * ``flat_summary`` is deliberately **not** extended, so none of this can reach a WandB
+      run summary as a 169-element list.
+    """
     n = n_clips if limit_clips is None else min(n_clips, limit_clips)
     # `action_noise` is static so the `if action_noise` branch in `_rollout`
     # resolves at trace time.
@@ -483,7 +656,7 @@ def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
         if k.startswith("rewards/"):
             reward_terms[k[len("rewards/"):]] = _mean_std(v)  # episode totals
 
-    return {
+    out = {
         "n_clips": int(n),
         "n_steps": int(n_steps),
         "episode_reward": _mean_std(cuml_reward),
@@ -494,6 +667,19 @@ def eval_dataset(env, networks, n_clips: int, n_steps: int, ctrl_dt: float,
         "errors": errors,
         "net_metrics": _flatten_net_metrics(net_accum, denom),
     }
+    if per_clip:
+        out["per_clip"] = {
+            # `_rollout` resets with `clip_ids = jp.arange(n_clips)`, so position *is* the
+            # clip index. Written out anyway, so a consumer never has to assume it.
+            "clip_ids": list(range(n)),
+            "clip_names": (None if clip_names is None
+                           else [str(x) for x in list(clip_names)[:n]]),
+            "episode_reward": cuml_reward.tolist(),
+            "lifespan_steps": lifespan.tolist(),
+            "env": {k: v.tolist() for k, v in env_accum.items()},
+            "net": {k: v.tolist() for k, v in _net_per_clip(net_accum, denom).items()},
+        }
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -548,6 +734,7 @@ def evaluate_networks(
     seed: int = 0,
     limit_clips: int | None = None,
     action_noise: float | None = None,
+    per_clip: bool = False,
 ) -> dict:
     """Evaluate ``nets`` on every dataset and return the full result record.
 
@@ -555,6 +742,10 @@ def evaluate_networks(
 
     ``action_noise`` (see :func:`_rollout`) perturbs the executed action; the
     default of ``None`` is the ordinary noise-free evaluation.
+
+    ``per_clip`` adds a ``per_clip`` block to each dataset -- see :func:`eval_dataset`.
+    The behaviour labels it records come from each dataset's own ``clips`` object, which
+    is the one the rollout actually reset against.
     """
     datasets = build_datasets(
         env_cls, env_config, train_clips=train_clips, test_clips=test_clips,
@@ -577,6 +768,12 @@ def evaluate_networks(
         result["datasets"][ds.name] = eval_dataset(
             env, nets, ds.n_clips, ds.n_steps, ds.ctrl_dt, sub, limit_clips,
             action_noise,
+            per_clip=per_clip,
+            # `getattr`, not `ds.clips.clip_names`: the attribute exists on every
+            # `ReferenceClips` but is `None` for a clip set whose config has no
+            # `snips_order` (the `new_eval` file), and a future clips class need not have
+            # it at all.
+            clip_names=getattr(ds.clips, "clip_names", None),
         )
     return result
 

@@ -297,6 +297,16 @@ class EvalProducer(Producer):
     drops ``None`` values, so adding this axis leaves the noise-free ``spec_id``
     (``eval3ds-66aaff5b``) and every artifact already made under it untouched.
 
+    ``per_clip`` (2026-09-21) defaults to ``None`` for exactly the same reason, and is the
+    second use of that pattern. Set, it keeps the ``[n_clips]`` vectors ``eval_dataset``
+    already computes -- per-clip reward, lifespan, every termination flag, every reward
+    term, every per-body error, plus the clip's behaviour label where the clip set has one
+    -- under a ``per_clip`` key, and mints its own ``spec_id``. The published aggregates
+    are bit-identical either way, which is what makes ``VERSION`` staying at 3 correct
+    rather than convenient: ``normalise_spec`` drops the ``None``, so the default spec
+    hashes exactly as before and the 393 artifacts already in the store keep resolving.
+    ``evaluation_test.PerClipTest`` pins that equality.
+
     ``VERSION = 3`` (2026-08-24): ``_parse_net_params`` no longer truncates sub-1.0
     floats to zero, so the rebuilt network finally gets the ``latent_min_std`` its
     config specifies. The bottleneck samples at eval time, so a different latent
@@ -322,6 +332,9 @@ class EvalProducer(Producer):
         # Std of a fixed Gaussian perturbation added to the executed action
         # (post-tanh, clipped to [-1, 1]). None = the ordinary noise-free eval.
         "action_noise": None,
+        # Keep the per-clip vectors alongside the aggregates. None = aggregates only,
+        # which is the historical record shape. See the class docstring.
+        "per_clip": None,
     }
 
     def spec(self, **overrides: Any) -> dict[str, Any]:
@@ -333,6 +346,14 @@ class EvalProducer(Producer):
         # here. Float values are unaffected, so no existing spec_id changes.
         if spec.get("action_noise") is not None:
             spec["action_noise"] = float(spec["action_noise"])
+        # Same hazard, one axis over: `--set per_clip=false` produces bytes identical to
+        # the default, but `False` survives `normalise_spec` where `None` is dropped, so
+        # it would mint a duplicate of `eval3ds-382e9e69` under a second id. Unlike
+        # `action_noise`, where an explicit 0.0 is a real sweep point distinct from "no
+        # noise", there is nothing for a falsy `per_clip` to mean other than the default --
+        # so collapse it rather than canonicalising it to a separate value.
+        if not spec.get("per_clip"):
+            spec["per_clip"] = None
         return spec
 
     def prefix(self, spec: Mapping[str, Any]) -> str:
@@ -340,7 +361,12 @@ class EvalProducer(Producer):
         noise = spec.get("action_noise")
         # `is None`, not truthiness: an explicit 0.0 is a sweep point and must read
         # as `n00` rather than borrow the noise-free prefix.
-        return base if noise is None else f"{base}-n{round(noise * 100):02d}"
+        if noise is not None:
+            base = f"{base}-n{round(noise * 100):02d}"
+        # Cosmetic only -- the digest is over the whole spec either way -- but it makes a
+        # per-clip artifact identifiable in a directory listing, which matters because
+        # these are ~100x the size of an aggregate-only record.
+        return f"{base}-pc" if spec.get("per_clip") else base
 
     def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
                 ctx: Mapping[str, Any]) -> dict[str, Any]:
@@ -359,7 +385,8 @@ class EvalProducer(Producer):
                               Path(ckpt_dir), new_eval_h5,
                               spec["seed"], spec["limit_clips"],
                               action_noise=spec.get("action_noise"),
-                              datasets=tuple(spec["datasets"]))
+                              datasets=tuple(spec["datasets"]),
+                              per_clip=bool(spec.get("per_clip")))
         if record is None:
             raise RuntimeError(f"evaluate_run returned nothing for {wandb_id}")
         out_path.write_text(json.dumps(record, indent=2))
@@ -372,6 +399,7 @@ class EvalProducer(Producer):
                 # `resolved` is not hashed, so this is free, and `manifest_df`
                 # surfaces it as a filterable `resolved.action_noise` column.
                 "action_noise": record.get("action_noise"),
+                "per_clip": spec.get("per_clip"),
                 **_asset_provenance(Path(ckpt_dir), ctx.get("env_class"))}
 
 
@@ -537,9 +565,74 @@ class VideoProducer(Producer):
                 **_asset_provenance(Path(ckpt_dir), stats.get("env_class"))}
 
 
+class TraceProducer(Producer):
+    """Per-step traces of one run's rollout on one dataset, as HDF5.
+
+    Delegates to :func:`vnl_experiments.delays.eval_runs.trace_run`, which rebuilds the
+    checkpoint through the same path ``eval`` does.
+
+    **Why this is not part of ``eval``.** The eval record answers "how well did it do on
+    this clip". A trace answers "what was it doing at this moment", which is the only way
+    to resolve reward or failure by *behaviour* inside a clip that spans several -- the
+    30 s ``new_eval`` clips average 13 MotionMapper behaviours each, so any per-clip
+    number there is a mixture. That needs arrays, so HDF5 rather than JSON, and it is
+    wanted for one dataset at a time, so one artifact per (run, dataset) -- which is
+    ``activations``'s shape, not ``eval``'s.
+
+    Contents: every env metric plus ``reward``, ``alive`` and ``running``, each
+    ``[n_clips, n_steps]`` float32, gzipped. Roughly 3--10 MB per run per dataset.
+    Post-termination steps are zeroed and flagged; ``alive`` is the mask to apply to the
+    metrics and ``running`` is the one that sums to ``lifespan_steps`` -- see
+    :func:`vnl_experiments.delays.evaluation._trace_rollout` for why those differ by one
+    step. ``current_frame`` is traced, so the reference frame a step was tracking is read
+    rather than inferred from the step index.
+
+    ``VERSION = 1`` (2026-09-21): new kind.
+    """
+
+    KIND = "trace"
+    VERSION = 1
+    EXT = ".h5"
+    NEEDS_CHECKPOINT = True
+    DEFAULTS = {
+        # `new_eval` by default: it is the only dataset with per-frame behaviour labels
+        # available, and its 30 s clips are the ones a per-clip number cannot describe.
+        "dataset": "new_eval",
+        "checkpoint": "last",
+        "seed": 0,
+        "limit_clips": None,
+        "max_steps": None,
+        "new_eval_h5": "eval_clips_32x30s.h5",
+    }
+
+    def prefix(self, spec: Mapping[str, Any]) -> str:
+        return f"trace-{spec['dataset']}"
+
+    def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
+                ctx: Mapping[str, Any]) -> dict[str, Any]:
+        from vnl_experiments.delays.eval_runs import trace_run
+        from vnl_experiments.delays.evaluation import DEFAULT_NEW_EVAL_H5
+
+        ckpt_dir = ctx.get("checkpoint_dir")
+        if ckpt_dir is None:
+            raise FileNotFoundError(
+                f"no checkpoint found for {wandb_id}; traces must be recorded where the "
+                f"checkpoints live (see `artifacts plan --kind trace`)")
+
+        meta = trace_run(wandb_id, ctx.get("wandb_name", wandb_id),
+                         ctx.get("env_class", "AbsoluteImitation"),
+                         Path(ckpt_dir),
+                         DEFAULT_NEW_EVAL_H5.with_name(spec["new_eval_h5"]),
+                         spec["seed"], spec["limit_clips"], spec["max_steps"],
+                         spec["dataset"], out_path)
+        if meta is None:
+            raise RuntimeError(f"trace_run returned nothing for {wandb_id}")
+        return {**meta, **_asset_provenance(Path(ckpt_dir), ctx.get("env_class"))}
+
+
 PRODUCERS: dict[str, Producer] = {
     p.KIND: p() for p in (HistoryProducer, TimingProducer, EvalProducer,
-                          ActivationsProducer, VideoProducer)
+                          ActivationsProducer, VideoProducer, TraceProducer)
 }
 
 

@@ -60,7 +60,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "analysis" / "_artifacts" / "manifest.jsonl"
 DEFAULT_ROOT = REPO_ROOT / "artifacts"
 
-KINDS = ("history", "timing", "eval", "activations", "video")
+KINDS = ("history", "timing", "eval", "activations", "video", "trace")
 
 #: Files larger than this are recorded by size only. Checksumming the 22 GB of
 #: activations on every reindex is not worth the minutes it costs.

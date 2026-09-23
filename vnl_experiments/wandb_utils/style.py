@@ -118,7 +118,60 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "flat_forward_model": {"color": "C2", "marker": "^",
                            "label": "Explicit forward model"},
     "flat_recurrent": {"color": "C9", "marker": "D", "label": "Recurrent"},
+    # Servo x forward-model 2x2 (2026-09-21). Each single-manipulation corner keeps the
+    # colour it already has as a condition in its own right -- `mlp_torque` is both
+    # `delayed_mlp` and `torque` (C1), `fm_torque` is `flat_forward_model` (C2),
+    # `mlp_servo` is `servo` (C3) -- so a corner of the 2x2 reads the same as the arm it
+    # is in the sibling folders. Only the *combination* needs a new hue.
+    "mlp_torque": {"color": "C1", "marker": "o", "label": "MLP + torque (baseline)"},
+    "fm_torque": {"color": "C2", "marker": "^", "label": "Forward model + torque"},
+    "mlp_servo": {"color": "C3", "marker": "D", "label": "MLP + servo"},
+    "fm_servo": {"color": "C4", "marker": "s", "label": "Forward model + servo"},
+    # Per-behaviour failure modes (2026-09-21). The cells are (actuator x decoder input),
+    # so the hue carries the *decoder input* and the marker the actuator -- filled marker
+    # for position, open-ish shapes for torque -- which keeps the two axes of the cohort
+    # separable in a figure whose x-axis is already spent on behaviour. `ablate_*` hues
+    # above are reused on purpose: `pos_noproprio_*` is `ablate_proprioception` (C6) and
+    # `pos_nointent` is `ablate_intention` (C3), so an ablation reads the same colour here
+    # as in the folders that swept it.
+    "pos_intact": {"color": "C0", "marker": "o", "label": "Position, all inputs"},
+    "torque_intact": {"color": "C0", "marker": "^", "label": "Torque, all inputs"},
+    "pos_noproprio_eff2": {"color": "C6", "marker": "o",
+                           "label": "Position, no proprioception, efference 2"},
+    "pos_noproprio_eff0": {"color": "C5", "marker": "o",
+                           "label": "Position, no proprioception, no efference"},
+    "torque_noproprio_eff2": {"color": "C6", "marker": "^",
+                              "label": "Torque, no proprioception, efference 2"},
+    "torque_delay10": {"color": "C2", "marker": "^",
+                       "label": "Torque, proprioception delayed 10"},
+    "torque_delay10_aug11": {"color": "C7", "marker": "x",
+                             "label": "Torque, delayed 10 (2026-08-11 cross-check)"},
+    "pos_nointent": {"color": "C3", "marker": "o", "label": "Position, no intention"},
+    "torque_nointent": {"color": "C3", "marker": "^", "label": "Torque, no intention"},
 }
+
+#: Colour and label per coarse behaviour group, for the per-behaviour figures in
+#: ``analysis/rodent/per-behaviour-failure-modes/``. A separate dict from
+#: :data:`CONDITION_STYLE` for the same reason :data:`BUCKET_STYLE` is: in these figures
+#: the behaviour is on the categorical axis and the colour carries the condition, so a
+#: behaviour is not a condition and letting the two share a namespace would allow a
+#: collision. The order is sedentary -> dynamic, matching ``COARSE_ORDER`` in
+#: ``behaviour_labels.py``, so the hypothesis under test reads as a slope.
+BEHAVIOUR_STYLE: dict[str, dict[str, str]] = {
+    "groom": {"color": "#7b6fa6", "label": "Grooming"},
+    "still": {"color": "#4c72b0", "label": "Still / prone"},
+    "rear": {"color": "#dd8452", "label": "Rearing"},
+    "locomote": {"color": "#c44e52", "label": "Locomotion"},
+    "exclude": {"color": "#c7c7c7", "label": "Unscored (check / tracking error)"},
+}
+
+
+def behaviour_color(behaviour: str) -> str:
+    return BEHAVIOUR_STYLE.get(behaviour, {}).get("color", "C7")
+
+
+def behaviour_label(behaviour: str) -> str:
+    return BEHAVIOUR_STYLE.get(behaviour, {}).get("label", behaviour)
 
 
 #: Colour and label per wall-clock bucket, for time-budget figures

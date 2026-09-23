@@ -334,6 +334,26 @@ in at ~700 it would confirm the flat line, and if it came in far lower the effer
 floor cannot distinguish "flat because nothing helps" from "flat because it has already
 helped as much as it will by the shortest length tested" — and the second was true.
 
+## Where this is decomposed
+
+The 88 % / 33 % headline above is a cross-clip **mean** over a behaviourally heterogeneous
+clip set, and [`../per-behaviour-failure-modes/`](../per-behaviour-failure-modes/) takes it
+apart — by reward term, by termination reason, and (once its cluster artifacts land) by
+behaviour. Two of its Stage A findings bear directly on the numbers here:
+
+* **~70 % of this reward is collectable without the imitation target.** A task-blind
+  policy scores 3.01 of the intact 4.31 reward per alive step on `old_eval`;
+  `torso_z_range` is ~1.00 for every condition and root position/orientation are ~70 %
+  saturated. Rescaled onto each actuator's own task-blind floor and intact ceiling, the
+  position `efference_length = 2` point earns **73 %** of the imitation-attributable
+  reward rather than 88 %. The direction of every conclusion here survives; the sizes
+  shrink.
+* **The "suggestive, not shown" claim in the last bullet above is now shown.** Measured
+  against *torque's own* task-blind floor rather than a cross-actuator one,
+  `torque_noproprio` at efference 2 sits **below** it in per-step tracking (2.69 vs 3.28)
+  — a torque policy with the target and an efference copy but no body feedback imitates
+  worse than one with body feedback and no target. Still n = 1 per side.
+
 ## Follow-ups
 
 1. **A second seed.** Now the largest gap. Every cell is `seed = 42`, so the 2.51 % floor

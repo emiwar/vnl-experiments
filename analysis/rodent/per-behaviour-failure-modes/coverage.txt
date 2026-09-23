@@ -1,0 +1,12 @@
+Coverage for 17 runs in per-behaviour-failure-modes
+
+index  (spec_id=-): 17/17
+    pos_intact                      2/2   
+    pos_nointent                    1/1   
+    pos_noproprio_eff0              3/3   
+    pos_noproprio_eff2              2/2   
+    torque_delay10                  3/3   
+    torque_delay10_aug11            1/1   
+    torque_intact                   3/3   
+    torque_nointent                 1/1   
+    torque_noproprio_eff2           1/1   

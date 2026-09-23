@@ -25,6 +25,46 @@ per-reason `termination_rate` (incl. `survived`), per-step `errors` and network
 Name the dataset in every axis label and every reported number — `reward_label()` in
 `wandb_utils.style` exists for exactly that, and §7 of the shared README explains why.
 
+### Behaviour labels, and the two that are not the same partition
+
+Both eval sets can be broken down by behaviour, but by unrelated means, and confusing them
+is easy because both have a class called `FaceGroom`.
+
+**`train` / `old_eval`: one label per clip, six classes.** `reference_clips.h5` carries
+`config['model']['snips_order']`, 842 snippet basenames like `RGroom_4`, whose alphabetic
+prefix is the behaviour. `ReferenceClips.split()` propagates `clip_names` to the test half
+*in clip-axis order*, and the eval resets with `clip_ids = jp.arange(n_clips)` over exactly
+that object, so clip *i* of `old_eval` has label `split()[1].clip_names[i]`. An `eval`
+artifact made with `per_clip=true` records the labels alongside the numbers. Counts:
+`old_eval` FastWalk 37 / Rear 35 / Walk 33 / FaceGroom 27 / RGroom 20 / LGroom 17;
+`train` 152 / 130 / 141 / 109 / 76 / 65. **There is no "still" class**: every snippet is
+grooming, rearing or locomotion.
+
+**`new_eval`: no labels of its own.** They come from
+`assets/art/2020_12_22_1/2020_12_22_1.h5`, whose `behavior/motion_mapper` is a
+360 000-frame per-frame cluster-id vector over the whole session with a `names` attribute
+(100 ids → 16 names). `eval_clips_32x30s.h5` stores each clip's `clip_start_frame` /
+`clip_end_frame` into that same session, so the labels slice straight in. By frames the
+32 clips are 46 % still, 37 % locomotion, 16 % rearing and only **2 % grooming** — the
+mirror image of the snippet set's weakness, which is why the two are worth running as
+independent replications rather than pooling.
+
+Two traps in that second join, both silent if got wrong:
+
+* **The ids are 1-based**: label *k* means `names[k - 1]`. Forced structurally (id 0 never
+  occurs, id 100 does, `len(names) == 100`) and confirmed kinematically — 1-based gives
+  monotone speed ProneStill 0.004 → WalkFast 0.327 m/s and separates Rear\* (snout
+  151–212 mm) from Prone\* (29–70 mm), while 0-based makes WalkFast slower than ProneStill.
+* **Align on `pose/keypoints`, never `pose/qpos`.** The session file is a *different* STAC
+  fit from `art_2020_12_22_1_new_STAC_from_Charles.h5`, which the eval clips were cut from:
+  their `qpos` differ by up to 1.7, while their raw keypoints agree to float32 rounding
+  (mm vs m, and a different channel order).
+
+`analysis/rodent/per-behaviour-failure-modes/behaviour_labels.py` does both joins, asserts
+all of the above, and writes the result as committed CSV/NPZ so no analysis reopens a
+500 MB asset. The session file also carries `ephys/spike_counts` (360 000 × 131) for the
+same frames, which nothing uses yet.
+
 ## Traps
 
 Read before starting. The general ones — nondeterminism, GPU confounds, stale artifacts,

@@ -169,20 +169,16 @@ def collect_inline_evals(search_dirs: list[Path], output_dir: Path,
 # Per-run orchestration
 # ---------------------------------------------------------------------------
 
-def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
-                 new_eval_h5: Path, seed: int, limit_clips: int | None,
-                 action_noise: float | None = None,
-                 datasets: Sequence[str] = DATASET_NAMES) -> dict:
-    """Rebuild one run from its checkpoint and evaluate it.
+def rebuild_run(env_class_hint: str, ckpt_dir: Path, seed: int):
+    """Rebuild one run's env config, clip split and network from its checkpoint.
 
-    ``action_noise`` is the std of a fixed Gaussian perturbation added to the
-    executed action (see :func:`vnl_experiments.delays.evaluation._rollout`);
-    ``None`` is the ordinary noise-free evaluation.
+    Factored out of :func:`evaluate_run` so :func:`trace_run` cannot drift from it: a
+    trace is only comparable with an eval if both restore the same weights into the same
+    env built from the same config, and that is easier to guarantee by construction than
+    to check afterwards.
 
-    ``datasets`` selects which of ``train`` / ``old_eval`` / ``new_eval`` to
-    measure. Restricting it is the main way to cut the GPU cost of a sweep;
-    ``new_eval`` alone is ~6x the steps of the other two, which are each a
-    single 80/20 half of the run's own reference data.
+    Returns ``(nets, step, env_cls, base_cfg, train_clips, test_clips, train_env)``, or
+    ``None`` if the checkpoint holds no loadable network.
     """
     with open(ckpt_dir / "config.json") as f:
         cfg_json = json.load(f)
@@ -194,13 +190,40 @@ def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
     base_cfg = parse_env_config(env_params, default_fn)
 
     # Build the network + load weights once, using the train env to size obs.
-    # That env is then handed to evaluate_networks as the "train" dataset env.
+    # That env is then handed on as the "train" dataset env.
     train_clips, test_clips = split_clips(base_cfg)
     train_env = _make_env(env_cls, prepare_eval_config(base_cfg), train_clips)
     loaded = load_network(ckpt_dir, net_params, train_env, seed)
     if loaded is None:
         return None
     nets, step = loaded
+    return nets, step, env_cls, base_cfg, train_clips, test_clips, train_env, net_params
+
+
+def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
+                 new_eval_h5: Path, seed: int, limit_clips: int | None,
+                 action_noise: float | None = None,
+                 datasets: Sequence[str] = DATASET_NAMES,
+                 per_clip: bool = False) -> dict:
+    """Rebuild one run from its checkpoint and evaluate it.
+
+    ``action_noise`` is the std of a fixed Gaussian perturbation added to the
+    executed action (see :func:`vnl_experiments.delays.evaluation._rollout`);
+    ``None`` is the ordinary noise-free evaluation.
+
+    ``datasets`` selects which of ``train`` / ``old_eval`` / ``new_eval`` to
+    measure. Restricting it is the main way to cut the GPU cost of a sweep;
+    ``new_eval`` alone is ~6x the steps of the other two, which are each a
+    single 80/20 half of the run's own reference data.
+
+    ``per_clip`` keeps the per-clip vectors instead of only their mean and std -- see
+    :func:`vnl_experiments.delays.evaluation.eval_dataset`. It costs no extra rollout,
+    only a larger record.
+    """
+    rebuilt = rebuild_run(env_class_hint, ckpt_dir, seed)
+    if rebuilt is None:
+        return None
+    nets, step, env_cls, base_cfg, train_clips, test_clips, train_env, net_params = rebuilt
 
     return evaluate_networks(
         nets, env_cls, base_cfg,
@@ -208,8 +231,83 @@ def evaluate_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
                               env_cls.__name__, action_noise),
         train_clips=train_clips, test_clips=test_clips, train_env=train_env,
         new_eval_h5=new_eval_h5, names=tuple(datasets), seed=seed,
-        limit_clips=limit_clips, action_noise=action_noise,
+        limit_clips=limit_clips, action_noise=action_noise, per_clip=per_clip,
     )
+
+
+def trace_run(wid: str, wn: str, env_class_hint: str, ckpt_dir: Path,
+              new_eval_h5: Path, seed: int, limit_clips: int | None,
+              max_steps: int | None, dataset: str, out_path: Path) -> dict | None:
+    """Record one run's per-step traces on one dataset, as HDF5.
+
+    Rebuilt through :func:`rebuild_run`, the same path :func:`evaluate_run` takes, so a
+    trace and an eval of the same checkpoint are the same rollout up to MuJoCo Warp's
+    nondeterminism.
+
+    One dataset per call (and so per artifact), following ``activations`` rather than
+    ``eval``: a trace is only wanted for the dataset whose behaviour labels a question
+    needs, and keeping them separate is what makes pulling one from the cluster cheap.
+
+    Returns the metadata the producer puts in its sidecar, or ``None`` if the checkpoint
+    holds no loadable network.
+    """
+    import h5py
+
+    from vnl_experiments.delays.evaluation import trace_dataset
+
+    rebuilt = rebuild_run(env_class_hint, ckpt_dir, seed)
+    if rebuilt is None:
+        return None
+    nets, step, env_cls, base_cfg, train_clips, test_clips, train_env, net_params = rebuilt
+
+    datasets = build_datasets(
+        env_cls, base_cfg, train_clips=train_clips, test_clips=test_clips,
+        train_env=train_env, new_eval_h5=new_eval_h5, names=(dataset,),
+    )
+    ds = datasets[0]
+    n_clips = ds.n_clips if limit_clips is None else min(ds.n_clips, limit_clips)
+    n_steps = ds.n_steps if max_steps is None else min(ds.n_steps, max_steps)
+    print(f"    [{ds.name}] tracing {n_clips} clips x {n_steps} env steps "
+          f"({ds.clip_length} mocap frames)")
+
+    env = ds.make_env()
+    trace = trace_dataset(env, nets, ds.n_clips, ds.n_steps, ds.ctrl_dt,
+                          jax.random.key(seed), limit_clips, max_steps)
+
+    clip_names = getattr(ds.clips, "clip_names", None)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with h5py.File(out_path, "w") as f:
+        f.attrs["wandb_id"] = wid
+        f.attrs["run_name"] = wn
+        f.attrs["step"] = int(step)
+        f.attrs["dataset"] = dataset
+        f.attrs["n_clips"] = n_clips
+        f.attrs["n_steps"] = n_steps
+        f.attrs["ctrl_dt"] = float(ds.ctrl_dt)
+        f.attrs["mocap_hz"] = int(base_cfg.mocap_hz)
+        f.attrs["clip_length"] = int(ds.clip_length)
+        f.attrs["env_class"] = env_cls.__name__
+        f.attrs["network_class"] = str(net_params.get("network_class", ""))
+        # A truncated trace is an incomplete record of the episode and must not be
+        # pooled with a full one, so say so in the file rather than only in the spec.
+        f.attrs["truncated"] = bool(n_steps < ds.n_steps)
+        # The behaviour label of each clip, from the clip set the rollout reset against
+        # -- as in the per-clip eval block, recorded with the measurement rather than
+        # joined by position afterwards. Absent for `new_eval`, which has no labels of
+        # its own (they come from the session file, keyed on `clip_start_frame`).
+        if clip_names is not None:
+            f.attrs["clip_names"] = [str(x) for x in list(clip_names)[:n_clips]]
+        for name, arr in trace.items():
+            f.create_dataset(name, data=arr, compression="gzip", compression_opts=4)
+
+    return {"checkpoint_step": int(step),
+            "dataset": dataset,
+            "n_clips": n_clips,
+            "n_steps": n_steps,
+            "n_metrics": len(trace),
+            "truncated": bool(n_steps < ds.n_steps),
+            "env_class": env_cls.__name__,
+            "network_class": str(net_params.get("network_class", ""))}
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +336,8 @@ def main() -> None:
     p.add_argument("--datasets", nargs="+", default=list(DATASET_NAMES),
                    choices=list(DATASET_NAMES),
                    help="Which splits to measure (fewer = cheaper).")
+    p.add_argument("--per-clip", action="store_true",
+                   help="keep the per-clip vectors, not only their mean and std")
     p.add_argument("--action-noise", type=float, default=None,
                    help="Std of a fixed Gaussian perturbation added to the "
                         "executed action (post-tanh, clipped to [-1, 1]). "
@@ -280,7 +380,8 @@ def main() -> None:
         try:
             result = evaluate_run(wid, wn, env_class_hint, ckpt_dir,
                                   args.new_eval_h5, args.seed, args.limit_clips,
-                                  args.action_noise, tuple(args.datasets))
+                                  args.action_noise, tuple(args.datasets),
+                                  per_clip=args.per_clip)
             if result is None:
                 missing.append(wn)
                 continue

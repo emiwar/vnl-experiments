@@ -1,0 +1,78 @@
+Behaviour labels for the rodent eval clip sets
+==============================================================================
+
+Written by behaviour_labels.py. Every line below is an assertion that ran; the
+labels are only written when all of them pass.
+
+Mode: --verify (keypoint alignment over all frames)
+
+Assertions
+----------
+frame alignment (session file vs the eval clips' source re-STAC)
+  [PASS] keypoint name sets match -- 23 keypoints
+  [PASS] session and base re-STAC have the same frame count -- 360000 frames
+  [PASS] keypoints agree between session file and eval-clip source -- max |delta| = 3.052e-05 mm over all 360k frames (tol 0.001)
+
+new_eval: MotionMapper cluster labels
+  [PASS] eval clips declare the source file this script aligned against -- art_2020_12_22_1_new_STAC_from_Charles.h5
+  [PASS] every clip spans exactly n_frames_per_clip -- 1500 frames x 32 clips
+  [PASS] every clip lies inside the labelled session -- max end frame 169000 <= 360000
+  [PASS] cluster ids start at 1 (id 0 never occurs) -- min id = 1
+  [PASS] cluster ids fit names[k-1] -- max id = 100, len(names) = 100
+  [PASS] max id equals len(names), which only a 1-based index permits -- 100 == 100
+  [PASS] 1-based: speed rises ProneStill -> WalkFast -- ProneStill 0.004 < ProneSlow 0.010 < Amble 0.039 < Walk 0.107 < WalkFast 0.327
+  [PASS] 1-based: every Rear* snout is above every Prone* snout -- min(Rear*) = 151 mm > max(Prone*) = 70 mm
+  [PASS] 0-based reading is kinematically incoherent, as required -- speed chain would be ProneStill 0.027 < ProneSlow 0.024 < Amble 0.016 < Walk 0.040 < WalkFast 0.016
+  [PASS] label block has the clip layout -- (32, 1500)
+  [PASS] every behaviour present has a coarse group -- 13 names, all mapped
+
+train / old_eval: snippet labels
+  [PASS] snips_order has one entry per clip -- 842 snippets, 210500 frames / 250 = 842
+  [PASS] every snippet behaviour has a coarse group -- 6 classes, all mapped
+  [PASS] ReferenceClips.split() train labels match the lazy derivation -- 673 clips, element-wise equal
+  [PASS] ReferenceClips.split() old_eval labels match the lazy derivation -- 169 clips, element-wise equal
+
+Source files
+------------
+  2020_12_22_1.h5                                   247079744 B  sha256 61c0e27a061df829
+  art_2020_12_22_1_new_STAC_from_Charles.h5         689537541 B  sha256 37e0e2829be4d8f4
+  eval_clips_32x30s.h5                              144792792 B  sha256 0b5b0e0cfec37230
+  reference_clips.h5                                505261573 B  sha256 c7b02c16d6796f70
+
+new_eval: per-frame MotionMapper coverage
+------------------------------------------
+  48000 frames = 960 s over 32 clips; 86 of 100 clusters occur
+
+  behaviour      coarse      frames   seconds       %
+  ProneSniff     still        14216     284.3  29.62%
+  Amble          locomote      9729     194.6  20.27%
+  Walk           locomote      6364     127.3  13.26%
+  ProneSlow      still         5008     100.2  10.43%
+  RearHigh       rear          3935      78.7   8.20%
+  ProneStill     still         2619      52.4   5.46%
+  RearMid        rear          1984      39.7   4.13%
+  WalkFast       locomote      1497      29.9   3.12%
+  FaceGroom      groom          776      15.5   1.62%
+  RearLow        rear           624      12.5   1.30%
+  RearDown       rear           518      10.4   1.08%
+  RearSniff      rear           477       9.5   0.99%
+  AmbleGroom     groom          253       5.1   0.53%
+
+  By coarse group:
+    groom         1029 frames      20.6 s   2.14%
+    still        21843 frames     436.9 s  45.51%
+    rear          7538 frames     150.8 s  15.70%
+    locomote     17590 frames     351.8 s  36.65%
+    exclude          0 frames       0.0 s   0.00%
+
+5 s clips: one snippet label per clip
+--------------------------------------
+  train (673 clips): FastWalk 152, Walk 141, Rear 130, FaceGroom 109, RGroom 76, LGroom 65
+    coarse: groom 250, still 0, rear 130, locomote 293
+  old_eval (169 clips): FastWalk 37, Rear 35, Walk 33, FaceGroom 27, RGroom 20, LGroom 17
+    coarse: groom 64, still 0, rear 35, locomote 70
+
+The two taxonomies are not the same partition -- MotionMapper resolves rearing
+into five clusters and stillness into four, while the snippets have no 'still'
+class at all (every snippet is groom, rear or locomote). Compare them on the
+coarse groups above, never name-to-name.
