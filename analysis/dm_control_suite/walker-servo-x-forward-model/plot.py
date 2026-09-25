@@ -320,13 +320,17 @@ def fig_interaction(df: pd.DataFrame):
     _effect_panel(axes[0], reward, scale=1.0,
                   ylabel="Change in end-of-training reward",
                   ytext="Reward at 1e9 steps\n(positive = the servo helps)",
-                  # Delays 3 and 25 have no `mlp_servo` run, so the interaction cannot
-                  # be formed there. Left unsaid, the gaps read as failures rather than
-                  # as holes in the design.
-                  note="gaps at delays "
-                       + ", ".join(str(d) for d in _missing_delays(reward))
-                       + ": no MLP + servo\nrun was launched there, so the two simple\n"
-                         "effects have no common delay to differ at",
+                  # Any delay where a corner of the 2x2 was never run leaves a gap the
+                  # interaction cannot span. Left unsaid, such a gap reads as a failure
+                  # rather than as a hole in the design -- and when there are none, say
+                  # so, because a complete design is worth stating.
+                  note=("gaps at delays "
+                        + ", ".join(str(d) for d in _missing_delays(reward))
+                        + ": a corner of the 2x2\nwas never run there, so no interaction"
+                          "\ncan be formed"
+                        if _missing_delays(reward) else
+                        "all four arms are present at every delay,\n"
+                        "so every point here is a complete 2x2"),
                   note_xy=(0.02, 0.03), note_align=("left", "bottom"))
     # The high delays are absent from the right-hand panel because the MLP arms are
     # censored there -- and that is the whole reason the left-hand panel exists. Saying
@@ -347,11 +351,12 @@ def fig_interaction(df: pd.DataFrame):
     handles, _ = axes[0].get_legend_handles_labels()
     fig.legend(handles=handles, fontsize=8, ncol=3, loc="lower center",
                bbox_to_anchor=(0.5, 0.0), frameon=False)
-    # Two lines, because the one-line version was true only out to delay 20 and the
-    # 2026-09-22 delay-25 run is the whole reason to look at this panel again.
+    # Two lines, because the one-line version was true only out to delay 20. The
+    # delay-25 column completed on 2026-09-25 and is the whole reason to read this panel
+    # to its right edge.
     fig.suptitle("Out to delay 20 the servo adds almost nothing on top of an explicit "
-                 "forward model\nAt delay 25, where the forward model alone becomes "
-                 "seed-unstable, a single run suggests otherwise", fontsize=10.5)
+                 "forward model\nAt delay 25, where the forward model alone starts to "
+                 "fail, it adds about as much as it does without one", fontsize=10.5)
     fig.tight_layout(rect=(0, 0.10, 1, 0.95))
     return fig
 

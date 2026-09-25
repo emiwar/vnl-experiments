@@ -1,15 +1,15 @@
-"""Did any run in this 2x2 ever diverge -- and does the torque half's commit spread matter?
+"""Did any run in this 2x2 ever diverge -- and does the cohort's commit spread matter?
 
 Two problems, one signal.
 
-**The code spread on the torque side.** ``comparability.txt``'s DESIGN AXES section shows
-``git_commit`` (three values), ``repos.nnx_ppo.commit`` (two) and
-``repos.vnl_experiments.dirty`` (True on 10 runs) all varying -- and *only* on the torque
-side. Both servo arms are a single clean commit. A dirty flag voids the hash outright
-(README §6), so the hashes cannot be the comparability argument for the torque half.
-Reading the diffs across those commits leaves exactly one change that could alter a
-trajectory, and ``../walker-forward-model-1b/nan_guard_inert.py`` already enumerated them
-for most of these same runs:
+**The code spread.** ``comparability.txt``'s DESIGN AXES section shows ``git_commit``,
+``repos.nnx_ppo.commit`` and ``repos.vnl_experiments.dirty`` all varying, and the variation
+is not balanced across the arms: the torque side spans five vnl-experiments commits and the
+servo side two. A dirty flag voids the hash outright (README §6), and most runs here carry
+one, so the hashes cannot be the comparability argument for either half. Reading the diffs
+across those commits leaves exactly one change that could alter a trajectory, and
+``../walker-forward-model-1b/nan_guard_inert.py`` already enumerated them for many of these
+same runs:
 
 * ``f9c8960`` adds ``train.video.render_kwargs.camera``. Render path only.
 * nnx-ppo ``1725d20 -> 5314279`` adds non-finite *counters* plus a ``check_diagnostics``
@@ -18,6 +18,11 @@ for most of these same runs:
   cadence. Neither touches the training step.
 * ``9e216ae`` adds ``NaNGuardWrapper`` to the *training* env stack. **This one can change
   a trajectory** -- but only on a step where MJX has already diverged.
+* ``7bedb5c -> b4012b3`` (the 2026-09-24 additions, and the tail of the five ``fm_servo``
+  runs resumed at ~4.5e8) touches only ``artifacts/``, ``delays/eval_runs.py``,
+  ``delays/evaluation.py`` and ``wandb_utils/`` -- no file on the training path at all,
+  verified with ``git diff --name-only``. The two commits are training-identical, so a run
+  that spans them is not spliced together from two different trainers.
 
 **The servo side's own risk.** ``envs/servo_control.md`` §3.6 is explicit that a stiff
 servo raises the divergence rate, and that the two sides of the run fail differently: on
@@ -45,8 +50,10 @@ diverged, the guard never fired, every code stack in the cohort is functionally 
 **on these runs** (which survives ``dirty = True`` in a way a hash does not), *and* the
 stiff servo did not destabilise the physics. One check, both jobs.
 
-It also covers the twelve requeued runs for free: a resume redraws episode phases but
-never sets ``done``, so a resume that had corrupted the population would show here too.
+It also covers the requeued runs for free -- nearly half the cohort, including the five
+``fm_servo`` runs that resumed from a ~4.5e8 checkpoint under the later commit. A resume
+redraws episode phases but never sets ``done``, so a resume that had corrupted the
+population, or a splice that had, would show here too.
 
 These two keys are not in the pinned ``history`` spec, and adding them would change
 ``HISTORY_SPEC_ID`` and unpin the curves this folder shares with both siblings. So this
@@ -105,8 +112,8 @@ def main() -> None:
     verdict = (
         "INERT: no run in this 2x2 ever terminated an episode.\n"
         "  (a) MJX never diverged, so NaNGuardWrapper never fired, so the varying\n"
-        "      git_commit / nnx_ppo.commit / dirty flags on the torque side do not\n"
-        "      threaten any contrast in this folder.\n"
+        "      git_commit / nnx_ppo.commit / dirty flags do not threaten any contrast\n"
+        "      in this folder.\n"
         "  (b) servo_kp = 64 did not destabilise the physics at either network arm, so\n"
         "      servo_control.md §3.6's divergence caveat is discharged for this cohort\n"
         "      and no arm's reward is depressed by silent zero-reward terminations."
@@ -114,7 +121,7 @@ def main() -> None:
         "*** NOT INERT: " + ", ".join(f"{i} ({c}, {n} iters)" for i, c, n in bad)
         + "\n  A divergence occurred. Two consequences, and both must be carried into\n"
           "  report.md: the pre-/post-guard runs took different paths on those steps, so\n"
-          "  the torque half's commit split is a real confound; and a terminated episode\n"
+          "  the cohort's commit split is a real confound; and a terminated episode\n"
           "  scores zero, so the affected arm's reward is depressed for a reason that is\n"
           "  not the manipulation. Check whether the affected runs are concentrated in\n"
           "  the servo arms (servo_control.md §3.6) before reading any arm difference.")

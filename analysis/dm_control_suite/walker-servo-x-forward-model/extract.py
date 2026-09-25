@@ -101,14 +101,15 @@ Selection gates that no run name would reveal
   either would make budget the confound in a comparison whose whole point is a clean
   crossing.
 
-  Seven candidate runs are dropped by the reached-it half of that gate, and they are
-  **all in one arm** (``fm_servo``, seed 53), which is exactly the correlation README §6
-  says to check before reading anything into a gap. ``attrition.py`` checks it and
-  answers it with throughput: all seven ran at 5.3-5.4e4 ``train_sps`` against 1.7-2.2e5
-  for every run that finished, a uniform 3.3-4x slowdown across delays 2 to 20, and all
-  seven stopped after 2.9 h at ~4.5e8 steps. They hit a wall clock on contended nodes.
-  The attrition is a throughput artefact, it does not vary with delay, and nothing about
-  it involves the manipulation.
+  Candidate runs dropped by the reached-it half of that gate are **all in one arm**
+  (``fm_servo``, seed 53), which is exactly the correlation README §6 says to check
+  before reading anything into a gap. ``attrition.py`` checks it and answers it two ways:
+  throughput (they ran at ~5.4e4 ``train_sps`` against a cohort median of 2.2e5, stopping
+  after 2.9 h at ~4.5e8 steps, while a *torque* run on the same nodes was equally slow and
+  finished only because a requeue gave it 6.4 h), and directly -- **six runs of that same
+  batch were later requeued with more wall clock and reached 1e9 without incident**. The
+  attrition is a wall-clock artefact of contended nodes; nothing about it involves the
+  manipulation. As of 2026-09-24 only two are still short (delays 5 and 7).
 * **delay.** 0/2/3/5/7/10/12/15/20/25 -- every delay where at least three of the four
   arms exist. Delay **30** is excluded because only ``fm_servo`` was run there; one line
   of four running alone to the right edge of a panel reads as the other three failing
@@ -135,19 +136,30 @@ Selection gates that no run name would reveal
 
 What is confounded with the manipulation, and what is done about it
 -------------------------------------------------------------------
-* **Seed.** The servo arms are seeds 51/52/53 and the torque arms 43/46/47/48: no seed
-  appears in both. Unavoidable -- the servo runs are a later launch -- and it means an
-  arm difference smaller than the within-arm seed spread is not readable. ``seed_spread``
-  writes that spread per cell so the noise floor comes from this cohort's own data rather
-  than from an assumption. Seeds are grouped on the **pair** ``i{seed}/p{config.seed}``
-  (track README): ``seed`` alone sets only the network init, ``config.seed`` keys the env
-  resets, rollouts and eval, and one batch here ran i43/p12345.
+* **Seed.** The servo arms are seeds 51-54 and the torque arms 43/46/47/48, so almost
+  every arm difference here is *between* seeds and cannot be separated from seed noise
+  except by the within-cell spread. ``seed_spread`` writes that spread per cell so the
+  noise floor comes from this cohort's own data rather than from an assumption.
+
+  The 2026-09-24 launch put ``mlp_torque`` at seeds 51 and 52, which the servo arms
+  already use, so a few genuinely **paired** comparisons now exist -- same network, same
+  seed, same delay, only the actuator differing. :func:`seed_matched_pairs` prints every
+  one it can form. Two seeds is not a paired test; what it buys is that a paired sign
+  disagreeing with the cell-mean sign at the same delay would expose that cell's effect
+  as seed noise, which nothing else here could detect.
+
+  Seeds are grouped on the **pair** ``i{seed}/p{config.seed}`` (track README): ``seed``
+  alone sets only the network init, ``config.seed`` keys the env resets, rollouts and
+  eval, and one batch here ran i43/p12345.
 * **Eval cadence**, handled above by :func:`on_common_grid`.
-* **Commit, dirty flag and GPU.** ``repos.vnl_experiments.dirty`` is True on part of the
-  torque side, which per README §6 voids the commit hash there outright, so the hashes
-  cannot be the comparability argument. ``divergence_check.py`` replaces it with a
+* **Commit, dirty flag and GPU.** ``repos.vnl_experiments.dirty`` is True on most runs,
+  which per README §6 voids those commit hashes outright, so the hashes cannot be the
+  comparability argument on either side. ``divergence_check.py`` replaces it with a
   behavioural one, and ``assert_servo_identity`` below pins the servo subsystem from the
-  run records. GPU is a throughput confound, not a reward one (README §6), and no readout
+  run records. One commit boundary is worth naming because five ``fm_servo`` runs *span*
+  it: ``7bedb5c -> b4012b3`` changes only ``artifacts/``, ``delays/eval_runs.py``,
+  ``delays/evaluation.py`` and ``wandb_utils/`` -- no training-path file at all -- so a
+  run resumed across it was not spliced from two different trainers. GPU is a throughput confound, not a reward one (README §6), and no readout
   here is a speed-in-seconds measure -- ``steps_to_900`` is counted in environment steps.
 
 Run it
@@ -231,15 +243,77 @@ HEADLINE_THRESHOLD = 900
 #: dm_control returns are bounded in [0, 1000] by construction.
 TASK_MAX = 1000
 
+#: A run that spends longer than this with its trailing mean in the lower mode has
+#: *stalled* rather than merely passed through. Set at 1e8 = 10 % of the budget: the
+#: cohort's non-stalled runs cross the band in 5-6e7 at most, and the stalled ones spend
+#: 1.0-6.4e8, so the two populations are separated by an order of magnitude and the exact
+#: cut does not matter.
+STALL_DWELL_STEPS = 100_000_000
+
 
 def _kp(df: pd.DataFrame) -> pd.Series:
     """``servo_kp``, with *absent* read as 0 -- the one place the two spellings meet."""
     return df["env_params.servo_kp"].fillna(0.0)
 
 
+#: The columns that, together, say "this is the same experiment". Two runs agreeing on all
+#: of them are not independent replicates -- they are the same draw, repeated, differing
+#: only in GPU nondeterminism. `_first_of_duplicates` keeps one of each such group.
+#:
+#: The servo columns are filled before grouping because a torque run has them *absent*,
+#: and pandas' groupby drops a row whose key contains NaN -- which would silently exempt
+#: the entire torque half from de-duplication.
+DEDUPE_KEY = [
+    "net_params.network_class",
+    "net_params.delay_k",
+    "net_params.efference_length",
+    "net_params.min_std",
+    "config.ppo.total_steps",
+    "env_params.servo_kp",
+    "env_params.servo_damping_ratio",
+    "env_params.servo_center",
+    "seed",
+    "config.seed",
+]
+
+
+def _first_of_duplicates(df: pd.DataFrame, candidates: pd.Series) -> pd.Series:
+    """One run per (params, both seeds) group: the earliest launched.
+
+    Two runs agreeing on every entry of :data:`DEDUPE_KEY` -- including **both** seeds,
+    the network initialisation seed and the PPO seed that keys env resets, rollouts and
+    eval (track README) -- are not two seeds. They are one experiment run twice, and they
+    differ only in MuJoCo/XLA nondeterminism. Counting both weights that seed double in
+    every cell mean and every spread, which matters most exactly where it hurts: three of
+    the four groups here sit in cells that are otherwise n=1 or n=3.
+
+    **Earliest launched, tie-broken on ``wandb_id``.** The choice is arbitrary on the
+    merits -- the runs are the same experiment -- so it is made to be *stable*: a
+    duplicate arriving later never changes which run is kept, so ``runs.csv`` and
+    ``data.csv`` do not churn on a refresh that adds one.
+
+    The discarded runs are not thrown away. ``duplicates.py`` recomputes their readouts
+    from their (still present) history artifacts and commits the comparison as
+    ``duplicates.txt``, which is this project's only direct measurement of end-to-end
+    *training* nondeterminism at fixed seed -- README §6 measures only the eval's.
+    """
+    pool = df[candidates].copy()
+    for col in ("env_params.servo_kp", "env_params.servo_damping_ratio"):
+        pool[col] = pool[col].fillna(0.0)
+    pool["env_params.servo_center"] = pool["env_params.servo_center"].fillna("absent")
+    keep = (pool.sort_values(["created_at", "wandb_id"])
+                .groupby(DEDUPE_KEY, dropna=False)["wandb_id"].first())
+    return df["wandb_id"].isin(set(keep))
+
+
 def _cohort(df: pd.DataFrame) -> pd.Series:
-    """Everything the 2x2 could draw on, before the two arm gates."""
-    return (
+    """Everything the 2x2 could draw on, before the two arm gates.
+
+    Includes de-duplication: see :func:`_first_of_duplicates`. It is applied here rather
+    than per arm so that the rule cannot differ between arms, and after every other gate
+    so that a run excluded for some other reason cannot displace an admissible twin.
+    """
+    base = (
         df["env"].eq(TASK)
         & df["net_params.min_std"].eq(MIN_STD)
         & df["config.ppo.total_steps"].eq(BUDGET)
@@ -249,6 +323,7 @@ def _cohort(df: pd.DataFrame) -> pd.Series:
         # the final eval (README §6). Gate on the property meant: reached its budget.
         & (df["state"].eq("finished") | df["summary._step"].ge(BUDGET))
     )
+    return base & _first_of_duplicates(df, base)
 
 
 def _arm(network_class: str, kp: float):
@@ -416,12 +491,24 @@ def trailing_mean(steps: np.ndarray, values: np.ndarray,
 
 
 def time_to_criterion(series: pd.DataFrame) -> dict:
-    """``steps_to_<thr>`` / ``solved_<thr>`` / ``smooth_max``, on the common grid."""
+    """``steps_to_<thr>`` / ``solved_<thr>`` / ``smooth_max`` / ``band_dwell``.
+
+    ``band_dwell`` is how long the trailing mean spent between the lowest and the headline
+    threshold -- on this task, between 800 and 900. It exists because WalkerWalk learning
+    here is **bimodal**: a run reaches a ~8.6e2 solution and then either steps up to ~9.7e2
+    promptly or sits at ~8.6e2 for hundreds of millions of steps first. The 900 criterion
+    falls in the gap between those two modes, so ``steps_to_900`` amplifies the difference
+    enormously while ``steps_to_800`` barely moves. Without this column a cell that drew
+    several stuck runs reads as "slow to learn" when it is really "slow to leave the lower
+    mode", and those are different claims. See report.md caveat 9.
+    """
     grid = on_common_grid(series)
     steps = grid["step"].to_numpy()
     smooth = trailing_mean(steps, grid["value"].to_numpy())
+    in_band = np.isfinite(smooth) & (smooth >= THRESHOLDS[0]) & (smooth < HEADLINE_THRESHOLD)
     out = {"smooth_max": float(np.nanmax(smooth)) if np.isfinite(smooth).any() else None,
-           "grid_points": int(len(steps))}
+           "grid_points": int(len(steps)),
+           "band_dwell": int(in_band.sum()) * GRID_STEPS}
     for thr in THRESHOLDS:
         reached = np.where(smooth >= thr)[0]
         out[f"solved_{thr}"] = bool(len(reached))
@@ -495,7 +582,7 @@ def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
     blank = {"reward_final": None, "reward_final_n": 0, "reward_max": None,
              "late_gain": None, "curve_points": 0, "curve_max_step": None,
              "eval_spacing_median": None, "eval_spacing_tail": None,
-             "smooth_max": None, "grid_points": 0,
+             "smooth_max": None, "grid_points": 0, "band_dwell": None,
              f"steps_to_{HEADLINE_THRESHOLD}_native": None}
     blank.update({f"steps_to_{t}": None for t in THRESHOLDS})
     blank.update({f"solved_{t}": None for t in THRESHOLDS})
@@ -662,6 +749,55 @@ def seed_spread(df: pd.DataFrame) -> str:
               "  maximum.\n")
 
 
+def seed_matched_pairs(df: pd.DataFrame) -> str:
+    """Torque-vs-servo comparisons that share a seed, which the cohort mostly cannot make.
+
+    Seed is confounded with the actuator almost everywhere here -- the servo arms are a
+    later launch -- so every arm difference below is *between* seeds, and cannot be
+    separated from seed noise except by the within-cell spread. The 2026-09-24 launch added
+    ``mlp_torque`` runs at seeds 51 and 52, which the servo arms already use, so a handful
+    of genuinely **paired** comparisons now exist: same network, same seed, same delay,
+    differing only in the actuator.
+
+    Two seeds is not a paired test, and this does not pretend to be one. What it is worth:
+    if the paired sign disagrees with the cell-mean sign at the same delay, the cell-mean
+    effect is seed noise, and that would be visible here and nowhere else. Printed for
+    every matching (network, delay, seed) rather than filtered, so it grows on its own as
+    more matched seeds arrive.
+    """
+    lines = ["\nseed-matched torque vs servo (same network, seed and delay)"]
+    found = 0
+    for (net, delay), g in df.groupby(["network", "delay"]):
+        for seed in sorted(g.seed_pair.unique()):
+            cell = g[g.seed_pair == seed]
+            if set(cell.actuator) != {"torque", "servo"}:
+                continue
+            found += 1
+            tq = cell[cell.actuator == "torque"].iloc[0]
+            sv = cell[cell.actuator == "servo"].iloc[0]
+            d_steps = ((sv[f"steps_to_{HEADLINE_THRESHOLD}"]
+                        - tq[f"steps_to_{HEADLINE_THRESHOLD}"]) / 1e6
+                       if pd.notna(sv[f"steps_to_{HEADLINE_THRESHOLD}"])
+                       and pd.notna(tq[f"steps_to_{HEADLINE_THRESHOLD}"]) else None)
+            lines.append(
+                f"   {net:3s} delay {int(delay):2d} {seed:<11s}  "
+                f"reward {tq['reward_final']:6.1f} -> {sv['reward_final']:6.1f} "
+                f"({sv['reward_final'] - tq['reward_final']:+6.1f})   "
+                f"steps_to_{HEADLINE_THRESHOLD} "
+                + (f"{tq[f'steps_to_{HEADLINE_THRESHOLD}'] / 1e6:6.1f} -> "
+                   f"{sv[f'steps_to_{HEADLINE_THRESHOLD}'] / 1e6:6.1f}e6 ({d_steps:+6.1f})"
+                   if d_steps is not None else "  (a run in the pair is censored)"))
+    if not found:
+        lines.append("   none: no seed appears in both actuators at any delay")
+    else:
+        lines.append(
+            f"\n   {found} matched pair(s). Compare each against the cell-mean effect for\n"
+            f"   the same network and delay in the 2x2 table above: agreement in *sign*\n"
+            f"   is what this buys. A disagreement would mean that cell's effect is seed\n"
+            f"   noise, which nothing else in this folder could detect.")
+    return "\n".join(lines) + "\n"
+
+
 def interaction_table(df: pd.DataFrame) -> str:
     """The 2x2 itself: cell means, the two simple effects, and their difference.
 
@@ -703,6 +839,47 @@ def interaction_table(df: pd.DataFrame) -> str:
         "  the two are substitutes; near zero means they add; positive means they\n"
         "  compound. Most cells are n=1, so compare against the seed spread above\n"
         "  before reading a sign.\n")
+    return "\n".join(lines)
+
+
+def bimodality(df: pd.DataFrame) -> str:
+    """How often does a run stall in the lower mode, and in which arm?
+
+    WalkerWalk's learning curve here is bimodal: a ~8.6e2 solution and a ~9.7e2 one, with
+    an abrupt step between them. ``band_dwell`` measures how long the trailing mean sat in
+    the lower mode. This matters for reading ``steps_to_900``, which is defined *inside*
+    the gap -- a cell whose seeds happened to stall reads as five times slower than its
+    neighbours on that readout and less than twice as slow on ``steps_to_800``.
+
+    Restricted to runs that eventually exceeded the criterion, because a run censored at
+    8.6e2 has a dwell bounded by its own budget and is a different statement.
+    """
+    ok = df[df[f"solved_{HEADLINE_THRESHOLD}"].astype("boolean").fillna(False)]
+    stuck = ok[ok["band_dwell"] > STALL_DWELL_STEPS]
+    tab = pd.crosstab(ok["condition"], ok["band_dwell"] > STALL_DWELL_STEPS)
+    lines = [f"\ndwell in [{THRESHOLDS[0]}, {HEADLINE_THRESHOLD}) for runs that later "
+             f"exceeded {HEADLINE_THRESHOLD}",
+             f"  median per arm (e6 steps): "
+             + "  ".join(f"{k}={v / 1e6:.0f}"
+                         for k, v in ok.groupby("condition")["band_dwell"].median().items()),
+             f"\n  stalled (> {STALL_DWELL_STEPS / 1e6:.0f}e6 in the lower mode):\n{tab}"]
+    if len(stuck):
+        lines.append("\n  the stalled runs")
+        for _, r in stuck.sort_values(["condition", "delay"]).iterrows():
+            lines.append(f"    {r['wandb_id']}  {r['condition']:<10} delay "
+                         f"{int(r['delay']):>2}  {r['seed_pair']:<11} "
+                         f"dwell {r['band_dwell'] / 1e6:5.0f}e6   "
+                         f"steps_to_{THRESHOLDS[0]} {r[f'steps_to_{THRESHOLDS[0]}'] / 1e6:5.0f}e6"
+                         f" -> steps_to_{HEADLINE_THRESHOLD} "
+                         f"{r[f'steps_to_{HEADLINE_THRESHOLD}'] / 1e6:5.0f}e6")
+    lines.append(
+        "\n  A cell's steps_to_900 is dominated by how many of its seeds stalled, so compare\n"
+        "  a suspicious cell against its own steps_to_800 before calling it slow, and\n"
+        "  against the per-seed table rather than the mean.\n"
+        "\n  Whether a run stalls looks like a property of the *seed*, not a coin flip at\n"
+        "  runtime: all four fixed-seed duplicate pairs took the same mode as each other\n"
+        "  (duplicates.txt), though only one of those four pairs stalled, so that is one\n"
+        "  informative observation rather than four.\n")
     return "\n".join(lines)
 
 
@@ -807,8 +984,10 @@ def main() -> None:
     grid = design_grid(df)
     spread = seed_spread(df)
     inter = interaction_table(df)
+    paired = seed_matched_pairs(df)
+    modes = bimodality(df)
     cost = regrid_cost(df)
-    for block in (grid, spread, inter, cost, servo):
+    for block in (grid, spread, inter, paired, modes, cost, servo):
         print(block)
 
     report = (comparability_report(runs, invariant_cols=INVARIANTS,
@@ -819,6 +998,8 @@ def main() -> None:
               + "\n\n" + "#" * 78 + "\n# DESIGN GRID\n" + "#" * 78 + grid
               + "\n" + "#" * 78 + "\n# WITHIN-CELL SPREAD\n" + "#" * 78 + spread
               + "\n" + "#" * 78 + "\n# THE 2x2\n" + "#" * 78 + inter
+              + "\n" + "#" * 78 + "\n# SEED-MATCHED PAIRS\n" + "#" * 78 + paired
+              + "\n" + "#" * 78 + "\n# BIMODALITY\n" + "#" * 78 + modes
               + "\n" + "#" * 78 + "\n# REGRIDDING COST\n" + "#" * 78 + cost
               + "\n" + "#" * 78 + "\n# SERVO IDENTITY\n" + "#" * 78 + servo)
     if not args.check:

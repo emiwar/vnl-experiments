@@ -1,0 +1,92 @@
+What did de-duplication throw away, and how much do identical runs differ?
+
+The problem
+-----------
+Four pairs of runs in this cohort's candidate pool agree on every experimental parameter
+*and* on **both** seeds -- the network-initialisation seed and the PPO seed that keys env
+resets, rollouts and eval (track README). They are not two seeds. They are one experiment
+run twice, differing only in MuJoCo/XLA nondeterminism, and counting both weights that
+seed double in every cell mean and every spread. ``extract._first_of_duplicates`` keeps
+the earlier-launched run of each pair; this script is what keeps the discarded one from
+being lost.
+
+Two jobs
+--------
+1. **Record what was dropped**, with the readouts recomputed the same way ``extract.py``
+   computes them, so the decision is auditable from the committed text rather than from a
+   re-run.
+2. **Measure end-to-end training nondeterminism at fixed seed**, which nothing else in
+   this project does. README §6 measures the *eval*'s nondeterminism (~1 % on this laptop,
+   exactly reproducible on the cluster) and the final training-curve point's (a few
+   percent). Neither says what happens when a whole 1e9-step *training* run is repeated
+   with the same seeds: every gradient step after the first divergence in the physics is
+   computed on different data, so the two runs are different trajectories through weight
+   space from very early on. These four pairs are the only direct measurement of that
+   available here, and the number matters -- it is the floor below which no arm difference
+   in ``report.md`` means anything, however many seeds are averaged.
+
+What to expect, and what it means if the pairs disagree
+-------------------------------------------------------
+Reward at the end of training should agree closely; a pair that does not is telling you
+the cell is in a regime where the outcome is not determined by the seed at all. The
+*time*-to-criterion may agree much less well, because ``steps_to_900`` is defined inside
+the gap of a bimodal learning curve (report.md caveat 8) -- so a pair that takes the same
+mode should agree, and a pair that splits modes will differ by hundreds of millions of
+steps. Both facts are worth having explicitly.
+
+==============================================================================
+
+candidate pool (before de-duplication): 86 runs
+duplicate groups                      : 4
+runs discarded                        : 4
+
+==============================================================================
+fm_servo  delay 5  seed i51/p51
+==============================================================================
+  id         kept  launched    gpu                                      reward     to900    dwell
+  w2bw0kgb   yes   2026-09-18  A100-SXM4-80GB                            978.9    124.8e6      29e6
+  pp2cl4vc   NO    2026-09-20  RTX PRO 6000 Blackwell Server Edition     978.6    124.8e6      24e6
+  -> |delta reward| = 0.2
+  -> |delta steps_to_900| = 0.0e6   both runs took the SAME mode (report.md caveat 8)
+
+==============================================================================
+fm_servo  delay 10  seed i54/p54
+==============================================================================
+  id         kept  launched    gpu                                      reward     to900    dwell
+  xko2uaxu   yes   2026-09-23  H200                                      974.6     81.8e6      38e6
+  7zvmuf63   NO    2026-09-24  H200                                      970.9     91.4e6      29e6
+  -> |delta reward| = 3.6
+  -> |delta steps_to_900| = 9.6e6   both runs took the SAME mode (report.md caveat 8)
+
+==============================================================================
+fm_torque  delay 3  seed i47/p47
+==============================================================================
+  id         kept  launched    gpu                                      reward     to900    dwell
+  nhw49shh   yes   2026-09-15  A100-SXM4-80GB                            979.1     57.8e6      10e6
+  kcni24rk   NO    2026-09-17  A40                                       979.1     67.3e6      10e6
+  -> |delta reward| = 0.1
+  -> |delta steps_to_900| = 9.6e6   both runs took the SAME mode (report.md caveat 8)
+
+==============================================================================
+mlp_servo  delay 5  seed i51/p51
+==============================================================================
+  id         kept  launched    gpu                                      reward     to900    dwell
+  sueevgls   yes   2026-09-18  A100-SXM4-80GB                            967.8    777.8e6     638e6
+  sdacvrru   NO    2026-09-20  A100-SXM4-40GB                            968.7    700.9e6     605e6
+  -> |delta reward| = 0.9
+  -> |delta steps_to_900| = 76.9e6   both runs took the SAME mode (report.md caveat 8)
+
+==============================================================================
+End-to-end training nondeterminism at fixed seed (both seeds identical)
+==============================================================================
+  |delta reward_final| over 4 pairs: median 0.6, max 3.6 (on rewards of ~9.7e2, i.e. 0.37 % at worst)
+  |delta steps_to_900| over 4 pairs: median 9.6e6, max 76.9e6
+  pairs taking the same learning mode: 4/4
+
+  This is the floor. No arm difference in report.md that is smaller than the
+  reward figure above means anything, however many seeds are averaged -- and
+  the steps figure is the floor for the *time* readout, which is looser
+  because it is defined inside a bimodal gap. Both are measured here on the
+  same task, budget, code and hardware pool as every number in the report,
+  which is what makes them usable as a floor rather than an analogy.
+==============================================================================

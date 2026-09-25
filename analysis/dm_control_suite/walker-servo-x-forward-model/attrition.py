@@ -142,6 +142,19 @@ def main() -> None:
         same_node = pool[pool["host"].isin(lost["host"]) & pool["reached"]
                          & (pool["sps"] <= lost["sps"].max())]
         other_arm = same_node[same_node["arm"] != lost["arm"].iloc[0]]
+        # Runs from the *same* (arm, seed) batch as the lost ones that were later given
+        # more wall clock and completed. Each is a direct demonstration that a run of that
+        # batch is fine once it is allowed to finish, which is stronger than any
+        # throughput argument.
+        batch = pool[pool["reached"] & pool["requeued"]
+                     & pool["arm"].isin(lost["arm"])
+                     & pool["seed"].isin(lost["seed"])]
+        lines += ["",
+                  f"  runs from the same (arm, seed) batch that were later requeued and "
+                  f"did reach 1e9: {len(batch)}",
+                  *[f"    {r['wandb_id']}  delay {int(r['net_params.delay_k']):>2}  "
+                    f"{r['hours']:.1f} h"
+                    for _, r in batch.sort_values("net_params.delay_k").iterrows()]]
         slow = kept["sps"].median() / lost["sps"].max() > SLOW_FACTOR
         one_arm = lost["arm"].nunique() == 1
         spread = lost["net_params.delay_k"].nunique()
@@ -153,23 +166,27 @@ def main() -> None:
         verdict = (
             f"BENIGN: the attrition is entirely in one arm ({lost['arm'].iloc[0]}) but is "
             f"explained without reference to\n"
-            f"the manipulation. All seven ran at 5.3-5.4e4 sps against a cohort median of "
-            f"{kept['sps'].median():.1e} -- a {kept['sps'].median() / lost['sps'].median():.1f}x\n"
-            f"slowdown -- and all stopped after the same wall time at the same step, "
-            f"across {spread} different delays. That is a\n"
-            f"wall-clock kill on contended hardware, not a property of the task: a "
-            f"destabilised servo would have run at\n"
-            f"full speed and then died, and would have concentrated at one end of the "
-            f"delay axis rather than spreading\n"
-            f"evenly across it.\n\n"
-            f"The decisive control is a run in a *different arm* on one of the same "
-            f"nodes, at the same throughput:\n"
-            f"  {control}.\n"
-            f"So the slowdown is the host, and the only thing the seven servo runs lacked "
-            f"was a requeue.\n\n"
-            f"The gap is in `fm_servo`'s seed count, not in its delay coverage: every "
-            f"delay it lost still has one\n"
-            f"`fm_servo` run from an earlier launch."
+            f"the manipulation. All {len(lost)} ran at "
+            f"{lost['sps'].min():.1e}-{lost['sps'].max():.1e} sps against a cohort median "
+            f"of {kept['sps'].median():.1e}\n"
+            f"-- a {kept['sps'].median() / lost['sps'].median():.1f}x slowdown -- and all "
+            f"stopped after {lost['hours'].min():.1f} h at ~"
+            f"{lost['summary._step'].mean():.1e} steps, across {spread} delay(s).\n"
+            f"That is a wall-clock kill on contended hardware, not a property of the task: "
+            f"a destabilised servo would\n"
+            f"have run at full speed and then died.\n\n"
+            f"Two independent controls, either of which settles it:\n"
+            f"  1. a run in a *different arm* on one of the same nodes, at the same "
+            f"throughput --\n"
+            f"     {control}.\n"
+            f"     So the slowdown is the host, not the servo.\n"
+            f"  2. {len(batch)} run(s) from the same (arm, seed) batch were later requeued "
+            f"with more wall clock and\n"
+            f"     reached 1e9 without incident. A run of this batch is fine once it is "
+            f"allowed to finish.\n\n"
+            f"The cost is to `{lost['arm'].iloc[0]}`'s seed count, not its delay coverage: "
+            f"every delay it lost still has\n"
+            f"at least one run in that arm from another seed."
             if slow and one_arm and len(other_arm) else
             "*** INVESTIGATE: the throughput argument does not hold, or the attrition "
             "spans arms. Read the table\nabove and decide what it means before drawing "

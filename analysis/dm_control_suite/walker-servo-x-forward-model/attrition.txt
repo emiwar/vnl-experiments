@@ -37,64 +37,64 @@ Verdict: the divergence question is settled separately and directly by
 in the cohort. This script is about the ones that are not.
 
 ==============================================================================
-candidate runs (cohort gates except reached-budget): 70
-  reached 1e9        : 63
-  did not reach 1e9  : 7
+candidate runs (cohort gates except reached-budget): 88
+  reached 1e9        : 86
+  did not reach 1e9  : 2
 
 attrition per arm x delay
-net_params.delay_k  2.0   5.0   7.0   10.0  12.0  15.0  20.0
-arm                                                         
-fm_servo               1     1     1     1     1     1     1
+net_params.delay_k  5.0  7.0
+arm                         
+fm_servo              1    1
 
 attrition per arm, against how many candidates that arm had
-  fm_servo   7 of 19
+  fm_servo   2 of 22
   fm_torque  0 of 18
-  mlp_servo  0 of 15
-  mlp_torque 0 of 18
+  mlp_servo  0 of 21
+  mlp_torque 0 of 27
 
 ==============================================================================
 the runs that did not reach the budget
 ==============================================================================
   id         arm        delay  seed         step      sps  hours  host
-  o4r3683q   fm_servo       2    53    452444160    54099    2.9  holygpu8a29104.rc.fas.harvard.edu
   6pjllp8z   fm_servo       5    53    450232320    53843    2.9  holygpu8a29104.rc.fas.harvard.edu
   vzxzz0q0   fm_servo       7    53    452689920    54313    2.9  holygpu8a25404.rc.fas.harvard.edu
-  g7y7z8bn   fm_servo      10    53    450232320    53708    2.9  holygpu8a25404.rc.fas.harvard.edu
-  w1gsuvxg   fm_servo      12    53    454164480    54030    2.9  holygpu8a25404.rc.fas.harvard.edu
-  oh99hxac   fm_servo      15    53    449740800    53481    2.9  holygpu8a25404.rc.fas.harvard.edu
-  d651kx40   fm_servo      20    53    450232320    53373    2.9  holygpu8a25404.rc.fas.harvard.edu
 
-  throughput of the runs that DID reach the budget: median 219003 sps, range [53597, 365020]
-  throughput of the runs that did NOT             : median 53843 sps, range [53373, 54313]
-  ratio of medians                                : 4.07x
+  throughput of the runs that DID reach the budget: median 235275 sps, range [53597, 365020]
+  throughput of the runs that did NOT             : median 54078 sps, range [53843, 54313]
+  ratio of medians                                : 4.35x
   wall time used by the lost runs                 : 2.9-2.9 h
-  step reached by the lost runs                   : 4.497e+08-4.542e+08
+  step reached by the lost runs                   : 4.502e+08-4.527e+08
   nodes                                           : ['holygpu8a25404', 'holygpu8a29104']
 
   every candidate run on those same nodes, whichever arm:
     id         arm        delay      sps  hours  requeued  reached
-    d651kx40   fm_servo      20    53373    2.9      True  False
-    oh99hxac   fm_servo      15    53481    2.9      True  False
     nhw49shh   fm_torque      3    53597    6.4      True  True
-    g7y7z8bn   fm_servo      10    53708    2.9      True  False
     6pjllp8z   fm_servo       5    53843    2.9      True  False
-    w1gsuvxg   fm_servo      12    54030    2.9      True  False
-    o4r3683q   fm_servo       2    54099    2.9      True  False
     vzxzz0q0   fm_servo       7    54313    2.9      True  False
     f3hghsrn   fm_servo       3   173658    2.5      True  True
 
+  runs from the same (arm, seed) batch that were later requeued and did reach 1e9: 6
+    o4r3683q  delay  2  4.1 h
+    f3hghsrn  delay  3  2.5 h
+    g7y7z8bn  delay 10  4.1 h
+    w1gsuvxg  delay 12  3.7 h
+    oh99hxac  delay 15  3.7 h
+    d651kx40  delay 20  3.7 h
+
 ==============================================================================
 BENIGN: the attrition is entirely in one arm (fm_servo) but is explained without reference to
-the manipulation. All seven ran at 5.3-5.4e4 sps against a cohort median of 2.2e+05 -- a 4.1x
-slowdown -- and all stopped after the same wall time at the same step, across 7 different delays. That is a
-wall-clock kill on contended hardware, not a property of the task: a destabilised servo would have run at
-full speed and then died, and would have concentrated at one end of the delay axis rather than spreading
-evenly across it.
+the manipulation. All 2 ran at 5.4e+04-5.4e+04 sps against a cohort median of 2.4e+05
+-- a 4.4x slowdown -- and all stopped after 2.9 h at ~4.5e+08 steps, across 2 delay(s).
+That is a wall-clock kill on contended hardware, not a property of the task: a destabilised servo would
+have run at full speed and then died.
 
-The decisive control is a run in a *different arm* on one of the same nodes, at the same throughput:
-  nhw49shh (fm_torque, delay 3, 53597 sps, 6.4 h, requeued) reached 1e9 anyway.
-So the slowdown is the host, and the only thing the seven servo runs lacked was a requeue.
+Two independent controls, either of which settles it:
+  1. a run in a *different arm* on one of the same nodes, at the same throughput --
+     nhw49shh (fm_torque, delay 3, 53597 sps, 6.4 h, requeued) reached 1e9 anyway.
+     So the slowdown is the host, not the servo.
+  2. 6 run(s) from the same (arm, seed) batch were later requeued with more wall clock and
+     reached 1e9 without incident. A run of this batch is fine once it is allowed to finish.
 
-The gap is in `fm_servo`'s seed count, not in its delay coverage: every delay it lost still has one
-`fm_servo` run from an earlier launch.
+The cost is to `fm_servo`'s seed count, not its delay coverage: every delay it lost still has
+at least one run in that arm from another seed.
 ==============================================================================
