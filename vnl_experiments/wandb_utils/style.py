@@ -127,6 +127,13 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     "fm_torque": {"color": "C2", "marker": "^", "label": "Forward model + torque"},
     "mlp_servo": {"color": "C3", "marker": "D", "label": "MLP + servo"},
     "fm_servo": {"color": "C4", "marker": "s", "label": "Forward model + servo"},
+    # Efference copy vs none across tasks (2026-09-28). The arms reuse `efference` C1 and
+    # `no_efference` C0 above rather than taking new hues, so the manipulation reads the
+    # same colour in the dm_control small multiples as in the rodent's
+    # `proprioceptive-delay-efference/`. Only the delay-0 reference level is new: at
+    # `delay_k = 0` an `efference_length == delay_k` run *is* an `efference_length == 0`
+    # run, so it belongs to neither arm and is drawn as a level rather than a point.
+    "undelayed": {"color": "0.35", "marker": "*", "label": "No delay (reference level)"},
     # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
     # circle = position, open triangle = torque). The hue was initially the decoder input,
     # so that the two axes of the cohort stayed separable on an x-axis already spent on

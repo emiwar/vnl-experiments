@@ -1,0 +1,1656 @@
+======================================================================
+Group condition='cartpole_swingup_efference'  (n=14)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [0.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [2.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='cartpole_swingup_no_efference'  (n=8)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [2.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='cartpole_swingup_undelayed'  (n=4)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [2.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='cheetah_run_efference'  (n=8)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [193167360.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [100000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='cheetah_run_no_efference'  (n=12)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [163184640.0, 205946880.0, 298106880.0, 480215040.0, 491520.0, 55787520.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [100000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='cheetah_run_undelayed'  (n=2)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.sim_dt                 : [0.01]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [100000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='humanoid_walk_efference'  (n=18)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [116490240.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [200000.0]
+  env_params.njmax                  : [250.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='humanoid_walk_no_efference'  (n=17)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [136888320.0, 269107200.0, 29736960.0, 480215040.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [200000.0]
+  env_params.njmax                  : [250.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='humanoid_walk_undelayed'  (n=2)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [200000.0]
+  env_params.njmax                  : [250.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='reacher_hard_efference'  (n=24)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.02]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [0.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='reacher_hard_no_efference'  (n=9)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.02]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [0.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='reacher_hard_undelayed'  (n=3)
+======================================================================
+  config.ppo.total_steps            : [480000000]
+  summary._step                     : [480215040.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.02]
+  env_params.sim_dt                 : [0.005]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0]
+  env_params.njmax                  : [0.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_servo_efference'  (n=19)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_servo_no_efference'  (n=9)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_servo_undelayed'  (n=2)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_torque_efference'  (n=26)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_torque_no_efference'  (n=10)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0, 479723520.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='walker_walk_torque_undelayed'  (n=2)
+======================================================================
+  config.ppo.total_steps            : [1000000000]
+  summary._step                     : [1000243200.0]
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=189)
+======================================================================
+  config.ppo.total_steps            : [1000000000, 480000000]  *** VARIES ***
+  summary._step                     : [0.0, 1000243200.0, 116490240.0, 136888320.0, 163184640.0, 193167360.0, 205946880.0, 269107200.0, 29736960.0, 298106880.0, 479723520.0, 480215040.0, 491520.0, 55787520.0]  *** VARIES ***
+  config.ppo.n_envs                 : [8192]
+  config.ppo.rollout_length         : [30]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4]
+  config.ppo.n_minibatches          : [8]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.weight_decay           : []
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.0025, 0.005, 0.01]  *** VARIES ***
+  env_params.action_repeat          : [1.0]
+  env_params.impl                   : ['jax']
+  env_params.nconmax                : [0.0, 100000.0, 200000.0, 50000.0]  *** VARIES ***
+  env_params.njmax                  : [0.0, 100.0, 2.0, 250.0]  *** VARIES ***
+  env_params.servo_damping_ratio    : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+--- DESIGN AXES: expected to vary; see report.md ------------------
+======================================================================
+Group condition='cartpole_swingup_efference'  (n=14)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['failed', 'finished']  *** VARIES ***
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [1.0, 2.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='cartpole_swingup_no_efference'  (n=8)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [0.0, 1.0]  *** VARIES ***
+  gpu                               : ['NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='cartpole_swingup_undelayed'  (n=4)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [1.0]
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='cheetah_run_efference'  (n=8)
+======================================================================
+  env                               : ['CheetahRun']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 5.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 5.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [1.0, 2.0, 3.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='cheetah_run_no_efference'  (n=12)
+======================================================================
+  env                               : ['CheetahRun']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 2.0, 3.0, 4.0, 7.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='cheetah_run_undelayed'  (n=2)
+======================================================================
+  env                               : ['CheetahRun']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [3.0]
+  gpu                               : ['NVIDIA H200']
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='humanoid_walk_efference'  (n=18)
+======================================================================
+  env                               : ['HumanoidWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 2.0, 3.0, 5.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='humanoid_walk_no_efference'  (n=17)
+======================================================================
+  env                               : ['HumanoidWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 2.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 2.0, 3.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='humanoid_walk_undelayed'  (n=2)
+======================================================================
+  env                               : ['HumanoidWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [3.0]
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='reacher_hard_efference'  (n=24)
+======================================================================
+  env                               : ['ReacherHard']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 5.0, 7.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [0.0, 1.0, 2.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 45]  *** VARIES ***
+
+======================================================================
+Group condition='reacher_hard_no_efference'  (n=9)
+======================================================================
+  env                               : ['ReacherHard']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [0.0]
+  gpu                               : ['NVIDIA H100 80GB HBM3', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='reacher_hard_undelayed'  (n=3)
+======================================================================
+  env                               : ['ReacherHard']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [0.0, 1.0, 2.0]  *** VARIES ***
+  gpu                               : ['NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 45]  *** VARIES ***
+
+======================================================================
+Group condition='walker_walk_servo_efference'  (n=19)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [64.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.servo_center           : ['range']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [51, 52, 53, 54]  *** VARIES ***
+  config.seed                       : [44, 51, 52, 53, 54]  *** VARIES ***
+
+======================================================================
+Group condition='walker_walk_servo_no_efference'  (n=9)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [64.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['range']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [45]
+  config.seed                       : [45]
+
+======================================================================
+Group condition='walker_walk_servo_undelayed'  (n=2)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [64.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['range']
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False]
+  requeue.restart_count             : [1.0]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [51, 52]  *** VARIES ***
+  config.seed                       : [51, 52]  *** VARIES ***
+
+======================================================================
+Group condition='walker_walk_torque_efference'  (n=26)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 3.0, 5.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [43, 45, 46, 47, 51, 52]  *** VARIES ***
+  config.seed                       : [12345, 45, 46, 47, 51, 52]  *** VARIES ***
+
+======================================================================
+Group condition='walker_walk_torque_no_efference'  (n=10)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000]
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 2.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 45]  *** VARIES ***
+  config.seed                       : [1234, 45]  *** VARIES ***
+
+======================================================================
+Group condition='walker_walk_torque_undelayed'  (n=2)
+======================================================================
+  env                               : ['WalkerWalk']
+  env_params.servo_kp               : [0.0]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  env_params.servo_center           : ['qpos0']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  requeue.restart_count             : [0.0]
+  gpu                               : ['NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [46, 52]  *** VARIES ***
+  config.seed                       : [46, 52]  *** VARIES ***
+
+======================================================================
+All runs  (n=189)
+======================================================================
+  env                               : ['CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'ReacherHard', 'WalkerWalk']  *** VARIES ***
+  env_params.servo_kp               : [0.0, 64.0]  *** VARIES ***
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.servo_center           : ['qpos0', 'range']  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['crashed', 'failed', 'finished']  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  requeue.restart_count             : [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46, 47, 51, 52, 53, 54]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 44, 45, 46, 47, 51, 52, 53, 54]  *** VARIES ***
+
+##############################################################################
+# DESIGN GRID
+##############################################################################
+=== CartpoleSwingup  (budget 480e6, 1 step = 10 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   1   1   2   0   3   0   2   3   2
+no_efference   0   1   0   1   1   1   1   1   1   1
+undelayed      4   0   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   1   1   1   0   2   0   2   3   2
+no_efference   0   1   0   1   1   1   1   1   1   1
+undelayed      4   0   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 5, 10, 15, 20, 25]
+  delays with BOTH arms usable  : [2, 5, 10, 15, 20, 25]
+
+=== CheetahRun  (budget 480e6, 1 step = 10 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   1   0   1   0   2   2   2   0   0
+no_efference   0   2   1   1   1   2   1   1   2   1
+undelayed      2   0   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   1   0   1   0   2   2   1   0   0
+no_efference   0   1   0   1   1   1   1   1   1   0
+undelayed      2   0   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 5, 10, 12, 15]
+  delays with BOTH arms usable  : [2, 5, 10, 12, 15]
+
+=== ReacherHard  (budget 480e6, 1 step = 20 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   3   0   3   3   3   3   3   3   3
+no_efference   0   1   1   1   1   1   1   1   1   1
+undelayed      3   0   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   3   0   3   3   3   3   3   3   3
+no_efference   0   1   1   1   1   1   1   1   1   1
+undelayed      3   0   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 5, 7, 10, 12, 15, 20, 25]
+  delays with BOTH arms usable  : [2, 5, 7, 10, 12, 15, 20, 25]
+
+=== HumanoidWalk  (budget 480e6, 1 step = 25 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20
+arm                                             
+efference      0   1   3   4   3   3   2   1   1
+no_efference   0   3   2   2   4   4   2   0   0
+undelayed      2   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20
+arm                                             
+efference      0   1   1   4   3   3   1   0   0
+no_efference   0   2   2   2   4   3   1   0   0
+undelayed      2   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 3, 5, 7, 10, 12]
+  delays with BOTH arms usable  : [2, 3, 5, 7, 10, 12]
+
+=== WalkerWalk, torque  (budget 1000e6, 1 step = 25 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   2   4   3   4   3   3   2   2   3
+no_efference   0   1   1   1   2   1   1   1   1   1
+undelayed      2   0   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   2   4   3   4   3   3   2   2   3
+no_efference   0   1   1   1   1   1   1   1   1   1
+undelayed      2   0   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 3, 5, 7, 10, 12, 15, 20, 25]
+  delays with BOTH arms usable  : [2, 3, 5, 7, 10, 12, 15, 20, 25]
+
+=== WalkerWalk, servo (kp = 64)  (budget 1000e6, 1 step = 25 ms)
+all runs:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   2   1   3   3   3   3   1   1   2
+no_efference   0   1   1   1   1   1   1   1   1   1
+undelayed      2   0   0   0   0   0   0   0   0   0
+reached the budget:
+delay         0   2   3   5   7   10  12  15  20  25
+arm                                                 
+efference      0   2   1   3   3   3   3   1   1   2
+no_efference   0   1   1   1   1   1   1   1   1   1
+undelayed      2   0   0   0   0   0   0   0   0   0
+  delays with BOTH arms present : [2, 3, 5, 7, 10, 12, 15, 20, 25]
+  delays with BOTH arms usable  : [2, 3, 5, 7, 10, 12, 15, 20, 25]
+
+  Only the 'usable' delays support a contrast. A delay present above and absent
+  below is measured-but-unfinished, which is a different statement from never run.
+
+##############################################################################
+# PANEL ANCHORS AND CRITERIA
+##############################################################################
+per-panel delay-0 anchor and the criteria it sets
+panel                   n   anchor      min      max  spread%    thr80    thr90    thr95
+CartpoleSwingup         4    741.9    661.8    805.8    19.4%    593.5    667.7    704.8
+CheetahRun              2    876.0    834.0    918.1     9.6%    700.8    788.4    832.2
+ReacherHard             3    973.4    971.8    976.6     0.5%    778.7    876.1    924.7
+HumanoidWalk            2    968.2    961.9    974.5     1.3%    774.6    871.4    919.8
+WalkerWalk, torque      2    979.6    978.7    980.4     0.2%    783.7    881.6    930.6
+WalkerWalk, servo (kp = 64)  2    980.1    979.5    980.8     0.1%    784.1    882.1    931.1
+
+  'anchor' is the mean reward_final of that panel's delay-0 runs that reached the
+  budget. 'spread%' is (max-min)/anchor over those runs: where it is large the
+  criterion inherits that noise and a time-to-criterion is not quotable.
+
+##############################################################################
+# ATTRITION
+##############################################################################
+runs without a usable readout at their panel's budget: 17 of 189
+  of which: stopped training early 14, trained fully but stopped logging eval 3
+
+  CartpoleSwingup: 2 short efference=2/14  no_efference=0/8  undelayed=0/4
+    y2bctbw8  efference     delay  5  i44/p1234   state=failed    trained to     0.0e6, last eval at     nane6   stopped training
+    uqmzersa  efference     delay 10  i44/p1234   state=failed    trained to     0.0e6, last eval at     nane6   stopped training
+
+  CheetahRun: 6 short efference=1/8  no_efference=5/12  undelayed=0/2
+    iu53418j  efference     delay 15  i43/p43     state=crashed   trained to   193.2e6, last eval at   192.2e6   stopped training
+    cwpkk7nq  no_efference  delay  2  i42/p1234   state=crashed   trained to   205.9e6, last eval at   201.8e6   stopped training
+    fumrhra7  no_efference  delay  3  i42/p1234   state=crashed   trained to   298.1e6, last eval at   297.6e6   stopped training
+    zm8l935n  no_efference  delay 10  i42/p1234   state=crashed   trained to    55.8e6, last eval at    52.8e6   stopped training
+    jstdofav  no_efference  delay 20  i42/p1234   state=crashed   trained to   163.2e6, last eval at     nane6   stopped training
+    61zfwypo  no_efference  delay 25  i42/p1234   state=crashed   trained to     0.5e6, last eval at     nane6   stopped training
+
+  HumanoidWalk: 8 short efference=5/18  no_efference=3/17  undelayed=0/2
+    c41m4w9v  efference     delay  3  i42/p1234   state=crashed   trained to     nane6, last eval at     nane6   stopped training
+    vvl277mf  efference     delay  3  i43/p43     state=crashed   trained to   116.5e6, last eval at   115.3e6   stopped training
+    6sdnzid5  efference     delay 12  i42/p1234   state=finished  trained to   480.2e6, last eval at    65.6e6   trained fully, eval series ends early
+    jorslhah  efference     delay 15  i42/p1234   state=finished  trained to   480.2e6, last eval at   266.4e6   trained fully, eval series ends early
+    6bjbs3a6  efference     delay 20  i42/p1234   state=finished  trained to   480.2e6, last eval at   402.8e6   trained fully, eval series ends early
+    8me7p0qs  no_efference  delay  2  i42/p1234   state=crashed   trained to   269.1e6, last eval at   268.9e6   stopped training
+    jsynpmno  no_efference  delay 10  i42/p1234   state=crashed   trained to   136.9e6, last eval at   134.4e6   stopped training
+    r8ajmf28  no_efference  delay 12  i45/p45     state=crashed   trained to    29.7e6, last eval at    29.0e6   stopped training
+
+  WalkerWalk, torque: 1 short efference=0/26  no_efference=1/10  undelayed=0/2
+    j1huu3d3  no_efference  delay  7  i45/p45     state=crashed   trained to   479.7e6, last eval at   475.3e6   stopped training
+
+  Where the losses sit in one arm, the missing cells are not missing at random.
+  They are not an outcome either -- the no-copy arms were launched last in every
+  panel -- but they do decide which delays can be contrasted at all.
+
+##############################################################################
+# WITHIN-CELL SPREAD
+##############################################################################
+reward_final spread within each (panel, arm, delay) cell
+
+  CartpoleSwingup: 4 of 15 cells have >1 seed
+    spread over those cells: median 53.3  max 75.6 reward
+                     count        mean         min         max     spread
+    arm       delay                                                      
+    efference 10         2  777.893042  740.104350  815.681734  75.577384
+              15         2  816.043827  798.858109  833.229545  34.371436
+              20         3  801.149853  761.599976  833.770293  72.170317
+              25         2  830.446083  818.563693  842.328472  23.764779
+
+  CheetahRun: 2 of 12 cells have >1 seed
+    spread over those cells: median 8.5  max 14.5 reward
+                     count        mean         min         max     spread
+    arm       delay                                                      
+    efference 10         2  914.373226  907.137285  921.609167  14.471883
+              12         2  913.093948  911.812018  914.375879   2.563861
+
+  ReacherHard: 8 of 17 cells have >1 seed
+    spread over those cells: median 92.0  max 177.4 reward
+                     count        mean         min         max      spread
+    arm       delay                                                       
+    efference 2          3  965.063281  957.412109  969.213672   11.801563
+              5          3  950.416146  938.540234  957.866797   19.326563
+              7          3  942.387891  939.257422  945.080469    5.823047
+              10         3  896.595833  821.441797  938.699609  117.257812
+              12         3  875.794010  763.668750  941.071875  177.403125
+              15         3  890.411328  844.578125  913.999609   69.421484
+              20         3  884.881380  815.151562  929.698437  114.546875
+              25         3  845.389583  756.185938  921.838672  165.652734
+
+  HumanoidWalk: 8 of 12 cells have >1 seed
+    spread over those cells: median 472.9  max 897.2 reward
+                        count        mean         min         max      spread
+    arm          delay                                                       
+    efference    5          4  760.277850  164.450063  965.164923  800.714861
+                 7          3  786.109161  481.682822  948.063606  466.380784
+                 10         3  352.284542   97.115312  860.932849  763.817537
+    no_efference 2          2  972.868356  972.785260  972.951453    0.166193
+                 3          2  968.769421  967.764185  969.774658    2.010474
+                 5          2  949.332498  946.549274  952.115723    5.566449
+                 7          4  308.007514   43.510710  940.725006  897.214296
+                 10         3  298.262788  118.616389  598.096408  479.480019
+
+  WalkerWalk, torque: 9 of 18 cells have >1 seed
+    spread over those cells: median 4.4  max 144.2 reward
+                     count        mean         min         max      spread
+    arm       delay                                                       
+    efference 2          2  977.223763  976.746332  977.701194    0.954862
+              3          4  973.848715  972.383795  975.744490    3.360696
+              5          3  968.988548  968.781960  969.155724    0.373765
+              7          4  965.843030  963.009827  967.367465    4.357638
+              10         3  942.872006  941.478194  945.171848    3.693654
+              12         3  938.981592  931.942568  947.688194   15.745625
+              15         2  676.545078  604.451327  748.638829  144.187501
+              20         2  577.021244  555.359538  598.682950   43.323412
+              25         3  539.678106  515.428547  582.024204   66.595658
+
+  WalkerWalk, servo (kp = 64): 6 of 18 cells have >1 seed
+    spread over those cells: median 6.6  max 114.5 reward
+                     count        mean         min         max      spread
+    arm       delay                                                       
+    efference 2          2  977.430240  976.753296  978.107183    1.353887
+              5          3  972.032905  967.762301  974.785639    7.023338
+              7          3  962.354165  960.557035  963.387063    2.830028
+              10         3  950.202221  947.205455  953.449502    6.244046
+              12         3  945.152851  922.625277  968.859836   46.234558
+              25         2  718.004253  660.737138  775.271368  114.534230
+
+  Variance is strongly regime-dependent: a solved cell's seeds agree to a few
+  reward, a transitioning one's can differ by hundreds. Read a comparison against
+  the spread in *its own* regime and its own panel, never the cohort maximum.
+
+##############################################################################
+# THE CONTRAST: REWARD
+##############################################################################
+reward_final (reward); cells are means over seeds, '-' = cell empty, unfinished, or some run censored
+
+  CartpoleSwingup   delay 0 reference: 741.9 (n=4)
+   delay    ms   with copy   n     no copy   n   difference
+       2    20       787.9   1       659.6   1       -128.3
+       3    30       821.9   1           -   0            -
+       5    50       830.1   1       803.3   1        -26.7
+       7    70           -   0       857.2   1            -
+      10   100       777.9   2       851.2   1        +73.3
+      12   120           -   0       820.8   1            -
+      15   150       816.0   2       848.1   1        +32.0
+      20   200       801.1   3       751.3   1        -49.9
+      25   250       830.4   2       676.0   1       -154.4
+
+  CheetahRun   delay 0 reference: 876.0 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    20       928.7   1       931.1   1         +2.5
+       5    50       927.5   1       920.9   1         -6.6
+       7    70           -   0       907.7   1            -
+      10   100       914.4   2       822.3   1        -92.0
+      12   120       913.1   2       907.9   1         -5.2
+      15   150       898.4   1       893.0   1         -5.4
+      20   200           -   0       854.6   1            -
+
+  ReacherHard   delay 0 reference: 973.4 (n=3)
+   delay    ms   with copy   n     no copy   n   difference
+       2    40       965.1   3       971.8   1         +6.8
+       3    60           -   0       970.6   1            -
+       5   100       950.4   3       961.3   1        +10.9
+       7   140       942.4   3       964.2   1        +21.8
+      10   200       896.6   3       957.8   1        +61.2
+      12   240       875.8   3       953.7   1        +77.9
+      15   300       890.4   3       942.1   1        +51.6
+      20   400       884.9   3       929.0   1        +44.1
+      25   500       845.4   3       912.9   1        +67.5
+
+  HumanoidWalk   delay 0 reference: 968.2 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50       972.9   1       972.9   2         -0.0
+       3    75       973.0   1       968.8   2         -4.2
+       5   125       760.3   4       949.3   2       +189.1
+       7   175       786.1   3       308.0   4       -478.1
+      10   250       352.3   3       298.3   3        -54.0
+      12   300        98.6   1        97.5   1         -1.2
+
+  WalkerWalk, torque   delay 0 reference: 979.6 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50       977.2   2       976.2   1         -1.0
+       3    75       973.8   4       972.7   1         -1.1
+       5   125       969.0   3       966.3   1         -2.7
+       7   175       965.8   4       965.8   1         -0.0
+      10   250       942.9   3       957.0   1        +14.1
+      12   300       939.0   3       894.7   1        -44.3
+      15   375       676.5   2       850.6   1       +174.1
+      20   500       577.0   2       409.4   1       -167.6
+      25   625       539.7   3       166.3   1       -373.4
+
+  WalkerWalk, servo (kp = 64)   delay 0 reference: 980.1 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50       977.4   2       977.1   1         -0.4
+       3    75       979.0   1       973.9   1         -5.2
+       5   125       972.0   3       970.9   1         -1.2
+       7   175       962.4   3       963.0   1         +0.7
+      10   250       950.2   3       961.9   1        +11.7
+      12   300       945.2   3       956.5   1        +11.3
+      15   375       859.1   1       774.8   1        -84.3
+      20   500       812.0   1       673.9   1       -138.1
+      25   625       718.0   2       903.5   1       +185.5
+
+  'difference' is (no copy - with copy), so a negative reward difference and a
+  positive steps difference both mean the efference copy helped. Read each
+  difference against the spread in WITHIN-CELL SPREAD for the same panel and
+  delay before calling it real -- most no-copy cells are a single run.
+
+##############################################################################
+# THE CONTRAST: TIME
+##############################################################################
+steps_to_90 (e6 steps); cells are means over seeds, '-' = cell empty, unfinished, or some run censored
+
+  CartpoleSwingup   delay 0 reference: 53.0 (n=4)
+   delay    ms   with copy   n     no copy   n   difference
+       2    20        57.8   1        48.2   1         -9.6
+       3    30        48.2   1           -   0            -
+       5    50        48.2   1        57.8   1         +9.6
+       7    70           -   0        57.8   1            -
+      10   100        57.8   2        57.8   1         +0.0
+      12   120           -   0        62.4   1            -
+      15   150        55.3   2        67.3   1        +12.0
+      20   200        70.5   3       158.5   1        +88.0
+      25   250       177.7   2       326.6   1       +148.9
+
+  CheetahRun   delay 0 reference: 74.6 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    20        57.8   1        57.8   1         +0.0
+       5    50        57.8   1        67.3   1         +9.6
+       7    70           -   0        76.9   1            -
+      10   100       158.5   2       139.3   1        -19.2
+      12   120       177.7   2       110.6   1        -67.1
+      15   150       235.4   1       211.4   1        -24.1
+      20   200           -   0       273.8   1            -
+
+  ReacherHard   delay 0 reference: 30.6 (n=3)
+   delay    ms   with copy   n     no copy   n   difference
+       2    40        40.1   3        24.1   1        -16.1
+       3    60           -   0        29.0   1            -
+       5   100       164.9   3        38.6   1       -126.3
+       7   140       188.9   3        29.0   1       -159.9
+      10   200           -   0        29.0   1            -
+      12   240           -   0        29.0   1            -
+      15   300       302.5   3        29.0   1       -273.5
+      20   400           -   0        48.2   1            -
+      25   500           -   0       110.6   1            -
+
+  HumanoidWalk   delay 0 reference: 89.0 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50       148.9   1       127.3   2        -21.6
+       3    75       173.0   1       158.5   2        -14.5
+       5   125           -   0       208.9   2            -
+       7   175           -   0           -   0            -
+      10   250           -   0           -   0            -
+      12   300           -   0           -   0            -
+
+  WalkerWalk, torque   delay 0 reference: 48.2 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50        69.8   2        48.2   1        -21.6
+       3    75       126.1   4        57.8   1        -68.4
+       5   125        99.4   3        72.0   1        -27.4
+       7   175       206.6   4        96.1   1       -110.5
+      10   250       548.9   3       158.5   1       -390.4
+      12   300       611.4   3       633.8   1        +22.4
+      15   375           -   0           -   0            -
+      20   500           -   0           -   0            -
+      25   625           -   0           -   0            -
+
+  WalkerWalk, servo (kp = 64)   delay 0 reference: 62.5 (n=2)
+   delay    ms   with copy   n     no copy   n   difference
+       2    50        98.5   2        48.2   1        -50.4
+       3    75        76.9   1        57.8   1        -19.2
+       5   125       316.9   3       110.6   1       -206.3
+       7   175        94.5   3       177.7   1        +83.1
+      10   250       320.1   3       153.6   1       -166.5
+      12   300       270.5   3       235.4   1        -35.1
+      15   375           -   0           -   0            -
+      20   500           -   0           -   0            -
+      25   625           -   0       590.6   1            -
+
+  'difference' is (no copy - with copy), so a negative reward difference and a
+  positive steps difference both mean the efference copy helped. Read each
+  difference against the spread in WITHIN-CELL SPREAD for the same panel and
+  delay before calling it real -- most no-copy cells are a single run.
+
+##############################################################################
+# MODE RATES
+##############################################################################
+fraction of each cell's runs reaching the 90% criterion
+  (the readout to prefer wherever WITHIN-CELL SPREAD shows the cell is bimodal)
+
+  CartpoleSwingup
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          1/1          1/1                            
+       3          1/1            -                            
+       5          1/1          1/1                            
+       7            -          1/1                            
+      10          2/2          1/1             76             
+      12            -          1/1                            
+      15          2/2          1/1             34             
+      20          3/3          1/1             72             
+      25          2/2          1/1             24             
+
+  CheetahRun
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          1/1          1/1                            
+       5          1/1          1/1                            
+       7            -          1/1                            
+      10          2/2          1/1             14             
+      12          2/2          1/1              3             
+      15          1/1          1/1                            
+      20            -          1/1                            
+
+  ReacherHard
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          3/3          1/1             12             
+       3            -          1/1                            
+       5          3/3          1/1             19             
+       7          3/3          1/1              6             
+      10          2/3          1/1            117             
+      12          2/3          1/1            177             
+      15          3/3          1/1             69             
+      20          2/3          1/1            115             
+      25          1/3          1/1            166             
+
+  HumanoidWalk
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          1/1          2/2                           0
+       3          1/1          2/2                           2
+       5          3/4          2/2            801            6
+       7          2/3          1/4            466          897
+      10          1/3          0/3            764          479
+      12          0/1          0/1                            
+
+  WalkerWalk, torque
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          2/2          1/1              1             
+       3          4/4          1/1              3             
+       5          3/3          1/1              0             
+       7          4/4          1/1              4             
+      10          3/3          1/1              4             
+      12          3/3          1/1             16             
+      15          0/2          0/1            144             
+      20          0/2          0/1             43             
+      25          0/3          0/1             67             
+
+  WalkerWalk, servo (kp = 64)
+   delay    with copy      no copy   spread(copy) spread(none)
+       2          2/2          1/1              1             
+       3          1/1          1/1                            
+       5          3/3          1/1              7             
+       7          3/3          1/1              3             
+      10          3/3          1/1              6             
+      12          3/3          1/1             46             
+      15          0/1          0/1                            
+      20          0/1          0/1                            
+      25          0/2          1/1            115             
+
+  A cell at 1/3 or 2/4 is not a policy that scores its cell mean; it is a coin
+  flip whose bias this many runs cannot measure. Where both arms of a delay are
+  fractional, that delay says nothing about the efference copy however large the
+  difference of means happens to be.
+
+##############################################################################
+# PAIRED CONTRASTS
+##############################################################################
+paired contrasts: same panel, same delay, SAME seed pair, both arms
+
+  CartpoleSwingup   (2 paired delay(s))
+   delay        seed   with copy     no copy   difference
+      10   i42/p1234       815.7       851.2        +35.5
+      20   i42/p1234       833.8       751.3        -82.5
+    sign: 1 of 2 delays favour NO copy, 1 favour the copy
+
+  CheetahRun   (4 paired delay(s))
+   delay        seed   with copy     no copy   difference
+       5   i42/p1234       927.5       920.9         -6.6
+      10     i43/p43       921.6       822.3        -99.3
+      12   i42/p1234       914.4       907.9         -6.5
+      15   i42/p1234       898.4       893.0         -5.4
+    sign: 0 of 4 delays favour NO copy, 4 favour the copy
+
+  ReacherHard   (8 paired delay(s))
+   delay        seed   with copy     no copy   difference
+       2   i42/p1234       968.6       971.8         +3.3
+       5   i42/p1234       954.8       961.3         +6.4
+       7   i42/p1234       939.3       964.2        +24.9
+      10   i42/p1234       938.7       957.8        +19.1
+      12   i42/p1234       763.7       953.7       +190.1
+      15   i42/p1234       914.0       942.1        +28.1
+      20   i42/p1234       815.2       929.0       +113.9
+      25   i42/p1234       858.1       912.9        +54.8
+    sign: 8 of 8 delays favour NO copy, 0 favour the copy
+
+  HumanoidWalk   (8 paired delay(s))
+   delay        seed   with copy     no copy   difference
+       3     i45/p45       973.0       967.8         -5.2
+       5   i42/p1234       959.4       952.1         -7.2
+       5     i45/p45       965.2       946.5        -18.6
+       7   i42/p1234       948.1       154.5       -793.6
+       7     i43/p43       481.7       940.7       +459.0
+       7     i44/p44       928.6        93.3       -835.3
+      10     i44/p44       860.9       598.1       -262.8
+      10     i45/p45        97.1       178.1        +81.0
+    sign: 2 of 8 delays favour NO copy, 6 favour the copy
+
+  WalkerWalk, torque   (1 paired delay(s))
+   delay        seed   with copy     no copy   difference
+      25     i45/p45       521.6       166.3       -355.3
+    sign: 0 of 1 delays favour NO copy, 1 favour the copy
+
+  WalkerWalk, servo (kp = 64): no delay has both arms at one seed
+
+  23 paired comparison(s) in all. Compare each against the cell-mean
+  difference for the same panel and delay in THE CONTRAST: REWARD. Agreement in
+  *sign* is what pairing buys; a disagreement means that cell's effect is seed
+  noise, which nothing else here could detect.
+
+##############################################################################
+# BIMODALITY
+##############################################################################
+dwell between the 80% and 90% criteria, for runs that later exceeded the 90% one
+  stalled (> 100e6 in the band): 17 of 139
+
+arm                 efference  no_efference
+panel                                      
+cartpole_swingup            0             2
+cheetah_run                 0             2
+reacher_hard                6             0
+walker_walk_servo           3             1
+walker_walk_torque          2             1
+    15bainat  cartpole_swingup     no_efference  delay 20  i42/p1234   dwell   154e6
+    ga5roio8  cartpole_swingup     no_efference  delay 25  i42/p1234   dwell   221e6
+    fxxa3j54  cheetah_run          no_efference  delay 15  i42/p1234   dwell   106e6
+    8c58k1uc  cheetah_run          no_efference  delay 20  i43/p43     dwell   115e6
+    s6lj3phn  reacher_hard         efference     delay  5  i43/p43     dwell   106e6
+    arnshycb  reacher_hard         efference     delay  7  i42/p1234   dwell   158e6
+    icn8rgcb  reacher_hard         efference     delay  7  i43/p43     dwell   125e6
+    88ednhd4  reacher_hard         efference     delay 15  i45/p45     dwell   206e6
+    solwgrkc  reacher_hard         efference     delay 20  i43/p43     dwell   110e6
+    gkiw6gsm  reacher_hard         efference     delay 20  i45/p45     dwell   106e6
+    sueevgls  walker_walk_servo    efference     delay  5  i51/p51     dwell   346e6
+    rzpjxoc0  walker_walk_servo    efference     delay  5  i52/p52     dwell   120e6
+    n4sd91z1  walker_walk_servo    efference     delay 10  i53/p53     dwell   317e6
+    tper9myt  walker_walk_servo    no_efference  delay 25  i45/p45     dwell   101e6
+    ljbl8xs7  walker_walk_torque   efference     delay 12  i46/p46     dwell   144e6
+    k0n1mnn3  walker_walk_torque   efference     delay 12  i52/p52     dwell   125e6
+    7ii3wbbg  walker_walk_torque   no_efference  delay 12  i45/p45     dwell   336e6
+
+  A cell's time-to-criterion is dominated by how many of its seeds stalled, so
+  check its steps_to_80 in data.csv before calling it slow: if that moved little
+  and steps_to_90 moved a lot, what was measured is a stall, not a learning rate.
+
+##############################################################################
+# REQUEUE CONFOUND
+##############################################################################
+requeue counts by arm (-1 = the field predates the run)
+restarts      -1.0   0.0   1.0   2.0   3.0   4.0   5.0   7.0
+arm                                                         
+efference       48    29    16     8     5     0     3     0
+no_efference     0    44     8     7     2     1     0     3
+undelayed        7     2     3     1     2     0     0     0
+
+  requeued efference runs: 31; their steps_to_90 beside their cell
+    6iis4h8r  cartpole_swingup     delay  2  restarts 2       58e6   cell-mates none
+    y7y7eets  cartpole_swingup     delay  3  restarts 1       48e6   cell-mates none
+    t97gkm9o  cheetah_run          delay 10  restarts 2      139e6   cell-mates 178
+    2wqhnxm6  cheetah_run          delay 12  restarts 3      178e6   cell-mates 178
+    o1xy410d  cheetah_run          delay 12  restarts 2      178e6   cell-mates 178
+    w2ded8lm  cheetah_run          delay 15  restarts 3      235e6   cell-mates none
+    o6t4nocb  humanoid_walk        delay  3  restarts 3      173e6   cell-mates none
+    6sdhbquz  humanoid_walk        delay  5  restarts 5   censored   cell-mates 221, 346, 375
+    5tpai4w7  humanoid_walk        delay  5  restarts 2      221e6   cell-mates 346, 375
+    rjlkqq0a  humanoid_walk        delay  7  restarts 3   censored   cell-mates 255, 413
+    rxhdqaqh  humanoid_walk        delay 10  restarts 2   censored   cell-mates 456
+    un56aig4  humanoid_walk        delay 12  restarts 1   censored   cell-mates none
+    zo8ai8x7  reacher_hard         delay  2  restarts 1       39e6   cell-mates 39, 43
+    haa2liwa  reacher_hard         delay  5  restarts 1      159e6   cell-mates 144, 192
+    arnshycb  reacher_hard         delay  7  restarts 2      216e6   cell-mates 163, 187   slowest in its cell
+    icn8rgcb  reacher_hard         delay  7  restarts 1      163e6   cell-mates 187, 216
+    elttam67  reacher_hard         delay 10  restarts 1      221e6   cell-mates 269
+    84wndhf2  reacher_hard         delay 10  restarts 1      269e6   cell-mates 221   slowest in its cell
+    cwlddpw2  reacher_hard         delay 12  restarts 2   censored   cell-mates 139, 293
+    1jcl03u8  reacher_hard         delay 12  restarts 1      139e6   cell-mates 293
+    l0zrsfg1  reacher_hard         delay 15  restarts 2      269e6   cell-mates 264, 375
+    xzpvqnv3  reacher_hard         delay 20  restarts 1   censored   cell-mates 202, 346
+    solwgrkc  reacher_hard         delay 20  restarts 1      346e6   cell-mates 202   slowest in its cell
+    kgo6f75i  reacher_hard         delay 25  restarts 1   censored   cell-mates 303
+    t0ges0so  reacher_hard         delay 25  restarts 1   censored   cell-mates 303
+    1qp6or3g  walker_walk_servo    delay  2  restarts 1      139e6   cell-mates 58   slowest in its cell
+    8f8cupv6  walker_walk_torque   delay  2  restarts 5       58e6   cell-mates 82
+    5g1mpu8o  walker_walk_torque   delay  3  restarts 3      221e6   cell-mates 67, 77, 139   slowest in its cell
+    qcny1iui  walker_walk_torque   delay  7  restarts 5      192e6   cell-mates 96, 163, 375
+    biin3y95  walker_walk_torque   delay 10  restarts 1      399e6   cell-mates 595, 653
+    poqgs9eo  walker_walk_torque   delay 25  restarts 1   censored   cell-mates none
+
+  Read this before reading any time difference. Where the no-copy arm has zero
+  restarts and the efference arm does not, the two cannot be separated here.
+
+##############################################################################
+# WITHIN-PANEL INVARIANTS
+##############################################################################
+within-panel invariant check: does any INVARIANT differ between the arms of one panel?
+  CartpoleSwingup            all invariants agree across arms
+  CheetahRun                 all invariants agree across arms
+  ReacherHard                all invariants agree across arms
+  HumanoidWalk               all invariants agree across arms
+  WalkerWalk, torque         all invariants agree across arms
+  WalkerWalk, servo (kp = 64) all invariants agree across arms
+
+  `summary._step` is excluded here and reported by ATTRITION instead: it is
+  expected to differ and its differences are the point.

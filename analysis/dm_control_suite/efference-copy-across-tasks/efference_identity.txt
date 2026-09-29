@@ -1,0 +1,189 @@
+Is `efference_length` real, and is the queue it builds the right one?
+
+observation / action sizes used by part B:
+  CartpoleSwingup  obs   5  action   1   (built)
+  CheetahRun       obs  17  action   6   (built)
+  HumanoidWalk     obs  67  action  21   (built)
+  ReacherHard      obs   6  action   2   (built)
+  WalkerWalk       obs  24  action   6   (built)
+
+==============================================================================
+A. Is the code that builds and runs the queue the same across the cohort?
+==============================================================================
+
+sha256[:10] of the source with every docstring stripped and re-unparsed, so
+docstrings cannot make it differ and nothing executable can hide behind them.
+The `working tree` column is what parts B-D actually execute.
+
+  vnl-experiments commits in the cohort:
+    7bedb5cc4b  n=46
+    971ab99eb3  n=23
+    9e216aee02  n=13
+    b4012b30fe  n=103
+    b487eedf7f  n= 1
+    f9c8960df4  n= 3
+  nnx-ppo commits in the cohort:
+    1725d2009c  n=26
+    531427933b  n=163
+
+-- vnl-experiments ------------------------------------------------------------
+subject                           7bedb5cc4b   971ab99eb3   9e216aee02   b4012b30fe   b487eedf7f   f9c8960df4   working tr   verdict
+efference_copy.py                 e13a955c45   e13a955c45   e13a955c45   e13a955c45   e13a955c45   e13a955c45   e13a955c45   identical
+build_flat_delay_network()        9b09f09454   9b09f09454   9b09f09454   9b09f09454   9b09f09454   9b09f09454   9b09f09454   identical
+_parse_net_params()               7d8077b5cf   7d8077b5cf   7d8077b5cf   7d8077b5cf   7d8077b5cf   7d8077b5cf   7d8077b5cf   identical
+make_delayed_mlp_actor_critic()   e317aeaaff   e317aeaaff   e317aeaaff   e317aeaaff   e317aeaaff   e317aeaaff   e317aeaaff   identical
+net_params                        945e2fa923   945e2fa923   945e2fa923   945e2fa923   945e2fa923   945e2fa923   945e2fa923   identical
+
+-- nnx-ppo ------------------------------------------------------------
+subject    1725d2009c   531427933b   working tr   verdict
+delay.py   1730e4f385   1730e4f385   1730e4f385   identical
+
+  All subjects identical at every commit in the cohort AND in the
+  working tree, so parts B-D below test the code the cohort was
+  built from -- subject to the dirty-working-copy limit above.
+
+==============================================================================
+B. Does each run's LOGGED net_params build the network its label claims?
+==============================================================================
+
+Actor first-layer input width must be obs + efference_length x action, with
+obs and action taken per task. The efference_length = 0 carry must contain no
+'queue' entry at all -- a pass-through, not a queue of length zero.
+
+task             delay  eff  width  expect  queue?  runs  verdict
+CartpoleSwingup      0    0      5       5   False     4  ok
+CartpoleSwingup      2    0      5       5   False     1  ok
+CartpoleSwingup      2    2      7       7    True     1  ok
+CartpoleSwingup      3    3      8       8    True     1  ok
+CartpoleSwingup      5    0      5       5   False     1  ok
+CartpoleSwingup      5    5     10      10    True     2  ok
+CartpoleSwingup      7    0      5       5   False     1  ok
+CartpoleSwingup     10    0      5       5   False     1  ok
+CartpoleSwingup     10   10     15      15    True     3  ok
+CartpoleSwingup     12    0      5       5   False     1  ok
+CartpoleSwingup     15    0      5       5   False     1  ok
+CartpoleSwingup     15   15     20      20    True     2  ok
+CartpoleSwingup     20    0      5       5   False     1  ok
+CartpoleSwingup     20   20     25      25    True     3  ok
+CartpoleSwingup     25    0      5       5   False     1  ok
+CartpoleSwingup     25   25     30      30    True     2  ok
+CheetahRun           0    0     17      17   False     2  ok
+CheetahRun           2    0     17      17   False     2  ok
+CheetahRun           2    2     29      29    True     1  ok
+CheetahRun           3    0     17      17   False     1  ok
+CheetahRun           5    0     17      17   False     1  ok
+CheetahRun           5    5     47      47    True     1  ok
+CheetahRun           7    0     17      17   False     1  ok
+CheetahRun          10    0     17      17   False     2  ok
+CheetahRun          10   10     77      77    True     2  ok
+CheetahRun          12    0     17      17   False     1  ok
+CheetahRun          12   12     89      89    True     2  ok
+CheetahRun          15    0     17      17   False     1  ok
+CheetahRun          15   15    107     107    True     2  ok
+CheetahRun          20    0     17      17   False     2  ok
+CheetahRun          25    0     17      17   False     1  ok
+HumanoidWalk         0    0     67      67   False     2  ok
+HumanoidWalk         2    0     67      67   False     3  ok
+HumanoidWalk         2    2    109     109    True     1  ok
+HumanoidWalk         3    0     67      67   False     2  ok
+HumanoidWalk         3    3    130     130    True     3  ok
+HumanoidWalk         5    0     67      67   False     2  ok
+HumanoidWalk         5    5    172     172    True     4  ok
+HumanoidWalk         7    0     67      67   False     4  ok
+HumanoidWalk         7    7    214     214    True     3  ok
+HumanoidWalk        10    0     67      67   False     4  ok
+HumanoidWalk        10   10    277     277    True     3  ok
+HumanoidWalk        12    0     67      67   False     2  ok
+HumanoidWalk        12   12    319     319    True     2  ok
+HumanoidWalk        15   15    382     382    True     1  ok
+HumanoidWalk        20   20    487     487    True     1  ok
+ReacherHard          0    0      6       6   False     3  ok
+ReacherHard          2    0      6       6   False     1  ok
+ReacherHard          2    2     10      10    True     3  ok
+ReacherHard          3    0      6       6   False     1  ok
+ReacherHard          5    0      6       6   False     1  ok
+ReacherHard          5    5     16      16    True     3  ok
+ReacherHard          7    0      6       6   False     1  ok
+ReacherHard          7    7     20      20    True     3  ok
+ReacherHard         10    0      6       6   False     1  ok
+ReacherHard         10   10     26      26    True     3  ok
+ReacherHard         12    0      6       6   False     1  ok
+ReacherHard         12   12     30      30    True     3  ok
+ReacherHard         15    0      6       6   False     1  ok
+ReacherHard         15   15     36      36    True     3  ok
+ReacherHard         20    0      6       6   False     1  ok
+ReacherHard         20   20     46      46    True     3  ok
+ReacherHard         25    0      6       6   False     1  ok
+ReacherHard         25   25     56      56    True     3  ok
+WalkerWalk           0    0     24      24   False     4  ok
+WalkerWalk           2    0     24      24   False     2  ok
+WalkerWalk           2    2     36      36    True     4  ok
+WalkerWalk           3    0     24      24   False     2  ok
+WalkerWalk           3    3     42      42    True     5  ok
+WalkerWalk           5    0     24      24   False     2  ok
+WalkerWalk           5    5     54      54    True     6  ok
+WalkerWalk           7    0     24      24   False     3  ok
+WalkerWalk           7    7     66      66    True     7  ok
+WalkerWalk          10    0     24      24   False     2  ok
+WalkerWalk          10   10     84      84    True     6  ok
+WalkerWalk          12    0     24      24   False     2  ok
+WalkerWalk          12   12     96      96    True     6  ok
+WalkerWalk          15    0     24      24   False     2  ok
+WalkerWalk          15   15    114     114    True     3  ok
+WalkerWalk          20    0     24      24   False     2  ok
+WalkerWalk          20   20    144     144    True     3  ok
+WalkerWalk          25    0     24      24   False     2  ok
+WalkerWalk          25   25    174     174    True     5  ok
+
+  no-copy runs in data.csv: 65; efference_length values [np.int64(0)]; delay_k values [2, 3, 5, 7, 10, 12, 15, 20, 25]
+  with-copy runs: 109; efference_length != delay_k on 0 of them
+
+==============================================================================
+C. Does what is IN the queue change what the policy does?
+==============================================================================
+
+Same observation, same RNG, two different action histories written into
+the carry, on WalkerWalk. At the *initialised* weights, so a dead path would be
+the default rather than something training had to produce. One task is
+enough: the wrapper under test is the same object in all six panels, and
+part B is what covers each task's own widths.
+
+  delay  5 eff  5: max |action(queue=0) - action(queue=0.9)| = 0.115750   (expected > 0, queue is read)   ok
+  delay 20 eff 20: max |action(queue=0) - action(queue=0.9)| = 0.075826   (expected > 0, queue is read)   ok
+  delay  5 eff  0: max |action(queue=0) - action(queue=0.9)| = 0.000000   (expected exactly 0, there is no queue)   ok
+
+  A zero here at eff > 0 would mean the queue is built and filled but
+  never reaches the policy -- which is the failure mode that would
+  produce this folder's headline result for the wrong reason.
+
+==============================================================================
+D. Is the queue ALIGNED -- the actions taken since the delayed observation?
+==============================================================================
+
+Delay(k) -> EfferenceCopy(L) composed exactly as make_delayed_mlp_actor_critic
+composes them, with a recording stub where the actor MLP goes. At step t the
+inner module must receive concat(obs[t-k], a[t-1], a[t-2], ..., a[t-L]):
+the delayed observation, then the actions taken since it, newest first.
+
+  t=0: obs   0.0 (want   0.0)   queue [0.0, 0.0, 0.0] (want [0.0, 0.0, 0.0])
+  t=1: obs   0.0 (want   0.0)   queue [1.0, 0.0, 0.0] (want [1.0, 0.0, 0.0])
+  t=2: obs   0.0 (want   0.0)   queue [2.0, 1.0, 0.0] (want [2.0, 1.0, 0.0])
+  t=3: obs   1.0 (want   1.0)   queue [3.0, 2.0, 1.0] (want [3.0, 2.0, 1.0])
+  t=4: obs   2.0 (want   2.0)   queue [4.0, 3.0, 2.0] (want [4.0, 3.0, 2.0])
+  t=5: obs   3.0 (want   3.0)   queue [5.0, 4.0, 3.0] (want [5.0, 4.0, 3.0])
+  t=6: obs   4.0 (want   4.0)   queue [6.0, 5.0, 4.0] (want [6.0, 5.0, 4.0])
+  t=7: obs   5.0 (want   5.0)   queue [7.0, 6.0, 5.0] (want [7.0, 6.0, 5.0])
+
+  Reading the t=4 row: the actor sees the observation from step 1 and the
+  three actions emitted at steps 3, 2 and 1 -- exactly the actions taken
+  since that observation, newest first. An off-by-one or a reversed order
+  would show here and nowhere else in this folder.
+
+==============================================================================
+VERDICT: all four parts pass.
+Across all 5 tasks, `efference_length = 0` builds no queue and the actor is exactly
+obs-wide; `efference_length = L` builds a queue the policy reads, holding the L
+actions taken since the delayed observation, newest first. So the no-copy arm
+really is a policy with no access to its own action history, in every panel, and
+no result in report.md is an artefact of an inert queue.
+==============================================================================

@@ -1,0 +1,41 @@
+Coverage for 189 runs in efference-copy-across-tasks
+
+index  (spec_id=-): 189/189
+    cartpole_swingup_efference     14/14  
+    cartpole_swingup_no_efference    8/8   
+    cartpole_swingup_undelayed      4/4   
+    cheetah_run_efference           8/8   
+    cheetah_run_no_efference       12/12  
+    cheetah_run_undelayed           2/2   
+    humanoid_walk_efference        18/18  
+    humanoid_walk_no_efference     17/17  
+    humanoid_walk_undelayed         2/2   
+    reacher_hard_efference         24/24  
+    reacher_hard_no_efference       9/9   
+    reacher_hard_undelayed          3/3   
+    walker_walk_servo_efference    19/19  
+    walker_walk_servo_no_efference    9/9   
+    walker_walk_servo_undelayed     2/2   
+    walker_walk_torque_efference   26/26  
+    walker_walk_torque_no_efference   10/10  
+    walker_walk_torque_undelayed    2/2   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 189/189
+    cartpole_swingup_efference     14/14  
+    cartpole_swingup_no_efference    8/8   
+    cartpole_swingup_undelayed      4/4   
+    cheetah_run_efference           8/8   
+    cheetah_run_no_efference       12/12  
+    cheetah_run_undelayed           2/2   
+    humanoid_walk_efference        18/18  
+    humanoid_walk_no_efference     17/17  
+    humanoid_walk_undelayed         2/2   
+    reacher_hard_efference         24/24  
+    reacher_hard_no_efference       9/9   
+    reacher_hard_undelayed          3/3   
+    walker_walk_servo_efference    19/19  
+    walker_walk_servo_no_efference    9/9   
+    walker_walk_servo_undelayed     2/2   
+    walker_walk_torque_efference   26/26  
+    walker_walk_torque_no_efference   10/10  
+    walker_walk_torque_undelayed    2/2   
