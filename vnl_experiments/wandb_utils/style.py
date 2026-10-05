@@ -134,6 +134,11 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     # `delay_k = 0` an `efference_length == delay_k` run *is* an `efference_length == 0`
     # run, so it belongs to neither arm and is drawn as a level rather than a point.
     "undelayed": {"color": "0.35", "marker": "*", "label": "No delay (reference level)"},
+    # BallInCup first look (2026-10-05): `FlatForwardModel` at `delay_k = 0`, the control
+    # for "the forward model is just a better network". `flat_forward_model`'s green with
+    # `undelayed`'s star, so it reads as that arm's own delay-0 level.
+    "undelayed_fm": {"color": "C2", "marker": "*",
+                     "label": "Forward model, no delay (reference level)"},
     # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
     # circle = position, open triangle = torque). The hue was initially the decoder input,
     # so that the two axes of the cohort stayed separable on an x-axis already spent on

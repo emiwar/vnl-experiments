@@ -1,0 +1,15 @@
+Coverage for 85 runs in ball-in-cup-first-look
+
+index  (spec_id=-): 85/85
+    efference                      25/25  
+    flat_forward_model             27/27  
+    no_efference                   27/27  
+    undelayed                       4/4   
+    undelayed_fm                    2/2   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 85/85
+    efference                      25/25  
+    flat_forward_model             27/27  
+    no_efference                   27/27  
+    undelayed                       4/4   
+    undelayed_fm                    2/2   
