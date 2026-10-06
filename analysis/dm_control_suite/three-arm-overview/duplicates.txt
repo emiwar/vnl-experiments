@@ -1,0 +1,36 @@
+Duplicate groups (same task, network, delay, efference length and both seeds).
+Kept: longest budget, then earliest launched.
+8 groups, 8 runs dropped.
+
+ball_in_cup DelayedMLP delay 0 eff 0 seed i44/p44
+  KEEP  wandb_id=91n8a2ie  budget=480000000  created_at=2026-09-30T12:51:13Z  reward_480M=825.7  reward_1B=nan
+  drop  wandb_id=df3wh6wb  budget=480000000  created_at=2026-10-02T13:11:04Z  reward_480M=933.7  reward_1B=nan
+
+cartpole DelayedMLP delay 15 eff 0 seed i42/p1234
+  KEEP  wandb_id=9t4pvmi0  budget=480000000  created_at=2026-09-25T13:41:08Z  reward_480M=848.0552551269532  reward_1B=nan
+  drop  wandb_id=puctev9n  budget=480000000  created_at=2026-09-25T13:41:46Z  reward_480M=841.6858032226562  reward_1B=nan
+
+cheetah DelayedMLP delay 0 eff 0 seed i42/p1234
+  KEEP  wandb_id=gscmgukc  budget=480000000  created_at=2026-09-14T16:12:55Z  reward_480M=923.5909057617188  reward_1B=nan
+  drop  wandb_id=eg6m2gcz  budget=480000000  created_at=2026-09-14T16:49:31Z  reward_480M=927.89072265625  reward_1B=nan
+
+cheetah DelayedMLP delay 5 eff 5 seed i42/p1234
+  KEEP  wandb_id=oj7ns8mi  budget=480000000  created_at=2026-09-14T16:12:55Z  reward_480M=927.656201171875  reward_1B=nan
+  drop  wandb_id=ghtu14q4  budget=480000000  created_at=2026-09-14T16:48:52Z  reward_480M=927.9870483398438  reward_1B=nan
+
+cheetah DelayedMLP delay 10 eff 10 seed i42/p1234
+  KEEP  wandb_id=kmmdl31l  budget=480000000  created_at=2026-09-14T16:12:55Z  reward_480M=906.936474609375  reward_1B=nan
+  drop  wandb_id=10ro8zan  budget=480000000  created_at=2026-09-14T16:49:31Z  reward_480M=782.1211242675781  reward_1B=nan
+
+humanoid DelayedMLP delay 0 eff 0 seed i42/p1234
+  KEEP  wandb_id=hz20ro85  budget=480000000  created_at=2026-09-09T12:21:07Z  reward_480M=993.0792297363281  reward_1B=nan
+  drop  wandb_id=t5uy26jd  budget=480000000  created_at=2026-09-28T15:38:45Z  reward_480M=961.9156066894532  reward_1B=nan
+
+walker FlatForwardModel delay 3 eff 3 seed i47/p47
+  KEEP  wandb_id=nhw49shh  budget=1000000000  created_at=2026-09-15T21:17:53Z  reward_480M=975.0145568847656  reward_1B=979.1392045454545
+  drop  wandb_id=kcni24rk  budget=1000000000  created_at=2026-09-17T13:57:56Z  reward_480M=977.1049560546875  reward_1B=979.0527288263494
+
+walker FlatForwardModel delay 7 eff 7 seed i42/p1234
+  KEEP  wandb_id=ihmu33v6  budget=480000000  created_at=2026-09-09T12:21:07Z  reward_480M=970.0296813964844  reward_1B=nan
+  drop  wandb_id=0y0gvn9t  budget=480000000  created_at=2026-09-09T15:16:45Z  reward_480M=971.0283386230469  reward_1B=nan
+

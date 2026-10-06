@@ -1,0 +1,8 @@
+Runs in runs.csv excluded from data.csv (before de-duplication):
+
+  6bjbs3a6  humanoid     efference      delay 20  i42/p1234   eval series ends at 402800640 of 480000000
+  6sdnzid5  humanoid     efference      delay 12  i42/p1234   eval series ends at 65617920 of 480000000
+  jorslhah  humanoid     efference      delay 15  i42/p1234   eval series ends at 266403840 of 480000000
+  xj19crft  humanoid     efference      delay 10  i43/p12345  NaN reward at ~849.6M killed the run (see run note)
+  3952837u  humanoid     forward_model  delay 12  i42/p1234   eval series ends at 114032640 of 480000000
+  6pjh47uq  humanoid     forward_model  delay  0  i42/p1234   eval series ends at 462028800 of 480000000
