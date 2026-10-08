@@ -46,6 +46,7 @@ from flax import nnx
 
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
+from vnl_experiments.delays.network_builders import optimizer_config
 from vnl_experiments.envs.joystick_env import JoystickEnv
 from vnl_experiments.tools.checkpoint_utils import (
     build_network,
@@ -251,7 +252,7 @@ def main() -> None:
     with open(os.path.join(step_dir, "metadata.pkl"), "rb") as f:
         meta = pickle.load(f)
     ppo_cfg = meta.get("config")
-    ppo_cfg = ppo_cfg.ppo if ppo_cfg is not None else None
+    ppo_cfg = optimizer_config(ppo_cfg)
 
     training_state = new_training_state(
         env, network, n_envs=1, seed=0,

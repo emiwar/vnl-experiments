@@ -26,6 +26,13 @@ efference: null
 
 seed: 42
 
+distill:
+  # Run directory of a trained, undelayed (delay=0) policy to distil into this run's
+  # (delayed) network. null = plain PPO. Requires a distillation train group
+  # (`train=dmc_distill`), and vice versa. Resolved as given, else under
+  # `checkpoint_root`. See vnl_experiments/distill.py.
+  teacher: null
+
 # End-of-training evaluation on the held-out clip split.
 final_eval: true
 # Cap clips per split in the final eval. A memory knob, not a science one.

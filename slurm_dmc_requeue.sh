@@ -46,6 +46,19 @@
 # For a whole delay sweep:
 #   python -m vnl_experiments.sweep --script slurm_dmc_requeue.sh \
 #       env=dmc/humanoid_walk net=delayed_mlp train=dmc delay=0,5,7,10,15,20
+#
+# Two variants on the standard privileged-critic PPO run take the same overrides:
+#
+#   # Non-privileged critic (DelayedMLP only): the critic sees the actor's own input,
+#   # the delayed obs + efference queue. Run name gets a `_delayedcritic` token.
+#   sbatch slurm_dmc_requeue.sh env=dmc/walker_walk net=delayed_mlp train=dmc delay=5 \
+#       net.privileged_critic=false
+#
+#   # Distillation of a trained undelayed run into a delayed student (any flat net).
+#   # The teacher is a run directory with config.json; train its delay=0 run first.
+#   # Run name gets a `_distill` token.
+#   sbatch slurm_dmc_requeue.sh env=dmc/walker_walk net=delayed_mlp train=dmc_distill delay=5 \
+#       distill.teacher=checkpoints/WalkerWalk_DelayedMLP_delay0_eff0-<timestamp>
 
 source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
 export MUJOCO_GL=egl

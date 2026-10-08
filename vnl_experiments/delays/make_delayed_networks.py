@@ -21,7 +21,21 @@ the Delay sits inside the action branch only, so the critic gets fresh obs
 automatically. This realises the "actor delay only / privileged critic"
 design discussed in the delays plan.
 
-Two variations on that pipeline live here too, differing from it only in what
+With ``privileged_critic=False`` the critic loses its privilege: the Delay and
+the efference queue move in front of the whole adapter, so the critic sees
+exactly what the actor MLP sees::
+
+    Sequential([
+        Normalizer(obs_size)?,
+        Delay(obs, delay_k)?,
+        EfferenceCopy(
+            inner=PPOAdapter(action=Sequential([*actor_mlp, sampler]),
+                             value=critic_mlp),   # delayed obs + efference
+            queue_length=efference_length,
+        ),
+    ])
+
+Two variations on the privileged pipeline live here too, differing from it only in what
 sits inside the ``EfferenceCopy``: :func:`make_forward_model_actor_critic`
 (explicit predictor of the undelayed obs) and
 :func:`make_delayed_recurrent_actor_critic` (a recurrent stack in place of the
@@ -139,6 +153,7 @@ def make_delayed_mlp_actor_critic(
     entropy_weight: float = 1e-2,
     min_std: float = 1e-3,
     std_scale: float = 1.0,
+    privileged_critic: bool = True,
 ) -> StatefulModule:
     """Build an actor-only-delayed, privileged-critic PPO network.
 
@@ -162,10 +177,16 @@ def make_delayed_mlp_actor_critic(
         entropy_weight: Entropy bonus weight for the sampler.
         min_std: Minimum policy std.
         std_scale: Multiplicative scale on the policy std.
+        privileged_critic: If True (default), the critic sees the un-delayed
+            observation. If False, it sees what the actor MLP sees -- the
+            delayed observation plus the efference queue -- see the module
+            docstring for the layout. The True layout is pinned by stored
+            checkpoints and must not change.
 
     Returns:
         A :class:`StatefulModule` whose forward output is a
         :class:`PPONetworkOutput`. Pass it straight to ``ppo.train_ppo``.
+        With ``privileged_critic=False`` it is always a ``Sequential``.
     """
     if delay_k < 0:
         raise ValueError(f"delay_k must be non-negative, got {delay_k}")
@@ -197,6 +218,30 @@ def make_delayed_mlp_actor_critic(
         min_std=min_std,
         std_scale=std_scale,
     )
+
+    if not privileged_critic:
+        # The critic takes the actor MLP's input: delayed obs + efference queue.
+        # Built in the same order as the privileged path (actor, sampler,
+        # critic) so the two draw their parameters from the same RNG stream.
+        critic = make_mlp(
+            [actor_in] + critic_hidden_sizes + [1],
+            rngs,
+            activation,  # type: ignore[arg-type]
+            activation_last_layer=False,
+            kernel_init=kernel_init,
+        )
+        layers: list[StatefulModule] = []
+        if normalize_obs:
+            layers.append(Normalizer(obs_size))
+        if delay_k > 0:
+            layers.append(Delay(jp.zeros(obs_size), k_steps=delay_k))
+        layers.append(EfferenceCopy(
+            inner=PPOAdapter(action=Sequential([*actor_mlp, sampler]), value=critic),
+            sample_action=jp.zeros(action_size),
+            queue_length=efference_length,
+        ))
+        return Sequential(layers)
+
     actor_with_efference = EfferenceCopy(
         inner=Sequential([*actor_mlp, sampler]),
         sample_action=jp.zeros(action_size),

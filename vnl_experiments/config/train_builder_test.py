@@ -13,11 +13,18 @@ import dataclasses
 import pytest
 from omegaconf import OmegaConf
 
-from nnx_ppo.algorithms.config import PPOConfig, TrainConfig
+from nnx_ppo.algorithms.config import (
+    DistillationConfig,
+    DistillationTrainConfig,
+    PPOConfig,
+    TrainConfig,
+)
 from nnx_ppo.algorithms.types import LoggingLevel
 from vnl_experiments.config.train_builder import (
     PPOSchema,
+    algo_config,
     build_train_config,
+    is_distillation,
     resolve_logging_level,
     validate_train_config,
 )
@@ -104,3 +111,52 @@ class TestValidate:
             OmegaConf.create({"ppo": {"n_envs": 4096, "n_minibatches": 8}})
         )
         assert validate_train_config(cfg) is cfg
+
+
+class TestDistillation:
+    """A group with a ``distillation:`` block builds a ``DistillationTrainConfig``."""
+
+    def test_distillation_block_selects_the_distillation_config(self):
+        cfg = build_train_config(
+            OmegaConf.create({"distillation": {"n_envs": 64, "logging_level": ["LOSSES"]}})
+        )
+        assert type(cfg) is DistillationTrainConfig
+        assert type(cfg.distillation) is DistillationConfig
+        assert cfg.distillation.n_envs == 64
+        assert cfg.distillation.logging_level is LoggingLevel.LOSSES
+        assert is_distillation(cfg)
+        assert algo_config(cfg) is cfg.distillation
+
+    def test_ppo_group_is_not_distillation(self):
+        cfg = build_train_config(OmegaConf.create({}))
+        assert not is_distillation(cfg)
+        assert algo_config(cfg) is cfg.ppo
+
+    def test_percentiles_are_a_hashable_tuple(self):
+        cfg = build_train_config(
+            OmegaConf.create({"distillation": {"logging_percentiles": [0, 100]}})
+        )
+        assert cfg.distillation.logging_percentiles == (0, 100)
+
+    def test_unknown_key_is_refused(self):
+        with pytest.raises(Exception):
+            build_train_config(OmegaConf.create({"distillation": {"clip_range": 0.3}}))
+
+    def test_validate_checks_the_distillation_block(self):
+        cfg = build_train_config(
+            OmegaConf.create({"distillation": {"n_envs": 100, "n_minibatches": 8}})
+        )
+        with pytest.raises(ValueError):
+            validate_train_config(cfg)
+
+    def test_dmc_distill_group_composes(self):
+        from vnl_experiments.config.dmc_equivalence_test import composed
+
+        cfg = composed("env=dmc/walker_walk", "net=delayed_mlp", "train=dmc_distill",
+                       "distill.teacher=some/run")
+        built = validate_train_config(build_train_config(cfg.train))
+        assert type(built) is DistillationTrainConfig
+        assert built.distillation.n_envs == 8192
+        # The env group's camera reaches the distillation group's video block too.
+        assert built.video.render_kwargs["camera"] == "side"
+        assert cfg.distill.teacher == "some/run"

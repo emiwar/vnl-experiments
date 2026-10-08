@@ -301,6 +301,12 @@ def param_counts(nets, network_class: str) -> dict:
     out = {"total": _count_params(nets), "tree": _param_tree(nets)}
     adapter = next((l for l in nets.layers if isinstance(l, PPOAdapter)), None)
     if adapter is None:
+        # DelayedMLP with privileged_critic=False wraps the whole adapter in its
+        # EfferenceCopy. Checked only after the top-level search fails, so every
+        # other architecture's record is unchanged.
+        adapter = next((l.inner for l in nets.layers
+                        if isinstance(getattr(l, "inner", None), PPOAdapter)), None)
+    if adapter is None:
         return out
     out["critic"] = _count_params(adapter.value)
     out["actor"] = _count_params(adapter.action)

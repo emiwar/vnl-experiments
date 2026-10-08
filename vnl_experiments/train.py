@@ -20,6 +20,12 @@ interrupted:
   the batch script to requeue it. See ``slurm_rodent_requeue.sh`` and
   ``slurm_dmc_requeue.sh``.
 
+Either mode also works for distillation: with ``train=dmc_distill
+distill.teacher=<run dir>`` the network is trained to imitate a frozen teacher (typically
+an undelayed run) with ``nnx_ppo``'s ``train_distillation`` instead of PPO. Everything
+else -- naming, checkpoints, requeue, the reload path -- is shared; see
+``vnl_experiments/distill.py``.
+
 Either mode works for any registered env family. The one family-specific piece of the
 resume is how to spread episode phase when redrawing the env states a light checkpoint
 left out; that lives on ``EnvSpec.resume_reset`` (see ``envs/registry.py``), and a family
@@ -48,20 +54,24 @@ import wandb
 from flax import nnx
 from omegaconf import DictConfig, OmegaConf
 
-from nnx_ppo.algorithms import ppo
+from nnx_ppo.algorithms import distillation, ppo
 from nnx_ppo.algorithms.callbacks import wandb_video_fn
 from nnx_ppo.algorithms.checkpointing import (
     latest_checkpoint,
     load_checkpoint,
     make_checkpoint_fn,
 )
-from nnx_ppo.algorithms.config import TrainConfig
+from nnx_ppo.algorithms.config import DistillationTrainConfig, TrainConfig
+from nnx_ppo.algorithms.types import DistillationState
+from vnl_experiments import distill as distill_lib
 from vnl_experiments import requeue as requeue_lib
 from vnl_experiments.config import (
     OverrideError,
+    algo_config,
     build_env_config,
     build_net_config,
     build_train_config,
+    is_distillation,
     validate_train_config,
 )
 from vnl_experiments.delays import evaluation
@@ -103,7 +113,7 @@ class RunSetup:
     eval_env: Any
     train_clips: Any
     test_clips: Any
-    config: TrainConfig
+    config: TrainConfig | DistillationTrainConfig
     ablations: tuple[str, ...]
     #: Run name up to (but excluding) the trailing timestamp or job token.
     name_stem: str
@@ -111,6 +121,8 @@ class RunSetup:
     tags: tuple[str, ...]
     seed: int
     env_spec: Any
+    #: The frozen teacher of a distillation run; None for PPO.
+    teacher: distill_lib.Teacher | None = None
 
     def config_json(self) -> dict:
         """The ``config.json`` payload the offline eval path reconstructs from.
@@ -119,10 +131,15 @@ class RunSetup:
         producers, `network_builders.load_network`. `net_params` in particular must stay
         a flat dict of JSON scalars.
         """
-        return {
+        out = {
             "env_params": self.env_config.to_dict(),
             "net_params": self.net_params,
         }
+        if self.teacher is not None:
+            # Extra key, so the readers above are unaffected: the student reloads from
+            # env_params / net_params like any run.
+            out["distill"] = self.teacher.info()
+        return out
 
 
 def _task_overrides() -> list[str]:
@@ -211,6 +228,17 @@ def build_run(cfg: DictConfig) -> RunSetup:
         absolute_imitation.validate_body_target_frame(env_config.body_target_frame)
     net_config = build_net_config(arch.defaults, cfg.net)
     config = validate_train_config(build_train_config(cfg.train))
+    teacher_path = cfg.get("distill", {}).get("teacher")
+    if bool(teacher_path) != is_distillation(config):
+        # Checked before anything is loaded: either half alone is a mistake that would
+        # otherwise run the wrong algorithm for hours.
+        raise OverrideError(
+            "distill.teacher and a distillation train group go together: "
+            + ("distill.teacher is set but the train group has no `distillation:` "
+               "block. Add train=dmc_distill."
+               if teacher_path else
+               "the train group is a distillation one but distill.teacher is not set. "
+               "Pass distill.teacher=<run dir of an undelayed run>."))
 
     if spec.uses_clips:
         clips = ReferenceClips(env_config.reference_data_path,
@@ -247,16 +275,31 @@ def build_run(cfg: DictConfig) -> RunSetup:
     if nets is None:
         raise OverrideError(f"build_network returned None for {arch.name!r}")
 
+    teacher = None
+    if teacher_path:
+        teacher = distill_lib.load_teacher(
+            teacher_path, cfg.checkpoint_root, env=train_env, env_config=env_config,
+            obs_layout=spec.obs_layout, seed=seed)
+
     # Decoder-input ablations get their own name token and tag. Without this a
     # no-intention run at eff == delay is indistinguishable from a standard-arch
     # efference baseline to the analyses that select on delay_k / efference_length /
     # hidden sizes alone. Empty when both flags are at their default, so existing run
     # names and tag sets are unchanged.
+    #
+    # `privileged_critic=False` (DelayedMLP) is marked the same way: its critic sees the
+    # delayed obs + efference queue rather than the fresh obs, and nothing else in the name
+    # or the selection keys would say so.
     ablations = tuple(
         token for key, token in (("dec_use_intention", "nointent"),
-                                 ("dec_use_proprioception", "noproprio"))
+                                 ("dec_use_proprioception", "noproprio"),
+                                 ("privileged_critic", "delayedcritic"))
         if not net_params.get(key, True)
     )
+    # A distilled run is a different training algorithm on the same architecture, so it
+    # gets a name token and tag too: WalkerWalk_DelayedMLP_delay5_eff5_distill.
+    if teacher is not None:
+        ablations += ("distill",)
 
     # A tag (not a name token) for an imitation-target frame that must not be pooled with
     # its neighbours. `env-override` below says *something* about the env changed and
@@ -296,6 +339,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
         config=config,
         ablations=ablations,
         env_spec=spec,
+        teacher=teacher,
         name_stem=_name_stem(cfg, arch, net_params, efference_length, ablations, env_config),
         wandb_config={
             # This payload's shape is load-bearing: the run index flattens it to dotted
@@ -322,6 +366,8 @@ def build_run(cfg: DictConfig) -> RunSetup:
             # values makes the physics recoverable from the run record rather than only from
             # the XML. Empty dict for a torque-controlled run. See envs/servo_control.md.
             **({"servo": actuator_mode.servo_report(eval_env)} if servo_kp else {}),
+            # Absent on PPO runs, so their payload is unchanged.
+            **({"distill": teacher.info()} if teacher is not None else {}),
             **({"overrides": overrides} if overrides else {}),
         },
         # `env-override` marks a run whose env differs from the study's standard config.
@@ -379,6 +425,20 @@ def run_final_eval(cfg: DictConfig, setup: RunSetup, run_dir: Path, exp_name: st
     )
 
 
+def train(setup: RunSetup, **kwargs):
+    """Run PPO or distillation on ``setup``, with the same callbacks either way.
+
+    ``kwargs`` are the shared ``train_ppo`` / ``train_distillation`` keywords (log_fn,
+    video_fn, checkpoint_fn, eval_env, initial_state, stop_fn, initial_eval). Both return
+    a result with ``total_steps``, ``total_iterations`` and ``eval_history``.
+    """
+    if setup.teacher is None:
+        return ppo.train_ppo(setup.train_env, setup.nets, setup.config, **kwargs)
+    return distillation.train_distillation(
+        setup.train_env, setup.teacher.network, setup.nets, setup.config,
+        target_fn=distill_lib.sampler_target, **kwargs)
+
+
 # ---------------------------------------------------------------------------
 # Plain training
 # ---------------------------------------------------------------------------
@@ -397,8 +457,8 @@ def run_plain(cfg: DictConfig, setup: RunSetup) -> int:
     wandb.init(project=cfg.wandb.project, config=setup.wandb_config,
                name=exp_name, tags=list(setup.tags), notes=cfg.wandb.notes)
 
-    result = ppo.train_ppo(
-        setup.train_env, setup.nets, setup.config,
+    result = train(
+        setup,
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
         checkpoint_fn=make_checkpoint_fn(str(run_dir), setup.config),
@@ -517,15 +577,30 @@ def restore(step_dir: str, setup: RunSetup, *, n_envs: int):
     The template is built with ``n_envs=1``: the optimizer state does not depend on the
     number of envs, and a full-width template would allocate env states only to throw
     them away. Weights and optimizer state are restored in place into ``setup.nets``.
+
+    For distillation the checkpoint holds the *student* in the same layout (nnx-ppo's
+    ``make_checkpoint_fn`` saves a DistillationState that way), so it restores through
+    the same ``load_checkpoint`` and is then repackaged as a ``DistillationState``. The
+    teacher's carry is never saved; it restarts from ``initialize_state``.
     """
-    ppo_cfg = setup.config.ppo
-    template = ppo.new_training_state(
-        setup.train_env, setup.nets, n_envs=1, seed=setup.seed,
-        learning_rate=ppo_cfg.learning_rate,
-        gradient_clipping=ppo_cfg.gradient_clipping,
-        weight_decay=ppo_cfg.weight_decay,
-    )
-    ckpt = load_checkpoint(step_dir, template.networks, template.optimizer)
+    algo_cfg = algo_config(setup.config)
+    if setup.teacher is None:
+        template = ppo.new_training_state(
+            setup.train_env, setup.nets, n_envs=1, seed=setup.seed,
+            learning_rate=algo_cfg.learning_rate,
+            gradient_clipping=algo_cfg.gradient_clipping,
+            weight_decay=algo_cfg.weight_decay,
+        )
+        ckpt = load_checkpoint(step_dir, template.networks, template.optimizer)
+    else:
+        template = distillation.new_distillation_state(
+            setup.train_env, setup.teacher.network, setup.nets, n_envs=1,
+            seed=setup.seed,
+            learning_rate=algo_cfg.learning_rate,
+            gradient_clipping=algo_cfg.gradient_clipping,
+            weight_decay=algo_cfg.weight_decay,
+        )
+        ckpt = load_checkpoint(step_dir, template.student, template.optimizer)
     state = ckpt["training_state"]
     step = int(ckpt["step"])
     warn_on_config_drift(ckpt["config"], setup.config)
@@ -543,6 +618,18 @@ def restore(step_dir: str, setup: RunSetup, *, n_envs: int):
         )
     else:
         print("  env states restored exactly from the checkpoint")
+
+    if setup.teacher is not None:
+        state = DistillationState(
+            student=state.networks,
+            student_states=state.network_states,
+            teacher_states=setup.teacher.network.initialize_state(n_envs),
+            env_states=state.env_states,
+            optimizer=state.optimizer,
+            rng_key=state.rng_key,
+            steps_taken=state.steps_taken,
+        )
+        print("  teacher carry zeroed (never checkpointed)")
 
     return state, step
 
@@ -584,13 +671,13 @@ def run_requeue(cfg: DictConfig, setup: RunSetup) -> int:
     step_dir = latest_checkpoint(str(run_dir))
     initial_state = None
     resumed_from_step = None
-    total_steps = setup.config.ppo.total_steps
+    total_steps = algo_config(setup.config).total_steps
 
     if step_dir is not None:
         print(f"  restoring {step_dir}")
         warn_on_env_drift(run_dir, setup)
         initial_state, resumed_from_step = restore(
-            step_dir, setup, n_envs=setup.config.ppo.n_envs
+            step_dir, setup, n_envs=algo_config(setup.config).n_envs
         )
         print(f"  resumed at step {resumed_from_step} of {total_steps}")
     else:
@@ -636,8 +723,8 @@ def run_requeue(cfg: DictConfig, setup: RunSetup) -> int:
             f"iteration boundary and exiting for requeue", flush=True)
     )
 
-    result = ppo.train_ppo(
-        setup.train_env, setup.nets, setup.config,
+    result = train(
+        setup,
         log_fn=wandb.log,
         video_fn=wandb_video_fn(fps=50),
         checkpoint_fn=make_checkpoint_fn(

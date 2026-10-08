@@ -724,5 +724,82 @@ class FlatRecurrentArchitectureTest(parameterized.TestCase):
         self.assertIn("actor_hidden_sizes", nb.flat_delay_defaults())
 
 
+class DelayedCriticTest(absltest.TestCase):
+    """``DelayedMLP`` with ``privileged_critic=False``: the critic sees what the actor sees.
+
+    The Delay and the efference queue move in front of the whole adapter, so both
+    branches read the delayed obs + the queue. The default (privileged) layout is pinned
+    by ``ArchitectureContractTest.test_param_count_is_pinned`` and must not move.
+    """
+
+    EXTRA = {"privileged_critic": "False"}
+
+    def test_layout(self):
+        nets, _ = build("DelayedMLP", self.EXTRA)
+        self.assertEqual([type(l) for l in nets.layers],
+                         [Normalizer, Delay, EfferenceCopy])
+        self.assertIsInstance(nets.layers[-1].inner, PPOAdapter)
+
+    def test_layout_without_delay_or_normalizer(self):
+        nets, _ = build("DelayedMLP", {**self.EXTRA, "delay_k": "0",
+                                       "normalize_obs": "False"})
+        self.assertEqual([type(l) for l in nets.layers], [EfferenceCopy])
+
+    def test_critic_input_is_obs_plus_efference(self):
+        nets, net_params = build("DelayedMLP", self.EXTRA)
+        eff = int(net_params["efference_length"])
+        critic_in = param_shapes(nets.layers[-1].inner.value)
+        first_kernel = next(v for k, v in critic_in.items()
+                            if k.startswith("layers/0/") and "kernel" in k)
+        self.assertEqual(first_kernel[0], FLAT_OBS_SIZE + eff * ACTION_SIZE)
+
+    def test_only_the_critic_input_width_changes(self):
+        """Same widths as the privileged net except the critic's first layer."""
+        delayed, _ = build("DelayedMLP", self.EXTRA)
+        privileged, _ = build("DelayedMLP")
+        eff = int(CASES["DelayedMLP"][0]["efference_length"])
+        hidden = CASES["DelayedMLP"][0]["critic_hidden_sizes"][0]
+        self.assertEqual(param_count(delayed) - param_count(privileged),
+                         eff * ACTION_SIZE * hidden)
+
+    def test_default_is_privileged(self):
+        """Old config.json files have no key; they must rebuild the privileged net."""
+        self.assertTrue(nb.flat_delay_defaults().privileged_critic)
+        nets, _ = build("DelayedMLP")
+        self.assertEqual([type(l) for l in nets.layers], [Normalizer, PPOAdapter])
+
+    def test_critic_depends_on_efference_queue(self):
+        """The value must change when only the efference queue does."""
+        nets, _ = build("DelayedMLP", {**self.EXTRA, "delay_k": "0"})
+        state = nets.initialize_state(BATCH)
+        obs = flat_stub_obs()
+        v0 = nets(state, obs).output.value_estimates
+        queue = state[-1]["queue"]
+        state[-1]["queue"] = jp.ones_like(queue)
+        v1 = nets(state, obs).output.value_estimates
+        self.assertFalse(jp.allclose(v0, v1))
+
+    def test_loss_replay_reproduces_loglikelihood(self):
+        """Replaying with the rollout's extras scores the same actions (PPO's contract)."""
+        nets, _ = build("DelayedMLP", self.EXTRA)
+        state = nets.initialize_state(BATCH)
+        rollout = nets(state, flat_stub_obs())
+        replay = nets(state, flat_stub_obs(), rollout.rollout_extras)
+        self.assertTrue(jp.allclose(rollout.output.loglikelihoods,
+                                    replay.output.loglikelihoods, atol=1e-5))
+        self.assertTrue(jp.allclose(rollout.output.actions, replay.output.actions))
+
+    def test_param_counts_finds_the_nested_adapter(self):
+        from vnl_experiments.delays import evaluation
+
+        nets, _ = build("DelayedMLP", self.EXTRA)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            counts = evaluation.param_counts(nets, "DelayedMLP")
+        self.assertGreater(counts["critic"], 0)
+        self.assertGreater(counts["actor"], 0)
+        self.assertEqual(counts["critic"] + counts["actor"], counts["total"])
+
+
 if __name__ == "__main__":
     absltest.main()

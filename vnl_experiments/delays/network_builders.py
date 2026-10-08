@@ -230,8 +230,14 @@ def _flat_shared_defaults(**extra):
 
 
 def flat_delay_defaults():
-    """Defaults for ``DelayedMLP``: actor-only-delayed MLP with a privileged critic."""
-    return _flat_shared_defaults(actor_hidden_sizes=[256] * 4)
+    """Defaults for ``DelayedMLP``: actor-only-delayed MLP with a privileged critic.
+
+    ``privileged_critic=False`` gives the critic the actor's own input (delayed obs +
+    efference queue) instead of the fresh observation; see
+    ``make_delayed_mlp_actor_critic``. It is a DelayedMLP-only key, so it lives here
+    rather than in :func:`_flat_shared_defaults`.
+    """
+    return _flat_shared_defaults(actor_hidden_sizes=[256] * 4, privileged_critic=True)
 
 
 def flat_forward_model_defaults():
@@ -290,6 +296,7 @@ def build_flat_delay_network(net_params: dict, env, rngs: nnx.Rngs):
         entropy_weight=p.get("entropy_weight", 1e-2),
         min_std=p.get("min_std", 1e-3),
         std_scale=p.get("std_scale", 1.0),
+        privileged_critic=bool(p.get("privileged_critic", True)),
     )
 
 
@@ -868,6 +875,23 @@ def build_network(net_params: dict, env, rngs: nnx.Rngs):
 # Checkpoint loading
 # ---------------------------------------------------------------------------
 
+def optimizer_config(train_config):
+    """The optimizer-bearing sub-config of a checkpoint's stored train config.
+
+    A PPO checkpoint pickles a ``TrainConfig`` (optimizer settings under ``.ppo``), a
+    distillation one a ``DistillationTrainConfig`` (under ``.distillation``). Both
+    sub-configs have ``learning_rate`` / ``gradient_clipping`` / ``weight_decay``, which
+    is all a restore template needs. None when nothing was stored.
+    """
+    if train_config is None:
+        return None
+    for field in ("ppo", "distillation"):
+        sub = getattr(train_config, field, None)
+        if sub is not None:
+            return sub
+    return None
+
+
 def load_network(ckpt_dir: Path, net_params: dict, env, seed: int):
     """Build the network, restore the latest step, return (nets, step) or None."""
     ckpt_dir = Path(ckpt_dir)
@@ -883,8 +907,7 @@ def load_network(ckpt_dir: Path, net_params: dict, env, seed: int):
 
     with open(step_dir / "metadata.pkl", "rb") as f:
         meta = pickle.load(f)
-    ppo_cfg = meta.get("config")
-    ppo_cfg = ppo_cfg.ppo if ppo_cfg is not None else None
+    ppo_cfg = optimizer_config(meta.get("config"))
     ts = new_training_state(
         env, nets, n_envs=1, seed=seed,
         learning_rate=ppo_cfg.learning_rate if ppo_cfg else 1e-4,

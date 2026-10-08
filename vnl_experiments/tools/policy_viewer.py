@@ -41,6 +41,7 @@ from flax import nnx
 
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
+from vnl_experiments.delays.network_builders import optimizer_config
 from vnl_playground.tasks.modular_rodent.imitation_v3 import ModularImitation_v3, default_config
 from vnl_playground.tasks.modular_rodent import consts
 from vnl_experiments.networks.nervenet_style_v2 import NerveNetNetwork_v2
@@ -453,7 +454,7 @@ def main() -> None:
     # state (correct optimizer chain, learning rate, etc.) without hard-coding.
     with open(os.path.join(args.checkpoint, "metadata.pkl"), "rb") as _f:
         _meta = pickle.load(_f)
-    _ppo_cfg = _meta["config"].ppo if _meta.get("config") is not None else None
+    _ppo_cfg = optimizer_config(_meta.get("config"))
 
     training_state = new_training_state(
         env, network, n_envs=1, seed=0,

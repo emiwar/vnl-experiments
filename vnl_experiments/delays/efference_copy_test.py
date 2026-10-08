@@ -5,6 +5,7 @@ import jax
 import jax.numpy as jp
 from flax import nnx
 
+from nnx_ppo.networks.adapter import PPOAdapter
 from nnx_ppo.networks.containers import Sequential
 from nnx_ppo.networks.feedforward import Dense
 from nnx_ppo.networks.types import StatefulModule, StatefulModuleOutput
@@ -187,6 +188,25 @@ class EfferenceCopyTest(absltest.TestCase):
         obs = jp.ones((3, obs_size))
         out = net(state, obs)
         self.assertEqual(out.output["action"].shape, (3, action_size))
+
+
+    def test_wraps_a_ppo_adapter(self):
+        """Inner may be a whole PPOAdapter: its ``actions`` are queued, and both the
+        actor and the critic see the augmented input (the non-privileged critic)."""
+        rngs = nnx.Rngs(0)
+        obs_size, action_size, L = 3, 2, 2
+        critic = Dense(obs_size + L * action_size, 1, rngs)
+        ec = EfferenceCopy(
+            PPOAdapter(action=_ProbeSampler(action_size), value=critic),
+            jp.zeros((action_size,)), queue_length=L,
+        )
+        state = ec.initialize_state(batch_size=3)
+        obs = jp.arange(9.0).reshape(3, obs_size)
+        out = ec(state, obs)
+        # The probe's action is the first features of its input, i.e. the obs.
+        self.assertTrue(jp.allclose(out.output.actions, obs[:, :action_size]))
+        self.assertTrue(jp.allclose(out.next_state["queue"][:, 0], out.output.actions))
+        self.assertEqual(out.output.value_estimates.shape, (3,))
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ import jax
 import jax.numpy as jp
 
 from nnx_ppo.networks.types import (
+    PPONetworkOutput,
     StatefulModule,
     StatefulModuleOutput,
     ModuleState,
@@ -42,6 +43,12 @@ class EfferenceCopy(StatefulModule):
     its forward output is a sampler dict ``{"action", "log_likelihood"}``.
     ``EfferenceCopy`` extracts the ``"action"`` field and pushes it onto a
     shift-register queue for the next step.
+
+    The inner module may instead be a whole ``PPOAdapter`` (forward output a
+    ``PPONetworkOutput``), in which case its ``actions`` are queued. That puts
+    the queue in front of *both* the actor and the critic, which is how the
+    non-privileged-critic variant of ``DelayedMLP`` shows its critic the same
+    input as its actor.
 
     Carry::
 
@@ -149,11 +156,14 @@ class EfferenceCopy(StatefulModule):
         # Inner output is a sampler dict {"action", "log_likelihood"} (or a
         # pytree of them for multi-sampler banks). For multi-sampler banks
         # the user is expected to provide a matching sample_action pytree.
-        new_action = jax.tree.map(
-            lambda d: d["action"],
-            inner_out.output,
-            is_leaf=lambda x: isinstance(x, dict) and "action" in x,
-        )
+        if isinstance(inner_out.output, PPONetworkOutput):
+            new_action = inner_out.output.actions
+        else:
+            new_action = jax.tree.map(
+                lambda d: d["action"],
+                inner_out.output,
+                is_leaf=lambda x: isinstance(x, dict) and "action" in x,
+            )
 
         # Shift register: prepend new action, drop oldest.
         new_queue = jax.tree.map(

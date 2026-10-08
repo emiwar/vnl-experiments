@@ -39,6 +39,7 @@ from vnl_playground.tasks.modular_rodent.imitation_v4 import ModularImitation_v4
 from vnl_playground.tasks.reference_clips import ReferenceClips
 from nnx_ppo.algorithms.checkpointing import load_checkpoint
 from nnx_ppo.algorithms.ppo import new_training_state
+from vnl_experiments.delays.network_builders import optimizer_config
 from vnl_experiments.tools.checkpoint_utils import (
     parse_env_config,
     parse_net_params,
@@ -252,7 +253,7 @@ def benchmark_run(run_dir_rel: str) -> dict:
 
         with open(step_dir / "metadata.pkl", "rb") as f:
             meta = pickle.load(f)
-        ppo_cfg = meta["config"].ppo if meta.get("config") is not None else None
+        ppo_cfg = optimizer_config(meta.get("config"))
         training_state = new_training_state(
             train_env,
             nets,

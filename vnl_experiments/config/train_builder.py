@@ -19,6 +19,10 @@ Two fields need help, and both are worth understanding before touching this:
     which :func:`resolve_logging_level` reduces with ``|``.
 
 The subclasses below exist only for those two fields; everything else is inherited.
+
+A train group is either a PPO one (a ``ppo:`` block -> ``TrainConfig``) or a distillation
+one (a ``distillation:`` block, e.g. ``train=dmc_distill`` -> ``DistillationTrainConfig``).
+:func:`build_train_config` decides by which block is present.
 """
 
 from __future__ import annotations
@@ -32,6 +36,8 @@ from typing import Any, Optional
 from omegaconf import DictConfig, OmegaConf
 
 from nnx_ppo.algorithms.config import (
+    DistillationConfig,
+    DistillationTrainConfig,
     EvalConfig,
     PPOConfig,
     TrainConfig,
@@ -66,6 +72,40 @@ class TrainSchema(TrainConfig):
     eval: EvalSchema = field(default_factory=EvalSchema)
 
 
+@dataclass
+class DistillationSchema(DistillationConfig):
+    """:class:`DistillationConfig`, same two fields widened."""
+
+    logging_level: Any = "LOSSES"
+    logging_percentiles: Optional[list[int]] = None
+
+
+@dataclass
+class DistillationTrainSchema(DistillationTrainConfig):
+    """:class:`DistillationTrainConfig` using the widened sub-schemas."""
+
+    distillation: DistillationSchema = field(default_factory=DistillationSchema)
+    eval: EvalSchema = field(default_factory=EvalSchema)
+
+
+def is_distillation(cfg: Any) -> bool:
+    """Whether a train group (or a built config) describes distillation rather than PPO."""
+    if isinstance(cfg, DistillationTrainConfig):
+        return True
+    if isinstance(cfg, TrainConfig):
+        return False
+    return "distillation" in cfg
+
+
+def algo_config(config: TrainConfig | DistillationTrainConfig):
+    """The algorithm block of a built config: ``.ppo`` or ``.distillation``.
+
+    Both carry the fields the entry point reads generically (``n_envs``,
+    ``total_steps``, ``learning_rate``, ``gradient_clipping``, ``weight_decay``).
+    """
+    return config.distillation if is_distillation(config) else config.ppo
+
+
 def resolve_logging_level(value: Any) -> LoggingLevel:
     """A ``LoggingLevel`` from a member name, a list of names, or an existing flag.
 
@@ -93,31 +133,49 @@ def _rebuild(cls, widened):
     return cls(**kwargs)
 
 
-def build_train_config(cfg: DictConfig | dict) -> TrainConfig:
+def _video(widened) -> VideoConfig:
+    return VideoConfig(
+        **{f.name: getattr(widened.video, f.name) for f in dataclasses.fields(VideoConfig)}
+    )
+
+
+def build_train_config(cfg: DictConfig | dict) -> TrainConfig | DistillationTrainConfig:
     """Compose ``cfg`` over the nnx-ppo defaults and return a genuine ``TrainConfig``.
 
     The result is the real dataclass, not a ``DictConfig``: it is handed to ``train_ppo``,
     pickled into checkpoint metadata, and ``dataclasses.asdict``-ed into the WandB config,
     all of which expect the actual type.
+
+    A group with a ``distillation:`` block gives a ``DistillationTrainConfig`` instead.
     """
+    if is_distillation(cfg):
+        merged = OmegaConf.merge(OmegaConf.structured(DistillationTrainSchema), cfg)
+        widened = OmegaConf.to_object(merged)
+        return DistillationTrainConfig(
+            distillation=_rebuild(DistillationConfig, widened.distillation),
+            eval=_rebuild(EvalConfig, widened.eval),
+            video=_video(widened),
+            seed=widened.seed,
+            checkpoint_every_steps=widened.checkpoint_every_steps,
+        )
+
     merged = OmegaConf.merge(OmegaConf.structured(TrainSchema), cfg)
     widened = OmegaConf.to_object(merged)
     return TrainConfig(
         ppo=_rebuild(PPOConfig, widened.ppo),
         eval=_rebuild(EvalConfig, widened.eval),
-        video=VideoConfig(
-            **{f.name: getattr(widened.video, f.name) for f in dataclasses.fields(VideoConfig)}
-        ),
+        video=_video(widened),
         seed=widened.seed,
         checkpoint_every_steps=widened.checkpoint_every_steps,
     )
 
 
-def validate_train_config(config: TrainConfig) -> TrainConfig:
-    """Reject combinations the PPO update cannot honour. Returns ``config``."""
-    if config.ppo.n_envs % config.ppo.n_minibatches:
+def validate_train_config(config):
+    """Reject combinations the PPO / distillation update cannot honour. Returns ``config``."""
+    algo = algo_config(config)
+    if algo.n_envs % algo.n_minibatches:
         raise ValueError(
-            f"n_envs ({config.ppo.n_envs}) must be divisible by n_minibatches "
-            f"({config.ppo.n_minibatches})."
+            f"n_envs ({algo.n_envs}) must be divisible by n_minibatches "
+            f"({algo.n_minibatches})."
         )
     return config

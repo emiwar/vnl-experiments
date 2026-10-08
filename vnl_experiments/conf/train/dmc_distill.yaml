@@ -1,0 +1,49 @@
+# @package train
+#
+# Distillation settings for the dm_control_suite delay experiments: a frozen, undelayed
+# teacher (a trained delay-0 run, given as `distill.teacher=<run dir>`) is distilled into a
+# delayed student. Selecting this group is what switches the entry point from PPO to
+# `nnx_ppo.algorithms.distillation.train_distillation`; see vnl_experiments/distill.py.
+#
+#   python -m vnl_experiments.train env=dmc/walker_walk net=delayed_mlp delay=5 \
+#       train=dmc_distill distill.teacher=checkpoints/WalkerWalk_DelayedMLP_delay0_eff0-<ts>
+#
+# A starting point, not a tuned config. It deliberately does not inherit from `dmc`: that
+# group's `ppo:` block would be carried along unused and recorded in every run's config.
+# Where a value has a PPO counterpart it is the `dmc` one, so the rollout statistics are
+# comparable; the step budget is lower because distillation is supervised and converges
+# far faster than RL from scratch.
+
+distillation:
+  n_envs: 8192
+  rollout_length: 30
+  total_steps: 100_000_000
+  learning_rate: 1.0e-4
+  n_epochs: 4
+  n_minibatches: 8
+  gradient_clipping: 1.0
+  weight_decay: null
+  # The loss is `losses/distillation_nll` (+ `losses/regularization`); the rollout stats
+  # show how the *student's* own behaviour is doing, since it drives the env.
+  logging_level: [LOSSES, ROLLOUT_STATS]
+  logging_percentiles: null
+
+eval:
+  enabled: true
+  # 50 evals over the 100M budget. See conf/train/dmc.yaml for why evals are expensive
+  # here (sequential 1000-step rollouts).
+  every_steps: 2_000_000
+  n_envs: 256
+  max_episode_length: 1000
+  logging_percentiles: null
+
+video:
+  enabled: true
+  every_steps: 25_000_000
+  episode_length: 1000
+  render_kwargs:
+    height: 480
+    width: 640
+
+seed: 1234
+checkpoint_every_steps: 10_000_000
