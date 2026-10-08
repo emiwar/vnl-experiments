@@ -1,21 +1,21 @@
-Coverage for 325 runs in three-arm-overview
+Coverage for 398 runs in three-arm-overview
 
-index  (spec_id=-): 325/325
+index  (spec_id=-): 398/398
     ball_in_cup__efference         25/25  
     ball_in_cup__forward_model     29/29  
     ball_in_cup__no_efference      27/27  
     ball_in_cup__undelayed          4/4   
-    cartpole__efference            14/14  
-    cartpole__forward_model         3/3   
+    cartpole__efference            23/23  
+    cartpole__forward_model        13/13  
     cartpole__no_efference          9/9   
-    cartpole__undelayed             4/4   
-    cheetah__efference             10/10  
-    cheetah__forward_model          2/2   
+    cartpole__undelayed             5/5   
+    cheetah__efference             17/17  
+    cheetah__forward_model         11/11  
     cheetah__no_efference           7/7   
     cheetah__undelayed              3/3   
-    humanoid__efference            19/19  
-    humanoid__forward_model        18/18  
-    humanoid__no_efference         15/15  
+    humanoid__efference            26/26  
+    humanoid__forward_model        20/20  
+    humanoid__no_efference         22/22  
     humanoid__undelayed             3/3   
     reacher__efference             24/24  
     reacher__forward_model         20/20  
@@ -23,25 +23,25 @@ index  (spec_id=-): 325/325
     reacher__undelayed              3/3   
     walker__efference              36/36  
     walker__forward_model          28/28  
-    walker__no_efference           10/10  
+    walker__no_efference           31/31  
     walker__undelayed               3/3   
 
-history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 325/325
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 398/398
     ball_in_cup__efference         25/25  
     ball_in_cup__forward_model     29/29  
     ball_in_cup__no_efference      27/27  
     ball_in_cup__undelayed          4/4   
-    cartpole__efference            14/14  
-    cartpole__forward_model         3/3   
+    cartpole__efference            23/23  
+    cartpole__forward_model        13/13  
     cartpole__no_efference          9/9   
-    cartpole__undelayed             4/4   
-    cheetah__efference             10/10  
-    cheetah__forward_model          2/2   
+    cartpole__undelayed             5/5   
+    cheetah__efference             17/17  
+    cheetah__forward_model         11/11  
     cheetah__no_efference           7/7   
     cheetah__undelayed              3/3   
-    humanoid__efference            19/19  
-    humanoid__forward_model        18/18  
-    humanoid__no_efference         15/15  
+    humanoid__efference            26/26  
+    humanoid__forward_model        20/20  
+    humanoid__no_efference         22/22  
     humanoid__undelayed             3/3   
     reacher__efference             24/24  
     reacher__forward_model         20/20  
@@ -49,5 +49,5 @@ history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 325/325
     reacher__undelayed              3/3   
     walker__efference              36/36  
     walker__forward_model          28/28  
-    walker__no_efference           10/10  
+    walker__no_efference           31/31  
     walker__undelayed               3/3   

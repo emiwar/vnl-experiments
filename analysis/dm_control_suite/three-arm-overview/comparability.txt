@@ -151,7 +151,7 @@ Group condition='ball_in_cup__undelayed'  (n=4)
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
 
 ======================================================================
-Group condition='cartpole__efference'  (n=14)
+Group condition='cartpole__efference'  (n=23)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -189,7 +189,7 @@ Group condition='cartpole__efference'  (n=14)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-Group condition='cartpole__forward_model'  (n=3)
+Group condition='cartpole__forward_model'  (n=13)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -222,9 +222,9 @@ Group condition='cartpole__forward_model'  (n=3)
   config.eval.max_episode_length    : [1000]
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
   config.ppo.total_steps            : [480000000]
-  config.eval.every_steps           : [600000]
-  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04']
-  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  git_commit                        : ['971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
 Group condition='cartpole__no_efference'  (n=9)
@@ -265,7 +265,7 @@ Group condition='cartpole__no_efference'  (n=9)
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
 
 ======================================================================
-Group condition='cartpole__undelayed'  (n=4)
+Group condition='cartpole__undelayed'  (n=5)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -303,7 +303,7 @@ Group condition='cartpole__undelayed'  (n=4)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-Group condition='cheetah__efference'  (n=10)
+Group condition='cheetah__efference'  (n=17)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -341,7 +341,7 @@ Group condition='cheetah__efference'  (n=10)
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
 
 ======================================================================
-Group condition='cheetah__forward_model'  (n=2)
+Group condition='cheetah__forward_model'  (n=11)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -374,8 +374,8 @@ Group condition='cheetah__forward_model'  (n=2)
   config.eval.max_episode_length    : [1000]
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
   config.ppo.total_steps            : [480000000]
-  config.eval.every_steps           : [600000]
-  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2']
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  git_commit                        : ['9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
 
 ======================================================================
@@ -455,7 +455,7 @@ Group condition='cheetah__undelayed'  (n=3)
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
 
 ======================================================================
-Group condition='humanoid__efference'  (n=19)
+Group condition='humanoid__efference'  (n=26)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -493,7 +493,7 @@ Group condition='humanoid__efference'  (n=19)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-Group condition='humanoid__forward_model'  (n=18)
+Group condition='humanoid__forward_model'  (n=20)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -531,7 +531,7 @@ Group condition='humanoid__forward_model'  (n=18)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-Group condition='humanoid__no_efference'  (n=15)
+Group condition='humanoid__no_efference'  (n=22)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -563,7 +563,7 @@ Group condition='humanoid__no_efference'  (n=15)
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
-  config.ppo.total_steps            : [480000000]
+  config.ppo.total_steps            : [1000000000, 2000000000, 480000000]  *** VARIES ***
   config.eval.every_steps           : [4800000]
   git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
@@ -835,7 +835,7 @@ Group condition='walker__forward_model'  (n=28)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-Group condition='walker__no_efference'  (n=10)
+Group condition='walker__no_efference'  (n=31)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]
@@ -867,7 +867,7 @@ Group condition='walker__no_efference'  (n=10)
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
-  config.ppo.total_steps            : [1000000000]
+  config.ppo.total_steps            : [1000000000, 2000000000, 480000000]  *** VARIES ***
   config.eval.every_steps           : [4800000]
   git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
   repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
@@ -911,7 +911,7 @@ Group condition='walker__undelayed'  (n=3)
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
 
 ======================================================================
-All runs  (n=325)
+All runs  (n=398)
 ======================================================================
   config.ppo.n_envs                 : [8192]
   config.ppo.rollout_length         : [30]

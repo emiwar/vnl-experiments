@@ -35,8 +35,8 @@ that is partly confounded with the arm (``efference-copy-across-tasks``).
   schedule in nnx-ppo (``total_steps`` only bounds the training loop), so a 1 G run read
   at 480 M is the same experiment as a 480 M run.
 * ``reward_1B`` -- the same window ending at 1 G. Filled only where the run trained
-  >= 1 G steps, which in this cohort means WalkerWalk (and three HumanoidWalk runs, which
-  the user asked to compare at 480 M -- their ``reward_1B`` is left blank, see below).
+  >= 1 G steps, on any task: most of WalkerWalk, and the HumanoidWalk runs at 1 G / 2 G.
+  Blank for every 480 M run, so compare at 1 G only within the rows that have it.
 * ``steps_to_solve`` -- first grid step at which the trailing 24 M-step mean (5 grid
   points) reaches ``solve_threshold``; blank if never (**censored, not missing** -- the
   run's ``budget`` says how long it had). Read over the run's whole curve.
@@ -289,7 +289,7 @@ def build_row(run: pd.Series, series: pd.DataFrame | None) -> dict:
     steps = grid["step"].to_numpy()
     row["_curve_max_step"] = int(series["step"].max())
     row["reward_480M"] = window_mean(grid, READOUT_480M)
-    if budget >= READOUT_1B and task == "WalkerWalk":
+    if budget >= READOUT_1B:
         row["reward_1B"] = window_mean(grid, READOUT_1B)
     row["_steps"] = steps
     row["_smooth"] = trailing_mean(steps, grid["value"].to_numpy())
