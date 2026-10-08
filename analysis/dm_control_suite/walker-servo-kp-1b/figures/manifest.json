@@ -1,0 +1,6 @@
+{
+  "curves.png": "walker-servo-kp-1b  \u00b7  curves.csv e0313d54  \u00b7  vnl-experiments 2ada885  \u00b7  2026-10-08",
+  "delay_summary.png": "walker-servo-kp-1b  \u00b7  data.csv 6defbb42  \u00b7  vnl-experiments 2ada885  \u00b7  2026-10-08",
+  "reward_vs_kp.png": "walker-servo-kp-1b  \u00b7  data.csv 6defbb42  \u00b7  vnl-experiments 2ada885  \u00b7  2026-10-08",
+  "time_vs_kp.png": "walker-servo-kp-1b  \u00b7  data.csv 6defbb42  \u00b7  vnl-experiments 2ada885  \u00b7  2026-10-08"
+}

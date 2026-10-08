@@ -1,0 +1,88 @@
+Did any servo run in this cohort diverge?
+
+``envs/servo_control.md`` §3.6: a stiffer servo raises the divergence rate, and on the
+training env ``NaNGuardWrapper`` turns a divergence into a silent zero-reward termination,
+so a diverging stiffness can read as "bad at the task". The new sweep goes to
+``servo_kp = 512`` -- 8x stiffer than anything ``../walker-servo-x-forward-model/``
+cleared, with the ankle servo settling in 6.2 ms against a 2.5 ms ``sim_dt``.
+
+Signal (as in that folder's ``divergence_check.py``): WalkerWalk never terminates on its
+own, so ``rollout_batch/done_rate > rollout_batch/truncation_rate`` at any logged
+iteration means a divergence. Queried from WandB directly because those keys are not in
+the pinned ``history`` spec. Torque runs are not re-checked: every torque run here at
+1e9 is already in the sibling's check, and torque has no stiffness to destabilise.
+
+==============================================================================
+  2zaydf5d  kp=0.25   delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  jh5tdouq  kp=0.25   delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  6qwsqyqn  kp=0.25   delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  qlczhfeq  kp=0.5    delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  o000rgp7  kp=0.5    delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  yr5ut4fa  kp=0.5    delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  6ty7g1jd  kp=0.5    delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  zejtrauz  kp=1      delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  seonhqod  kp=1      delay=0     480M i52/p52   iters=1954  max(done-trunc)=+0.000e+00  OK
+  1hot441u  kp=1      delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  uzmc0t6h  kp=1      delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  j4veazbp  kp=1      delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  yylyb6q4  kp=1      delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  i043lksj  kp=2      delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  2tdmtwr3  kp=2      delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  mk7d1dj1  kp=4      delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  ylqtyh2p  kp=4      delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  zdliziks  kp=4      delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  q72a51ws  kp=4      delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  gyxusu36  kp=4      delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  8fstkvcp  kp=8      delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  cs3376pz  kp=8      delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  xfzwgk9q  kp=8      delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  9q70thwa  kp=8      delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  ky1r2j3t  kp=8      delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  hshlffvs  kp=16     delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  yn0g4ch2  kp=16     delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  q4s3yr6h  kp=16     delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  0d25k2oc  kp=16     delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  z5nh8rzd  kp=16     delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  996w94mt  kp=32     delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  7j3pvdrw  kp=32     delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  63qozhud  kp=32     delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  p09hm7kc  kp=32     delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  yobaxq9u  kp=32     delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  g133o63i  kp=48     delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  3sjjtg31  kp=48     delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  rv6zc0b9  kp=48     delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  qv83r9wh  kp=64     delay=0     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  0cgzvb0e  kp=64     delay=0    1000M i51/p51   iters=2000  max(done-trunc)=+0.000e+00  OK
+  czd9cd32  kp=64     delay=0    1000M i52/p52   iters=2000  max(done-trunc)=+0.000e+00  OK
+  o167k20f  kp=64     delay=5     480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  7i80wqfw  kp=64     delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  wql8i627  kp=64     delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  sueevgls  kp=64     delay=5    1000M i51/p51   iters=2000  max(done-trunc)=+0.000e+00  OK
+  rzpjxoc0  kp=64     delay=5    1000M i52/p52   iters=2000  max(done-trunc)=+0.000e+00  OK
+  c17tn6hg  kp=64     delay=5    1000M i54/p54   iters=2000  max(done-trunc)=+0.000e+00  OK
+  bwq5u56f  kp=64     delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  p2puogug  kp=64     delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  77cze007  kp=64     delay=7    1000M i52/p52   iters=2000  max(done-trunc)=+0.000e+00  OK
+  42cs45jp  kp=64     delay=7    1000M i53/p53   iters=2000  max(done-trunc)=+0.000e+00  OK
+  kwo5yep7  kp=64     delay=7    1000M i54/p54   iters=2000  max(done-trunc)=+0.000e+00  OK
+  m68iqez4  kp=64     delay=10    480M i50/p50   iters=1952  max(done-trunc)=+0.000e+00  OK
+  gxyo40cq  kp=64     delay=10   1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  6a803fzx  kp=64     delay=10   1000M i51/p51   iters=2000  max(done-trunc)=+0.000e+00  OK
+  n4sd91z1  kp=64     delay=10   1000M i53/p53   iters=2000  max(done-trunc)=+0.000e+00  OK
+  o6i2tnor  kp=64     delay=10   1000M i54/p54   iters=2000  max(done-trunc)=+0.000e+00  OK
+  jzvf9ycv  kp=128    delay=0    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  hk63p76v  kp=128    delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  jq5qk7mx  kp=128    delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  bz7rr0oo  kp=128    delay=10    480M i50/p50   iters=1954  max(done-trunc)=+0.000e+00  OK
+  9md7mfzx  kp=256    delay=0    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  fpgc4jty  kp=256    delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  lha8i2l0  kp=256    delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  2lr8rge7  kp=512    delay=0    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  juusrr9w  kp=512    delay=5    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+  67fe2f3k  kp=512    delay=7    1000M i45/p45   iters=2000  max(done-trunc)=+0.000e+00  OK
+
+==============================================================================
+INERT: no servo run ever terminated an episode, up to servo_kp = 512. The
+stiff end of the sweep did not destabilise the physics, so no stiffness's
+reward is depressed by silent zero-reward terminations.
+==============================================================================

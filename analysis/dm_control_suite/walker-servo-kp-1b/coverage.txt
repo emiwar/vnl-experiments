@@ -1,0 +1,9 @@
+Coverage for 98 runs in walker-servo-kp-1b
+
+index  (spec_id=-): 98/98
+    servo                          67/67  
+    torque                         31/31  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 98/98
+    servo                          67/67  
+    torque                         31/31  
