@@ -139,6 +139,14 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
     # `undelayed`'s star, so it reads as that arm's own delay-0 level.
     "undelayed_fm": {"color": "C2", "marker": "*",
                      "label": "Forward model, no delay (reference level)"},
+    # Privileged vs delayed critic (2026-10-09). The critic is a second axis crossed with
+    # the efference arm, whose `efference` / `no_efference` hues carry the colour; these
+    # two entries give the critic its marker and label only. Their colours are neutral
+    # and used only where a legend entry stands for the critic regardless of arm.
+    "privileged_critic": {"color": "0.45", "marker": "o",
+                          "label": "Privileged critic (current obs)"},
+    "delayed_critic": {"color": "0.1", "marker": "D",
+                       "label": "Delayed critic (sees the actor's input)"},
     # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
     # circle = position, open triangle = torque). The hue was initially the decoder input,
     # so that the two axes of the cohort stayed separable on an x-axis already spent on

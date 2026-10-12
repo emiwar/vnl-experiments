@@ -1,0 +1,358 @@
+======================================================================
+Group condition='delayed_efference'  (n=18)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='delayed_no_efference'  (n=18)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='delayed_undelayed'  (n=2)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='privileged_efference'  (n=39)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='privileged_no_efference'  (n=30)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='privileged_undelayed'  (n=5)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=112)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.network_class          : ['DelayedMLP']
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.normalize_obs          : [True]
+  net_params.activation             : ['swish']
+  net_params.initializer_scale      : [1.0]
+  net_params.std_scale              : [1.0]
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.gradient_clipping      : []
+  config.ppo.normalize_advantages   : [True]
+  config.ppo.critic_loss_weight     : [1.0]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  env_params.impl                   : ['jax']
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+# Design axes (expected to vary)
+
+======================================================================
+Group condition='delayed_efference'  (n=18)
+======================================================================
+  net_params.privileged_critic      : [False]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  config.eval.every_steps           : [4800000]
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+  git_commit                        : ['a37ce64de39df45c31bd55437f50d7fb63252c50']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  state                             : ['finished']
+
+======================================================================
+Group condition='delayed_no_efference'  (n=18)
+======================================================================
+  net_params.privileged_critic      : [False]
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  config.eval.every_steps           : [4800000]
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+  git_commit                        : ['a37ce64de39df45c31bd55437f50d7fb63252c50']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  state                             : ['finished']
+
+======================================================================
+Group condition='delayed_undelayed'  (n=2)
+======================================================================
+  net_params.privileged_critic      : [False]
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  config.eval.every_steps           : [4800000]
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+  git_commit                        : ['a37ce64de39df45c31bd55437f50d7fb63252c50']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [True]
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  state                             : ['finished']
+
+======================================================================
+Group condition='privileged_efference'  (n=39)
+======================================================================
+  net_params.privileged_critic      : []
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [1000243200.0, 2000240640.0, 4000235520.0, 480215040.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  seed                              : [42, 43, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  state                             : ['finished']
+
+======================================================================
+Group condition='privileged_no_efference'  (n=30)
+======================================================================
+  net_params.privileged_critic      : []
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0]
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [1000243200.0, 2000240640.0, 479723520.0, 480215040.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  seed                              : [42, 45, 46, 47, 48]  *** VARIES ***
+  config.seed                       : [1234, 45, 46, 47, 48]  *** VARIES ***
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+
+======================================================================
+Group condition='privileged_undelayed'  (n=5)
+======================================================================
+  net_params.privileged_critic      : []
+  net_params.delay_k                : [0.0]
+  net_params.efference_length       : [0.0]
+  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [1000243200.0, 480215040.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  seed                              : [42, 46, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 46, 50, 51, 52]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [True]
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA H200']  *** VARIES ***
+  state                             : ['finished']
+
+======================================================================
+All runs  (n=112)
+======================================================================
+  net_params.privileged_critic      : [False]
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.efference_length       : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [1000243200.0, 2000240640.0, 4000235520.0, 479723520.0, 480215040.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  seed                              : [42, 43, 45, 46, 47, 48, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 45, 46, 47, 48, 49, 50, 51, 52]  *** VARIES ***
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'a37ce64de39df45c31bd55437f50d7fb63252c50', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  repos.nnx_ppo.dirty               : [False]
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***

@@ -1,0 +1,49 @@
+Is the load-bearing code identical across the cohort's commits?
+
+sha256[:10] of each subject with docstrings stripped and re-unparsed. 'neutralised' rows
+first remove the a37ce64 non-privileged-critic additions (see the docstring).
+
+vnl commits (oldest first), runs, critic arm:
+  971ab99  n= 6  privileged
+  f9c8960  n= 3  privileged
+  9e216ae  n= 9  privileged
+  b487eed  n= 1  privileged
+  7bedb5c  n=16  privileged
+  b4012b3  n=39  privileged
+  a37ce64  n=38  delayed
+
+nnx commits (oldest first), runs, critic arm:
+  1725d20  n= 9  privileged
+  5314279  n=65  privileged
+  21d6643  n=38  delayed
+
+-- vnl ------------------------------------------------------------
+subject                                                     971ab99    f9c8960    9e216ae    b487eed    7bedb5c    b4012b3    a37ce64   verdict
+make_delayed_networks.py:make_delayed_mlp_actor_critic   e317aeaaff e317aeaaff e317aeaaff e317aeaaff e317aeaaff e317aeaaff 38e7f0986b   2 versions
+make_delayed_networks.py:make_delayed_mlp_actor_critic  [neutralised] e317aeaaff e317aeaaff e317aeaaff e317aeaaff e317aeaaff e317aeaaff e317aeaaff   identical
+network_builders.py:build_flat_delay_network             9b09f09454 9b09f09454 9b09f09454 9b09f09454 9b09f09454 9b09f09454 fda1f42aaf   2 versions
+network_builders.py:build_flat_delay_network  [neutralised] 9b09f09454 9b09f09454 9b09f09454 9b09f09454 9b09f09454 9b09f09454 9b09f09454   identical
+network_builders.py:_parse_net_params                    7d8077b5cf 7d8077b5cf 7d8077b5cf 7d8077b5cf 7d8077b5cf 7d8077b5cf 7d8077b5cf   identical
+efference_copy.py:*                                      e13a955c45 e13a955c45 e13a955c45 e13a955c45 e13a955c45 e13a955c45 1cb42ada72   2 versions
+efference_copy.py:*  [neutralised]                       e13a955c45 e13a955c45 e13a955c45 e13a955c45 e13a955c45 e13a955c45 e13a955c45   identical
+
+-- nnx ------------------------------------------------------------
+subject                                                     1725d20    5314279    21d6643   verdict
+ppo.py:ppo_loss                                          007ea07509 007ea07509 007ea07509   identical
+ppo.py:gae                                               0d2e846a7f 0d2e846a7f 0d2e846a7f   identical
+ppo.py:ppo_step                                          d59e035931 fefd298c66 fefd298c66   2 versions
+rollout.py:unroll_env                                    3e059abc8c 3e059abc8c 3e059abc8c   identical
+rollout.py:single_transition                             2a1fcea47b 2a1fcea47b 2a1fcea47b   identical
+rollout.py:eval_rollout                                  04e83fb0b2 04e83fb0b2 04e83fb0b2   identical
+normalizer.py:*                                          8136b9c984 8136b9c984 8136b9c984   identical
+sampling_layers.py:*                                     918c11590a 918c11590a 918c11590a   identical
+delay.py:*                                               1730e4f385 1730e4f385 1730e4f385   identical
+adapter.py:*                                             71798e17b9 71798e17b9 71798e17b9   identical
+containers.py:*                                          9e2b1fe5f3 9e2b1fe5f3 9e2b1fe5f3   identical
+factories.py:*                                           8f11dfaef9 8f11dfaef9 8f11dfaef9   identical
+
+Verdict
+  Every subject that defines the networks, the sampler, the normaliser, the rollout,
+  GAE and the PPO loss is identical at every commit -- for the a37ce64 additions, after
+  removing them, i.e. the privileged build path is byte-for-byte the old one. ppo_step is
+  expected to differ (NaN diagnostics, 5314279); see report.md.

@@ -1,0 +1,25 @@
+Coverage for 112 runs in walker-delayed-critic
+
+index  (spec_id=-): 112/112
+    delayed_efference              18/18  
+    delayed_no_efference           18/18  
+    delayed_undelayed               2/2   
+    privileged_efference           39/39  
+    privileged_no_efference        30/30  
+    privileged_undelayed            5/5   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 112/112
+    delayed_efference              18/18  
+    delayed_no_efference           18/18  
+    delayed_undelayed               2/2   
+    privileged_efference           39/39  
+    privileged_no_efference        30/30  
+    privileged_undelayed            5/5   
+
+history:hist2000-a9ab7503  (spec_id=hist2000-a9ab7503): 112/112
+    delayed_efference              18/18  
+    delayed_no_efference           18/18  
+    delayed_undelayed               2/2   
+    privileged_efference           39/39  
+    privileged_no_efference        30/30  
+    privileged_undelayed            5/5   
