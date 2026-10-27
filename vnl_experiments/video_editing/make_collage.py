@@ -80,6 +80,19 @@ def _artifact(wandb_id: str, spec: str = VIDEO_SPEC):
     return ARTIFACT_VIDEO_DIR / wandb_id / f"{spec}.mp4"
 
 
+DMC_DIR = EVAL_DIR / "dm_control"
+
+
+def _dmc(task: str, wandb_id: str, step: int):
+    """A dm_control eval video logged to WandB (``emiwar-team/nnx-ppo-delays``).
+
+    These are the run's own ``media/videos/eval_video_<step>_*.mp4`` (640x480,
+    50 fps, one 1000-step episode), downloaded and renamed to
+    ``<task>_<wandb_id>_step<step>.mp4``; no checkpoint is needed.
+    """
+    return DMC_DIR / f"{task}_{wandb_id}_step{step}.mp4"
+
+
 # The six 2 B-step forward-model runs behind the *_newxml presets, pooled to give
 # both arms a single clip ordering.
 NEWXML_2G_IDS = ["dgv264dt", "itedqjyt", "3dfjggpw",   # expfm  delay 0 / 10 / 20
@@ -191,6 +204,22 @@ PRESETS = {
               "Position, no proprioception"),
              (_artifact("u3lywvaj", VIDEO_SPEC_V3),
               "Torque, proprioception 100 ms late")],
+        ],
+    },
+    # --- dm_control task showcase (nnx-ppo-delays) ---------------------------
+    # One 1000-step eval episode per task, the last one logged to WandB by a
+    # delay-0 DelayedMLP run with a high, stable eval reward (value in the comment).
+    # Native 640x480 tiles. Downloaded, not re-rendered: see DMC_DIR.
+    "dm_control": {
+        "output": EVAL_DIR / "collage_2x3_dm_control.mp4",
+        "tile": (640, 480),
+        "grid": [
+            [(_dmc("CartpoleSwingup", "hyb1tygx", 479969280), "Cartpole: swing up"),  # 822
+             (_dmc("ReacherHard", "0jiprpx9", 479969280), "Reacher: reach (hard)"),   # 972
+             (_dmc("BallInCup", "df3wh6wb", 479969280), "Ball in cup: catch")],       # 911
+            [(_dmc("CheetahRun", "eg6m2gcz", 479969280), "Cheetah: run"),             # 930
+             (_dmc("WalkerWalk", "jp5jehho", 995819520), "Walker: walk"),             # 982
+             (_dmc("HumanoidWalk", "rdmvguxm", 995819520), "Humanoid: walk")],        # 977
         ],
     },
 }
@@ -513,8 +542,10 @@ def main() -> None:
     p.add_argument("--preset", choices=sorted(PRESETS), default=DEFAULT_PRESET)
     p.add_argument("--output", type=Path, default=None,
                    help="override the preset's default output path")
-    p.add_argument("--tile-w", type=int, default=TILE_W)
-    p.add_argument("--tile-h", type=int, default=TILE_H)
+    p.add_argument("--tile-w", type=int, default=None,
+                   help=f"default: the preset's `tile`, else {TILE_W}")
+    p.add_argument("--tile-h", type=int, default=None,
+                   help=f"default: the preset's `tile`, else {TILE_H}")
     p.add_argument("--fps", type=int, default=FPS)
     p.add_argument("--trim", dest="trim", action="store_true", default=None,
                    help="cut each clip TAIL_S after its last tile dies")
@@ -561,7 +592,9 @@ def main() -> None:
                           captions=read_captions(captions) if captions else None,
                           caption_cell=preset.get("caption_cell"), fps=args.fps)
 
-    make_collage(grid, output, args.tile_w, args.tile_h, args.fps, plan, overlay)
+    tile_w, tile_h = preset.get("tile", (TILE_W, TILE_H))
+    make_collage(grid, output, args.tile_w or tile_w, args.tile_h or tile_h, args.fps,
+                 plan, overlay)
 
 
 if __name__ == "__main__":
