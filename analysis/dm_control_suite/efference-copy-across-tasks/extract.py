@@ -284,6 +284,8 @@ def _base(df: pd.DataFrame) -> pd.Series:
         # Excludes the pre-Hydra era outright: those have no `net_params.*` at all.
         & df["net_params.delay_k"].notna()
         & ~df["git_commit"].str.startswith(PRE_EVAL_FIX_COMMIT, na=False)
+        # Motor-noise runs (2026-10-27 on) are a different experiment on the same net.
+        & pipeline.no_motor_noise_mask(df)
     )
 
 

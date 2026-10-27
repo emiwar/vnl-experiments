@@ -275,6 +275,15 @@ def build_run(cfg: DictConfig) -> RunSetup:
     if nets is None:
         raise OverrideError(f"build_network returned None for {arch.name!r}")
 
+    motor_noise_std = float(net_params.get("motor_noise_std", 0.0) or 0.0)
+    if teacher_path and motor_noise_std:
+        # distill.sampler_target expects exactly one array leaf under the actor's port of
+        # the rollout_extras -- the sampler's -- and MotorNoise adds a second. Refused here,
+        # before the teacher is loaded, rather than as a trace-time error inside the step.
+        raise OverrideError(
+            "net.motor_noise_std > 0 is not supported with distillation: the motor-noise "
+            "module's rollout_extras would be mistaken for the sampler's.")
+
     teacher = None
     if teacher_path:
         teacher = distill_lib.load_teacher(
@@ -296,6 +305,13 @@ def build_run(cfg: DictConfig) -> RunSetup:
                                  ("privileged_critic", "delayedcritic"))
         if not net_params.get(key, True)
     )
+    # Motor noise (DelayedMLP) is a name token and tag too, so a noisy run never joins a
+    # noise-free cohort selected on delay / efference / architecture alone. The site goes
+    # in the token because the two placements are the two arms of one experiment:
+    # WalkerWalk_DelayedMLP_delay5_eff5_mnpre0.1 vs ..._mnpost0.1. Empty at std 0.
+    if motor_noise_std:
+        site = str(net_params.get("motor_noise_site", "post_efference"))
+        ablations += (f"mn{site.removesuffix('_efference')}{motor_noise_std:g}",)
     # A distilled run is a different training algorithm on the same architecture, so it
     # gets a name token and tag too: WalkerWalk_DelayedMLP_delay5_eff5_distill.
     if teacher is not None:

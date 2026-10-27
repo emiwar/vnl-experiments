@@ -236,8 +236,18 @@ def flat_delay_defaults():
     efference queue) instead of the fresh observation; see
     ``make_delayed_mlp_actor_critic``. It is a DelayedMLP-only key, so it lives here
     rather than in :func:`_flat_shared_defaults`.
+
+    ``motor_noise_std`` / ``motor_noise_site`` add fixed Gaussian noise to the executed
+    action, either seen by the efference copy (``"pre_efference"``) or not
+    (``"post_efference"``); see :mod:`vnl_experiments.delays.motor_noise`. At the default
+    ``motor_noise_std=0.0`` nothing is built and the network is unchanged.
     """
-    return _flat_shared_defaults(actor_hidden_sizes=[256] * 4, privileged_critic=True)
+    return _flat_shared_defaults(
+        actor_hidden_sizes=[256] * 4,
+        privileged_critic=True,
+        motor_noise_std=0.0,
+        motor_noise_site="post_efference",
+    )
 
 
 def flat_forward_model_defaults():
@@ -297,6 +307,8 @@ def build_flat_delay_network(net_params: dict, env, rngs: nnx.Rngs):
         min_std=p.get("min_std", 1e-3),
         std_scale=p.get("std_scale", 1.0),
         privileged_critic=bool(p.get("privileged_critic", True)),
+        motor_noise_std=float(p.get("motor_noise_std", 0.0)),
+        motor_noise_site=str(p.get("motor_noise_site", "post_efference")),
     )
 
 

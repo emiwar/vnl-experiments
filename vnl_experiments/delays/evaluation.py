@@ -43,6 +43,7 @@ from vnl_playground.tasks.reference_clips import ReferenceClips
 from nnx_ppo.networks.adapter import PPOAdapter
 
 from vnl_experiments.delays.forward_model import ForwardModel
+from vnl_experiments.delays.motor_noise import perturb_actions
 from vnl_experiments.envs.absolute_imitation import (
     AbsoluteImitation,
     default_config as absolute_default_config,
@@ -390,13 +391,9 @@ def _rollout(env, networks, n_clips: int, n_steps: int, key,
         actions = out.output.actions
         if action_noise:
             noise_key, sub = jax.random.split(noise_key)
-            # One key per leaf: `actions` is a single array for the rodent nets but
-            # a pytree for a multi-sampler bank, whose leaves must not share noise.
-            leaves, treedef = jax.tree.flatten(actions)
-            actions = jax.tree.unflatten(treedef, [
-                jp.clip(a + action_noise * jax.random.normal(k, a.shape), -1.0, 1.0)
-                for a, k in zip(leaves, jax.random.split(sub, len(leaves)))
-            ])
+            # Same transform as the training-time MotorNoise module (one key per leaf,
+            # clipped back into [-1, 1]); the key schedule here is pinned by the tests.
+            actions = perturb_actions(actions, action_noise, sub)
         next_env_state = jax.vmap(env.step)(env_state, actions)
         next_env_state = next_env_state.replace(
             done=jp.logical_or(next_env_state.done, env_state.done).astype(float)

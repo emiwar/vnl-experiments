@@ -142,6 +142,8 @@ def _base(df: pd.DataFrame) -> pd.Series:
         & ~df["git_commit"].str.startswith(PRE_EVAL_FIX_COMMIT, na=False)
         & df["env_params.servo_kp"].fillna(0.0).eq(0.0)
         & df["env_params.servo_center"].ne("range")
+        # Motor-noise runs (2026-10-27 on) are a different experiment on the same net.
+        & pipeline.no_motor_noise_mask(df)
         & (df["state"].eq("finished") | reached)
     )
 
