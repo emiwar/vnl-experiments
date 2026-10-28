@@ -147,6 +147,14 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
                           "label": "Privileged critic (current obs)"},
     "delayed_critic": {"color": "0.1", "marker": "D",
                        "label": "Delayed critic (sees the actor's input)"},
+    # Motor noise (2026-10-28). Both arms keep the efference copy, so the hues are new
+    # rather than `efference`'s C1: the manipulation is whether the queue *sees* the noise.
+    "motor_noise_pre": {"color": "C4", "marker": "^",
+                        "label": "Copy + motor noise, seen by the copy (pre)"},
+    "motor_noise_post": {"color": "C3", "marker": "v",
+                         "label": "Copy + motor noise, unseen (post)"},
+    "motor_noise_no_copy": {"color": "C9", "marker": "s",
+                            "label": "No copy + motor noise"},
     # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
     # circle = position, open triangle = torque). The hue was initially the decoder input,
     # so that the two axes of the cohort stayed separable on an x-axis already spent on

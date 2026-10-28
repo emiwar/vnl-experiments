@@ -1,0 +1,309 @@
+======================================================================
+Group condition='CartpoleSwingup_copy'  (n=35)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='CartpoleSwingup_no_copy'  (n=9)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='CartpoleSwingup_noise_post'  (n=50)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='CartpoleSwingup_noise_pre'  (n=12)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=106)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.01]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+--- DESIGN AXES: expected to vary ---
+======================================================================
+Group condition='CartpoleSwingup_copy'  (n=35)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.0]
+  net_params.motor_noise_site       : ['post_efference', 'pre_efference']  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['failed', 'finished']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='CartpoleSwingup_no_copy'  (n=9)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : []
+  net_params.motor_noise_site       : []
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='CartpoleSwingup_noise_post'  (n=50)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  net_params.delay_k                : [0.0, 10.0, 15.0, 20.0, 25.0, 5.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.01, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5]  *** VARIES ***
+  net_params.motor_noise_site       : ['post_efference']
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['failed', 'finished']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='CartpoleSwingup_noise_pre'  (n=12)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  net_params.delay_k                : [5.0]
+  net_params.motor_noise_std        : [0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7]  *** VARIES ***
+  net_params.motor_noise_site       : ['pre_efference']
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+All runs  (n=106)
+======================================================================
+  env                               : ['CartpoleSwingup']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 2.5]  *** VARIES ***
+  net_params.motor_noise_site       : ['post_efference', 'pre_efference']  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['failed', 'finished']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+CartpoleSwingup: reward at 4.8e+08 (mean over seed pairs; n seeds; range) | median and dip fraction over the last 2.4e+08 | policy_sigma
+  d 0 copy       std 0      746.5  n=4  [ 661.8,  826.1]  median  772.3  dips 0.03  sigma_a 0.036
+  d 0 noise_post std 0.01   775.1  n=1  [ 775.1,  775.1]  median  822.4  dips 0.06  sigma_a 0.043
+  d 0 noise_post std 0.05   826.2  n=1  [ 826.2,  826.2]  median  810.8  dips 0.14  sigma_a 0.051
+  d 0 noise_post std 0.1    849.0  n=3  [ 842.7,  854.1]  median  837.2  dips 0.00  sigma_a 0.038
+  d 0 noise_post std 0.2    847.3  n=1  [ 847.3,  847.3]  median  842.3  dips 0.00  sigma_a 0.045
+  d 0 noise_post std 0.5    797.8  n=2  [ 796.0,  799.7]  median  803.3  dips 0.02  sigma_a 0.069
+  d 0 noise_post std 1      668.9  n=3  [ 523.5,  741.9]  median  719.2  dips 0.07  sigma_a 0.138
+  d 0 noise_post std 1.5    635.3  n=2  [ 619.6,  651.1]  median  627.0  dips 0.23  sigma_a 0.110
+  d 0 noise_post std 2      528.4  n=2  [ 509.5,  547.2]  median  524.8  dips 1.00  sigma_a 0.084
+  d 0 noise_post std 2.5    349.6  n=2  [ 312.3,  387.0]  median  353.1  dips 1.00  sigma_a 0.071
+  d 2 copy       std 0      791.9  n=1  [ 791.9,  791.9]  median  844.6  dips 0.06  sigma_a 0.039
+  d 2 no_copy    std 0      659.6  n=1  [ 659.6,  659.6]  median  851.3  dips 0.06  sigma_a 0.035
+  d 3 copy       std 0      827.5  n=1  [ 827.5,  827.5]  median  832.0  dips 0.06  sigma_a 0.032
+  d 5 copy       std 0      798.5  n=4  [ 707.9,  867.7]  median  790.6  dips 0.05  sigma_a 0.036
+  d 5 no_copy    std 0      803.3  n=1  [ 803.3,  803.3]  median  837.1  dips 0.04  sigma_a 0.026
+  d 5 noise_post std 0.01   822.2  n=2  [ 800.1,  844.4]  median  826.7  dips 0.03  sigma_a 0.033
+  d 5 noise_post std 0.05   604.1  n=2  [ 451.3,  757.0]  median  834.9  dips 0.08  sigma_a 0.041
+  d 5 noise_post std 0.1    859.4  n=2  [ 856.9,  861.9]  median  862.7  dips 0.03  sigma_a 0.037
+  d 5 noise_post std 0.2    842.7  n=2  [ 821.4,  864.1]  median  855.2  dips 0.04  sigma_a 0.038
+  d 5 noise_post std 0.5    807.7  n=1  [ 807.7,  807.7]  median  807.8  dips 0.00  sigma_a 0.056
+  d 5 noise_post std 0.7    771.2  n=1  [ 771.2,  771.2]  median  773.8  dips 0.00  sigma_a 0.101
+  d 5 noise_post std 1      722.9  n=2  [ 714.5,  731.4]  median  717.7  dips 0.01  sigma_a 0.137
+  d 5 noise_post std 1.5    621.9  n=1  [ 621.9,  621.9]  median  615.1  dips 0.14  sigma_a 0.087
+  d 5 noise_post std 2      398.6  n=1  [ 398.6,  398.6]  median  382.0  dips 1.00  sigma_a 0.070
+  d 5 noise_pre  std 0.01   762.4  n=2  [ 747.4,  777.3]  median  767.1  dips 0.13  sigma_a 0.030
+  d 5 noise_pre  std 0.02   839.6  n=1  [ 839.6,  839.6]  median  838.6  dips 0.06  sigma_a 0.043
+  d 5 noise_pre  std 0.05   849.8  n=2  [ 839.0,  860.7]  median  844.8  dips 0.00  sigma_a 0.039
+  d 5 noise_pre  std 0.1    846.1  n=2  [ 837.9,  854.2]  median  839.0  dips 0.04  sigma_a 0.037
+  d 5 noise_pre  std 0.2    756.1  n=2  [ 648.4,  863.7]  median  851.4  dips 0.05  sigma_a 0.043
+  d 5 noise_pre  std 0.3    850.0  n=1  [ 850.0,  850.0]  median  849.6  dips 0.00  sigma_a 0.043
+  d 5 noise_pre  std 0.5    746.1  n=1  [ 746.1,  746.1]  median  748.0  dips 0.02  sigma_a 0.053
+  d 5 noise_pre  std 0.7    786.0  n=1  [ 786.0,  786.0]  median  783.8  dips 0.00  sigma_a 0.052
+  d 7 copy       std 0      828.0  n=1  [ 828.0,  828.0]  median  834.9  dips 0.12  sigma_a 0.037
+  d 7 no_copy    std 0      857.2  n=1  [ 857.2,  857.2]  median  855.1  dips 0.00  sigma_a 0.036
+  d10 copy       std 0      742.5  n=4  [ 677.5,  815.7]  median  791.8  dips 0.05  sigma_a 0.031
+  d10 no_copy    std 0      851.2  n=1  [ 851.2,  851.2]  median  862.5  dips 0.08  sigma_a 0.049
+  d10 noise_post std 0.01   851.9  n=1  [ 851.9,  851.9]  median  851.9  dips 0.02  sigma_a 0.031
+  d10 noise_post std 0.05   851.6  n=1  [ 851.6,  851.6]  median  863.2  dips 0.02  sigma_a 0.031
+  d10 noise_post std 0.1    684.7  n=1  [ 684.7,  684.7]  median  867.9  dips 0.12  sigma_a 0.039
+  d10 noise_post std 0.2    863.8  n=2  [ 862.6,  865.0]  median  861.4  dips 0.05  sigma_a 0.036
+  d10 noise_post std 1      699.8  n=2  [ 697.3,  702.4]  median  696.3  dips 0.00  sigma_a 0.103
+  d12 copy       std 0      842.7  n=1  [ 842.7,  842.7]  median  840.5  dips 0.00  sigma_a 0.030
+  d12 no_copy    std 0      820.8  n=1  [ 820.8,  820.8]  median  868.7  dips 0.14  sigma_a 0.042
+  d15 copy       std 0      714.7  n=3  [ 511.9,  833.2]  median  850.8  dips 0.10  sigma_a 0.035
+  d15 no_copy    std 0      844.9  n=1  [ 844.9,  844.9]  median  869.4  dips 0.05  sigma_a 0.030
+  d15 noise_post std 0.2    858.7  n=1  [ 858.7,  858.7]  median  847.9  dips 0.04  sigma_a 0.043
+  d15 noise_post std 0.5    777.9  n=1  [ 777.9,  777.9]  median  777.0  dips 0.00  sigma_a 0.068
+  d15 noise_post std 1      609.1  n=2  [ 596.8,  621.5]  median  576.8  dips 0.67  sigma_a 0.066
+  d20 copy       std 0      687.2  n=4  [ 345.3,  833.8]  median  859.0  dips 0.17  sigma_a 0.032
+  d20 no_copy    std 0      751.3  n=1  [ 751.3,  751.3]  median  689.3  dips 0.08  sigma_a 0.052
+  d20 noise_post std 0.2    511.5  n=1  [ 511.5,  511.5]  median  834.8  dips 0.28  sigma_a 0.055
+  d20 noise_post std 0.5    746.2  n=1  [ 746.2,  746.2]  median  746.0  dips 0.02  sigma_a 0.080
+  d20 noise_post std 1      474.3  n=2  [ 458.8,  489.8]  median  462.0  dips 1.00  sigma_a 0.041
+  d25 copy       std 0      801.7  n=3  [ 744.2,  842.3]  median  856.5  dips 0.05  sigma_a 0.040
+  d25 no_copy    std 0      676.0  n=1  [ 676.0,  676.0]  median  660.9  dips 0.00  sigma_a 0.037
+  d25 noise_post std 1      414.0  n=2  [ 406.5,  421.5]  median  412.8  dips 1.00  sigma_a 0.069
+
+
+Paired pre - post (same task, delay, std, seed pair):
+arm                                          noise_post  noise_pre  pre_minus_post
+task            delay_k noise_std seed_pair                                       
+CartpoleSwingup 5       0.01      i42/p1234       800.1      777.3           -22.8
+                                  i43/p43         844.4      747.4           -96.9
+                        0.05      i42/p1234       451.3      839.0           387.7
+                                  i43/p43         757.0      860.7           103.7
+                        0.10      i42/p1234       856.9      837.9           -19.0
+                                  i43/p43         861.9      854.2            -7.6
+                        0.20      i42/p1234       821.4      648.4          -173.0
+                                  i43/p43         864.1      863.7            -0.3
+                        0.50      i43/p43         807.7      746.1           -61.6
+                        0.70      i43/p43         771.2      786.0            14.8
+
+
+Same-config, same-seed replicates (reward at READ_AT; site column is the *launched* site for std 0)
+  ('CartpoleSwingup', np.int64(0), np.int64(0), np.float64(0.0), 'none', 'i42/p1234'): 33uwgtx4 A100-SXM4- 846.30, 9qjvdolt H200 805.83  |diff| 40.47
+  ('CartpoleSwingup', np.int64(0), np.int64(0), np.float64(0.0), 'none', 'i43/p43'): 83q4da43 A100-SXM4- 691.29, 8pcchxq5 RTX A6000 695.46  |diff| 4.16
+  ('CartpoleSwingup', np.int64(0), np.int64(0), np.float64(1.0), 'post_efference', 'i44/p44'): 7tl43xab A100-SXM4- 741.86, maed1uj1 H200 nan  |diff| 0.00
+  ('CartpoleSwingup', np.int64(2), np.int64(2), np.float64(0.0), 'none', 'i43/p43'): 6iis4h8r A40 787.91, exd4hchi RTX PRO 60 795.92  |diff| 8.01
+  ('CartpoleSwingup', np.int64(3), np.int64(3), np.float64(0.0), 'none', 'i43/p43'): bdxc3pbo RTX PRO 60 833.20, y7y7eets RTX A6000 821.88  |diff| 11.32
+  ('CartpoleSwingup', np.int64(5), np.int64(5), np.float64(0.0), 'none', 'i42/p1234'): qjzowlaf A100-SXM4- 707.86, qvbo7gwr A100-SXM4- 707.86  |diff| 0.00
+  ('CartpoleSwingup', np.int64(5), np.int64(5), np.float64(0.0), 'none', 'i43/p43'): 9sduln68 H200 747.88, qfrolc1b RTX PRO 60 826.75, vtsjzw0k H200 790.42  |diff| 78.87
+  ('CartpoleSwingup', np.int64(5), np.int64(5), np.float64(0.0), 'none', 'i44/p1234'): 3dhb1lkg A100-SXM4- 867.71, y2bctbw8 A100-SXM4- nan  |diff| 0.00
+  ('CartpoleSwingup', np.int64(5), np.int64(5), np.float64(1.0), 'post_efference', 'i43/p43'): nd7g3311 H200 730.94, tuiliih4 A100-SXM4- 731.83  |diff| 0.90
+  ('CartpoleSwingup', np.int64(10), np.int64(10), np.float64(0.0), 'none', 'i44/p1234'): ig9u6fko A100-SXM4- 677.49, uqmzersa A100-SXM4- nan  |diff| 0.00
+  ('CartpoleSwingup', np.int64(15), np.int64(0), np.float64(0.0), 'none', 'i42/p1234'): 9t4pvmi0 H100 80GB  848.06, puctev9n RTX PRO 60 841.69  |diff| 6.37
+
+
+Runs with no readout at READ_AT:
+wandb_id                                                     wandb_name  state  actual_step
+y2bctbw8         CartpoleSwingup_DelayedMLP_delay5_eff5-20260910-065558 failed          0.0
+uqmzersa       CartpoleSwingup_DelayedMLP_delay10_eff10-20260910-065558 failed          0.0
+maed1uj1 CartpoleSwingup_DelayedMLP_delay0_eff0_mnpost1-20261027-181033 failed          0.0

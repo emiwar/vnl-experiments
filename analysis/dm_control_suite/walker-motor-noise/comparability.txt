@@ -1,0 +1,360 @@
+======================================================================
+Group condition='WalkerWalk_copy'  (n=46)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_no_copy'  (n=32)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_noise_no_copy'  (n=22)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_noise_post'  (n=56)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_noise_pre'  (n=19)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=175)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+--- DESIGN AXES: expected to vary ---
+======================================================================
+Group condition='WalkerWalk_copy'  (n=46)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.0]
+  net_params.motor_noise_site       : ['post_efference']
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk_no_copy'  (n=32)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : []
+  net_params.motor_noise_site       : []
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['b4012b30fe456a352c13ac8f7aab9405bfc36e25']
+  repos.nnx_ppo.commit              : ['531427933bbca8a1558974319720c55b32659a76']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 45, 46, 47, 48]  *** VARIES ***
+  config.seed                       : [1234, 45, 46, 47, 48]  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk_noise_no_copy'  (n=22)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.5]
+  net_params.motor_noise_site       : ['post_efference']
+  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43, 44]  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk_noise_post'  (n=56)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.05, 0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0]  *** VARIES ***
+  net_params.motor_noise_site       : ['post_efference']
+  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk_noise_pre'  (n=19)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.5]
+  net_params.motor_noise_site       : ['pre_efference']
+  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43, 44]  *** VARIES ***
+
+======================================================================
+All runs  (n=175)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  *** VARIES ***
+  net_params.motor_noise_std        : [0.0, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0, 1.5, 2.0]  *** VARIES ***
+  net_params.motor_noise_site       : ['post_efference', 'pre_efference']  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]  *** VARIES ***
+
+WalkerWalk: reward at 4.8e+08 (mean over seed pairs; n seeds; range) | policy_sigma
+  d 0 copy       std 0      977.7  n=6  [ 976.5,  979.3]  sigma_a 0.321
+  d 0 noise_post std 0.05   975.0  n=2  [ 974.8,  975.2]  sigma_a 0.323
+  d 0 noise_post std 0.1    975.5  n=3  [ 974.6,  977.1]  sigma_a 0.321
+  d 0 noise_post std 0.2    974.1  n=3  [ 972.8,  974.8]  sigma_a 0.316
+  d 0 noise_post std 0.5    968.7  n=3  [ 967.1,  969.9]  sigma_a 0.285
+  d 0 noise_post std 0.7    959.8  n=3  [ 958.2,  961.5]  sigma_a 0.243
+  d 0 noise_post std 1      867.8  n=3  [ 862.7,  875.3]  sigma_a 0.178
+  d 0 noise_post std 1.5    458.3  n=3  [ 447.7,  467.2]  sigma_a 0.187
+  d 0 noise_post std 2      238.9  n=3  [ 236.8,  240.0]  sigma_a 0.238
+  d 0 noise_pre  std 0.5    969.6  n=1  [ 969.6,  969.6]  sigma_a 0.288
+  d 1 noise_no_copy std 0.5    962.6  n=1  [ 962.6,  962.6]  sigma_a 0.260
+  d 1 noise_post std 0.2    972.4  n=1  [ 972.4,  972.4]  sigma_a 0.321
+  d 1 noise_post std 0.5    963.0  n=2  [ 962.6,  963.4]  sigma_a 0.264
+  d 2 copy       std 0      969.9  n=2  [ 968.0,  971.9]  sigma_a 0.321
+  d 2 no_copy    std 0      972.0  n=1  [ 972.0,  972.0]  sigma_a 0.299
+  d 2 noise_no_copy std 0.5    955.1  n=1  [ 955.1,  955.1]  sigma_a 0.228
+  d 2 noise_post std 0.2    971.1  n=1  [ 971.1,  971.1]  sigma_a 0.308
+  d 2 noise_post std 0.5    958.1  n=1  [ 958.1,  958.1]  sigma_a 0.243
+  d 2 noise_pre  std 0.5    960.6  n=1  [ 960.6,  960.6]  sigma_a 0.266
+  d 3 copy       std 0      967.4  n=4  [ 963.4,  970.8]  sigma_a 0.297
+  d 3 no_copy    std 0      970.0  n=1  [ 970.0,  970.0]  sigma_a 0.278
+  d 3 noise_no_copy std 0.5    941.5  n=2  [ 937.5,  945.4]  sigma_a 0.194
+  d 3 noise_post std 0.2    968.6  n=1  [ 968.6,  968.6]  sigma_a 0.293
+  d 3 noise_post std 0.5    945.5  n=2  [ 944.7,  946.3]  sigma_a 0.213
+  d 3 noise_pre  std 0.5    955.6  n=2  [ 954.5,  956.6]  sigma_a 0.248
+  d 4 noise_post std 0.2    964.4  n=1  [ 964.4,  964.4]  sigma_a 0.276
+  d 5 copy       std 0      964.7  n=7  [ 961.8,  967.0]  sigma_a 0.285
+  d 5 no_copy    std 0      962.2  n=2  [ 962.1,  962.2]  sigma_a 0.248
+  d 5 noise_no_copy std 0.5    851.9  n=2  [ 851.5,  852.4]  sigma_a 0.168
+  d 5 noise_post std 0.2    961.1  n=1  [ 961.1,  961.1]  sigma_a 0.260
+  d 5 noise_post std 0.5    874.3  n=2  [ 871.4,  877.3]  sigma_a 0.173
+  d 5 noise_pre  std 0.5    933.0  n=2  [ 932.8,  933.3]  sigma_a 0.207
+  d 6 noise_post std 0.2    956.8  n=1  [ 956.8,  956.8]  sigma_a 0.235
+  d 7 copy       std 0      954.5  n=5  [ 938.6,  962.4]  sigma_a 0.243
+  d 7 no_copy    std 0      952.0  n=3  [ 943.9,  957.9]  sigma_a 0.210
+  d 7 noise_no_copy std 0.5    709.5  n=3  [ 695.0,  730.2]  sigma_a 0.169
+  d 7 noise_post std 0.2    947.7  n=1  [ 947.7,  947.7]  sigma_a 0.209
+  d 7 noise_post std 0.5    659.5  n=2  [ 617.6,  701.4]  sigma_a 0.166
+  d 7 noise_pre  std 0.5    762.1  n=3  [ 745.0,  774.2]  sigma_a 0.171
+  d 8 noise_post std 0.2    944.0  n=1  [ 944.0,  944.0]  sigma_a 0.190
+  d 9 noise_post std 0.2    736.6  n=1  [ 736.6,  736.6]  sigma_a 0.158
+  d10 copy       std 0      738.6  n=4  [ 671.1,  909.3]  sigma_a 0.165
+  d10 no_copy    std 0      917.3  n=5  [ 841.6,  947.9]  sigma_a 0.189
+  d10 noise_no_copy std 0.5    469.0  n=3  [ 418.0,  541.1]  sigma_a 0.184
+  d10 noise_post std 0.2    869.7  n=1  [ 869.7,  869.7]  sigma_a 0.161
+  d10 noise_post std 0.5    453.9  n=2  [ 439.0,  468.8]  sigma_a 0.177
+  d10 noise_pre  std 0.5    359.6  n=2  [ 238.5,  480.8]  sigma_a 0.196
+  d12 copy       std 0      708.2  n=3  [ 530.9,  842.4]  sigma_a 0.147
+  d12 no_copy    std 0      860.4  n=5  [ 760.7,  931.4]  sigma_a 0.162
+  d12 noise_no_copy std 0.5    423.6  n=3  [ 356.7,  505.4]  sigma_a 0.201
+  d12 noise_post std 0.5    404.6  n=2  [ 397.7,  411.5]  sigma_a 0.170
+  d12 noise_pre  std 0.5    186.2  n=3  [ 176.6,  198.9]  sigma_a 0.231
+  d15 copy       std 0      549.0  n=4  [ 407.7,  664.8]  sigma_a 0.151
+  d15 no_copy    std 0      449.2  n=5  [ 349.5,  593.5]  sigma_a 0.179
+  d15 noise_no_copy std 0.5    307.0  n=3  [ 284.4,  327.5]  sigma_a 0.218
+  d15 noise_post std 0.2    314.1  n=1  [ 314.1,  314.1]  sigma_a 0.183
+  d15 noise_post std 0.5    193.6  n=2  [ 189.2,  198.0]  sigma_a 0.221
+  d15 noise_pre  std 0.5    171.0  n=3  [ 170.1,  171.5]  sigma_a 0.235
+  d20 copy       std 0      525.3  n=7  [ 499.0,  543.4]  sigma_a 0.142
+  d20 no_copy    std 0      258.3  n=5  [ 236.6,  279.8]  sigma_a 0.178
+  d20 noise_no_copy std 0.5    148.1  n=2  [ 147.4,  148.8]  sigma_a 0.256
+  d20 noise_post std 0.2    279.8  n=1  [ 279.8,  279.8]  sigma_a 0.154
+  d20 noise_post std 0.5    154.1  n=2  [ 153.6,  154.6]  sigma_a 0.232
+  d20 noise_pre  std 0.5    167.6  n=1  [ 167.6,  167.6]  sigma_a 0.231
+  d25 copy       std 0      450.5  n=3  [ 429.4,  481.4]  sigma_a 0.123
+  d25 no_copy    std 0      220.6  n=3  [ 211.8,  232.8]  sigma_a 0.173
+  d25 noise_no_copy std 0.5    129.9  n=2  [ 118.5,  141.3]  sigma_a 0.248
+  d25 noise_post std 0.5    154.2  n=2  [ 153.8,  154.6]  sigma_a 0.240
+  d25 noise_pre  std 0.5    168.7  n=1  [ 168.7,  168.7]  sigma_a 0.217
+
+
+Paired pre - post (same task, delay, std, seed pair):
+arm                                     noise_post  noise_pre  pre_minus_post
+task       delay_k noise_std seed_pair                                       
+WalkerWalk 0       0.5       i43/p43         969.2      969.6             0.4
+           2       0.5       i42/p1234       958.1      960.6             2.5
+           3       0.5       i42/p1234       944.7      954.5             9.7
+                             i43/p43         946.3      956.6            10.3
+           5       0.5       i43/p43         871.4      933.3            62.0
+           7       0.5       i42/p1234       701.4      774.2            72.8
+                             i43/p43         617.6      745.0           127.5
+           10      0.5       i43/p43         468.8      480.8            12.0
+           12      0.5       i42/p1234       411.5      183.0          -228.5
+                             i43/p43         397.7      198.9          -198.7
+           15      0.5       i42/p1234       198.0      170.1           -27.9
+                             i43/p43         189.2      171.3           -18.0
+           20      0.5       i43/p43         153.6      167.6            14.0
+           25      0.5       i43/p43         154.6      168.7            14.2
+
+
+Same-config, same-seed replicates (reward at READ_AT; site column is the *launched* site for std 0)
+  ('WalkerWalk', np.int64(0), np.int64(0), np.float64(0.0), 'none', 'i52/p52'): dxr20obj H200 976.47, ig094i5e RTX PRO 60 977.68  |diff| 1.21
+  ('WalkerWalk', np.int64(0), np.int64(0), np.float64(0.5), 'post_efference', 'i42/p1234'): 4o3bkfe8 H200 971.90, f5m2nhad A100-SXM4- 967.85  |diff| 4.05
+  ('WalkerWalk', np.int64(5), np.int64(5), np.float64(0.5), 'post_efference', 'i42/p1234'): 5mtpupqn RTX PRO 60 866.84, h8lrw2fe H200 887.76  |diff| 20.92
+  ('WalkerWalk', np.int64(7), np.int64(0), np.float64(0.0), 'none', 'i42/p1234'): si2pyljf A100-SXM4- 957.32, y8ba6bcb H200 958.41  |diff| 1.09
+  ('WalkerWalk', np.int64(7), np.int64(0), np.float64(0.0), 'none', 'i45/p45'): ghyakd04 A100-SXM4- 955.49, j1huu3d3 H200 952.81  |diff| 2.68
+
+
+Runs with no readout at READ_AT:
+  none

@@ -1,0 +1,19 @@
+Coverage for 106 runs in cartpole-motor-noise
+
+index  (spec_id=-): 106/106
+    CartpoleSwingup_copy           35/35  
+    CartpoleSwingup_no_copy         9/9   
+    CartpoleSwingup_noise_post     50/50  
+    CartpoleSwingup_noise_pre      12/12  
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 106/106
+    CartpoleSwingup_copy           35/35  
+    CartpoleSwingup_no_copy         9/9   
+    CartpoleSwingup_noise_post     50/50  
+    CartpoleSwingup_noise_pre      12/12  
+
+history:hist2000-9cd5ea00  (spec_id=hist2000-9cd5ea00): 106/106
+    CartpoleSwingup_copy           35/35  
+    CartpoleSwingup_no_copy         9/9   
+    CartpoleSwingup_noise_post     50/50  
+    CartpoleSwingup_noise_pre      12/12  
