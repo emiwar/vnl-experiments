@@ -241,12 +241,15 @@ def flat_delay_defaults():
     action, either seen by the efference copy (``"pre_efference"``) or not
     (``"post_efference"``); see :mod:`vnl_experiments.delays.motor_noise`. At the default
     ``motor_noise_std=0.0`` nothing is built and the network is unchanged.
+    ``motor_noise_tau`` is the noise's correlation time in control steps (``0.0`` = iid,
+    ``inf`` = one offset per episode).
     """
     return _flat_shared_defaults(
         actor_hidden_sizes=[256] * 4,
         privileged_critic=True,
         motor_noise_std=0.0,
         motor_noise_site="post_efference",
+        motor_noise_tau=0.0,
     )
 
 
@@ -309,6 +312,7 @@ def build_flat_delay_network(net_params: dict, env, rngs: nnx.Rngs):
         privileged_critic=bool(p.get("privileged_critic", True)),
         motor_noise_std=float(p.get("motor_noise_std", 0.0)),
         motor_noise_site=str(p.get("motor_noise_site", "post_efference")),
+        motor_noise_tau=float(p.get("motor_noise_tau", 0.0)),
     )
 
 

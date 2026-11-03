@@ -30,15 +30,28 @@ the replayed actions) would differ from the one the rollout acted on.
 Evaluation. The noise is part of the world, so it stays on under ``networks.eval()``.
 That is why the module has no attribute called ``deterministic``: ``nnx.Module.eval()``
 sets every attribute of that name to True.
+
+Temporal correlation. ``tau > 0`` (in control steps) makes the noise an AR(1) process,
+``n_t = rho * n_{t-1} + std * sqrt(1 - rho**2) * eps_t`` with ``rho = exp(-1 / tau)``, so
+its stationary std is still ``std``. ``tau = inf`` gives ``rho = 1``: one offset per
+episode. The rationale: iid noise is largely low-pass filtered away by the body, and noise
+much slower than the delay is corrected by the delayed feedback anyway, so the band where
+only a copy that sees the noise can help is ``tau`` around the delay. The process state is
+carried per env and redrawn from the stationary distribution at the first step of every
+episode (``reset_state`` has no key, so it only marks the carry as fresh). ``tau = 0`` is
+the iid module, stateless and bit-identical to the original.
 """
 
 from typing import Any
+
+import math
 
 import jax
 import jax.numpy as jp
 from flax import nnx
 
 from nnx_ppo.networks.types import (
+    ModuleState,
     PPONetworkOutput,
     StatefulModule,
     StatefulModuleOutput,
@@ -84,19 +97,47 @@ class MotorNoise(StatefulModule):
     Args:
         std: Noise standard deviation in policy units (actions live in ``[-1, 1]``).
             A plain float rather than an ``nnx.Variable``, so the module adds nothing
-            to the saved network state.
+            to the saved network state. With ``tau > 0`` it is the AR(1) process's
+            stationary std.
         rngs: The network's shared ``nnx.Rngs``.
+        tau: Correlation time in control steps. ``0`` (default) is iid noise;
+            ``math.inf`` is a constant offset per episode.
+        action_size: Width of the (single-array) action. Required when ``tau > 0``,
+            to size the carried noise state.
     """
 
-    def __init__(self, std: float, rngs: nnx.Rngs):
+    def __init__(self, std: float, rngs: nnx.Rngs, tau: float = 0.0,
+                 action_size: int | None = None):
         if std < 0:
             raise ValueError(f"MotorNoise std must be non-negative, got {std}")
+        if not tau >= 0:
+            raise ValueError(f"MotorNoise tau must be non-negative, got {tau}")
+        if tau > 0 and action_size is None:
+            raise ValueError("MotorNoise with tau > 0 needs action_size")
         self.std = float(std)
+        self.tau = float(tau)
+        self.action_size = action_size
         self.rng = rngs
+
+    @property
+    def rho(self) -> float:
+        """The AR(1) coefficient ``exp(-1 / tau)``; 0 for iid noise, 1 at ``tau = inf``."""
+        return math.exp(-1.0 / self.tau) if self.tau > 0 else 0.0
+
+    def initialize_state(self, batch_size: int) -> ModuleState:
+        if self.tau == 0:
+            return ()
+        return {"n": jp.zeros((batch_size, self.action_size)),
+                "fresh": jp.ones((batch_size,), bool)}
+
+    def reset_state(self, prev_state: ModuleState) -> ModuleState:
+        if self.tau == 0:
+            return prev_state
+        return {"n": prev_state["n"], "fresh": jp.ones_like(prev_state["fresh"])}
 
     def __call__(
         self,
-        state: tuple[()],
+        state: ModuleState,
         x: Any,
         rollout_extras: Any = None,
     ) -> StatefulModuleOutput:
@@ -111,10 +152,30 @@ class MotorNoise(StatefulModule):
                 lambda d: d["action"], x, is_leaf=_is_sampler_dict
             )
 
-        if rollout_extras is None:
-            noisy = jax.lax.stop_gradient(perturb_actions(actions, self.std, key))
+        if self.tau == 0:
+            next_state = ()
+            if rollout_extras is None:
+                noisy = jax.lax.stop_gradient(perturb_actions(actions, self.std, key))
+            else:
+                noisy = rollout_extras
+            extras = noisy
         else:
-            noisy = rollout_extras
+            if not isinstance(actions, jax.Array):
+                raise TypeError("MotorNoise with tau > 0 supports a single action array")
+            if rollout_extras is None:
+                k_init, k_step = jax.random.split(key)
+                stationary = self.std * jax.random.normal(k_init, actions.shape)
+                innovation = (self.std * math.sqrt(1.0 - self.rho ** 2)
+                              * jax.random.normal(k_step, actions.shape))
+                n = jp.where(state["fresh"][:, None], stationary,
+                             self.rho * state["n"] + innovation)
+            else:
+                n = rollout_extras
+            n = jax.lax.stop_gradient(n)
+            noisy = jp.clip(actions + n, -1.0, 1.0)
+            next_state = {"n": n, "fresh": jp.zeros_like(state["fresh"])}
+            # The process value, not the clipped action: the next step's AR update needs it.
+            extras = n
 
         if isinstance(x, PPONetworkOutput):
             output = x.replace(actions=noisy)
@@ -123,9 +184,9 @@ class MotorNoise(StatefulModule):
                 lambda d, a: {**d, "action": a}, x, noisy, is_leaf=_is_sampler_dict
             )
         return StatefulModuleOutput(
-            next_state=(),
+            next_state=next_state,
             output=output,
             regularization_loss=jp.array(0.0),
             metrics={},
-            rollout_extras=noisy,
+            rollout_extras=extras,
         )

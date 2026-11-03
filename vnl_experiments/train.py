@@ -309,9 +309,12 @@ def build_run(cfg: DictConfig) -> RunSetup:
     # noise-free cohort selected on delay / efference / architecture alone. The site goes
     # in the token because the two placements are the two arms of one experiment:
     # WalkerWalk_DelayedMLP_delay5_eff5_mnpre0.1 vs ..._mnpost0.1. Empty at std 0.
+    # Correlated noise appends its correlation time: _mnpre0.5t5, _mnpost0.5tinf.
     if motor_noise_std:
         site = str(net_params.get("motor_noise_site", "post_efference"))
-        ablations += (f"mn{site.removesuffix('_efference')}{motor_noise_std:g}",)
+        tau = float(net_params.get("motor_noise_tau", 0.0) or 0.0)
+        ablations += (f"mn{site.removesuffix('_efference')}{motor_noise_std:g}"
+                      + (f"t{tau:g}" if tau else ""),)
     # A distilled run is a different training algorithm on the same architecture, so it
     # gets a name token and tag too: WalkerWalk_DelayedMLP_delay5_eff5_distill.
     if teacher is not None:

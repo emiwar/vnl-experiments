@@ -819,9 +819,9 @@ class MotorNoiseTest(parameterized.TestCase):
     )
 
     @staticmethod
-    def extra(site, privileged, std="0.3"):
+    def extra(site, privileged, std="0.3", tau="0.0"):
         return {"motor_noise_std": std, "motor_noise_site": site,
-                "privileged_critic": privileged}
+                "privileged_critic": privileged, "motor_noise_tau": tau}
 
     @staticmethod
     def queue_of(next_state):
@@ -836,6 +836,7 @@ class MotorNoiseTest(parameterized.TestCase):
         defaults = nb.flat_delay_defaults()
         self.assertEqual(defaults.motor_noise_std, 0.0)
         self.assertEqual(defaults.motor_noise_site, "post_efference")
+        self.assertEqual(defaults.motor_noise_tau, 0.0)
         plain, _ = build("DelayedMLP")
         for site in MOTOR_NOISE_SITES:
             zero, _ = build("DelayedMLP", {"motor_noise_std": "0.0",
@@ -924,6 +925,39 @@ class MotorNoiseTest(parameterized.TestCase):
         a_noisy = noisy(noisy.initialize_state(BATCH), obs).output.actions
         a_clean = clean(clean.initialize_state(BATCH), obs).output.actions
         self.assertFalse(jp.allclose(a_noisy, a_clean))
+
+    @parameterized.named_parameters(*SITES_AND_CRITICS)
+    def test_correlated_noise_replay_and_queue(self, site, privileged):
+        """AR(1) noise: the loss replay reproduces the rollout, and the queue still holds
+        the executed action pre-efference and the intended one post-efference."""
+        nets, _ = build("DelayedMLP", self.extra(site, privileged, tau="5"))
+        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+        noise = [m for _, m in nnx.iter_graph(nets) if isinstance(m, MotorNoise)]
+        self.assertLen(noise, 1)
+        self.assertEqual(noise[0].tau, 5.0)
+
+        obs = flat_stub_obs()
+        first = nets(nets.initialize_state(BATCH), obs)
+        intended = clean(clean.initialize_state(BATCH), obs).output.actions
+        newest = self.queue_of(first.next_state)[:, 0]
+        expected = first.output.actions if site == "pre_efference" else intended
+        self.assertTrue(jp.allclose(newest, expected, atol=1e-6))
+
+        state0 = nets.initialize_state(BATCH)
+        obs = [jax.random.normal(jax.random.key(t), (BATCH, FLAT_OBS_SIZE))
+               for t in range(8)]
+        state, rollout = state0, []
+        for o in obs:
+            out = nets(state, o)
+            rollout.append(out)
+            state = out.next_state
+        state = state0
+        for o, r in zip(obs, rollout):
+            out = nets(state, o, r.rollout_extras)
+            self.assertTrue(jp.allclose(out.output.loglikelihoods,
+                                        r.output.loglikelihoods, atol=1e-5))
+            self.assertTrue(jp.allclose(out.output.actions, r.output.actions))
+            state = out.next_state
 
     def test_survives_config_json_round_trip(self):
         nets, net_params = build("DelayedMLP", self.extra("pre_efference", "True"))

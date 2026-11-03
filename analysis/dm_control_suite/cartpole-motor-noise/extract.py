@@ -108,6 +108,13 @@ def _std(df: pd.DataFrame) -> pd.Series:
     return pd.to_numeric(df["net_params.motor_noise_std"], errors="coerce").fillna(0.0)
 
 
+def _tau(df: pd.DataFrame) -> pd.Series:
+    """Noise correlation time (``net.motor_noise_tau``, 2026-11-03); absent is iid (0)."""
+    if "net_params.motor_noise_tau" not in df.columns:
+        return pd.Series(0.0, index=df.index)
+    return pd.to_numeric(df["net_params.motor_noise_tau"], errors="coerce").fillna(0.0)
+
+
 def _base(df: pd.DataFrame) -> pd.Series:
     return (
         df["net_params.network_class"].eq(NETWORK)
@@ -123,7 +130,8 @@ def _base(df: pd.DataFrame) -> pd.Series:
 
 def _cell(task: str, arm: str):
     def selector(df: pd.DataFrame) -> pd.Series:
-        mask = _base(df) & df["env"].eq(task)
+        # iid noise only: correlated-noise runs (tau > 0) are a different experiment.
+        mask = _base(df) & df["env"].eq(task) & _tau(df).eq(0)
         std, site = _std(df), df["net_params.motor_noise_site"]
         eff, delay = df["net_params.efference_length"], df["net_params.delay_k"]
         if arm == "noise_pre":
@@ -172,6 +180,7 @@ DESIGN_AXES = [
     "net_params.delay_k",
     "net_params.motor_noise_std",
     "net_params.motor_noise_site",
+    "net_params.motor_noise_tau",
     "config.ppo.total_steps",
     "config.eval.every_steps",
     "state",

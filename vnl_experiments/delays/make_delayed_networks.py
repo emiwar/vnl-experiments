@@ -157,6 +157,7 @@ def make_delayed_mlp_actor_critic(
     privileged_critic: bool = True,
     motor_noise_std: float = 0.0,
     motor_noise_site: str = "post_efference",
+    motor_noise_tau: float = 0.0,
 ) -> StatefulModule:
     """Build an actor-only-delayed, privileged-critic PPO network.
 
@@ -191,6 +192,9 @@ def make_delayed_mlp_actor_critic(
         motor_noise_site: ``"pre_efference"`` -- the efference queue records the noisy
             action -- or ``"post_efference"`` (default) -- it records the intended one
             and only the body sees the noise. Ignored at ``motor_noise_std = 0``.
+        motor_noise_tau: Correlation time of the noise in control steps: ``0.0``
+            (default) is iid, ``> 0`` an AR(1) process with stationary std
+            ``motor_noise_std``, ``inf`` a constant offset per episode.
 
     Returns:
         A :class:`StatefulModule` whose forward output is a
@@ -240,7 +244,8 @@ def make_delayed_mlp_actor_critic(
     noise_pre: list[StatefulModule] = []
     noise_post: list[StatefulModule] = []
     if motor_noise_std > 0:
-        noise = MotorNoise(motor_noise_std, rngs)
+        noise = MotorNoise(motor_noise_std, rngs, tau=motor_noise_tau,
+                           action_size=action_size)
         (noise_pre if motor_noise_site == "pre_efference" else noise_post).append(noise)
 
     if not privileged_critic:
