@@ -79,6 +79,7 @@ from vnl_experiments.delays.network_builders import (
     ARCHITECTURES,
     build_network,
     get_architecture,
+    supports_motor_noise,
 )
 from vnl_experiments.conf_schema import register as register_schemas
 from vnl_experiments.envs import absolute_imitation
@@ -276,6 +277,14 @@ def build_run(cfg: DictConfig) -> RunSetup:
         raise OverrideError(f"build_network returned None for {arch.name!r}")
 
     motor_noise_std = float(net_params.get("motor_noise_std", 0.0) or 0.0)
+    if motor_noise_std and not supports_motor_noise(arch):
+        # Hydra already rejects `net.motor_noise_std=` for these, but `+net.` would get
+        # through: the builder would ignore the key, and the run would be named and
+        # tagged as noisy while training without noise.
+        raise OverrideError(
+            f"net.motor_noise_std > 0 is not supported by {arch.name}; motor noise is "
+            "implemented for the flat-obs architectures (DelayedMLP, FlatForwardModel, "
+            "FlatRecurrent) only.")
     if teacher_path and motor_noise_std:
         # distill.sampler_target expects exactly one array leaf under the actor's port of
         # the rollout_extras -- the sampler's -- and MotorNoise adds a second. Refused here,
@@ -305,7 +314,7 @@ def build_run(cfg: DictConfig) -> RunSetup:
                                  ("privileged_critic", "delayedcritic"))
         if not net_params.get(key, True)
     )
-    # Motor noise (DelayedMLP) is a name token and tag too, so a noisy run never joins a
+    # Motor noise (flat-obs architectures) is a name token and tag too, so a noisy run never joins a
     # noise-free cohort selected on delay / efference / architecture alone. The site goes
     # in the token because the two placements are the two arms of one experiment:
     # WalkerWalk_DelayedMLP_delay5_eff5_mnpre0.1 vs ..._mnpost0.1. Empty at std 0.

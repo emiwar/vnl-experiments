@@ -802,26 +802,39 @@ class DelayedCriticTest(absltest.TestCase):
         self.assertEqual(counts["critic"] + counts["actor"], counts["total"])
 
 
+#: The flat-obs architectures that build ``net.motor_noise_*``.
+MOTOR_NOISE_ARCHITECTURES = ("DelayedMLP", "FlatForwardModel", "FlatRecurrent")
+
+
 class MotorNoiseTest(parameterized.TestCase):
-    """``DelayedMLP`` with ``motor_noise_std > 0``: noise seen or unseen by the queue.
+    """Flat-obs networks with ``motor_noise_std > 0``: noise seen or unseen by the queue.
 
     ``pre_efference`` puts ``MotorNoise`` inside the ``EfferenceCopy`` (the queue records
     the noisy action); ``post_efference`` puts it after (the queue records the intended
-    action). Both critic layouts are covered because the noise sits in a different place
-    in each.
+    action). ``DelayedMLP`` is covered in both critic layouts because the noise sits in a
+    different place in each. In ``FlatForwardModel`` the queue is the predictor's action
+    buffer, and pre-efference noise ends the decoder inside the ``ForwardModel``.
     """
 
+    # (name, architecture, site, privileged_critic -- None where the key does not exist)
     SITES_AND_CRITICS = (
-        ("pre_privileged", "pre_efference", "True"),
-        ("post_privileged", "post_efference", "True"),
-        ("pre_delayed_critic", "pre_efference", "False"),
-        ("post_delayed_critic", "post_efference", "False"),
+        ("mlp_pre_privileged", "DelayedMLP", "pre_efference", "True"),
+        ("mlp_post_privileged", "DelayedMLP", "post_efference", "True"),
+        ("mlp_pre_delayed_critic", "DelayedMLP", "pre_efference", "False"),
+        ("mlp_post_delayed_critic", "DelayedMLP", "post_efference", "False"),
+        ("fm_pre", "FlatForwardModel", "pre_efference", None),
+        ("fm_post", "FlatForwardModel", "post_efference", None),
+        ("rnn_pre", "FlatRecurrent", "pre_efference", None),
+        ("rnn_post", "FlatRecurrent", "post_efference", None),
     )
 
     @staticmethod
     def extra(site, privileged, std="0.3", tau="0.0"):
-        return {"motor_noise_std": std, "motor_noise_site": site,
-                "privileged_critic": privileged, "motor_noise_tau": tau}
+        extra = {"motor_noise_std": std, "motor_noise_site": site,
+                 "motor_noise_tau": tau}
+        if privileged is not None:
+            extra["privileged_critic"] = privileged
+        return extra
 
     @staticmethod
     def queue_of(next_state):
@@ -831,16 +844,23 @@ class MotorNoiseTest(parameterized.TestCase):
         assert len(hits) == 1, f"expected one efference queue, found {len(hits)}"
         return hits[0]
 
-    def test_defaults_build_nothing(self):
+    def test_supported_architectures(self):
+        """The flat-obs architectures declare the keys; the rodent ones do not, and
+        ``train.py`` refuses a ``+net.motor_noise_std`` for them on that basis."""
+        supported = {name for name, arch in nb.ARCHITECTURES.items()
+                     if nb.supports_motor_noise(arch)}
+        self.assertEqual(supported, set(MOTOR_NOISE_ARCHITECTURES))
+
+    @parameterized.named_parameters(*((a, a) for a in MOTOR_NOISE_ARCHITECTURES))
+    def test_defaults_build_nothing(self, arch):
         """Old config.json files have no keys; std 0 must not change the layout."""
-        defaults = nb.flat_delay_defaults()
+        defaults = nb.ARCHITECTURES[arch].defaults()
         self.assertEqual(defaults.motor_noise_std, 0.0)
         self.assertEqual(defaults.motor_noise_site, "post_efference")
         self.assertEqual(defaults.motor_noise_tau, 0.0)
-        plain, _ = build("DelayedMLP")
+        plain, _ = build(arch)
         for site in MOTOR_NOISE_SITES:
-            zero, _ = build("DelayedMLP", {"motor_noise_std": "0.0",
-                                           "motor_noise_site": site})
+            zero, _ = build(arch, {"motor_noise_std": "0.0", "motor_noise_site": site})
             self.assertEqual(param_shapes(zero), param_shapes(plain))
             self.assertEqual([type(l) for l in zero.layers],
                              [type(l) for l in plain.layers])
@@ -848,22 +868,22 @@ class MotorNoiseTest(parameterized.TestCase):
                               if isinstance(m, MotorNoise)])
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_adds_no_parameters(self, site, privileged):
-        noisy, _ = build("DelayedMLP", self.extra(site, privileged))
-        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+    def test_adds_no_parameters(self, arch, site, privileged):
+        noisy, _ = build(arch, self.extra(site, privileged))
+        clean, _ = build(arch, self.extra(site, privileged, std="0"))
         self.assertEqual(param_shapes(noisy), param_shapes(clean))
         self.assertLen([m for _, m in nnx.iter_graph(noisy)
                         if isinstance(m, MotorNoise)], 1)
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_queue_sees_noise_only_pre_efference(self, site, privileged):
+    def test_queue_sees_noise_only_pre_efference(self, arch, site, privileged):
         """The queue holds the executed action pre-efference, the intended one post.
 
         The std-0 twin is the same network with the same seed: MotorNoise draws its key
         after the sampler, so the twin's first action is the noisy net's intended one.
         """
-        noisy, _ = build("DelayedMLP", self.extra(site, privileged))
-        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+        noisy, _ = build(arch, self.extra(site, privileged))
+        clean, _ = build(arch, self.extra(site, privileged, std="0"))
         obs = flat_stub_obs()
         out = noisy(noisy.initialize_state(BATCH), obs)
         intended = clean(clean.initialize_state(BATCH), obs).output.actions
@@ -876,24 +896,24 @@ class MotorNoiseTest(parameterized.TestCase):
         self.assertTrue(jp.allclose(newest, expected, atol=1e-6))
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_log_likelihood_is_the_samplers(self, site, privileged):
+    def test_log_likelihood_is_the_samplers(self, arch, site, privileged):
         """The noise is part of the environment: it must not enter the PPO ratio."""
-        noisy, _ = build("DelayedMLP", self.extra(site, privileged))
-        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+        noisy, _ = build(arch, self.extra(site, privileged))
+        clean, _ = build(arch, self.extra(site, privileged, std="0"))
         obs = flat_stub_obs()
         ll_noisy = noisy(noisy.initialize_state(BATCH), obs).output.loglikelihoods
         ll_clean = clean(clean.initialize_state(BATCH), obs).output.loglikelihoods
         self.assertTrue(jp.allclose(ll_noisy, ll_clean, atol=1e-5))
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_multistep_loss_replay_reproduces_rollout(self, site, privileged):
+    def test_multistep_loss_replay_reproduces_rollout(self, arch, site, privileged):
         """PPO replays the rollout from the pre-rollout carry with the stored extras.
 
         Over several steps the efference queue is rebuilt from the replayed actions, so
         pre-efference noise has to come back identically or every later step's actor
         input -- and so its log-likelihood -- would differ from the rollout's.
         """
-        nets, _ = build("DelayedMLP", self.extra(site, privileged))
+        nets, _ = build(arch, self.extra(site, privileged))
         state0 = nets.initialize_state(BATCH)
         obs = [jax.random.normal(jax.random.key(t), (BATCH, FLAT_OBS_SIZE))
                for t in range(8)]
@@ -915,10 +935,10 @@ class MotorNoiseTest(parameterized.TestCase):
             state = out.next_state
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_noise_stays_on_in_eval(self, site, privileged):
+    def test_noise_stays_on_in_eval(self, arch, site, privileged):
         """The noise is part of the world, so ``eval()`` must not switch it off."""
-        noisy, _ = build("DelayedMLP", self.extra(site, privileged))
-        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+        noisy, _ = build(arch, self.extra(site, privileged))
+        clean, _ = build(arch, self.extra(site, privileged, std="0"))
         noisy.eval()
         clean.eval()
         obs = flat_stub_obs()
@@ -927,11 +947,11 @@ class MotorNoiseTest(parameterized.TestCase):
         self.assertFalse(jp.allclose(a_noisy, a_clean))
 
     @parameterized.named_parameters(*SITES_AND_CRITICS)
-    def test_correlated_noise_replay_and_queue(self, site, privileged):
+    def test_correlated_noise_replay_and_queue(self, arch, site, privileged):
         """AR(1) noise: the loss replay reproduces the rollout, and the queue still holds
         the executed action pre-efference and the intended one post-efference."""
-        nets, _ = build("DelayedMLP", self.extra(site, privileged, tau="5"))
-        clean, _ = build("DelayedMLP", self.extra(site, privileged, std="0"))
+        nets, _ = build(arch, self.extra(site, privileged, tau="5"))
+        clean, _ = build(arch, self.extra(site, privileged, std="0"))
         noise = [m for _, m in nnx.iter_graph(nets) if isinstance(m, MotorNoise)]
         self.assertLen(noise, 1)
         self.assertEqual(noise[0].tau, 5.0)
@@ -959,23 +979,27 @@ class MotorNoiseTest(parameterized.TestCase):
             self.assertTrue(jp.allclose(out.output.actions, r.output.actions))
             state = out.next_state
 
-    def test_survives_config_json_round_trip(self):
-        nets, net_params = build("DelayedMLP", self.extra("pre_efference", "True"))
+    @parameterized.named_parameters(*((a, a) for a in MOTOR_NOISE_ARCHITECTURES))
+    def test_survives_config_json_round_trip(self, arch):
+        privileged = "True" if arch == "DelayedMLP" else None
+        nets, net_params = build(arch, self.extra("pre_efference", privileged, tau="inf"))
         round_tripped = json.loads(json.dumps(net_params, default=str))
         rebuilt = nb.build_network(round_tripped, FlatStubEnv(), nnx.Rngs(0))
         noise = [m for _, m in nnx.iter_graph(rebuilt) if isinstance(m, MotorNoise)]
         self.assertLen(noise, 1)
         self.assertEqual(noise[0].std, 0.3)
+        self.assertEqual(noise[0].rho, 1.0)
         self.assertEqual(param_shapes(rebuilt), param_shapes(nets))
 
-    def test_rejects_unknown_site(self):
+    @parameterized.named_parameters(*((a, a) for a in MOTOR_NOISE_ARCHITECTURES))
+    def test_rejects_unknown_site(self, arch):
         with self.assertRaises(ValueError):
-            build("DelayedMLP", {"motor_noise_std": "0.1",
-                                 "motor_noise_site": "before_copy"})
+            build(arch, {"motor_noise_std": "0.1", "motor_noise_site": "before_copy"})
 
-    def test_rejects_negative_std(self):
+    @parameterized.named_parameters(*((a, a) for a in MOTOR_NOISE_ARCHITECTURES))
+    def test_rejects_negative_std(self, arch):
         with self.assertRaises(ValueError):
-            build("DelayedMLP", {"motor_noise_std": "-0.1"})
+            build(arch, {"motor_noise_std": "-0.1"})
 
 
 if __name__ == "__main__":

@@ -124,7 +124,9 @@ def no_motor_noise_mask(df: pd.DataFrame) -> pd.Series:
     """Rows of runs trained without motor noise (``net_params.motor_noise_std``).
 
     Motor noise (``vnl_experiments.delays.motor_noise``) was added to ``DelayedMLP`` on
-    2026-10-27. A noisy run shares network class, delay and efference length with the
+    2026-10-27, and to ``FlatForwardModel`` and ``FlatRecurrent`` on 2026-11-04, so
+    selections of those two need the gate from then on too. A noisy run shares network
+    class, delay and efference length with the
     noise-free cohorts, so a selection on those alone would pool it in silently. Absent
     (every older run) and ``0`` both read as noise-free, and a frame synced before any
     noisy run existed has no such column at all, which this tolerates.

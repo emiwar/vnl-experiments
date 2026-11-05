@@ -139,6 +139,27 @@ def make_recurrent_stack(
     return layers
 
 
+def _motor_noise_modules(
+    std: float, site: str, tau: float, action_size: int, rngs: nnx.Rngs
+) -> tuple[list[StatefulModule], list[StatefulModule]]:
+    """``(pre, post)``: where to splice a :class:`MotorNoise`, at most one non-empty.
+
+    ``pre`` goes at the end of the sampler pipeline inside the ``EfferenceCopy``, so the
+    queue records the noisy action; ``post`` goes after the ``EfferenceCopy``, so only the
+    body sees it. Both are empty at ``std == 0``: nothing is built, so a noise-free
+    network's layout (pinned by stored checkpoints) is untouched. ``MotorNoise`` draws
+    nothing from ``rngs`` at construction, so building it does not shift the parameter
+    initialisation either.
+    """
+    validate_motor_noise_site(site)
+    if std < 0:
+        raise ValueError(f"motor_noise_std must be non-negative, got {std}")
+    if std == 0:
+        return [], []
+    noise = MotorNoise(std, rngs, tau=tau, action_size=action_size)
+    return ([noise], []) if site == "pre_efference" else ([], [noise])
+
+
 def make_delayed_mlp_actor_critic(
     obs_size: int,
     action_size: int,
@@ -213,11 +234,8 @@ def make_delayed_mlp_actor_critic(
             activation
         ]
 
-    validate_motor_noise_site(motor_noise_site)
-    if motor_noise_std < 0:
-        raise ValueError(
-            f"motor_noise_std must be non-negative, got {motor_noise_std}"
-        )
+    noise_pre, noise_post = _motor_noise_modules(
+        motor_noise_std, motor_noise_site, motor_noise_tau, action_size, rngs)
 
     kernel_init = nnx.initializers.variance_scaling(
         initializer_scale, "fan_in", "uniform"
@@ -237,17 +255,6 @@ def make_delayed_mlp_actor_critic(
         min_std=min_std,
         std_scale=std_scale,
     )
-    # Motor noise: nothing is built at std 0, so the default layout (pinned by stored
-    # checkpoints) is untouched. Otherwise one MotorNoise goes either at the end of the
-    # sampler pipeline (inside the EfferenceCopy, so the queue sees it) or after the
-    # EfferenceCopy (so only the body does).
-    noise_pre: list[StatefulModule] = []
-    noise_post: list[StatefulModule] = []
-    if motor_noise_std > 0:
-        noise = MotorNoise(motor_noise_std, rngs, tau=motor_noise_tau,
-                           action_size=action_size)
-        (noise_pre if motor_noise_site == "pre_efference" else noise_post).append(noise)
-
     if not privileged_critic:
         # The critic takes the actor MLP's input: delayed obs + efference queue.
         # Built in the same order as the privileged path (actor, sampler,
@@ -322,6 +329,9 @@ def make_forward_model_actor_critic(
     entropy_weight: float = 1e-2,
     min_std: float = 1e-3,
     std_scale: float = 1.0,
+    motor_noise_std: float = 0.0,
+    motor_noise_site: str = "post_efference",
+    motor_noise_tau: float = 0.0,
 ) -> StatefulModule:
     """Build an explicit-forward-model, privileged-critic PPO network for flat obs.
 
@@ -357,6 +367,21 @@ def make_forward_model_actor_critic(
         entropy_weight: Entropy bonus weight for the sampler.
         min_std: Minimum policy std.
         std_scale: Multiplicative scale on the policy std.
+        motor_noise_std: Std of fixed Gaussian noise added to the executed action
+            (policy units, after the tanh); see :mod:`.motor_noise`. ``0.0`` (default)
+            builds no noise module at all, so the layout is unchanged.
+        motor_noise_site: ``"pre_efference"`` -- the efference queue records the noisy
+            action -- or ``"post_efference"`` (default) -- it records the intended one
+            and only the body sees the noise. Ignored at ``motor_noise_std = 0``.
+        motor_noise_tau: Correlation time of the noise in control steps: ``0.0``
+            (default) is iid, ``> 0`` an AR(1) process with stationary std
+            ``motor_noise_std``, ``inf`` a constant offset per episode.
+
+            Here the efference queue is the predictor's action buffer:
+            ``pre_efference`` noise ends the decoder (so the predictor is told the
+            executed actions), ``post_efference`` noise follows the ``EfferenceCopy``
+            (so it is told the intended ones and the noise shows up as prediction
+            error -- the condition an error-correcting forward model is for).
 
     Returns:
         A :class:`StatefulModule` whose forward output is a
@@ -373,6 +398,9 @@ def make_forward_model_actor_critic(
         activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[
             activation
         ]
+
+    noise_pre, noise_post = _motor_noise_modules(
+        motor_noise_std, motor_noise_site, motor_noise_tau, action_size, rngs)
 
     if predictor_hidden_sizes is None:
         predictor_hidden_sizes = actor_hidden_sizes
@@ -397,6 +425,7 @@ def make_forward_model_actor_critic(
                 min_std=min_std,
                 std_scale=std_scale,
             ),
+            *noise_pre,
         ]
     )
     # Predictor: [delayed obs, action buffer] -> current obs.
@@ -429,6 +458,7 @@ def make_forward_model_actor_critic(
                 queue_length=efference_length,
                 inject_key="efference",
             ),
+            *noise_post,
         ]
     )
 
@@ -465,6 +495,9 @@ def make_delayed_recurrent_actor_critic(
     entropy_weight: float = 1e-2,
     min_std: float = 1e-3,
     std_scale: float = 1.0,
+    motor_noise_std: float = 0.0,
+    motor_noise_site: str = "post_efference",
+    motor_noise_tau: float = 0.0,
 ) -> StatefulModule:
     """Build a *recurrent* actor-only-delayed, privileged-critic PPO network.
 
@@ -505,6 +538,16 @@ def make_delayed_recurrent_actor_critic(
         entropy_weight: Entropy bonus weight for the sampler.
         min_std: Minimum policy std.
         std_scale: Multiplicative scale on the policy std.
+        motor_noise_std: Std of fixed Gaussian noise added to the executed action
+            (policy units, after the tanh); see :mod:`.motor_noise`. ``0.0`` (default)
+            builds no noise module at all, so the layout is unchanged.
+        motor_noise_site: ``"pre_efference"`` -- the efference queue records the noisy
+            action -- or ``"post_efference"`` (default) -- it records the intended one
+            and only the body sees the noise. Ignored at ``motor_noise_std = 0``.
+        motor_noise_tau: Correlation time of the noise in control steps: ``0.0``
+            (default) is iid, ``> 0`` an AR(1) process with stationary std
+            ``motor_noise_std``, ``inf`` a constant offset per episode.
+            Placed as in :func:`make_delayed_mlp_actor_critic`.
 
     Returns:
         A :class:`StatefulModule` whose forward output is a
@@ -526,6 +569,9 @@ def make_delayed_recurrent_actor_critic(
         activation = {"swish": nnx.swish, "tanh": nnx.tanh, "relu": nnx.relu}[
             activation
         ]
+
+    noise_pre, noise_post = _motor_noise_modules(
+        motor_noise_std, motor_noise_site, motor_noise_tau, action_size, rngs)
 
     kernel_init = nnx.initializers.variance_scaling(
         initializer_scale, "fan_in", "uniform"
@@ -550,7 +596,7 @@ def make_delayed_recurrent_actor_critic(
         std_scale=std_scale,
     )
     actor_with_efference = EfferenceCopy(
-        inner=Sequential([*actor_layers, sampler]),
+        inner=Sequential([*actor_layers, sampler, *noise_pre]),
         sample_action=jp.zeros(action_size),
         queue_length=efference_length,
     )
@@ -561,6 +607,7 @@ def make_delayed_recurrent_actor_critic(
             Delay(jp.zeros(obs_size), k_steps=delay_k)
         )
     action_branch_layers.append(actor_with_efference)
+    action_branch_layers.extend(noise_post)
 
     critic = make_mlp(
         [obs_size] + critic_hidden_sizes + [1],

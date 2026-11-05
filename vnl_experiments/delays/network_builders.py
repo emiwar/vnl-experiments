@@ -216,6 +216,14 @@ def _flat_shared_defaults(**extra):
     For the same reason the *actor* widths are not set here: ``FlatRecurrent`` splits
     them into a pre/post pair around its recurrent stack and has no plain
     ``actor_hidden_sizes`` to record. Each architecture passes its own.
+
+    ``motor_noise_std`` / ``motor_noise_site`` add fixed Gaussian noise to the executed
+    action, either seen by the efference copy (``"pre_efference"``) or not
+    (``"post_efference"``); see :mod:`vnl_experiments.delays.motor_noise`. At the default
+    ``motor_noise_std=0.0`` nothing is built and the network is unchanged.
+    ``motor_noise_tau`` is the noise's correlation time in control steps (``0.0`` = iid,
+    ``inf`` = one offset per episode). ``DelayedMLP`` had these from 2026-10-27 (tau from
+    2026-11-03); ``FlatForwardModel`` and ``FlatRecurrent`` from 2026-11-04.
     """
     return config_dict.create(
         critic_hidden_sizes=[256] * 5,
@@ -225,7 +233,19 @@ def _flat_shared_defaults(**extra):
         entropy_weight=1e-2,
         min_std=1e-3,
         std_scale=1.0,
+        motor_noise_std=0.0,
+        motor_noise_site="post_efference",
+        motor_noise_tau=0.0,
         **extra,
+    )
+
+
+def _motor_noise_kwargs(p: dict) -> dict:
+    """The motor-noise builder arguments; absent keys (older runs) mean no noise."""
+    return dict(
+        motor_noise_std=float(p.get("motor_noise_std", 0.0)),
+        motor_noise_site=str(p.get("motor_noise_site", "post_efference")),
+        motor_noise_tau=float(p.get("motor_noise_tau", 0.0)),
     )
 
 
@@ -236,20 +256,10 @@ def flat_delay_defaults():
     efference queue) instead of the fresh observation; see
     ``make_delayed_mlp_actor_critic``. It is a DelayedMLP-only key, so it lives here
     rather than in :func:`_flat_shared_defaults`.
-
-    ``motor_noise_std`` / ``motor_noise_site`` add fixed Gaussian noise to the executed
-    action, either seen by the efference copy (``"pre_efference"``) or not
-    (``"post_efference"``); see :mod:`vnl_experiments.delays.motor_noise`. At the default
-    ``motor_noise_std=0.0`` nothing is built and the network is unchanged.
-    ``motor_noise_tau`` is the noise's correlation time in control steps (``0.0`` = iid,
-    ``inf`` = one offset per episode).
     """
     return _flat_shared_defaults(
         actor_hidden_sizes=[256] * 4,
         privileged_critic=True,
-        motor_noise_std=0.0,
-        motor_noise_site="post_efference",
-        motor_noise_tau=0.0,
     )
 
 
@@ -310,9 +320,7 @@ def build_flat_delay_network(net_params: dict, env, rngs: nnx.Rngs):
         min_std=p.get("min_std", 1e-3),
         std_scale=p.get("std_scale", 1.0),
         privileged_critic=bool(p.get("privileged_critic", True)),
-        motor_noise_std=float(p.get("motor_noise_std", 0.0)),
-        motor_noise_site=str(p.get("motor_noise_site", "post_efference")),
-        motor_noise_tau=float(p.get("motor_noise_tau", 0.0)),
+        **_motor_noise_kwargs(p),
     )
 
 
@@ -336,6 +344,7 @@ def build_flat_forward_model_network(net_params: dict, env, rngs: nnx.Rngs):
         entropy_weight=p.get("entropy_weight", 1e-2),
         min_std=p.get("min_std", 1e-3),
         std_scale=p.get("std_scale", 1.0),
+        **_motor_noise_kwargs(p),
     )
 
 
@@ -377,6 +386,7 @@ def build_flat_recurrent_network(net_params: dict, env, rngs: nnx.Rngs):
         entropy_weight=p.get("entropy_weight", 1e-2),
         min_std=p.get("min_std", 1e-3),
         std_scale=p.get("std_scale", 1.0),
+        **_motor_noise_kwargs(p),
     )
 
 
@@ -856,6 +866,15 @@ ARCHITECTURES: dict[str, Architecture] = {
         ),
     )
 }
+
+
+def supports_motor_noise(arch: Architecture) -> bool:
+    """Whether ``arch`` builds ``net.motor_noise_*`` (the flat-obs architectures do).
+
+    Decided by the defaults rather than a list, so an architecture gains it by declaring
+    the keys -- which is also what lets Hydra accept the override for it at all.
+    """
+    return "motor_noise_std" in arch.defaults()
 
 
 def get_architecture(network_class: str) -> Architecture | None:
