@@ -25,6 +25,84 @@ Group condition='WalkerWalk_copy'  (n=46)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
+Group condition='WalkerWalk_fm_copy'  (n=28)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_fm_noise_post'  (n=7)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='WalkerWalk_fm_noise_pre'  (n=5)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
 Group condition='WalkerWalk_no_copy'  (n=32)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
@@ -51,7 +129,7 @@ Group condition='WalkerWalk_no_copy'  (n=32)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-Group condition='WalkerWalk_noise_no_copy'  (n=35)
+Group condition='WalkerWalk_noise_no_copy'  (n=40)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -77,7 +155,7 @@ Group condition='WalkerWalk_noise_no_copy'  (n=35)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-Group condition='WalkerWalk_noise_post'  (n=64)
+Group condition='WalkerWalk_noise_post'  (n=74)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -103,7 +181,7 @@ Group condition='WalkerWalk_noise_post'  (n=64)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-Group condition='WalkerWalk_noise_pre'  (n=51)
+Group condition='WalkerWalk_noise_pre'  (n=56)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -129,7 +207,7 @@ Group condition='WalkerWalk_noise_pre'  (n=51)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-All runs  (n=228)
+All runs  (n=288)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -158,7 +236,11 @@ All runs  (n=228)
 ======================================================================
 Group condition='WalkerWalk_copy'  (n=46)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP']
   net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : []
+  net_params.fm_loss_weight         : []
+  net_params.detach_prediction      : []
   net_params.motor_noise_std        : [0.0]
   net_params.motor_noise_site       : ['post_efference']
   net_params.motor_noise_tau        : []
@@ -173,9 +255,76 @@ Group condition='WalkerWalk_copy'  (n=46)
   config.seed                       : [1234, 12345, 43, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
 
 ======================================================================
+Group condition='WalkerWalk_fm_copy'  (n=28)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  net_params.fm_loss_weight         : [1.0]
+  net_params.detach_prediction      : [True]
+  net_params.motor_noise_std        : []
+  net_params.motor_noise_site       : []
+  net_params.motor_noise_tau        : []
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42, 43, 45, 46, 47, 48]  *** VARIES ***
+  config.seed                       : [1234, 12345, 45, 46, 47, 48]  *** VARIES ***
+
+======================================================================
+Group condition='WalkerWalk_fm_noise_post'  (n=7)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [5.0]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  net_params.fm_loss_weight         : [1.0]
+  net_params.detach_prediction      : [True]
+  net_params.motor_noise_std        : [0.5]
+  net_params.motor_noise_site       : ['post_efference']
+  net_params.motor_noise_tau        : [0, 10, 15, 2, 20, 25, 5]  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['c72ed042b5fd100b7d310710811912344ff6e179']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A40', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='WalkerWalk_fm_noise_pre'  (n=5)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [5.0]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  net_params.fm_loss_weight         : [1.0]
+  net_params.detach_prediction      : [True]
+  net_params.motor_noise_std        : [0.5]
+  net_params.motor_noise_site       : ['pre_efference']
+  net_params.motor_noise_tau        : [0, 15, 2, 20, 25]  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['c72ed042b5fd100b7d310710811912344ff6e179']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
 Group condition='WalkerWalk_no_copy'  (n=32)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP']
   net_params.delay_k                : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : []
+  net_params.fm_loss_weight         : []
+  net_params.detach_prediction      : []
   net_params.motor_noise_std        : []
   net_params.motor_noise_site       : []
   net_params.motor_noise_tau        : []
@@ -190,12 +339,16 @@ Group condition='WalkerWalk_no_copy'  (n=32)
   config.seed                       : [1234, 45, 46, 47, 48]  *** VARIES ***
 
 ======================================================================
-Group condition='WalkerWalk_noise_no_copy'  (n=35)
+Group condition='WalkerWalk_noise_no_copy'  (n=40)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP']
   net_params.delay_k                : [1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : []
+  net_params.fm_loss_weight         : []
+  net_params.detach_prediction      : []
   net_params.motor_noise_std        : [0.2, 0.5]  *** VARIES ***
   net_params.motor_noise_site       : ['post_efference']
-  net_params.motor_noise_tau        : [10.0, 2.0, 20.0, 5.0]  *** VARIES ***
+  net_params.motor_noise_tau        : [10, 100, 2, 20, 5, 50, 'Infinity']  *** VARIES ***
   config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
   config.eval.every_steps           : [4800000]
   state                             : ['finished']
@@ -207,30 +360,38 @@ Group condition='WalkerWalk_noise_no_copy'  (n=35)
   config.seed                       : [1234, 43, 44]  *** VARIES ***
 
 ======================================================================
-Group condition='WalkerWalk_noise_post'  (n=64)
+Group condition='WalkerWalk_noise_post'  (n=74)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP']
   net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : []
+  net_params.fm_loss_weight         : []
+  net_params.detach_prediction      : []
   net_params.motor_noise_std        : [0.2, 0.5]  *** VARIES ***
   net_params.motor_noise_site       : ['post_efference']
-  net_params.motor_noise_tau        : [10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
-  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  net_params.motor_noise_tau        : [10, 100, 12, 15, 2, 20, 25, 3, 5, 50, 500, 7, 'Infinity']  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 480000000.0]  *** VARIES ***
   config.eval.every_steps           : [4800000]
   state                             : ['finished']
   git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b']  *** VARIES ***
   repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
-  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
   seed                              : [42, 43, 44, 45]  *** VARIES ***
   config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
 
 ======================================================================
-Group condition='WalkerWalk_noise_pre'  (n=51)
+Group condition='WalkerWalk_noise_pre'  (n=56)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP']
   net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : []
+  net_params.fm_loss_weight         : []
+  net_params.detach_prediction      : []
   net_params.motor_noise_std        : [0.2, 0.5]  *** VARIES ***
   net_params.motor_noise_site       : ['pre_efference']
-  net_params.motor_noise_tau        : [10.0, 100.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 50.0, 7.0]  *** VARIES ***
-  config.ppo.total_steps            : [1000000000.0, 480000000.0]  *** VARIES ***
+  net_params.motor_noise_tau        : [10, 100, 12, 15, 2, 20, 25, 3, 5, 50, 7]  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 480000000.0]  *** VARIES ***
   config.eval.every_steps           : [4800000]
   state                             : ['finished']
   git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b']  *** VARIES ***
@@ -241,16 +402,20 @@ Group condition='WalkerWalk_noise_pre'  (n=51)
   config.seed                       : [1234, 43, 44]  *** VARIES ***
 
 ======================================================================
-All runs  (n=228)
+All runs  (n=288)
 ======================================================================
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
   net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  *** VARIES ***
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  net_params.fm_loss_weight         : [1.0]
+  net_params.detach_prediction      : [True]
   net_params.motor_noise_std        : [0.0, 0.2, 0.5]  *** VARIES ***
   net_params.motor_noise_site       : ['post_efference', 'pre_efference']  *** VARIES ***
-  net_params.motor_noise_tau        : [10.0, 100.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 50.0, 7.0]  *** VARIES ***
+  net_params.motor_noise_tau        : [0, 10, 100, 12, 15, 2, 20, 25, 3, 5, 50, 500, 7, 'Infinity']  *** VARIES ***
   config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
   config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
   state                             : ['crashed', 'finished']  *** VARIES ***
-  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'c72ed042b5fd100b7d310710811912344ff6e179', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
   gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H100 80GB HBM3', 'NVIDIA H200', 'NVIDIA RTX A6000', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
@@ -258,139 +423,170 @@ All runs  (n=228)
   config.seed                       : [1234, 12345, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]  *** VARIES ***
 
 Reward at 4.8e+08 (mean over runs; n; range) | median steps to 900 | executed-action std | policy sigma   (tau -1 = noise-free)
-  d 0 copy          std 0   tau -1    977.6 n=7  [ 976.5,  979.3]  t900     19M  act 0.612  sigma 0.322
-  d 0 noise_post    std 0.2 tau 0     974.1 n=3  [ 972.8,  974.8]  t900     24M  act 0.629  sigma 0.316
-  d 0 noise_post    std 0.2 tau 2     974.0 n=1  [ 974.0,  974.0]  t900     19M  act 0.622  sigma 0.317
-  d 0 noise_post    std 0.2 tau 5     974.0 n=1  [ 974.0,  974.0]  t900     24M  act 0.620  sigma 0.312
-  d 0 noise_post    std 0.2 tau 10    973.2 n=1  [ 973.2,  973.2]  t900     24M  act 0.620  sigma 0.309
-  d 0 noise_post    std 0.2 tau 25    973.2 n=1  [ 973.2,  973.2]  t900     29M  act 0.615  sigma 0.309
-  d 0 noise_post    std 0.5 tau 0     969.0 n=4  [ 967.1,  971.9]  t900     38M  act 0.684  sigma 0.286
-  d 0 noise_post    std 0.5 tau 2     962.1 n=1  [ 962.1,  962.1]  t900     62M  act 0.671  sigma 0.251
-  d 0 noise_post    std 0.5 tau 5     942.1 n=1  [ 942.1,  942.1]  t900    144M  act 0.656  sigma 0.226
-  d 0 noise_post    std 0.5 tau 10    920.1 n=1  [ 920.1,  920.1]  t900    278M  act 0.640  sigma 0.207
-  d 0 noise_post    std 0.5 tau 25    877.1 n=1  [ 877.1,  877.1]  t900    nanM  act 0.639  sigma 0.180
-  d 0 noise_pre     std 0.5 tau 0     969.6 n=1  [ 969.6,  969.6]  t900     34M  act 0.683  sigma 0.288
-  d 1 noise_no_copy std 0.2 tau 0     972.2 n=1  [ 972.2,  972.2]  t900     29M  act 0.623  sigma 0.312
-  d 1 noise_no_copy std 0.5 tau 0     962.6 n=1  [ 962.6,  962.6]  t900     53M  act 0.685  sigma 0.260
-  d 1 noise_post    std 0.2 tau 0     972.4 n=1  [ 972.4,  972.4]  t900     29M  act 0.624  sigma 0.321
-  d 1 noise_post    std 0.5 tau 0     963.0 n=2  [ 962.6,  963.4]  t900     51M  act 0.686  sigma 0.264
-  d 1 noise_pre     std 0.2 tau 0     973.2 n=1  [ 973.2,  973.2]  t900     29M  act 0.626  sigma 0.321
-  d 2 copy          std 0   tau -1    969.9 n=2  [ 968.0,  971.9]  t900     60M  act 0.609  sigma 0.321
-  d 2 no_copy       std 0   tau -1    972.0 n=1  [ 972.0,  972.0]  t900     29M  act 0.601  sigma 0.299
-  d 2 noise_no_copy std 0.5 tau 0     955.1 n=1  [ 955.1,  955.1]  t900     87M  act 0.690  sigma 0.228
-  d 2 noise_post    std 0.2 tau 0     971.1 n=1  [ 971.1,  971.1]  t900     58M  act 0.626  sigma 0.308
-  d 2 noise_post    std 0.5 tau 0     958.1 n=1  [ 958.1,  958.1]  t900     82M  act 0.689  sigma 0.243
-  d 2 noise_post    std 0.5 tau 10    787.2 n=1  [ 787.2,  787.2]  t900    nanM  act 0.681  sigma 0.164
-  d 2 noise_pre     std 0.5 tau 0     960.6 n=1  [ 960.6,  960.6]  t900     87M  act 0.682  sigma 0.266
-  d 2 noise_pre     std 0.5 tau 10    858.5 n=1  [ 858.5,  858.5]  t900    nanM  act 0.633  sigma 0.153
-  d 3 copy          std 0   tau -1    967.4 n=4  [ 963.4,  970.8]  t900     98M  act 0.608  sigma 0.297
-  d 3 no_copy       std 0   tau -1    970.0 n=1  [ 970.0,  970.0]  t900     43M  act 0.602  sigma 0.278
-  d 3 noise_no_copy std 0.2 tau 0     968.7 n=1  [ 968.7,  968.7]  t900     67M  act 0.622  sigma 0.267
-  d 3 noise_no_copy std 0.5 tau 0     941.5 n=2  [ 937.5,  945.4]  t900    171M  act 0.695  sigma 0.194
-  d 3 noise_post    std 0.2 tau 0     968.6 n=1  [ 968.6,  968.6]  t900     53M  act 0.628  sigma 0.293
-  d 3 noise_post    std 0.5 tau 0     945.5 n=2  [ 944.7,  946.3]  t900    144M  act 0.695  sigma 0.213
-  d 3 noise_post    std 0.5 tau 10    674.5 n=1  [ 674.5,  674.5]  t900    nanM  act 0.686  sigma 0.167
-  d 3 noise_pre     std 0.2 tau 0     969.3 n=1  [ 969.3,  969.3]  t900     58M  act 0.623  sigma 0.306
-  d 3 noise_pre     std 0.5 tau 0     955.6 n=2  [ 954.5,  956.6]  t900    115M  act 0.684  sigma 0.248
-  d 3 noise_pre     std 0.5 tau 10    804.7 n=1  [ 804.7,  804.7]  t900    nanM  act 0.622  sigma 0.158
-  d 4 noise_post    std 0.2 tau 0     964.4 n=1  [ 964.4,  964.4]  t900     96M  act 0.628  sigma 0.276
-  d 5 copy          std 0   tau -1    964.7 n=7  [ 961.8,  967.0]  t900     67M  act 0.603  sigma 0.285
-  d 5 no_copy       std 0   tau -1    962.2 n=2  [ 962.1,  962.2]  t900    118M  act 0.600  sigma 0.248
-  d 5 noise_no_copy std 0.2 tau 0     963.0 n=1  [ 963.0,  963.0]  t900    101M  act 0.633  sigma 0.227
-  d 5 noise_no_copy std 0.5 tau 0     851.9 n=2  [ 851.5,  852.4]  t900    nanM  act 0.695  sigma 0.168
-  d 5 noise_no_copy std 0.5 tau 2     631.9 n=1  [ 631.9,  631.9]  t900    nanM  act 0.695  sigma 0.183
-  d 5 noise_no_copy std 0.5 tau 5     539.9 n=1  [ 539.9,  539.9]  t900    nanM  act 0.695  sigma 0.183
-  d 5 noise_no_copy std 0.5 tau 10    486.2 n=1  [ 486.2,  486.2]  t900    nanM  act 0.689  sigma 0.182
-  d 5 noise_no_copy std 0.5 tau 20    448.1 n=1  [ 448.1,  448.1]  t900    nanM  act 0.686  sigma 0.183
-  d 5 noise_post    std 0.2 tau 0     961.1 n=1  [ 961.1,  961.1]  t900    125M  act 0.631  sigma 0.260
-  d 5 noise_post    std 0.5 tau 0     875.3 n=3  [ 866.8,  887.8]  t900    nanM  act 0.696  sigma 0.173
-  d 5 noise_post    std 0.5 tau 2     636.7 n=1  [ 636.7,  636.7]  t900    nanM  act 0.703  sigma 0.184
-  d 5 noise_post    std 0.5 tau 3     590.9 n=1  [ 590.9,  590.9]  t900    nanM  act 0.701  sigma 0.185
-  d 5 noise_post    std 0.5 tau 5     567.4 n=1  [ 567.4,  567.4]  t900    nanM  act 0.697  sigma 0.177
-  d 5 noise_post    std 0.5 tau 7     521.3 n=1  [ 521.3,  521.3]  t900    nanM  act 0.693  sigma 0.179
-  d 5 noise_post    std 0.5 tau 10    498.8 n=1  [ 498.8,  498.8]  t900    nanM  act 0.691  sigma 0.176
-  d 5 noise_post    std 0.5 tau 12    502.8 n=1  [ 502.8,  502.8]  t900    nanM  act 0.690  sigma 0.180
-  d 5 noise_post    std 0.5 tau 15    487.9 n=1  [ 487.9,  487.9]  t900    nanM  act 0.693  sigma 0.178
-  d 5 noise_post    std 0.5 tau 20    456.8 n=1  [ 456.8,  456.8]  t900    nanM  act 0.690  sigma 0.182
-  d 5 noise_post    std 0.5 tau 25    462.1 n=1  [ 462.1,  462.1]  t900    nanM  act 0.689  sigma 0.173
-  d 5 noise_pre     std 0.2 tau 0     962.9 n=1  [ 962.9,  962.9]  t900    130M  act 0.623  sigma 0.272
-  d 5 noise_pre     std 0.5 tau 0     933.0 n=2  [ 932.8,  933.3]  t900    310M  act 0.689  sigma 0.207
-  d 5 noise_pre     std 0.5 tau 2     784.5 n=1  [ 784.5,  784.5]  t900    nanM  act 0.659  sigma 0.170
-  d 5 noise_pre     std 0.5 tau 3     767.2 n=1  [ 767.2,  767.2]  t900    nanM  act 0.653  sigma 0.171
-  d 5 noise_pre     std 0.5 tau 5     746.2 n=1  [ 746.2,  746.2]  t900    nanM  act 0.642  sigma 0.160
-  d 5 noise_pre     std 0.5 tau 7     675.6 n=1  [ 675.6,  675.6]  t900    nanM  act 0.637  sigma 0.164
-  d 5 noise_pre     std 0.5 tau 10    668.1 n=1  [ 668.1,  668.1]  t900    nanM  act 0.635  sigma 0.160
-  d 5 noise_pre     std 0.5 tau 12    615.2 n=1  [ 615.2,  615.2]  t900    nanM  act 0.630  sigma 0.165
-  d 5 noise_pre     std 0.5 tau 15    645.1 n=1  [ 645.1,  645.1]  t900    nanM  act 0.627  sigma 0.159
-  d 5 noise_pre     std 0.5 tau 20    602.8 n=1  [ 602.8,  602.8]  t900    nanM  act 0.627  sigma 0.168
-  d 5 noise_pre     std 0.5 tau 25    598.7 n=1  [ 598.7,  598.7]  t900    nanM  act 0.625  sigma 0.161
-  d 5 noise_pre     std 0.5 tau 50    513.3 n=1  [ 513.3,  513.3]  t900    nanM  act 0.623  sigma 0.157
-  d 5 noise_pre     std 0.5 tau 100   512.8 n=1  [ 512.8,  512.8]  t900    nanM  act 0.630  sigma 0.154
-  d 6 noise_post    std 0.2 tau 0     956.8 n=1  [ 956.8,  956.8]  t900    134M  act 0.631  sigma 0.235
-  d 7 copy          std 0   tau -1    954.5 n=5  [ 938.6,  962.4]  t900    178M  act 0.596  sigma 0.243
-  d 7 no_copy       std 0   tau -1    953.6 n=5  [ 943.9,  958.4]  t900     91M  act 0.602  sigma 0.209
-  d 7 noise_no_copy std 0.2 tau 0     955.8 n=1  [ 955.8,  955.8]  t900    144M  act 0.642  sigma 0.207
-  d 7 noise_no_copy std 0.5 tau 0     709.5 n=3  [ 695.0,  730.2]  t900    nanM  act 0.694  sigma 0.169
-  d 7 noise_post    std 0.2 tau 0     947.7 n=1  [ 947.7,  947.7]  t900    288M  act 0.623  sigma 0.209
-  d 7 noise_post    std 0.5 tau 0     659.5 n=2  [ 617.6,  701.4]  t900    nanM  act 0.692  sigma 0.166
-  d 7 noise_post    std 0.5 tau 10    413.8 n=1  [ 413.8,  413.8]  t900    nanM  act 0.698  sigma 0.189
-  d 7 noise_pre     std 0.2 tau 0     955.7 n=1  [ 955.7,  955.7]  t900    144M  act 0.619  sigma 0.239
-  d 7 noise_pre     std 0.5 tau 0     762.1 n=3  [ 745.0,  774.2]  t900    nanM  act 0.682  sigma 0.171
-  d 7 noise_pre     std 0.5 tau 10    507.2 n=1  [ 507.2,  507.2]  t900    nanM  act 0.638  sigma 0.175
-  d 8 noise_post    std 0.2 tau 0     944.0 n=1  [ 944.0,  944.0]  t900    226M  act 0.630  sigma 0.190
-  d 9 noise_post    std 0.2 tau 0     736.6 n=1  [ 736.6,  736.6]  t900    nanM  act 0.627  sigma 0.158
-  d10 copy          std 0   tau -1    738.6 n=4  [ 671.1,  909.3]  t900    418M  act 0.598  sigma 0.165
-  d10 no_copy       std 0   tau -1    917.3 n=5  [ 841.6,  947.9]  t900    262M  act 0.597  sigma 0.189
-  d10 noise_no_copy std 0.2 tau 0     539.7 n=1  [ 539.7,  539.7]  t900    nanM  act 0.637  sigma 0.185
-  d10 noise_no_copy std 0.5 tau 0     469.0 n=3  [ 418.0,  541.1]  t900    nanM  act 0.684  sigma 0.184
-  d10 noise_post    std 0.2 tau 0     869.7 n=1  [ 869.7,  869.7]  t900    nanM  act 0.629  sigma 0.161
-  d10 noise_post    std 0.5 tau 0     453.9 n=2  [ 439.0,  468.8]  t900    nanM  act 0.685  sigma 0.177
-  d10 noise_post    std 0.5 tau 10    338.6 n=1  [ 338.6,  338.6]  t900    nanM  act 0.702  sigma 0.176
-  d10 noise_pre     std 0.2 tau 0     757.1 n=1  [ 757.1,  757.1]  t900    nanM  act 0.629  sigma 0.143
-  d10 noise_pre     std 0.5 tau 0     359.6 n=2  [ 238.5,  480.8]  t900    nanM  act 0.679  sigma 0.196
-  d10 noise_pre     std 0.5 tau 2     433.7 n=1  [ 433.7,  433.7]  t900    nanM  act 0.663  sigma 0.197
-  d10 noise_pre     std 0.5 tau 5     428.9 n=1  [ 428.9,  428.9]  t900    nanM  act 0.655  sigma 0.195
-  d10 noise_pre     std 0.5 tau 10    375.2 n=1  [ 375.2,  375.2]  t900    nanM  act 0.639  sigma 0.190
-  d10 noise_pre     std 0.5 tau 15    381.3 n=1  [ 381.3,  381.3]  t900    nanM  act 0.643  sigma 0.182
-  d10 noise_pre     std 0.5 tau 25    374.6 n=1  [ 374.6,  374.6]  t900    nanM  act 0.619  sigma 0.182
-  d12 copy          std 0   tau -1    708.2 n=3  [ 530.9,  842.4]  t900    nanM  act 0.611  sigma 0.147
-  d12 no_copy       std 0   tau -1    860.4 n=5  [ 760.7,  931.4]  t900    250M  act 0.602  sigma 0.162
-  d12 noise_no_copy std 0.2 tau 0     770.5 n=1  [ 770.5,  770.5]  t900    nanM  act 0.635  sigma 0.153
-  d12 noise_no_copy std 0.5 tau 0     423.6 n=3  [ 356.7,  505.4]  t900    nanM  act 0.685  sigma 0.201
-  d12 noise_post    std 0.5 tau 0     404.6 n=2  [ 397.7,  411.5]  t900    nanM  act 0.686  sigma 0.170
-  d12 noise_post    std 0.5 tau 10    285.8 n=1  [ 285.8,  285.8]  t900    nanM  act 0.698  sigma 0.198
-  d12 noise_pre     std 0.2 tau 0     594.9 n=1  [ 594.9,  594.9]  t900    nanM  act 0.622  sigma 0.185
-  d12 noise_pre     std 0.5 tau 0     186.2 n=3  [ 176.6,  198.9]  t900    nanM  act 0.668  sigma 0.231
-  d12 noise_pre     std 0.5 tau 10    377.9 n=1  [ 377.9,  377.9]  t900    nanM  act 0.663  sigma 0.172
-  d15 copy          std 0   tau -1    549.0 n=4  [ 407.7,  664.8]  t900    nanM  act 0.599  sigma 0.151
-  d15 no_copy       std 0   tau -1    449.2 n=5  [ 349.5,  593.5]  t900    nanM  act 0.618  sigma 0.179
-  d15 noise_no_copy std 0.2 tau 0     385.7 n=1  [ 385.7,  385.7]  t900    nanM  act 0.632  sigma 0.189
-  d15 noise_no_copy std 0.5 tau 0     307.0 n=3  [ 284.4,  327.5]  t900    nanM  act 0.680  sigma 0.218
-  d15 noise_post    std 0.2 tau 0     314.1 n=1  [ 314.1,  314.1]  t900    nanM  act 0.627  sigma 0.183
-  d15 noise_post    std 0.5 tau 0     193.6 n=2  [ 189.2,  198.0]  t900    nanM  act 0.674  sigma 0.221
-  d15 noise_post    std 0.5 tau 10    254.7 n=1  [ 254.7,  254.7]  t900    nanM  act 0.692  sigma 0.208
-  d15 noise_pre     std 0.2 tau 0     317.7 n=1  [ 317.7,  317.7]  t900    nanM  act 0.630  sigma 0.177
-  d15 noise_pre     std 0.5 tau 0     171.0 n=3  [ 170.1,  171.5]  t900    nanM  act 0.667  sigma 0.235
-  d15 noise_pre     std 0.5 tau 10    351.0 n=1  [ 351.0,  351.0]  t900    nanM  act 0.629  sigma 0.189
-  d20 copy          std 0   tau -1    525.3 n=7  [ 499.0,  543.4]  t900    nanM  act 0.596  sigma 0.142
-  d20 no_copy       std 0   tau -1    258.3 n=5  [ 236.6,  279.8]  t900    nanM  act 0.602  sigma 0.178
-  d20 noise_no_copy std 0.2 tau 0     204.6 n=1  [ 204.6,  204.6]  t900    nanM  act 0.624  sigma 0.241
-  d20 noise_no_copy std 0.5 tau 0     148.1 n=2  [ 147.4,  148.8]  t900    nanM  act 0.666  sigma 0.256
-  d20 noise_post    std 0.2 tau 0     279.8 n=1  [ 279.8,  279.8]  t900    nanM  act 0.642  sigma 0.154
-  d20 noise_post    std 0.5 tau 0     154.1 n=2  [ 153.6,  154.6]  t900    nanM  act 0.673  sigma 0.232
-  d20 noise_post    std 0.5 tau 10    228.0 n=1  [ 228.0,  228.0]  t900    nanM  act 0.693  sigma 0.216
-  d20 noise_pre     std 0.2 tau 0     371.3 n=1  [ 371.3,  371.3]  t900    nanM  act 0.646  sigma 0.184
-  d20 noise_pre     std 0.5 tau 0     167.6 n=1  [ 167.6,  167.6]  t900    nanM  act 0.667  sigma 0.231
-  d20 noise_pre     std 0.5 tau 10    279.9 n=1  [ 279.9,  279.9]  t900    nanM  act 0.654  sigma 0.215
-  d25 copy          std 0   tau -1    450.5 n=3  [ 429.4,  481.4]  t900    nanM  act 0.607  sigma 0.123
-  d25 no_copy       std 0   tau -1    220.6 n=3  [ 211.8,  232.8]  t900    nanM  act 0.603  sigma 0.173
-  d25 noise_no_copy std 0.2 tau 0     152.4 n=1  [ 152.4,  152.4]  t900    nanM  act 0.613  sigma 0.239
-  d25 noise_no_copy std 0.5 tau 0     129.9 n=2  [ 118.5,  141.3]  t900    nanM  act 0.660  sigma 0.248
-  d25 noise_post    std 0.5 tau 0     154.2 n=2  [ 153.8,  154.6]  t900    nanM  act 0.671  sigma 0.240
-  d25 noise_post    std 0.5 tau 10    189.6 n=1  [ 189.6,  189.6]  t900    nanM  act 0.696  sigma 0.218
-  d25 noise_pre     std 0.2 tau 0     243.2 n=1  [ 243.2,  243.2]  t900    nanM  act 0.631  sigma 0.172
-  d25 noise_pre     std 0.5 tau 0     168.7 n=1  [ 168.7,  168.7]  t900    nanM  act 0.677  sigma 0.217
-  d25 noise_pre     std 0.5 tau 10    269.2 n=1  [ 269.2,  269.2]  t900    nanM  act 0.639  sigma 0.206
+  Delaye d 0 copy          std 0   tau -1    977.6 n=7  [ 976.5,  979.3]  t900     19M  act 0.612  sigma 0.322
+  Delaye d 0 noise_post    std 0.2 tau 0     974.1 n=3  [ 972.8,  974.8]  t900     24M  act 0.629  sigma 0.316
+  Delaye d 0 noise_post    std 0.2 tau 2     974.0 n=1  [ 974.0,  974.0]  t900     19M  act 0.622  sigma 0.317
+  Delaye d 0 noise_post    std 0.2 tau 5     974.0 n=1  [ 974.0,  974.0]  t900     24M  act 0.620  sigma 0.312
+  Delaye d 0 noise_post    std 0.2 tau 10    973.2 n=1  [ 973.2,  973.2]  t900     24M  act 0.620  sigma 0.309
+  Delaye d 0 noise_post    std 0.2 tau 25    973.2 n=1  [ 973.2,  973.2]  t900     29M  act 0.615  sigma 0.309
+  Delaye d 0 noise_post    std 0.5 tau 0     969.0 n=4  [ 967.1,  971.9]  t900     38M  act 0.684  sigma 0.286
+  Delaye d 0 noise_post    std 0.5 tau 2     962.1 n=1  [ 962.1,  962.1]  t900     62M  act 0.671  sigma 0.251
+  Delaye d 0 noise_post    std 0.5 tau 5     942.1 n=1  [ 942.1,  942.1]  t900    144M  act 0.656  sigma 0.226
+  Delaye d 0 noise_post    std 0.5 tau 10    920.1 n=1  [ 920.1,  920.1]  t900    278M  act 0.640  sigma 0.207
+  Delaye d 0 noise_post    std 0.5 tau 12    910.0 n=1  [ 910.0,  910.0]  t900    360M  act 0.640  sigma 0.203
+  Delaye d 0 noise_post    std 0.5 tau 15    900.5 n=1  [ 900.5,  900.5]  t900    408M  act 0.639  sigma 0.198
+  Delaye d 0 noise_post    std 0.5 tau 25    877.1 n=1  [ 877.1,  877.1]  t900    nanM  act 0.639  sigma 0.180
+  Delaye d 0 noise_pre     std 0.5 tau 0     969.6 n=1  [ 969.6,  969.6]  t900     34M  act 0.683  sigma 0.288
+  Delaye d 1 noise_no_copy std 0.2 tau 0     972.2 n=1  [ 972.2,  972.2]  t900     29M  act 0.623  sigma 0.312
+  Delaye d 1 noise_no_copy std 0.5 tau 0     962.6 n=1  [ 962.6,  962.6]  t900     53M  act 0.685  sigma 0.260
+  Delaye d 1 noise_post    std 0.2 tau 0     972.4 n=1  [ 972.4,  972.4]  t900     29M  act 0.624  sigma 0.321
+  Delaye d 1 noise_post    std 0.5 tau 0     963.0 n=2  [ 962.6,  963.4]  t900     51M  act 0.686  sigma 0.264
+  Delaye d 1 noise_pre     std 0.2 tau 0     973.2 n=1  [ 973.2,  973.2]  t900     29M  act 0.626  sigma 0.321
+  Delaye d 2 copy          std 0   tau -1    969.9 n=2  [ 968.0,  971.9]  t900     60M  act 0.609  sigma 0.321
+  Delaye d 2 no_copy       std 0   tau -1    972.0 n=1  [ 972.0,  972.0]  t900     29M  act 0.601  sigma 0.299
+  Delaye d 2 noise_no_copy std 0.5 tau 0     955.1 n=1  [ 955.1,  955.1]  t900     87M  act 0.690  sigma 0.228
+  Delaye d 2 noise_post    std 0.2 tau 0     971.1 n=1  [ 971.1,  971.1]  t900     58M  act 0.626  sigma 0.308
+  Delaye d 2 noise_post    std 0.5 tau 0     958.1 n=1  [ 958.1,  958.1]  t900     82M  act 0.689  sigma 0.243
+  Delaye d 2 noise_post    std 0.5 tau 10    787.2 n=1  [ 787.2,  787.2]  t900    nanM  act 0.681  sigma 0.164
+  Delaye d 2 noise_pre     std 0.5 tau 0     960.6 n=1  [ 960.6,  960.6]  t900     87M  act 0.682  sigma 0.266
+  Delaye d 2 noise_pre     std 0.5 tau 10    858.5 n=1  [ 858.5,  858.5]  t900    nanM  act 0.633  sigma 0.153
+  Delaye d 3 copy          std 0   tau -1    967.4 n=4  [ 963.4,  970.8]  t900     98M  act 0.608  sigma 0.297
+  Delaye d 3 no_copy       std 0   tau -1    970.0 n=1  [ 970.0,  970.0]  t900     43M  act 0.602  sigma 0.278
+  Delaye d 3 noise_no_copy std 0.2 tau 0     968.7 n=1  [ 968.7,  968.7]  t900     67M  act 0.622  sigma 0.267
+  Delaye d 3 noise_no_copy std 0.5 tau 0     941.5 n=2  [ 937.5,  945.4]  t900    171M  act 0.695  sigma 0.194
+  Delaye d 3 noise_post    std 0.2 tau 0     968.6 n=1  [ 968.6,  968.6]  t900     53M  act 0.628  sigma 0.293
+  Delaye d 3 noise_post    std 0.5 tau 0     945.5 n=2  [ 944.7,  946.3]  t900    144M  act 0.695  sigma 0.213
+  Delaye d 3 noise_post    std 0.5 tau 10    674.5 n=1  [ 674.5,  674.5]  t900    nanM  act 0.686  sigma 0.167
+  Delaye d 3 noise_pre     std 0.2 tau 0     969.3 n=1  [ 969.3,  969.3]  t900     58M  act 0.623  sigma 0.306
+  Delaye d 3 noise_pre     std 0.5 tau 0     955.6 n=2  [ 954.5,  956.6]  t900    115M  act 0.684  sigma 0.248
+  Delaye d 3 noise_pre     std 0.5 tau 10    804.7 n=1  [ 804.7,  804.7]  t900    nanM  act 0.622  sigma 0.158
+  Delaye d 4 noise_post    std 0.2 tau 0     964.4 n=1  [ 964.4,  964.4]  t900     96M  act 0.628  sigma 0.276
+  Delaye d 5 copy          std 0   tau -1    964.7 n=7  [ 961.8,  967.0]  t900     67M  act 0.603  sigma 0.285
+  Delaye d 5 no_copy       std 0   tau -1    962.2 n=2  [ 962.1,  962.2]  t900    118M  act 0.600  sigma 0.248
+  Delaye d 5 noise_no_copy std 0.2 tau 0     963.0 n=1  [ 963.0,  963.0]  t900    101M  act 0.633  sigma 0.227
+  Delaye d 5 noise_no_copy std 0.5 tau 0     851.9 n=2  [ 851.5,  852.4]  t900    nanM  act 0.695  sigma 0.168
+  Delaye d 5 noise_no_copy std 0.5 tau 2     631.9 n=1  [ 631.9,  631.9]  t900    nanM  act 0.695  sigma 0.183
+  Delaye d 5 noise_no_copy std 0.5 tau 5     539.9 n=1  [ 539.9,  539.9]  t900    nanM  act 0.695  sigma 0.183
+  Delaye d 5 noise_no_copy std 0.5 tau 10    490.6 n=2  [ 486.2,  495.0]  t900    nanM  act 0.692  sigma 0.181
+  Delaye d 5 noise_no_copy std 0.5 tau 20    456.3 n=2  [ 448.1,  464.5]  t900    nanM  act 0.687  sigma 0.180
+  Delaye d 5 noise_no_copy std 0.5 tau 50    428.2 n=1  [ 428.2,  428.2]  t900    nanM  act 0.678  sigma 0.180
+  Delaye d 5 noise_no_copy std 0.5 tau 100   422.7 n=1  [ 422.7,  422.7]  t900    nanM  act 0.670  sigma 0.176
+  Delaye d 5 noise_no_copy std 0.5 tau inf   408.0 n=1  [ 408.0,  408.0]  t900    nanM  act 0.668  sigma 0.167
+  Delaye d 5 noise_post    std 0.2 tau 0     961.1 n=1  [ 961.1,  961.1]  t900    125M  act 0.631  sigma 0.260
+  Delaye d 5 noise_post    std 0.5 tau 0     875.3 n=3  [ 866.8,  887.8]  t900    nanM  act 0.696  sigma 0.173
+  Delaye d 5 noise_post    std 0.5 tau 2     645.2 n=3  [ 626.3,  672.5]  t900    nanM  act 0.703  sigma 0.179
+  Delaye d 5 noise_post    std 0.5 tau 3     590.9 n=1  [ 590.9,  590.9]  t900    nanM  act 0.701  sigma 0.185
+  Delaye d 5 noise_post    std 0.5 tau 5     565.4 n=2  [ 563.4,  567.4]  t900    nanM  act 0.697  sigma 0.179
+  Delaye d 5 noise_post    std 0.5 tau 7     521.3 n=1  [ 521.3,  521.3]  t900    nanM  act 0.693  sigma 0.179
+  Delaye d 5 noise_post    std 0.5 tau 10    502.1 n=2  [ 498.8,  505.3]  t900    nanM  act 0.693  sigma 0.177
+  Delaye d 5 noise_post    std 0.5 tau 12    502.8 n=1  [ 502.8,  502.8]  t900    nanM  act 0.690  sigma 0.180
+  Delaye d 5 noise_post    std 0.5 tau 15    487.9 n=1  [ 487.9,  487.9]  t900    nanM  act 0.693  sigma 0.178
+  Delaye d 5 noise_post    std 0.5 tau 20    456.8 n=1  [ 456.8,  456.8]  t900    nanM  act 0.690  sigma 0.182
+  Delaye d 5 noise_post    std 0.5 tau 25    462.1 n=1  [ 462.1,  462.1]  t900    nanM  act 0.689  sigma 0.173
+  Delaye d 5 noise_post    std 0.5 tau 50    447.7 n=1  [ 447.7,  447.7]  t900    nanM  act 0.684  sigma 0.168
+  Delaye d 5 noise_post    std 0.5 tau 100   448.8 n=1  [ 448.8,  448.8]  t900    nanM  act 0.680  sigma 0.171
+  Delaye d 5 noise_post    std 0.5 tau 500   410.0 n=1  [ 410.0,  410.0]  t900    nanM  act 0.682  sigma 0.179
+  Delaye d 5 noise_post    std 0.5 tau inf   415.4 n=1  [ 415.4,  415.4]  t900    nanM  act 0.676  sigma 0.166
+  Delaye d 5 noise_pre     std 0.2 tau 0     962.9 n=1  [ 962.9,  962.9]  t900    130M  act 0.623  sigma 0.272
+  Delaye d 5 noise_pre     std 0.5 tau 0     933.0 n=2  [ 932.8,  933.3]  t900    310M  act 0.689  sigma 0.207
+  Delaye d 5 noise_pre     std 0.5 tau 2     791.7 n=2  [ 784.5,  798.8]  t900    nanM  act 0.658  sigma 0.171
+  Delaye d 5 noise_pre     std 0.5 tau 3     767.2 n=1  [ 767.2,  767.2]  t900    nanM  act 0.653  sigma 0.171
+  Delaye d 5 noise_pre     std 0.5 tau 5     753.0 n=2  [ 746.2,  759.7]  t900    nanM  act 0.643  sigma 0.164
+  Delaye d 5 noise_pre     std 0.5 tau 7     675.6 n=1  [ 675.6,  675.6]  t900    nanM  act 0.637  sigma 0.164
+  Delaye d 5 noise_pre     std 0.5 tau 10    641.0 n=2  [ 613.8,  668.1]  t900    nanM  act 0.634  sigma 0.162
+  Delaye d 5 noise_pre     std 0.5 tau 12    614.3 n=2  [ 613.4,  615.2]  t900    nanM  act 0.632  sigma 0.164
+  Delaye d 5 noise_pre     std 0.5 tau 15    645.1 n=1  [ 645.1,  645.1]  t900    nanM  act 0.627  sigma 0.159
+  Delaye d 5 noise_pre     std 0.5 tau 20    595.5 n=2  [ 588.1,  602.8]  t900    nanM  act 0.634  sigma 0.159
+  Delaye d 5 noise_pre     std 0.5 tau 25    598.7 n=1  [ 598.7,  598.7]  t900    nanM  act 0.625  sigma 0.161
+  Delaye d 5 noise_pre     std 0.5 tau 50    513.3 n=1  [ 513.3,  513.3]  t900    nanM  act 0.623  sigma 0.157
+  Delaye d 5 noise_pre     std 0.5 tau 100   512.8 n=1  [ 512.8,  512.8]  t900    nanM  act 0.630  sigma 0.154
+  Delaye d 6 noise_post    std 0.2 tau 0     956.8 n=1  [ 956.8,  956.8]  t900    134M  act 0.631  sigma 0.235
+  Delaye d 7 copy          std 0   tau -1    954.5 n=5  [ 938.6,  962.4]  t900    178M  act 0.596  sigma 0.243
+  Delaye d 7 no_copy       std 0   tau -1    953.6 n=5  [ 943.9,  958.4]  t900     91M  act 0.602  sigma 0.209
+  Delaye d 7 noise_no_copy std 0.2 tau 0     955.8 n=1  [ 955.8,  955.8]  t900    144M  act 0.642  sigma 0.207
+  Delaye d 7 noise_no_copy std 0.5 tau 0     709.5 n=3  [ 695.0,  730.2]  t900    nanM  act 0.694  sigma 0.169
+  Delaye d 7 noise_post    std 0.2 tau 0     947.7 n=1  [ 947.7,  947.7]  t900    288M  act 0.623  sigma 0.209
+  Delaye d 7 noise_post    std 0.5 tau 0     659.5 n=2  [ 617.6,  701.4]  t900    nanM  act 0.692  sigma 0.166
+  Delaye d 7 noise_post    std 0.5 tau 10    413.8 n=1  [ 413.8,  413.8]  t900    nanM  act 0.698  sigma 0.189
+  Delaye d 7 noise_pre     std 0.2 tau 0     955.7 n=1  [ 955.7,  955.7]  t900    144M  act 0.619  sigma 0.239
+  Delaye d 7 noise_pre     std 0.5 tau 0     762.1 n=3  [ 745.0,  774.2]  t900    nanM  act 0.682  sigma 0.171
+  Delaye d 7 noise_pre     std 0.5 tau 10    507.2 n=1  [ 507.2,  507.2]  t900    nanM  act 0.638  sigma 0.175
+  Delaye d 8 noise_post    std 0.2 tau 0     944.0 n=1  [ 944.0,  944.0]  t900    226M  act 0.630  sigma 0.190
+  Delaye d 9 noise_post    std 0.2 tau 0     736.6 n=1  [ 736.6,  736.6]  t900    nanM  act 0.627  sigma 0.158
+  Delaye d10 copy          std 0   tau -1    738.6 n=4  [ 671.1,  909.3]  t900    418M  act 0.598  sigma 0.165
+  Delaye d10 no_copy       std 0   tau -1    917.3 n=5  [ 841.6,  947.9]  t900    262M  act 0.597  sigma 0.189
+  Delaye d10 noise_no_copy std 0.2 tau 0     539.7 n=1  [ 539.7,  539.7]  t900    nanM  act 0.637  sigma 0.185
+  Delaye d10 noise_no_copy std 0.5 tau 0     469.0 n=3  [ 418.0,  541.1]  t900    nanM  act 0.684  sigma 0.184
+  Delaye d10 noise_post    std 0.2 tau 0     869.7 n=1  [ 869.7,  869.7]  t900    nanM  act 0.629  sigma 0.161
+  Delaye d10 noise_post    std 0.5 tau 0     453.9 n=2  [ 439.0,  468.8]  t900    nanM  act 0.685  sigma 0.177
+  Delaye d10 noise_post    std 0.5 tau 10    338.6 n=1  [ 338.6,  338.6]  t900    nanM  act 0.702  sigma 0.176
+  Delaye d10 noise_pre     std 0.2 tau 0     757.1 n=1  [ 757.1,  757.1]  t900    nanM  act 0.629  sigma 0.143
+  Delaye d10 noise_pre     std 0.5 tau 0     359.6 n=2  [ 238.5,  480.8]  t900    nanM  act 0.679  sigma 0.196
+  Delaye d10 noise_pre     std 0.5 tau 2     433.7 n=1  [ 433.7,  433.7]  t900    nanM  act 0.663  sigma 0.197
+  Delaye d10 noise_pre     std 0.5 tau 5     428.9 n=1  [ 428.9,  428.9]  t900    nanM  act 0.655  sigma 0.195
+  Delaye d10 noise_pre     std 0.5 tau 10    375.2 n=1  [ 375.2,  375.2]  t900    nanM  act 0.639  sigma 0.190
+  Delaye d10 noise_pre     std 0.5 tau 15    381.3 n=1  [ 381.3,  381.3]  t900    nanM  act 0.643  sigma 0.182
+  Delaye d10 noise_pre     std 0.5 tau 25    374.6 n=1  [ 374.6,  374.6]  t900    nanM  act 0.619  sigma 0.182
+  Delaye d12 copy          std 0   tau -1    708.2 n=3  [ 530.9,  842.4]  t900    nanM  act 0.611  sigma 0.147
+  Delaye d12 no_copy       std 0   tau -1    860.4 n=5  [ 760.7,  931.4]  t900    250M  act 0.602  sigma 0.162
+  Delaye d12 noise_no_copy std 0.2 tau 0     770.5 n=1  [ 770.5,  770.5]  t900    nanM  act 0.635  sigma 0.153
+  Delaye d12 noise_no_copy std 0.5 tau 0     423.6 n=3  [ 356.7,  505.4]  t900    nanM  act 0.685  sigma 0.201
+  Delaye d12 noise_post    std 0.5 tau 0     404.6 n=2  [ 397.7,  411.5]  t900    nanM  act 0.686  sigma 0.170
+  Delaye d12 noise_post    std 0.5 tau 10    285.8 n=1  [ 285.8,  285.8]  t900    nanM  act 0.698  sigma 0.198
+  Delaye d12 noise_pre     std 0.2 tau 0     594.9 n=1  [ 594.9,  594.9]  t900    nanM  act 0.622  sigma 0.185
+  Delaye d12 noise_pre     std 0.5 tau 0     186.2 n=3  [ 176.6,  198.9]  t900    nanM  act 0.668  sigma 0.231
+  Delaye d12 noise_pre     std 0.5 tau 10    377.9 n=1  [ 377.9,  377.9]  t900    nanM  act 0.663  sigma 0.172
+  Delaye d15 copy          std 0   tau -1    549.0 n=4  [ 407.7,  664.8]  t900    nanM  act 0.599  sigma 0.151
+  Delaye d15 no_copy       std 0   tau -1    449.2 n=5  [ 349.5,  593.5]  t900    nanM  act 0.618  sigma 0.179
+  Delaye d15 noise_no_copy std 0.2 tau 0     385.7 n=1  [ 385.7,  385.7]  t900    nanM  act 0.632  sigma 0.189
+  Delaye d15 noise_no_copy std 0.5 tau 0     307.0 n=3  [ 284.4,  327.5]  t900    nanM  act 0.680  sigma 0.218
+  Delaye d15 noise_post    std 0.2 tau 0     314.1 n=1  [ 314.1,  314.1]  t900    nanM  act 0.627  sigma 0.183
+  Delaye d15 noise_post    std 0.5 tau 0     193.6 n=2  [ 189.2,  198.0]  t900    nanM  act 0.674  sigma 0.221
+  Delaye d15 noise_post    std 0.5 tau 10    254.7 n=1  [ 254.7,  254.7]  t900    nanM  act 0.692  sigma 0.208
+  Delaye d15 noise_pre     std 0.2 tau 0     317.7 n=1  [ 317.7,  317.7]  t900    nanM  act 0.630  sigma 0.177
+  Delaye d15 noise_pre     std 0.5 tau 0     171.0 n=3  [ 170.1,  171.5]  t900    nanM  act 0.667  sigma 0.235
+  Delaye d15 noise_pre     std 0.5 tau 10    351.0 n=1  [ 351.0,  351.0]  t900    nanM  act 0.629  sigma 0.189
+  Delaye d20 copy          std 0   tau -1    525.3 n=7  [ 499.0,  543.4]  t900    nanM  act 0.596  sigma 0.142
+  Delaye d20 no_copy       std 0   tau -1    258.3 n=5  [ 236.6,  279.8]  t900    nanM  act 0.602  sigma 0.178
+  Delaye d20 noise_no_copy std 0.2 tau 0     204.6 n=1  [ 204.6,  204.6]  t900    nanM  act 0.624  sigma 0.241
+  Delaye d20 noise_no_copy std 0.5 tau 0     148.1 n=2  [ 147.4,  148.8]  t900    nanM  act 0.666  sigma 0.256
+  Delaye d20 noise_post    std 0.2 tau 0     279.8 n=1  [ 279.8,  279.8]  t900    nanM  act 0.642  sigma 0.154
+  Delaye d20 noise_post    std 0.5 tau 0     154.1 n=2  [ 153.6,  154.6]  t900    nanM  act 0.673  sigma 0.232
+  Delaye d20 noise_post    std 0.5 tau 10    228.0 n=1  [ 228.0,  228.0]  t900    nanM  act 0.693  sigma 0.216
+  Delaye d20 noise_pre     std 0.2 tau 0     371.3 n=1  [ 371.3,  371.3]  t900    nanM  act 0.646  sigma 0.184
+  Delaye d20 noise_pre     std 0.5 tau 0     167.6 n=1  [ 167.6,  167.6]  t900    nanM  act 0.667  sigma 0.231
+  Delaye d20 noise_pre     std 0.5 tau 10    279.9 n=1  [ 279.9,  279.9]  t900    nanM  act 0.654  sigma 0.215
+  Delaye d25 copy          std 0   tau -1    450.5 n=3  [ 429.4,  481.4]  t900    nanM  act 0.607  sigma 0.123
+  Delaye d25 no_copy       std 0   tau -1    220.6 n=3  [ 211.8,  232.8]  t900    nanM  act 0.603  sigma 0.173
+  Delaye d25 noise_no_copy std 0.2 tau 0     152.4 n=1  [ 152.4,  152.4]  t900    nanM  act 0.613  sigma 0.239
+  Delaye d25 noise_no_copy std 0.5 tau 0     129.9 n=2  [ 118.5,  141.3]  t900    nanM  act 0.660  sigma 0.248
+  Delaye d25 noise_post    std 0.5 tau 0     154.2 n=2  [ 153.8,  154.6]  t900    nanM  act 0.671  sigma 0.240
+  Delaye d25 noise_post    std 0.5 tau 10    189.6 n=1  [ 189.6,  189.6]  t900    nanM  act 0.696  sigma 0.218
+  Delaye d25 noise_pre     std 0.2 tau 0     243.2 n=1  [ 243.2,  243.2]  t900    nanM  act 0.631  sigma 0.172
+  Delaye d25 noise_pre     std 0.5 tau 0     168.7 n=1  [ 168.7,  168.7]  t900    nanM  act 0.677  sigma 0.217
+  Delaye d25 noise_pre     std 0.5 tau 10    269.2 n=1  [ 269.2,  269.2]  t900    nanM  act 0.639  sigma 0.206
+  FlatFo d 0 copy          std 0   tau -1    977.1 n=2  [ 976.5,  977.6]  t900     29M  act 0.607  sigma 0.329
+  FlatFo d 2 copy          std 0   tau -1    978.6 n=2  [ 976.8,  980.4]  t900     27M  act 0.610  sigma 0.326
+  FlatFo d 3 copy          std 0   tau -1    976.1 n=2  [ 975.0,  977.1]  t900     46M  act 0.610  sigma 0.331
+  FlatFo d 5 copy          std 0   tau -1    973.8 n=3  [ 973.0,  974.5]  t900     54M  act 0.604  sigma 0.327
+  FlatFo d 5 noise_post    std 0.5 tau 0     923.8 n=1  [ 923.8,  923.8]  t900    298M  act 0.692  sigma 0.222
+  FlatFo d 5 noise_post    std 0.5 tau 2     761.6 n=1  [ 761.6,  761.6]  t900    nanM  act 0.698  sigma 0.206
+  FlatFo d 5 noise_post    std 0.5 tau 5     670.4 n=1  [ 670.4,  670.4]  t900    nanM  act 0.693  sigma 0.208
+  FlatFo d 5 noise_post    std 0.5 tau 10    615.2 n=1  [ 615.2,  615.2]  t900    nanM  act 0.687  sigma 0.209
+  FlatFo d 5 noise_post    std 0.5 tau 15    603.7 n=1  [ 603.7,  603.7]  t900    nanM  act 0.683  sigma 0.206
+  FlatFo d 5 noise_post    std 0.5 tau 20    594.4 n=1  [ 594.4,  594.4]  t900    nanM  act 0.680  sigma 0.202
+  FlatFo d 5 noise_post    std 0.5 tau 25    590.2 n=1  [ 590.2,  590.2]  t900    nanM  act 0.679  sigma 0.205
+  FlatFo d 5 noise_pre     std 0.5 tau 0     961.8 n=1  [ 961.8,  961.8]  t900    111M  act 0.685  sigma 0.269
+  FlatFo d 5 noise_pre     std 0.5 tau 2     945.0 n=1  [ 945.0,  945.0]  t900    187M  act 0.670  sigma 0.240
+  FlatFo d 5 noise_pre     std 0.5 tau 15    845.0 n=1  [ 845.0,  845.0]  t900    nanM  act 0.637  sigma 0.212
+  FlatFo d 5 noise_pre     std 0.5 tau 20    823.9 n=1  [ 823.9,  823.9]  t900    nanM  act 0.636  sigma 0.210
+  FlatFo d 5 noise_pre     std 0.5 tau 25    823.4 n=1  [ 823.4,  823.4]  t900    nanM  act 0.636  sigma 0.206
+  FlatFo d 7 copy          std 0   tau -1    970.8 n=5  [ 970.0,  971.6]  t900     71M  act 0.601  sigma 0.312
+  FlatFo d10 copy          std 0   tau -1    955.2 n=3  [ 933.0,  966.4]  t900    125M  act 0.594  sigma 0.278
+  FlatFo d12 copy          std 0   tau -1    951.4 n=2  [ 941.4,  961.4]  t900    201M  act 0.588  sigma 0.228
+  FlatFo d15 copy          std 0   tau -1    958.9 n=3  [ 958.2,  959.9]  t900    173M  act 0.594  sigma 0.240
+  FlatFo d20 copy          std 0   tau -1    898.9 n=3  [ 809.6,  953.3]  t900    282M  act 0.577  sigma 0.210
+  FlatFo d25 copy          std 0   tau -1    828.3 n=3  [ 723.8,  941.6]  t900    341M  act 0.551  sigma 0.163
 
 
 Runs with no readout at READ_AT:

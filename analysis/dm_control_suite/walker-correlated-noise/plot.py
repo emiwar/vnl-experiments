@@ -36,17 +36,22 @@ DATA = HERE / "data.csv"
 CURVES = HERE / "curves.csv"
 
 READ_AT = 480e6
+LONG_AT = 1e9
 YLABEL = reward_label("dmc_eval")
 CTRL_MS = 25
 #: Where iid noise (tau = 0) sits on the log tau axis.
 IID_X = 1.0
+#: Where tau = inf (one offset per episode) sits: its own slot at the right end.
+INF_X = 2000.0
 #: std -> line alpha; the faint line is the small noise, as in ../walker-motor-noise/.
 STD_ALPHA = {0.2: 0.45, 0.5: 1.0}
 #: tau values that get a tick label (the others get an unlabelled tick).
-TAU_LABELS = {2, 5, 10, 25, 50, 100}
+TAU_LABELS = {2, 5, 10, 25, 50, 100, 500}
 #: Time-to-solve levels: (level, linestyle).
 SOLVE_LEVELS = ((900, "-"), (800, "--"))
 REWARD_LIM = (0, 1000)
+#: Curve colour for tau = inf, outside the (log, finite) tau colour map.
+INF_COLOR = "C3"
 DELAY_XLABEL = "Observation delay (control steps)"
 
 #: data.csv arm -> CONDITION_STYLE key.
@@ -72,23 +77,31 @@ def _usable(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _tau_x(tau: pd.Series) -> pd.Series:
-    return tau.where(tau > 0, IID_X)
+    finite = tau[np.isfinite(tau)]
+    if len(finite) and finite.max() >= INF_X / 2:
+        raise ValueError(f"tau {finite.max()} collides with the inf slot at {INF_X}")
+    return tau.where(tau > 0, IID_X).where(np.isfinite(tau), INF_X)
 
 
 def _tau_axis(ax: plt.Axes, taus) -> None:
-    ticks = [IID_X] + sorted(t for t in taus if t > 0)
+    finite = sorted(t for t in taus if 0 < t < np.inf)
+    has_inf = any(np.isinf(t) for t in taus)
+    ticks = [IID_X] + finite + ([INF_X] if has_inf else [])
     ax.set_xscale("log")
     ax.set_xticks(ticks)
     # Every run's tau gets a tick; only well-spaced ones get a label.
-    ax.set_xticklabels(["iid"] + [f"{t:g}" if t in TAU_LABELS else ""
-                                  for t in ticks[1:]])
+    ax.set_xticklabels(["iid"] + [f"{t:g}" if t in TAU_LABELS else "" for t in finite]
+                       + (["∞"] if has_inf else []))
     ax.minorticks_off()
     ax.set_xlim(IID_X / 1.35, ticks[-1] * 1.35)
-    # The iid slot is not on the log scale: mark the break.
+    # The iid and inf slots are not on the log scale: mark the breaks.
     ax.axvline(np.sqrt(IID_X * ticks[1]), color="0.85", lw=0.8, ls=(0, (2, 2)), zorder=0)
+    if has_inf and finite:
+        ax.axvline(np.sqrt(finite[-1] * INF_X), color="0.85", lw=0.8, ls=(0, (2, 2)),
+                   zorder=0)
     ax.set_xlabel("Noise correlation time τ (control steps)")
     top = ax.secondary_xaxis("top")
-    labelled = [t for t in ticks[1:] if t in TAU_LABELS]
+    labelled = [t for t in finite if t in TAU_LABELS]
     top.set_xticks(labelled)
     top.set_xticklabels([f"{t * CTRL_MS:g}" for t in labelled], fontsize=6.5)
     top.minorticks_off()
@@ -437,17 +450,21 @@ def fig_action_std(df: pd.DataFrame) -> plt.Figure:
 
 
 def _curve_panel(ax, runs: pd.DataFrame, hue: str, cmap, norm, iid_label: bool) -> None:
-    labelled = False
+    labelled = set()
     for (_, value), run in runs.groupby(["wandb_id", hue]):
-        is_iid = hue == "noise_tau" and value == 0
+        is_tau = hue == "noise_tau"
+        kind = ("iid" if is_tau and value == 0
+                else "inf" if is_tau and np.isinf(value) else None)
         label = None
-        if is_iid and iid_label and not labelled:
-            label, labelled = "iid (each run)", True
-        ax.plot(run.step / 1e6, run.reward, lw=1.1 if not is_iid else 1.0,
-                color="0.2" if is_iid else cmap(norm(value)),
-                ls=":" if is_iid else "-", alpha=0.9, label=label)
+        if kind and iid_label and kind not in labelled:
+            label = {"iid": "iid (each run)", "inf": "τ = ∞"}[kind]
+            labelled.add(kind)
+        color = {"iid": "0.2", "inf": INF_COLOR}.get(kind) or cmap(norm(value))
+        ax.plot(run.step / 1e6, run.reward, lw=1.0 if kind else 1.1, color=color,
+                ls={"iid": ":", "inf": "--"}.get(kind, "-"), alpha=0.9, label=label)
+    ax.axvline(READ_AT / 1e6, color="0.6", lw=0.6, ls="--")
     ax.set_ylim(*REWARD_LIM)
-    ax.set_xlim(0, READ_AT / 1e6)
+    ax.set_xlim(0, LONG_AT / 1e6)
 
 
 def fig_curves(curves: pd.DataFrame) -> plt.Figure:
@@ -458,7 +475,7 @@ def fig_curves(curves: pd.DataFrame) -> plt.Figure:
     c = curves[curves.noise_std == SWEEP_STD]
     delays = [d for d in _sweep_delays(c.assign(reward_n=1).drop_duplicates("wandb_id"))]
     arms = [a for a in NOISY_ARMS if a in set(c.arm)]
-    tau_vals = sorted(t for t in c.noise_tau.unique() if t > 0)
+    tau_vals = sorted(t for t in c.noise_tau.unique() if 0 < t < np.inf)
     tau_cmap, tau_norm = plt.cm.viridis, plt.matplotlib.colors.LogNorm(
         min(tau_vals), max(tau_vals))
     d_cmap = plt.cm.plasma
@@ -476,7 +493,8 @@ def fig_curves(curves: pd.DataFrame) -> plt.Figure:
                 ax.legend(frameon=False, fontsize=6, loc="lower right")
         bar = fig.colorbar(plt.cm.ScalarMappable(norm=tau_norm, cmap=tau_cmap),
                            ax=row[-1], label="τ (control steps)")
-        bar.set_ticks(tau_vals, labels=[f"{t:g}" for t in tau_vals])
+        shown = [t for t in tau_vals if t in TAU_LABELS]
+        bar.set_ticks(shown, labels=[f"{t:g}" for t in shown])
         bar.ax.minorticks_off()
     bottom = axes[-1]
     panels = (("noise_post", 0.0), ("noise_post", SWEEP_TAU), ("noise_pre", SWEEP_TAU))
@@ -498,7 +516,228 @@ def fig_curves(curves: pd.DataFrame) -> plt.Figure:
     for ax in axes[:, 0]:
         ax.set_ylabel("Eval episode reward")
     fig.suptitle(f"WalkerWalk training curves, motor noise std {SWEEP_STD:g} "
-                 "(iid dotted black)", fontsize=9)
+                 "(iid dotted black; dashed line = 4.8e8 readout; runs with a 4.8e8 "
+                 "budget stop there)", fontsize=9)
+    return fig
+
+
+def fig_second_seed(df: pd.DataFrame, delay: int = 5) -> plt.Figure:
+    """The tau sweep at `delay` in every seed pair that has tau > 0 runs there.
+
+    Left: reward at 4.8e8 per arm, one line per seed pair, so the replication is read
+    directly. Middle: the 1e9 seed pair's runs at 4.8e8 (open) and 1e9 (filled). Right:
+    pre - no copy and pre - post, paired within seed pair, at both budgets.
+    """
+    w = _usable(df)
+    cell = w[(w.delay_k == delay) & (w.noise_std == SWEEP_STD) & (w.noise_tau > 0)
+             & w.arm.isin(NOISY_ARMS)]
+    pairs = sorted(cell.seed_pair.unique(),
+                   key=lambda sp: -(cell.seed_pair == sp).sum())
+    pair_ls = dict(zip(pairs, ("-", "--", ":", "-.")))
+    taus = cell.noise_tau.unique()
+    fig, (ax_r, ax_b, ax_c) = plt.subplots(1, 3, figsize=(15, 4.0))
+
+    for arm in NOISY_ARMS:
+        color, marker = color_for(STYLE[arm]), marker_for(STYLE[arm])
+        for sp in pairs:
+            sub = cell[(cell.arm == arm) & (cell.seed_pair == sp)].sort_values("noise_tau")
+            if sub.empty:
+                continue
+            x = _tau_x(sub.noise_tau) * ARM_XSHIFT[arm]
+            ax_r.plot(x, sub.reward, color=color, marker=marker, ms=4, lw=1.2,
+                      ls=pair_ls[sp], mfc=color if pair_ls[sp] == "-" else "white",
+                      label=f"{_short(arm)}, {sp}")
+        long = cell[(cell.arm == arm) & (cell.reward_1b_n > 0)].sort_values("noise_tau")
+        for sp, sub in long.groupby("seed_pair"):
+            x = _tau_x(sub.noise_tau) * ARM_XSHIFT[arm]
+            ax_b.vlines(x, sub.reward, sub.reward_1b, color=color, lw=0.8, alpha=0.6)
+            ax_b.plot(x, sub.reward, color=color, marker=marker, ms=4.5, lw=0,
+                      mfc="white")
+            ax_b.plot(x, sub.reward_1b, color=color, marker=marker, ms=5, lw=1.2,
+                      ls=pair_ls[sp], label=f"{_short(arm)}, {sp}")
+    for ax in (ax_r, ax_b):
+        _tau_axis(ax, taus)
+        ax.set_ylim(*REWARD_LIM)
+        ax.set_ylabel(YLABEL)
+    ax_r.set_title(f"Delay {delay}: reward at 4.8e8, one line per seed pair",
+                   fontsize=9)
+    ax_r.legend(frameon=False, fontsize=6, loc="lower left", ncols=2)
+    ax_b.set_title("Runs trained to ≥ 1e9: 4.8e8 (open) → 1e9 (filled)", fontsize=9)
+    ax_b.legend(frameon=False, fontsize=6, loc="lower left", ncols=2)
+
+    ax_c.axhline(0, color="0.5", lw=0.7)
+    for minus, color_arm in (("noise_no_copy", "noise_no_copy"),
+                             ("noise_post", "noise_post")):
+        color = color_for(STYLE[color_arm])
+        for y, ls, mfc, budget in (("reward", "-", "white", "4.8e8"),
+                                   ("reward_1b", "--", None, "1e9")):
+            use = cell if y == "reward" else cell[cell.reward_1b_n > 0]
+            diff = _paired_diff(use, "noise_tau", "noise_pre", minus, y=y)
+            for sp, sub in diff.groupby("seed_pair"):
+                sub = sub.sort_values("noise_tau")
+                x = _tau_x(sub.noise_tau)
+                ax_c.plot(x, sub["diff"], color=color, ls=ls if y == "reward_1b"
+                          else pair_ls[sp], marker=marker_for(STYLE["noise_pre"]),
+                          ms=4, lw=1.2, mfc=mfc or color,
+                          label=f"pre − {_short(minus)}, {sp}, {budget}")
+    ax_c.axvline(delay, color="0.75", lw=4, alpha=0.4, zorder=0)
+    _tau_axis(ax_c, taus)
+    ax_c.set_ylabel("Reward difference (same seed pair)")
+    ax_c.set_title("Pre minus the arm whose colour the line has (grey bar: τ = delay)",
+                   fontsize=9)
+    ax_c.legend(frameon=False, fontsize=5.5, loc="upper right")
+    fig.suptitle(f"WalkerWalk, motor noise std {SWEEP_STD:g}: second seed pair and "
+                 "the 1e9 readout", fontsize=9)
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    return fig
+
+
+#: Forward-model figure: line weight / alpha per network, colour per noise site.
+NET_DRAW = {"DelayedMLP": dict(lw=0.9, alpha=0.35, mfc=None, ms=3.5),
+            "FlatForwardModel": dict(lw=1.6, alpha=1.0, mfc="white", ms=5)}
+NET_SHORT = {"DelayedMLP": "MLP", "FlatForwardModel": "FM"}
+
+
+def _net_diff(df: pd.DataFrame, y: str, arm: str) -> pd.DataFrame:
+    """FlatForwardModel minus DelayedMLP for one arm, same tau and seed pair."""
+    per = (df[df.arm == arm].groupby(["network", "noise_tau", "seed_pair"])[y].mean()
+           .unstack("network"))
+    if not {"DelayedMLP", "FlatForwardModel"} <= set(per.columns):
+        return pd.DataFrame(columns=["noise_tau", "seed_pair", "diff"])
+    per["diff"] = per["FlatForwardModel"] - per["DelayedMLP"]
+    return per["diff"].dropna().reset_index()
+
+
+def fig_forward_model(df: pd.DataFrame, curves: pd.DataFrame,
+                      delay: int = 5) -> plt.Figure:
+    """FlatForwardModel against DelayedMLP under motor noise at one delay.
+
+    In the forward model the efference queue is the predictor's action buffer: with
+    pre-efference noise the predictor is told the executed actions, with post-efference
+    noise only the intended ones, so the noise becomes prediction error. Colour = noise
+    site; bold open markers = forward model, faint = DelayedMLP. Bands = the noise-free
+    range of each network at this delay.
+    """
+    w = _usable(df)
+    cell = w[(w.delay_k == delay) & (w.noise_std == SWEEP_STD) & w.arm.isin(NOISY_ARMS)]
+    fm_taus = cell.loc[cell.network == "FlatForwardModel", "noise_tau"].unique()
+    # Restrict both networks to the taus the forward model has, so the panels compare
+    # like with like.
+    cell = cell[cell.noise_tau.isin(fm_taus)]
+    clean = w[(w.delay_k == delay) & (w.arm == "copy")]
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8.2))
+    (ax_r, ax_d, ax_c), (ax_l, ax_s, ax_k) = axes
+
+    def by_tau(ax, y, arms, nets=("DelayedMLP", "FlatForwardModel")):
+        for net in nets:
+            draw = NET_DRAW[net]
+            for arm in arms:
+                sub = cell[(cell.network == net) & (cell.arm == arm)]
+                if sub.empty or sub[y].isna().all():
+                    continue
+                color, marker = color_for(STYLE[arm]), marker_for(STYLE[arm])
+                x = _tau_x(sub.noise_tau) * ARM_XSHIFT[arm]
+                mean = sub.groupby(x)[y].mean()
+                ax.plot(mean.index, mean.values, color=color, marker=marker,
+                        ms=draw["ms"], lw=draw["lw"], alpha=draw["alpha"],
+                        mfc=draw["mfc"] or color,
+                        label=f"{NET_SHORT[net]}, {_short(arm)}")
+
+    # (a) Reward.
+    for net, cond in (("DelayedMLP", "efference"), ("FlatForwardModel",
+                                                     "flat_forward_model")):
+        r = clean[clean.network == net].reward
+        if len(r):
+            ax_r.axhspan(r.min(), r.max(), color=color_for(cond), alpha=0.15, lw=0,
+                         label=f"{NET_SHORT[net]}, no noise ({len(r)} runs, range)")
+    by_tau(ax_r, "reward", NOISY_ARMS)
+    ax_r.set_ylim(*REWARD_LIM)
+    ax_r.set_ylabel(YLABEL)
+    ax_r.set_title(f"(a) Delay {delay}: reward at 4.8e8", fontsize=9)
+    ax_r.legend(frameon=False, fontsize=6, loc="lower left", ncols=2)
+
+    # (b) FM minus MLP, same noise.
+    ax_d.axhline(0, color="0.5", lw=0.7)
+    for arm in ("noise_pre", "noise_post"):
+        d = _net_diff(cell, "reward", arm)
+        if d.empty:
+            continue
+        color, marker = color_for(STYLE[arm]), marker_for(STYLE[arm])
+        x = _tau_x(d.noise_tau) * ARM_XSHIFT[arm]
+        ax_d.scatter(x, d["diff"], s=12, color=color, marker=marker, alpha=0.5, lw=0)
+        mean = d.groupby(x)["diff"].mean()
+        ax_d.plot(mean.index, mean.values, color=color, marker=marker, ms=5, lw=1.5,
+                  mfc="white", label=f"{_short(arm)}: FM − MLP")
+    ax_d.set_ylabel("Reward difference (same τ, seed pair)")
+    ax_d.set_title("(b) Forward model minus MLP, same noise", fontsize=9)
+    ax_d.legend(frameon=False, fontsize=6.5, loc="best")
+
+    # (c) pre - post within each network.
+    ax_c.axhline(0, color="0.5", lw=0.7)
+    for net in ("DelayedMLP", "FlatForwardModel"):
+        sub = _paired_diff(cell[cell.network == net], "noise_tau", "noise_pre",
+                           "noise_post")
+        if sub.empty:
+            continue
+        draw = NET_DRAW[net]
+        color, marker = color_for(STYLE["noise_pre"]), marker_for(STYLE["noise_pre"])
+        x = _tau_x(sub.noise_tau)
+        mean = sub.groupby(x)["diff"].mean()
+        ax_c.plot(mean.index, mean.values, color=color, marker=marker, ms=draw["ms"],
+                  lw=draw["lw"], alpha=draw["alpha"], mfc=draw["mfc"] or color,
+                  label=f"{NET_SHORT[net]}: pre − post")
+    ax_c.set_ylabel("Reward difference (same τ, seed pair)")
+    ax_c.set_title("(c) Seen minus unseen noise, within each network", fontsize=9)
+    ax_c.legend(frameon=False, fontsize=6.5, loc="best")
+
+    # (d) Regularization loss: the forward model's prediction error lives here.
+    fm_clean = clean[clean.network == "FlatForwardModel"].reg_loss.dropna()
+    if len(fm_clean):
+        ax_l.axhspan(fm_clean.min(), fm_clean.max(), color=color_for("flat_forward_model"),
+                     alpha=0.15, lw=0, label="FM, no noise (range)")
+    by_tau(ax_l, "reg_loss", ("noise_pre", "noise_post"))
+    ax_l.axhline(0, color="0.5", lw=0.7)
+    ax_l.set_ylabel("losses/regularization (readout window)")
+    ax_l.set_title("(d) Regularization loss = FM prediction L2 + entropy term\n"
+                   "(MLP lines: the entropy term alone)", fontsize=9)
+    ax_l.legend(frameon=False, fontsize=6, loc="center right")
+
+    # (e) Executed action std.
+    by_tau(ax_s, "batch_action_std", NOISY_ARMS)
+    ax_s.set_ylabel("Std of executed actions")
+    ax_s.set_title("(e) Executed-action std (lower = noise cancelled)", fontsize=9)
+
+    for ax in (ax_r, ax_d, ax_c, ax_l, ax_s):
+        _tau_axis(ax, fm_taus)
+
+    # (f) Forward-model training curves, colour = tau, solid pre / dashed post.
+    c = curves[(curves.network == "FlatForwardModel") & (curves.delay_k == delay)
+               & (curves.noise_std == SWEEP_STD)]
+    finite = sorted(t for t in c.noise_tau.unique() if 0 < t < np.inf)
+    if finite:
+        norm = plt.matplotlib.colors.LogNorm(min(finite), max(finite))
+        for (wid, arm, tau), run in c.groupby(["wandb_id", "arm", "noise_tau"]):
+            color = "0.2" if tau == 0 else plt.cm.viridis(norm(tau))
+            ax_k.plot(run.step / 1e6, run.reward, color=color, lw=1.0,
+                      ls="-" if arm == "noise_pre" else "--", alpha=0.9)
+        bar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=plt.cm.viridis),
+                           ax=ax_k, label="τ (control steps)")
+        bar.set_ticks(finite, labels=[f"{t:g}" for t in finite])
+        bar.ax.minorticks_off()
+    ax_k.plot([], [], color="0.3", ls="-", label="FM, pre")
+    ax_k.plot([], [], color="0.3", ls="--", label="FM, post")
+    ax_k.plot([], [], color="0.2", label="iid (dark grey)")
+    ax_k.set_ylim(*REWARD_LIM)
+    ax_k.set_xlim(0, READ_AT / 1e6)
+    ax_k.set_xlabel("Environment steps (millions)")
+    ax_k.set_ylabel("Eval episode reward")
+    ax_k.set_title("(f) Forward-model training curves", fontsize=9)
+    ax_k.legend(frameon=False, fontsize=6.5, loc="lower right")
+
+    fig.suptitle(f"WalkerWalk, delay {delay}, motor noise std {SWEEP_STD:g}: explicit "
+                 "forward model (bold, open) against DelayedMLP (faint). Single runs "
+                 "(i42/p1234) except FM pre iid (i43/p43)", fontsize=9)
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
     return fig
 
 
@@ -507,16 +746,21 @@ def main() -> None:
     FIGURES.mkdir(exist_ok=True)
     df = pd.read_csv(DATA)
     curves = pd.read_csv(CURVES)
+    # Every figure but the forward-model one is about DelayedMLP.
+    mlp = df[df.network == "DelayedMLP"]
+    mlp_curves = curves[curves.network == "DelayedMLP"]
     if df["reward_source"].nunique() > 1:
         raise SystemExit("data.csv mixes reward sources")
 
     manifest = {}
     builders = [
-        ("delay0_calibration", lambda: fig_delay0_calibration(df), (DATA,)),
-        ("tau_sweep", lambda: fig_tau_sweep(df), (DATA,)),
-        ("delay_sweep_tau10", lambda: fig_delay_sweep(df), (DATA,)),
-        ("executed_action_std", lambda: fig_action_std(df), (DATA,)),
-        ("curves", lambda: fig_curves(curves), (CURVES,)),
+        ("delay0_calibration", lambda: fig_delay0_calibration(mlp), (DATA,)),
+        ("tau_sweep", lambda: fig_tau_sweep(mlp), (DATA,)),
+        ("delay_sweep_tau10", lambda: fig_delay_sweep(mlp), (DATA,)),
+        ("executed_action_std", lambda: fig_action_std(mlp), (DATA,)),
+        ("second_seed_and_1b", lambda: fig_second_seed(mlp), (DATA,)),
+        ("curves", lambda: fig_curves(mlp_curves), (CURVES,)),
+        ("forward_model", lambda: fig_forward_model(df, curves), (DATA, CURVES)),
     ]
     for name, build, inputs in builders:
         fig = build()
