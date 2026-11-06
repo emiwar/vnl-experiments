@@ -596,6 +596,7 @@ def fig_second_seed(df: pd.DataFrame, delay: int = 5) -> plt.Figure:
 NET_DRAW = {"DelayedMLP": dict(lw=0.9, alpha=0.35, mfc=None, ms=3.5),
             "FlatForwardModel": dict(lw=1.6, alpha=1.0, mfc="white", ms=5)}
 NET_SHORT = {"DelayedMLP": "MLP", "FlatForwardModel": "FM"}
+CURVE_LS = {"noise_pre": "-", "noise_post": "--", "noise_no_copy": ":"}
 
 
 def _net_diff(df: pd.DataFrame, y: str, arm: str) -> pd.DataFrame:
@@ -658,7 +659,7 @@ def fig_forward_model(df: pd.DataFrame, curves: pd.DataFrame,
 
     # (b) FM minus MLP, same noise.
     ax_d.axhline(0, color="0.5", lw=0.7)
-    for arm in ("noise_pre", "noise_post"):
+    for arm in NOISY_ARMS:
         d = _net_diff(cell, "reward", arm)
         if d.empty:
             continue
@@ -669,38 +670,45 @@ def fig_forward_model(df: pd.DataFrame, curves: pd.DataFrame,
         ax_d.plot(mean.index, mean.values, color=color, marker=marker, ms=5, lw=1.5,
                   mfc="white", label=f"{_short(arm)}: FM − MLP")
     ax_d.set_ylabel("Reward difference (same τ, seed pair)")
-    ax_d.set_title("(b) Forward model minus MLP, same noise", fontsize=9)
+    ax_d.set_title("(b) Forward model minus MLP, same arm", fontsize=9)
     ax_d.legend(frameon=False, fontsize=6.5, loc="best")
 
-    # (c) pre - post within each network.
+    # (c) The paired contrasts within each network (CONTRASTS: pre - no copy,
+    # post - no copy, pre - post).
     ax_c.axhline(0, color="0.5", lw=0.7)
     for net in ("DelayedMLP", "FlatForwardModel"):
-        sub = _paired_diff(cell[cell.network == net], "noise_tau", "noise_pre",
-                           "noise_post")
-        if sub.empty:
-            continue
         draw = NET_DRAW[net]
-        color, marker = color_for(STYLE["noise_pre"]), marker_for(STYLE["noise_pre"])
-        x = _tau_x(sub.noise_tau)
-        mean = sub.groupby(x)["diff"].mean()
-        ax_c.plot(mean.index, mean.values, color=color, marker=marker, ms=draw["ms"],
-                  lw=draw["lw"], alpha=draw["alpha"], mfc=draw["mfc"] or color,
-                  label=f"{NET_SHORT[net]}: pre − post")
+        for arm, minus, style_arm, ls, _ in CONTRASTS:
+            sub = _paired_diff(cell[cell.network == net], "noise_tau", arm, minus)
+            if sub.empty:
+                continue
+            color, marker = color_for(STYLE[style_arm]), marker_for(STYLE[style_arm])
+            x = _tau_x(sub.noise_tau)
+            mean = sub.groupby(x)["diff"].mean()
+            ax_c.plot(mean.index, mean.values, color=color, marker=marker,
+                      ms=draw["ms"], lw=draw["lw"], ls=ls, alpha=draw["alpha"],
+                      mfc=draw["mfc"] or color,
+                      label=f"{NET_SHORT[net]}: {_short(arm)} − {_short(minus)}")
     ax_c.set_ylabel("Reward difference (same τ, seed pair)")
-    ax_c.set_title("(c) Seen minus unseen noise, within each network", fontsize=9)
-    ax_c.legend(frameon=False, fontsize=6.5, loc="best")
+    ax_c.set_title("(c) Paired contrasts within each network", fontsize=9)
+    # Headroom above the data for the six-entry legend.
+    lo, hi = ax_c.get_ylim()
+    ax_c.set_ylim(lo, hi + 0.35 * (hi - lo))
+    ax_c.legend(frameon=False, fontsize=5.5, loc="upper center", ncols=2)
 
     # (d) Regularization loss: the forward model's prediction error lives here.
     fm_clean = clean[clean.network == "FlatForwardModel"].reg_loss.dropna()
     if len(fm_clean):
         ax_l.axhspan(fm_clean.min(), fm_clean.max(), color=color_for("flat_forward_model"),
                      alpha=0.15, lw=0, label="FM, no noise (range)")
-    by_tau(ax_l, "reg_loss", ("noise_pre", "noise_post"))
+    by_tau(ax_l, "reg_loss", NOISY_ARMS)
     ax_l.axhline(0, color="0.5", lw=0.7)
     ax_l.set_ylabel("losses/regularization (readout window)")
     ax_l.set_title("(d) Regularization loss = FM prediction L2 + entropy term\n"
                    "(MLP lines: the entropy term alone)", fontsize=9)
-    ax_l.legend(frameon=False, fontsize=6, loc="center right")
+    # Into the gap between the FM pre (~0.08) and post (~0.22) lines.
+    ax_l.legend(frameon=False, fontsize=6, loc="center", bbox_to_anchor=(0.55, 0.55),
+                ncols=2)
 
     # (e) Executed action std.
     by_tau(ax_s, "batch_action_std", NOISY_ARMS)
@@ -719,13 +727,13 @@ def fig_forward_model(df: pd.DataFrame, curves: pd.DataFrame,
         for (wid, arm, tau), run in c.groupby(["wandb_id", "arm", "noise_tau"]):
             color = "0.2" if tau == 0 else plt.cm.viridis(norm(tau))
             ax_k.plot(run.step / 1e6, run.reward, color=color, lw=1.0,
-                      ls="-" if arm == "noise_pre" else "--", alpha=0.9)
+                      ls=CURVE_LS[arm], alpha=0.9)
         bar = fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=plt.cm.viridis),
                            ax=ax_k, label="τ (control steps)")
         bar.set_ticks(finite, labels=[f"{t:g}" for t in finite])
         bar.ax.minorticks_off()
-    ax_k.plot([], [], color="0.3", ls="-", label="FM, pre")
-    ax_k.plot([], [], color="0.3", ls="--", label="FM, post")
+    for arm in NOISY_ARMS:
+        ax_k.plot([], [], color="0.3", ls=CURVE_LS[arm], label=f"FM, {_short(arm)}")
     ax_k.plot([], [], color="0.2", label="iid (dark grey)")
     ax_k.set_ylim(*REWARD_LIM)
     ax_k.set_xlim(0, READ_AT / 1e6)
@@ -736,7 +744,8 @@ def fig_forward_model(df: pd.DataFrame, curves: pd.DataFrame,
 
     fig.suptitle(f"WalkerWalk, delay {delay}, motor noise std {SWEEP_STD:g}: explicit "
                  "forward model (bold, open) against DelayedMLP (faint). Single runs "
-                 "(i42/p1234) except FM pre iid (i43/p43)", fontsize=9)
+                 "(i42/p1234) except FM pre iid (i43/p43); MLP restricted to FM's τ",
+                 fontsize=9)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     return fig
 

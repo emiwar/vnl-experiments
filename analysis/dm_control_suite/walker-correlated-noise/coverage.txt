@@ -1,40 +1,44 @@
-Coverage for 288 runs in walker-correlated-noise
+Coverage for 296 runs in walker-correlated-noise
 
-index  (spec_id=-): 288/288
+index  (spec_id=-): 296/296
     WalkerWalk_copy                46/46  
     WalkerWalk_fm_copy             28/28  
+    WalkerWalk_fm_noise_no_copy     6/6   
     WalkerWalk_fm_noise_post        7/7   
-    WalkerWalk_fm_noise_pre         5/5   
+    WalkerWalk_fm_noise_pre         7/7   
     WalkerWalk_no_copy             32/32  
     WalkerWalk_noise_no_copy       40/40  
     WalkerWalk_noise_post          74/74  
     WalkerWalk_noise_pre           56/56  
 
-history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 288/288
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 296/296
     WalkerWalk_copy                46/46  
     WalkerWalk_fm_copy             28/28  
+    WalkerWalk_fm_noise_no_copy     6/6   
     WalkerWalk_fm_noise_post        7/7   
-    WalkerWalk_fm_noise_pre         5/5   
+    WalkerWalk_fm_noise_pre         7/7   
     WalkerWalk_no_copy             32/32  
     WalkerWalk_noise_no_copy       40/40  
     WalkerWalk_noise_post          74/74  
     WalkerWalk_noise_pre           56/56  
 
-history:hist2000-9cd5ea00  (spec_id=hist2000-9cd5ea00): 288/288
+history:hist2000-9cd5ea00  (spec_id=hist2000-9cd5ea00): 296/296
     WalkerWalk_copy                46/46  
     WalkerWalk_fm_copy             28/28  
+    WalkerWalk_fm_noise_no_copy     6/6   
     WalkerWalk_fm_noise_post        7/7   
-    WalkerWalk_fm_noise_pre         5/5   
+    WalkerWalk_fm_noise_pre         7/7   
     WalkerWalk_no_copy             32/32  
     WalkerWalk_noise_no_copy       40/40  
     WalkerWalk_noise_post          74/74  
     WalkerWalk_noise_pre           56/56  
 
-history:hist2000-14366f48  (spec_id=hist2000-14366f48): 288/288
+history:hist2000-14366f48  (spec_id=hist2000-14366f48): 296/296
     WalkerWalk_copy                46/46  
     WalkerWalk_fm_copy             28/28  
+    WalkerWalk_fm_noise_no_copy     6/6   
     WalkerWalk_fm_noise_post        7/7   
-    WalkerWalk_fm_noise_pre         5/5   
+    WalkerWalk_fm_noise_pre         7/7   
     WalkerWalk_no_copy             32/32  
     WalkerWalk_noise_no_copy       40/40  
     WalkerWalk_noise_post          74/74  

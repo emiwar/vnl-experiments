@@ -51,6 +51,32 @@ Group condition='WalkerWalk_fm_copy'  (n=28)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
+Group condition='WalkerWalk_fm_noise_no_copy'  (n=6)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
 Group condition='WalkerWalk_fm_noise_post'  (n=7)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
@@ -77,7 +103,7 @@ Group condition='WalkerWalk_fm_noise_post'  (n=7)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-Group condition='WalkerWalk_fm_noise_pre'  (n=5)
+Group condition='WalkerWalk_fm_noise_pre'  (n=7)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -207,7 +233,7 @@ Group condition='WalkerWalk_noise_pre'  (n=56)
   repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
 
 ======================================================================
-All runs  (n=288)
+All runs  (n=296)
 ======================================================================
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -276,6 +302,27 @@ Group condition='WalkerWalk_fm_copy'  (n=28)
   config.seed                       : [1234, 12345, 45, 46, 47, 48]  *** VARIES ***
 
 ======================================================================
+Group condition='WalkerWalk_fm_noise_no_copy'  (n=6)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.delay_k                : [5.0]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  net_params.fm_loss_weight         : [1.0]
+  net_params.detach_prediction      : [True]
+  net_params.motor_noise_std        : [0.5]
+  net_params.motor_noise_site       : ['post_efference']
+  net_params.motor_noise_tau        : [10, 15, 2, 20, 25, 5]  *** VARIES ***
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['c72ed042b5fd100b7d310710811912344ff6e179']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A40']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
 Group condition='WalkerWalk_fm_noise_post'  (n=7)
 ======================================================================
   net_params.network_class          : ['FlatForwardModel']
@@ -297,7 +344,7 @@ Group condition='WalkerWalk_fm_noise_post'  (n=7)
   config.seed                       : [1234]
 
 ======================================================================
-Group condition='WalkerWalk_fm_noise_pre'  (n=5)
+Group condition='WalkerWalk_fm_noise_pre'  (n=7)
 ======================================================================
   net_params.network_class          : ['FlatForwardModel']
   net_params.delay_k                : [5.0]
@@ -306,14 +353,14 @@ Group condition='WalkerWalk_fm_noise_pre'  (n=5)
   net_params.detach_prediction      : [True]
   net_params.motor_noise_std        : [0.5]
   net_params.motor_noise_site       : ['pre_efference']
-  net_params.motor_noise_tau        : [0, 15, 2, 20, 25]  *** VARIES ***
+  net_params.motor_noise_tau        : [0, 10, 15, 2, 20, 25, 5]  *** VARIES ***
   config.ppo.total_steps            : [480000000.0]
   config.eval.every_steps           : [4800000]
   state                             : ['finished']
   git_commit                        : ['c72ed042b5fd100b7d310710811912344ff6e179']
   repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
-  repos.vnl_experiments.dirty       : [True]
-  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A40', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
   seed                              : [42, 43]  *** VARIES ***
   config.seed                       : [1234, 43]  *** VARIES ***
 
@@ -402,7 +449,7 @@ Group condition='WalkerWalk_noise_pre'  (n=56)
   config.seed                       : [1234, 43, 44]  *** VARIES ***
 
 ======================================================================
-All runs  (n=288)
+All runs  (n=296)
 ======================================================================
   net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
   net_params.delay_k                : [0.0, 1.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]  *** VARIES ***
@@ -569,6 +616,12 @@ Reward at 4.8e+08 (mean over runs; n; range) | median steps to 900 | executed-ac
   FlatFo d 2 copy          std 0   tau -1    978.6 n=2  [ 976.8,  980.4]  t900     27M  act 0.610  sigma 0.326
   FlatFo d 3 copy          std 0   tau -1    976.1 n=2  [ 975.0,  977.1]  t900     46M  act 0.610  sigma 0.331
   FlatFo d 5 copy          std 0   tau -1    973.8 n=3  [ 973.0,  974.5]  t900     54M  act 0.604  sigma 0.327
+  FlatFo d 5 noise_no_copy std 0.5 tau 2     731.5 n=1  [ 731.5,  731.5]  t900    nanM  act 0.696  sigma 0.205
+  FlatFo d 5 noise_no_copy std 0.5 tau 5     622.7 n=1  [ 622.7,  622.7]  t900    nanM  act 0.693  sigma 0.205
+  FlatFo d 5 noise_no_copy std 0.5 tau 10    577.7 n=1  [ 577.7,  577.7]  t900    nanM  act 0.688  sigma 0.203
+  FlatFo d 5 noise_no_copy std 0.5 tau 15    556.6 n=1  [ 556.6,  556.6]  t900    nanM  act 0.681  sigma 0.210
+  FlatFo d 5 noise_no_copy std 0.5 tau 20    548.3 n=1  [ 548.3,  548.3]  t900    nanM  act 0.679  sigma 0.208
+  FlatFo d 5 noise_no_copy std 0.5 tau 25    545.1 n=1  [ 545.1,  545.1]  t900    nanM  act 0.675  sigma 0.205
   FlatFo d 5 noise_post    std 0.5 tau 0     923.8 n=1  [ 923.8,  923.8]  t900    298M  act 0.692  sigma 0.222
   FlatFo d 5 noise_post    std 0.5 tau 2     761.6 n=1  [ 761.6,  761.6]  t900    nanM  act 0.698  sigma 0.206
   FlatFo d 5 noise_post    std 0.5 tau 5     670.4 n=1  [ 670.4,  670.4]  t900    nanM  act 0.693  sigma 0.208
@@ -578,6 +631,8 @@ Reward at 4.8e+08 (mean over runs; n; range) | median steps to 900 | executed-ac
   FlatFo d 5 noise_post    std 0.5 tau 25    590.2 n=1  [ 590.2,  590.2]  t900    nanM  act 0.679  sigma 0.205
   FlatFo d 5 noise_pre     std 0.5 tau 0     961.8 n=1  [ 961.8,  961.8]  t900    111M  act 0.685  sigma 0.269
   FlatFo d 5 noise_pre     std 0.5 tau 2     945.0 n=1  [ 945.0,  945.0]  t900    187M  act 0.670  sigma 0.240
+  FlatFo d 5 noise_pre     std 0.5 tau 5     903.2 n=1  [ 903.2,  903.2]  t900    432M  act 0.656  sigma 0.223
+  FlatFo d 5 noise_pre     std 0.5 tau 10    870.4 n=1  [ 870.4,  870.4]  t900    nanM  act 0.646  sigma 0.215
   FlatFo d 5 noise_pre     std 0.5 tau 15    845.0 n=1  [ 845.0,  845.0]  t900    nanM  act 0.637  sigma 0.212
   FlatFo d 5 noise_pre     std 0.5 tau 20    823.9 n=1  [ 823.9,  823.9]  t900    nanM  act 0.636  sigma 0.210
   FlatFo d 5 noise_pre     std 0.5 tau 25    823.4 n=1  [ 823.4,  823.4]  t900    nanM  act 0.636  sigma 0.206
