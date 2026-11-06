@@ -1,0 +1,42 @@
+# @package _global_
+#
+# WalkerWalk over obstacle blocks that are regenerated every episode
+# (vnl_experiments/envs/walker_terrain.py). Same plant, reward, episode length and reward
+# scale as `env=dmc/walker_walk`; the blocks are the only difference, so delay curves on
+# the two are directly comparable.
+#
+# Everything terrain-specific is under `env.terrain`. Pick a layout preset from
+# conf/env/terrain/ (flat | staircase | rough) with `env/terrain=<name>`, and/or
+# override single keys:
+#   env.terrain.height        mean step height in metres (difficulty)
+#   env.terrain.irregularity  0 = periodic staircase, 1 = height and gap ~ U[0, 2*mean]
+#   env.terrain.observed      true = the next blocks are in the observation
+# Single-key overrides apply on top of the preset.
+#
+#   python -m vnl_experiments.train env=dmc/walker_walk_terrain net=delayed_mlp train=dmc \
+#       delay=5 env/terrain=rough env.terrain.observed=true
+
+defaults:
+  - /env_defaults@env: WalkerWalkTerrain
+  # Layout preset from conf/env/terrain/; group env/terrain's package is env.terrain, so
+  # it is overridden as `env/terrain=rough` on the command line.
+  - /env/terrain: staircase
+  - _self_
+
+env_spec:
+  task: WalkerWalkTerrain
+  # {terrain} renders the height / irregularity (and _obs if observed), so cells of a
+  # terrain sweep do not share a name stem.
+  name_template: "{task}_{net}_delay{delay}_eff{efference}{ablations}{kp}{terrain}"
+  tags: [WalkerWalkTerrain]
+
+# Same project as the WalkerWalk delay cohort; the task name keeps the two apart.
+wandb:
+  project: nnx-ppo-delays
+
+env: {}
+
+train:
+  video:
+    render_kwargs:
+      camera: side

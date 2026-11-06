@@ -1,0 +1,8 @@
+# @package env.terrain
+#
+# A layout preset for env=dmc/walker_walk_terrain; select with `env/terrain=rough`.
+#
+# Same mean difficulty as `staircase`, maximally unpredictable: each height and each gap
+# is drawn uniformly from [0, 2 * mean].
+height: 0.1
+irregularity: 1.0

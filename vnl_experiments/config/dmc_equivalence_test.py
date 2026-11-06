@@ -285,6 +285,21 @@ class TestNamingAndTagsArePerEnvFamily:
         s = self._setup("env=dmc/walker_walk", "net=delayed_mlp", "train=dmc", "delay=5")
         assert s.name_stem == "WalkerWalk_DelayedMLP_delay5_eff5"
 
+    def test_terrain_name_carries_the_terrain_cell(self) -> None:
+        """Cells of a terrain sweep must not share a stem; other envs get no token."""
+        s = self._setup("env=dmc/walker_walk_terrain", "net=delayed_mlp", "train=dmc",
+                        "delay=5", "env.terrain.height=0.2",
+                        "env.terrain.irregularity=0.5", "env.terrain.observed=true")
+        assert s.name_stem == "WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.2_irr0.5_obs"
+
+    def test_terrain_presets_set_the_layout_and_keys_override_them(self) -> None:
+        base = ("env=dmc/walker_walk_terrain", "net=delayed_mlp", "train=dmc", "delay=5")
+        assert self._setup(*base).name_stem.endswith("_h0.1_irr0")  # staircase default
+        assert self._setup(*base, "env/terrain=rough").name_stem.endswith("_h0.1_irr1")
+        assert self._setup(*base, "env/terrain=flat").name_stem.endswith("_h0_irr0")
+        s = self._setup(*base, "env/terrain=rough", "env.terrain.height=0.3")
+        assert s.name_stem.endswith("_h0.3_irr1")
+
     def test_dmc_tags_carry_the_task_and_not_the_rodent_ones(self) -> None:
         s = self._setup("env=dmc/walker_walk", "net=delayed_mlp", "train=dmc", "delay=5")
         assert "WalkerWalk" in s.tags
@@ -322,6 +337,7 @@ class TestVideoCameraFollowsThePlant:
     #: and neither model defines a `side` camera to name anyway.
     EXPECTED = {
         "walker_walk": "side", "walker_run": "side", "walker_stand": "side",
+        "walker_walk_terrain": "side",
         "cheetah_run": "side",
         "humanoid_walk": "side", "humanoid_stand": "side",
         "cartpole_balance": None, "cartpole_swingup": None, "ball_in_cup": None,

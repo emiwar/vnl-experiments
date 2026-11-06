@@ -187,12 +187,22 @@ def _name_stem(cfg: DictConfig, arch, net_params: dict, efference_length: int,
             ablations="".join(f"_{t}" for t in ablations),
             seed=cfg.seed,
             kp=f"_kp{servo_kp:g}" if servo_kp else "",
+            terrain=_terrain_token(env_config),
         )
     except KeyError as e:
         raise OverrideError(
             f"env_spec.name_template refers to {e.args[0]!r}, which is not one of "
-            f"task / net / delay / efference / ablations / seed / kp."
+            f"task / net / delay / efference / ablations / seed / kp / terrain."
         ) from None
+
+
+def _terrain_token(env_config) -> str:
+    """``_h0.1_irr0.5[_obs]`` for a WalkerWalkTerrain run, empty for every other env."""
+    terrain = env_config.get("terrain")
+    if terrain is None:
+        return ""
+    token = f"_h{float(terrain['height']):g}_irr{float(terrain['irregularity']):g}"
+    return token + ("_obs" if terrain.get("observed", False) else "")
 
 
 def build_run(cfg: DictConfig) -> RunSetup:

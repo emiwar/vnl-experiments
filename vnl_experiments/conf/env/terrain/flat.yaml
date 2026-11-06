@@ -1,0 +1,8 @@
+# @package env.terrain
+#
+# A layout preset for env=dmc/walker_walk_terrain; select with `env/terrain=flat`.
+#
+# No blocks: env=dmc/walker_walk_terrain at this preset is plain WalkerWalk, bit for bit
+# (envs/walker_terrain_test.py). The matched control for a terrain sweep.
+height: 0.0
+irregularity: 0.0

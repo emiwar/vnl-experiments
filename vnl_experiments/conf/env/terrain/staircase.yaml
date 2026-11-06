@@ -1,0 +1,8 @@
+# @package env.terrain
+#
+# A layout preset for env=dmc/walker_walk_terrain; select with `env/terrain=staircase`.
+#
+# Periodic blocks: every block 10 cm tall, every gap 1 m. Hard but perfectly predictable --
+# the layout can be learned as a rhythm.
+height: 0.1
+irregularity: 0.0

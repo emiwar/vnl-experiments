@@ -135,7 +135,7 @@ def _dmc_resume_reset(env, env_config, n_envs: int, key):
     return env_states, f"step_counter ~ U[0, {max_len}) over {n_envs} envs"
 
 
-def _dmc_builder(task: str):
+def _dmc_builder(task: str, make_env: Callable[[Any], Any] | None = None):
     """Construct a dm_control_suite task with the wrappers it needs to be trainable.
 
     Three wrappers, all load-bearing:
@@ -174,6 +174,10 @@ def _dmc_builder(task: str):
     rather than the whole run, and the eval numbers are the quantity the `nnx-ppo-delays`
     cohort is compared on, so it is not worth changing them for a ~1-in-1e9-steps event.
     Revisit if the divergence rate ever rises.
+
+    ``make_env(config) -> env`` replaces the playground registry lookup, for a task this
+    project defines itself on top of a dm_control one (``WalkerWalkTerrain``). Everything
+    after construction -- servo, wrappers, the eval split -- is shared.
     """
     def build(config, *, clips=None, for_eval=False):
         import mujoco_playground
@@ -182,7 +186,10 @@ def _dmc_builder(task: str):
         from vnl_experiments.envs import actuator_mode
         from vnl_experiments.envs.nan_guard import NaNGuardWrapper
 
-        env = mujoco_playground.registry.load(task, config=config)
+        if make_env is None:
+            env = mujoco_playground.registry.load(task, config=config)
+        else:
+            env = make_env(config)
         # Control mode is a property of the *plant*, so it is applied before the for_eval
         # branch: train and eval must simulate the same physics. At servo_kp=0 this returns
         # the env untouched. See envs/servo_control.md.
@@ -227,11 +234,14 @@ def _brax_params(task: str):
         return None
 
 
-def _dmc_default_config(task: str):
+def _dmc_default_config(task: str, base_config: Callable[[], Any] | None = None):
     def default_config():
         import mujoco_playground
 
-        cfg = mujoco_playground.registry.get_default_config(task)
+        if base_config is None:
+            cfg = mujoco_playground.registry.get_default_config(task)
+        else:
+            cfg = base_config()
         # These two belong to the *wrappers*, not the task, so the task config has no
         # field for them -- but they have to be overridable per run and recorded in
         # env_params like everything else, so they are added here. Both defaults come from
@@ -255,10 +265,17 @@ def _dmc_default_config(task: str):
     return default_config
 
 
-def _dmc_spec(task: str) -> EnvSpec:
+def _walker_terrain():
+    # Imported lazily, like mujoco_playground in the builders above.
+    from vnl_experiments.envs import walker_terrain
+
+    return walker_terrain
+
+
+def _dmc_spec(task: str, *, base_config=None, make_env=None) -> EnvSpec:
     return EnvSpec(
-        default_config=_dmc_default_config(task),
-        build=_dmc_builder(task),
+        default_config=_dmc_default_config(task, base_config),
+        build=_dmc_builder(task, make_env),
         obs_layout="flat",
         uses_clips=False,
         resume_reset=_dmc_resume_reset,
@@ -285,6 +302,14 @@ ENVS: dict[str, EnvSpec] = {
     "WalkerStand": _dmc_spec("WalkerStand"),
     "WalkerWalk": _dmc_spec("WalkerWalk"),
     "WalkerRun": _dmc_spec("WalkerRun"),
+    # WalkerWalk over obstacle blocks regenerated every episode (envs/walker_terrain.py).
+    # `task` is the brax params key, so it gets WalkerWalk's episode length and reward
+    # scale; the task name differs, so analyses selecting on "WalkerWalk" never pool it.
+    "WalkerWalkTerrain": _dmc_spec(
+        "WalkerWalk",
+        base_config=lambda: _walker_terrain().default_config(),
+        make_env=lambda config: _walker_terrain().WalkerTerrain(config=config),
+    ),
     # Added for the joint-stiffness (equilibrium-point) sweep: small, cheap bodies where a
     # peripheral servo is a plausible model of muscle mechanics. Reacher is the two-joint
     # arm the lambda model was posed about, Hopper is unstable and contact-rich, Finger
