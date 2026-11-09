@@ -27,7 +27,7 @@ RUN_LIST="${1:?usage: sbatch slurm_eval.sh <run-list> [kind] [--set key=json ...
 KIND="${2:-eval}"
 shift 2 || shift 1
 
-source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
+source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/new_mujoco/bin/activate
 export MUJOCO_GL=egl
 export PYOPENGL_PLATFORM=egl
 export XLA_PYTHON_CLIENT_PREALLOCATE=false

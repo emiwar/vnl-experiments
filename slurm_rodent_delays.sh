@@ -9,6 +9,6 @@
 #   sbatch slurm_rodent_delays.sh delay=100
 #   sbatch slurm_rodent_delays.sh net=forward_model delay=5 net.fm_loss_weight=0.0
 
-source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
+source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/new_mujoco/bin/activate
 export MUJOCO_GL=egl
 srun python -m vnl_experiments.train "$@"

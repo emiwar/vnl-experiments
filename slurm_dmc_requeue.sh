@@ -60,7 +60,7 @@
 #   sbatch slurm_dmc_requeue.sh env=dmc/walker_walk net=delayed_mlp train=dmc_distill delay=5 \
 #       distill.teacher=checkpoints/WalkerWalk_DelayedMLP_delay0_eff0-<timestamp>
 
-source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
+source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/new_mujoco/bin/activate
 export MUJOCO_GL=egl
 
 # Compiling ppo_step, the eval rollout and the render scan costs minutes, and

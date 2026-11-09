@@ -42,6 +42,6 @@
 # nearly free. (Do *not* use slurm_rodent_requeue.sh for this: it would launch, but it
 # asks for 48 GB and reports itself as a rodent job.)
 
-source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
+source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/new_mujoco/bin/activate
 export MUJOCO_GL=egl
 srun python -m vnl_experiments.train "$@"

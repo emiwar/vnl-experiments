@@ -74,7 +74,9 @@ def _imitation_builder(cls):
     def build(config, *, clips=None, for_eval=False):
         # The imitation tasks need no wrappers, so train and eval differ only in which
         # clips they are handed -- which the caller decides.
-        return cls(config, clips=clips)
+        from vnl_experiments.envs.warp_warnings import silence_solver_iteration_warnings
+
+        return silence_solver_iteration_warnings(cls(config, clips=clips))
 
     return build
 
@@ -185,6 +187,7 @@ def _dmc_builder(task: str, make_env: Callable[[Any], Any] | None = None):
 
         from vnl_experiments.envs import actuator_mode
         from vnl_experiments.envs.nan_guard import NaNGuardWrapper
+        from vnl_experiments.envs.warp_warnings import silence_solver_iteration_warnings
 
         if make_env is None:
             env = mujoco_playground.registry.load(task, config=config)
@@ -200,6 +203,8 @@ def _dmc_builder(task: str, make_env: Callable[[Any], Any] | None = None):
             center=str(config.get("servo_center", "qpos0")),
             unlimited_half_range=float(config.get("servo_unlimited_half_range", 0.0)),
         )
+        # After apply_servo, which re-runs put_model and would discard the setting.
+        env = silence_solver_iteration_warnings(env)
         if for_eval:
             # None of the three belongs on the measurement env. RewardScalingWrapper
             # reports reward in 10x units and EpisodeWrapper's randomised start counter

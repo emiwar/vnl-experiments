@@ -162,7 +162,9 @@ def parse_env_config(env_params: dict, default_config_fn):
 
 
 def _make_env(env_cls, cfg, clips):
-    return env_cls(cfg, clips=clips)
+    from vnl_experiments.envs.warp_warnings import silence_solver_iteration_warnings
+
+    return silence_solver_iteration_warnings(env_cls(cfg, clips=clips))
 
 
 def split_clips(cfg):

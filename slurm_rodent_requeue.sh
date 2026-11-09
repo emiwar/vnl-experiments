@@ -31,7 +31,7 @@
 # For a whole sweep, `python -m vnl_experiments.sweep` expands one command line into
 # one sbatch per cell.
 
-source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/jax_etc/bin/activate
+source /n/holylfs06/LABS/olveczky_lab/Users/ewarnberg/python_venvs/new_mujoco/bin/activate
 export MUJOCO_GL=egl
 
 # Compiling ppo_step, the eval rollout and the render scan costs minutes, and
