@@ -701,7 +701,7 @@ def run_requeue(cfg: DictConfig, setup: RunSetup) -> int:
     write_resolved_config(run_dir, cfg)
 
     if state is None:
-        state = requeue_lib.RunState(wandb_id=wandb.util.generate_id(),
+        state = requeue_lib.RunState(wandb_id=requeue_lib.new_wandb_id(),
                                      exp_name=exp_name)
         state.save(run_dir)
 

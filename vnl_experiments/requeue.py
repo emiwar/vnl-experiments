@@ -36,8 +36,10 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+import secrets
 import signal
 import socket
+import string
 import time
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -58,6 +60,19 @@ RUN_STATE_FILE = "run_state.json"
 # ---------------------------------------------------------------------------
 # Identity
 # ---------------------------------------------------------------------------
+
+def new_wandb_id(length: int = 8) -> str:
+    """A fresh WandB run id: ``length`` random base-36 characters.
+
+    Same format as WandB's own ids. It replaces ``wandb.util.generate_id``, which
+    wandb 0.31 removed from its public API (it now lives in the private
+    ``wandb.sdk.lib.runid``). The id has to exist before ``wandb.init`` is called,
+    because it is written to ``run_state.json`` so that every requeued attempt
+    reopens the same run.
+    """
+    alphabet = string.ascii_lowercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
 
 def run_token() -> str:
     """A token identifying this job, stable across requeues of the same job.

@@ -65,6 +65,18 @@ class RunTokenTest(absltest.TestCase):
         self.assertEqual(requeue.restart_count(), 0)
 
 
+class NewWandbIdTest(absltest.TestCase):
+    """Must not depend on wandb: ``wandb.util.generate_id`` vanished in wandb 0.31."""
+
+    def test_format_matches_wandb_ids(self):
+        run_id = requeue.new_wandb_id()
+        self.assertLen(run_id, 8)
+        self.assertRegex(run_id, r"^[a-z0-9]{8}$")
+
+    def test_ids_are_fresh(self):
+        self.assertLen({requeue.new_wandb_id() for _ in range(1000)}, 1000)
+
+
 class RunStateTest(absltest.TestCase):
 
     def setUp(self):
