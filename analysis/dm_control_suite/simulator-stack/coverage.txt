@@ -1,0 +1,13 @@
+Coverage for 298 runs in simulator-stack
+
+index  (spec_id=-): 298/298
+    mjx_jax_mujoco36              296/296 
+    warp_mujoco40                   2/2   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 298/298
+    mjx_jax_mujoco36              296/296 
+    warp_mujoco40                   2/2   
+
+timing:timing20000-3089bf7d  (spec_id=timing20000-3089bf7d): 298/298
+    mjx_jax_mujoco36              296/296 
+    warp_mujoco40                   2/2   

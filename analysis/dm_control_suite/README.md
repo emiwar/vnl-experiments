@@ -133,6 +133,18 @@ hid for the same reason: "reward" was recorded where "which reward" was meant.
 Training-side metrics are unaffected; the training stack was always
 `RewardScalingWrapper → EpisodeWrapper → task`.
 
+**The physics backend flipped from MJX-JAX to Warp on 2026-11-09, and nothing but
+`env_params.impl` says so.** `conf/env/dmc/*.yaml` does not set `impl`, so it is
+playground's default, and the cluster venv rebuild of that day moved playground 0.1.0 →
+0.2.0 (default `"jax"` → `"warp"`) together with MuJoCo 3.6.0 → 4.0.0. Every run before is
+MJX-JAX (bar two HopperHop Warp tests of 2026-09-15); every run after is Warp. On
+WalkerWalk the update leaves reward unchanged within seed noise
+([`simulator-stack/`](simulator-stack/)), so **cohorts may pool or compare runs across
+`impl`** (and across the update). When one does, record it as a caveat in the report:
+which conditions are on which backend, and whether the split is balanced across them or
+confounded with the variable being compared. The second case is the one to worry about —
+e.g. new-arm runs all on Warp against old baselines all on MJX-JAX.
+
 **There are two seeds, and `seed` is not the one PPO uses.** `train.py` draws the
 network initialisation from the top-level `seed` (wandb `seed`, Hydra default 42) and
 hands `train.seed` (wandb `config.seed`, Hydra default **1234**) to `train_ppo`, where it

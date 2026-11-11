@@ -1,0 +1,169 @@
+# Reward cohort (in_reward_cell)
+======================================================================
+Group condition='mjx_jax_mujoco36'  (n=9)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['jax']
+
+======================================================================
+Group condition='warp_mujoco40'  (n=2)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['warp']
+
+======================================================================
+All runs  (n=11)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['jax', 'warp']  *** VARIES ***
+
+# Speed cohort (all runs)
+======================================================================
+Group condition='mjx_jax_mujoco36'  (n=296)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'a37ce64de39df45c31bd55437f50d7fb63252c50', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['jax']
+
+======================================================================
+Group condition='warp_mujoco40'  (n=2)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['warp']
+
+======================================================================
+All runs  (n=298)
+======================================================================
+  env                               : ['WalkerWalk']
+  network_class                     : ['DelayedMLP']
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.sim_dt                 : [0.0025]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.nnx_ppo.dirty               : [False]
+  repos.vnl_playground.dirty        : [False]
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5c39807ea063a3e12fd935ae9a5d8e0139ff3f2b', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'a37ce64de39df45c31bd55437f50d7fb63252c50', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  python                            : ['CPython 3.12.11']
+  cuda_version                      : ['13.3']
+  env_params.impl                   : ['jax', 'warp']  *** VARIES ***

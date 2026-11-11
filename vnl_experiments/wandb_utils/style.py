@@ -147,6 +147,12 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
                           "label": "Privileged critic (current obs)"},
     "delayed_critic": {"color": "0.1", "marker": "D",
                        "label": "Delayed critic (sees the actor's input)"},
+    # Simulator stack (2026-11-11, `simulator-stack/`): before / after the 2026-11-09
+    # environment update, which changed the MuJoCo version AND, via playground 0.1.0 ->
+    # 0.2.0, the dm_control default backend. Grey for before, so after stands out.
+    "mjx_jax_mujoco36": {"color": "0.55", "marker": "o",
+                         "label": "MJX-JAX, MuJoCo 3.6 (old default)"},
+    "warp_mujoco40": {"color": "C3", "marker": "D", "label": "Warp, MuJoCo 4.0 (new default)"},
     # Motor noise (2026-10-28). Both arms keep the efference copy, so the hues are new
     # rather than `efference`'s C1: the manipulation is whether the queue *sees* the noise.
     "motor_noise_pre": {"color": "C4", "marker": "^",
