@@ -32,7 +32,9 @@ its full config -- every ``config.*`` / ``env_params.*`` / ``net_params.*`` fiel
 select every run of *any* stack with that config, at any seed pair. Before comparing,
 fields are normalised for schema drift so an absent key is not mistaken for a difference:
 ``motor_noise_*`` absent = 0 / post, ``privileged_critic`` absent = True (it was always
-privileged before ``a37ce64``), ``servo_*`` absent = no servo, ``nconmax`` = ``naconmax``.
+privileged before ``a37ce64``), ``servo_*`` absent = no servo, ``nconmax`` = ``naconmax``,
+and cartpole's ``vision_config.*`` (renamed in 0.2.0, inert with ``vision = False``) is
+dropped.
 ``total_steps`` and the eval / video cadences are ignored: nnx-ppo has no schedule, so a
 1 G run read at 480 M is a 480 M run, and the cadences do not touch training
 (``../README.md``). Within a cell, the same seed pair on two stacks shares its network
@@ -54,12 +56,17 @@ Run it
     ../.venv/bin/python analysis/dm_control_suite/simulator-stack/extract.py --check
 
 ``--refresh`` re-runs the selectors, so new post-update reruns pull in their own
-pre-update twins automatically. It also fetches ``requirements.txt`` for any selected run
+pre-update twins automatically.
+
+Outputs: ``data.csv`` (one row per run), ``curves.csv`` (reward-cell eval curves),
+``cells.csv`` (each post-update run against its cell), ``repeats.csv`` (old-stack
+same-seed reruns: the noise floor for a same-seed difference), ``speed.csv``. It also fetches ``requirements.txt`` for any selected run
 not yet in ``stack_versions.csv`` (network); frozen mode never touches the network.
 """
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import re
 from concurrent.futures import ThreadPoolExecutor
@@ -105,6 +112,9 @@ NOT_CONFIG = {
     "config.ppo.total_steps", "config.eval.every_steps", "config.video.every_steps",
     "config.video.render_kwargs.camera",
 }
+#: Cartpole's ``vision_config`` block: inert unless ``env_params.vision`` (never set here,
+#: checked in ``_usable``), and its keys were renamed wholesale in playground 0.2.0.
+INERT_PREFIX = "env_params.vision_config."
 #: Additionally ignored when grouping for speed.
 NOT_COST = {
     "seed", "config.seed", "delay_k", "efference_length", "net_params.delay_k",
@@ -140,7 +150,7 @@ def _norm(v):
 def _config_columns(df: pd.DataFrame) -> list[str]:
     return sorted(c for c in df.columns
                   if (c.split(".")[0] in CONFIG_PREFIXES or c in CONFIG_TOPLEVEL)
-                  and c not in NOT_CONFIG)
+                  and c not in NOT_CONFIG and not c.startswith(INERT_PREFIX))
 
 
 def _key(df: pd.DataFrame, drop: set[str] = frozenset()) -> pd.Series:
@@ -170,6 +180,7 @@ def _stack(df: pd.DataFrame) -> pd.Series:
     return out
 
 
+@functools.cache
 def _descends_from(commit: str, ancestor: str) -> bool:
     import subprocess
 
@@ -182,9 +193,14 @@ def _completed(df: pd.DataFrame) -> pd.Series:
 
 
 def _usable(df: pd.DataFrame) -> pd.Series:
-    """Current schema, a known stack, not the terrain task, trained to READ_AT."""
+    """Current schema, a known stack, not the terrain task, trained to READ_AT, and on
+    the bare-eval side of the eval-wrapper fix."""
+    vision = df.get("env_params.vision", pd.Series(False, index=df.index))
+    post_fix = df["git_commit"].map(
+        lambda c: isinstance(c, str) and _descends_from(c, EVAL_FIX_COMMIT))
     return (df["env_params.impl"].notna() & _stack(df).notna()
-            & ~df["env"].eq("WalkerWalkTerrain") & _completed(df))
+            & ~df["env"].eq("WalkerWalkTerrain") & ~vision.eq(True) & _completed(df)
+            & post_fix)
 
 
 def _anchors(df: pd.DataFrame) -> pd.DataFrame:
@@ -373,8 +389,11 @@ def cell_table(df: pd.DataFrame) -> pd.DataFrame:
                 "config_id": cid, "task": w["task"], "delay_k": w["delay_k"],
                 "condition": w["condition"], "wandb_id": w["wandb_id"],
                 "seed_pair": w["seed_pair"], "reward_480M": w["reward_480M"],
-                "twin_wandb_id": twin["wandb_id"].iloc[0] if len(twin) else None,
+                "twin_wandb_id": ",".join(twin["wandb_id"]) if len(twin) else None,
+                "twin_n": len(twin),
                 "twin_reward_480M": twin["reward_480M"].mean() if len(twin) else np.nan,
+                "twin_min": twin["reward_480M"].min() if len(twin) else np.nan,
+                "twin_max": twin["reward_480M"].max() if len(twin) else np.nan,
                 "old_other_seeds_n": len(others),
                 "old_other_seeds_mean": others.mean(),
                 "old_other_seeds_sd": others.std(ddof=1) if len(others) > 1 else np.nan,
@@ -387,6 +406,25 @@ def cell_table(df: pd.DataFrame) -> pd.DataFrame:
         t["z_vs_other_seeds"] = ((t["reward_480M"] - t["old_other_seeds_mean"])
                                  / t["old_other_seeds_sd"])
     return t
+
+
+def repeat_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Old-stack reruns of one exact configuration *and* seed pair (same ``twin_id``).
+
+    The noise floor for a same-seed before/after difference: the same network init on the
+    same stack, differing only in GPU / node / XLA nondeterminism. Any run in the
+    selection counts, not only the reward cells.
+    """
+    old = df[df["condition"] == "mjx_jax_mujoco36"]
+    rep = old.groupby("twin_id").filter(lambda g: len(g) >= 2)
+    t = rep.groupby("twin_id").agg(
+        task=("task", "first"), delay_k=("delay_k", "first"),
+        seed_pair=("seed_pair", "first"), in_reward_cell=("in_reward_cell", "first"),
+        n=("wandb_id", "size"), wandb_ids=("wandb_id", ",".join),
+        gpus=("gpu", lambda g: ",".join(g)),
+        reward_min=("reward_480M", "min"), reward_max=("reward_480M", "max"))
+    t["reward_range"] = t["reward_max"] - t["reward_min"]
+    return t.reset_index().sort_values(["task", "delay_k", "twin_id"], ignore_index=True)
 
 
 def speed_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -467,9 +505,13 @@ def main() -> None:
                          f"{off_era['wandb_id'].tolist()}")
 
     cells = cell_table(df)
+    repeats = repeat_table(df)
     speed = speed_table(df)
     pd.set_option("display.width", 200)
     print("\n== reward cells ==\n" + cells.to_string(index=False, float_format="%.1f"))
+    print("\n== old-stack same-seed repeats ==\n"
+          + repeats.drop(columns=["wandb_ids", "gpus"]).to_string(index=False,
+                                                                  float_format="%.1f"))
     print("\n== speed (median per-iteration gauge, per GPU) ==\n"
           + speed.to_string(index=False, float_format="%.3g"))
 
@@ -487,6 +529,7 @@ def main() -> None:
         pipeline.write_csv(df, HERE / "data.csv", check=args.check),
         pipeline.write_csv(pd.DataFrame(curves), HERE / "curves.csv", check=args.check),
         pipeline.write_csv(cells, HERE / "cells.csv", check=args.check),
+        pipeline.write_csv(repeats, HERE / "repeats.csv", check=args.check),
         pipeline.write_csv(speed, HERE / "speed.csv", check=args.check),
     ])
     if args.check and not ok:

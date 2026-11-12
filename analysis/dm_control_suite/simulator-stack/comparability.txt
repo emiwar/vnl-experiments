@@ -1,8 +1,8 @@
 # Reward cohort (in_reward_cell)
 ======================================================================
-Group condition='mjx_jax_mujoco36'  (n=9)
+Group condition='mjx_jax_mujoco36'  (n=43)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -13,8 +13,8 @@ Group condition='mjx_jax_mujoco36'  (n=9)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
@@ -22,15 +22,15 @@ Group condition='mjx_jax_mujoco36'  (n=9)
   repos.nnx_ppo.dirty               : [False]
   repos.vnl_playground.dirty        : [False]
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
-  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
   python                            : ['CPython 3.12.11']
   cuda_version                      : ['13.3']
   env_params.impl                   : ['jax']
 
 ======================================================================
-Group condition='warp_mujoco40'  (n=2)
+Group condition='warp_mujoco40'  (n=12)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -41,8 +41,8 @@ Group condition='warp_mujoco40'  (n=2)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
@@ -56,9 +56,9 @@ Group condition='warp_mujoco40'  (n=2)
   env_params.impl                   : ['warp']
 
 ======================================================================
-All runs  (n=11)
+All runs  (n=55)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -69,8 +69,8 @@ All runs  (n=11)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
@@ -78,16 +78,16 @@ All runs  (n=11)
   repos.nnx_ppo.dirty               : [False]
   repos.vnl_playground.dirty        : [False]
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
-  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25']  *** VARIES ***
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
   python                            : ['CPython 3.12.11']
   cuda_version                      : ['13.3']
   env_params.impl                   : ['jax', 'warp']  *** VARIES ***
 
 # Speed cohort (all runs)
 ======================================================================
-Group condition='mjx_jax_mujoco36'  (n=296)
+Group condition='mjx_jax_mujoco36'  (n=533)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -98,8 +98,8 @@ Group condition='mjx_jax_mujoco36'  (n=296)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
@@ -113,9 +113,9 @@ Group condition='mjx_jax_mujoco36'  (n=296)
   env_params.impl                   : ['jax']
 
 ======================================================================
-Group condition='warp_mujoco40'  (n=2)
+Group condition='warp_mujoco40'  (n=12)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -126,8 +126,8 @@ Group condition='warp_mujoco40'  (n=2)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
@@ -141,9 +141,9 @@ Group condition='warp_mujoco40'  (n=2)
   env_params.impl                   : ['warp']
 
 ======================================================================
-All runs  (n=298)
+All runs  (n=545)
 ======================================================================
-  env                               : ['WalkerWalk']
+  env                               : ['BallInCup', 'CartpoleSwingup', 'CheetahRun', 'HumanoidWalk', 'WalkerWalk']  *** VARIES ***
   network_class                     : ['DelayedMLP']
   config.ppo.n_envs                 : [8192.0]
   config.ppo.rollout_length         : [30.0]
@@ -154,8 +154,8 @@ All runs  (n=298)
   net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
   env_params.reward_scale           : [10.0]
   env_params.episode_length         : [1000.0]
-  env_params.ctrl_dt                : [0.025]
-  env_params.sim_dt                 : [0.0025]
+  env_params.ctrl_dt                : [0.01, 0.02, 0.025]  *** VARIES ***
+  env_params.sim_dt                 : [0.002, 0.0025, 0.005, 0.01]  *** VARIES ***
   config.eval.n_envs                : [256]
   config.eval.max_episode_length    : [1000]
   repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***

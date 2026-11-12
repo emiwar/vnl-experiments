@@ -7,6 +7,8 @@ Reads only the committed CSVs in this folder -- no WandB, no artifact store, no 
 
 Three figures:
 
+Reward figures are a grid, five cells per row.
+
 * ``reward_curves`` -- one panel per reward cell (task x delay, every other config field
   equal). Old-stack seed pairs are thin grey lines; the old-stack run with the *same*
   seed pair as a post-update run is a thicker grey line, since those two share their
@@ -48,14 +50,25 @@ def _cells(df: pd.DataFrame) -> list[tuple[str, str]]:
     return [(r.config_id, f"{r.task}, delay {r.delay_k}") for r in cells.itertuples()]
 
 
-def _panels(n: int, w: float = 3.8, h: float = 3.0):
-    fig, axes = plt.subplots(1, n, figsize=(w * n, h), squeeze=False)
-    return fig, list(axes[0])
+NCOLS = 5
+
+
+def _panels(n: int, w: float = 3.4, h: float = 2.8, extra_h: float = 0.0):
+    """A grid of ``n`` panels, ``NCOLS`` wide; unused trailing panels are hidden. Returns
+    the used axes and the axes of the first column (for y labels)."""
+    ncols = min(n, NCOLS)
+    nrows = -(-n // ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(w * ncols, h * nrows + extra_h),
+                             squeeze=False)
+    flat = list(axes.flat)
+    for ax in flat[n:]:
+        ax.set_visible(False)
+    return fig, flat[:n], list(axes[:, 0])
 
 
 def fig_reward_curves(df: pd.DataFrame, curves: pd.DataFrame) -> plt.Figure:
     cells = _cells(df)
-    fig, axes = _panels(len(cells))
+    fig, axes, first_col = _panels(len(cells), extra_h=0.8)
     for ax, (cid, title) in zip(axes, cells):
         runs = df[df["config_id"] == cid]
         new_seeds = set(runs.loc[runs["condition"] != OLD, "seed_pair"])
@@ -68,36 +81,33 @@ def fig_reward_curves(df: pd.DataFrame, curves: pd.DataFrame) -> plt.Figure:
             if r.condition == OLD and r.seed_pair not in new_seeds:
                 ax.plot(x, c["reward"], color=color_for(OLD), **SEED_LINE)
             elif r.condition == OLD:
-                ax.plot(x, c["reward"], color=color_for(OLD), lw=1.6,
-                        label=f"{label_for(OLD)}, same seeds ({r.seed_pair})")
+                ax.plot(x, c["reward"], color=color_for(OLD), lw=1.6)
             else:
                 ax.plot(x, c["reward"], color=color_for(r.condition), lw=1.6,
-                        ls=("-", "--", ":")[n_new % 3],
-                        label=f"{label_for(r.condition)} ({r.seed_pair})")
+                        ls=("-", "--", ":")[n_new % 3])
                 n_new += 1
-        ax.plot([], [], color=color_for(OLD), **SEED_LINE,
-                label=f"{label_for(OLD)}, other seeds")
         ax.set_title(title, fontsize=9)
-        ax.set_xlabel("Environment steps (M)")
-    fig.legend(*_merged_legend(axes), fontsize=7, frameon=False, loc="lower center",
-               bbox_to_anchor=(0.5, 0.05),
-               ncol=3)
-    axes[0].set_ylabel(reward_label("dmc_eval"))
-    fig.tight_layout(rect=(0, 0.22, 1, 1))
+        ax.set_xlabel("Environment steps (M)", fontsize=8)
+    new = sorted(c for c in set(df["condition"]) if c != OLD)
+    handles = (
+        [plt.Line2D([], [], color=color_for(c), lw=1.6, label=label_for(c)) for c in new]
+        + [plt.Line2D([], [], color=color_for(new[0]), lw=1.6, ls="--",
+                      label="(second post-update seed pair in the same cell)"),
+           plt.Line2D([], [], color=color_for(OLD), lw=1.6,
+                      label=f"{label_for(OLD)}, same seed pair"),
+           plt.Line2D([], [], color=color_for(OLD), **SEED_LINE,
+                      label=f"{label_for(OLD)}, other seeds")])
+    fig.legend(handles=handles, fontsize=7, frameon=False,
+               loc="lower center", bbox_to_anchor=(0.5, 0.015), ncol=4)
+    for ax in first_col:
+        ax.set_ylabel(reward_label("dmc_eval"), fontsize=8)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
     return fig
-
-
-def _merged_legend(axes):
-    seen = {}
-    for ax in axes:
-        for h, label in zip(*ax.get_legend_handles_labels()):
-            seen.setdefault(label, h)
-    return list(seen.values()), list(seen.keys())
 
 
 def fig_reward_480m(df: pd.DataFrame) -> plt.Figure:
     cells = _cells(df)
-    fig, axes = _panels(len(cells), w=3.0)
+    fig, axes, first_col = _panels(len(cells), w=2.6, h=2.9, extra_h=0.3)
     rng = np.random.default_rng(0)
     for ax, (cid, title) in zip(axes, cells):
         runs = df[df["config_id"] == cid]
@@ -108,10 +118,10 @@ def fig_reward_480m(df: pd.DataFrame) -> plt.Figure:
             jitter = 0.0 if r.condition != OLD else rng.uniform(-0.08, 0.08)
             ax.plot(xpos[r.condition] + jitter, r.reward_480M, ls="none",
                     marker=marker_for(r.condition), color=color_for(r.condition), ms=6)
-            twin = old[old["seed_pair"] == r.seed_pair]
-            if r.condition != OLD and len(twin):
-                ax.plot([xpos[OLD], xpos[r.condition]],
-                        [twin["reward_480M"].iloc[0], r.reward_480M],
+            if r.condition == OLD:
+                continue
+            for t in old[old["seed_pair"] == r.seed_pair]["reward_480M"]:
+                ax.plot([xpos[OLD], xpos[r.condition]], [t, r.reward_480M],
                         color="0.3", lw=0.8, ls="--", zorder=0)
         ax.set_xticks(range(len(present)))
         ax.set_xticklabels([label_for(c).replace(", MuJoCo", "\nMuJoCo")
@@ -119,10 +129,11 @@ def fig_reward_480m(df: pd.DataFrame) -> plt.Figure:
                             for c in present], fontsize=7)
         ax.set_xlim(-0.5, len(present) - 0.5)
         ax.set_title(title, fontsize=9)
-    axes[0].set_ylabel(reward_label("dmc_eval") + "\nmean over 430-480 M steps")
-    fig.text(0.01, 0.06, "Dashed: same seed pair (identical network init) on both stacks.",
-             fontsize=7)
-    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    for ax in first_col:
+        ax.set_ylabel(reward_label("dmc_eval") + "\nmean over 430-480 M steps", fontsize=8)
+    fig.text(0.01, 0.03, "Dashed: same seed pair (identical network init) on both stacks; "
+             "each panel has its own y scale.", fontsize=7)
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
     return fig
 
 
@@ -130,7 +141,7 @@ def fig_speed(df: pd.DataFrame) -> plt.Figure:
     gauges = [("train_sps", "Training throughput (env steps/s, PPO step)"),
               ("eval_sps", "Eval throughput (env steps/s, 256 envs)")]
     tasks = sorted(df["task"].unique())
-    fig, axes = plt.subplots(len(gauges), len(tasks), figsize=(4.2 * len(tasks), 6.0),
+    fig, axes = plt.subplots(len(gauges), len(tasks), figsize=(3.2 * len(tasks), 6.0),
                              squeeze=False)
     for j, task in enumerate(tasks):
         sub = df[df["task"] == task]
