@@ -1,0 +1,13 @@
+Coverage for 88 runs in walker-terrain-first-look
+
+index  (spec_id=-): 88/88
+    flat_ground                    53/53  
+    terrain_blind                  29/29  
+    terrain_observed                5/5   
+    terrain_periodic                1/1   
+
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 88/88
+    flat_ground                    53/53  
+    terrain_blind                  29/29  
+    terrain_observed                5/5   
+    terrain_periodic                1/1   

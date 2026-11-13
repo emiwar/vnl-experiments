@@ -1,0 +1,332 @@
+======================================================================
+Group condition='flat_ground'  (n=53)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : []
+  env_params.terrain.block_length   : []
+  env_params.terrain.block_width    : []
+  env_params.terrain.block_halfheight: []
+  env_params.terrain.num_blocks     : []
+  env_params.terrain.start_gap      : []
+  env_params.terrain.back_margin    : []
+  env_params.terrain.obs_blocks     : []
+  env_params.terrain.relative_stand_height: []
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+
+======================================================================
+Group condition='terrain_blind'  (n=29)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+
+======================================================================
+Group condition='terrain_observed'  (n=5)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+
+======================================================================
+Group condition='terrain_periodic'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+
+======================================================================
+All runs  (n=88)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+
+--- DESIGN AXES: expected to vary ---
+======================================================================
+Group condition='flat_ground'  (n=53)
+======================================================================
+  env                               : ['WalkerWalk']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.terrain.height         : []
+  env_params.terrain.irregularity   : []
+  env_params.terrain.observed       : []
+  env_params.impl                   : ['jax', 'warp']  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 44, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+
+======================================================================
+Group condition='terrain_blind'  (n=29)
+======================================================================
+  env                               : ['WalkerWalkTerrain']
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.terrain.height         : [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4]  *** VARIES ***
+  env_params.terrain.irregularity   : [1.0]
+  env_params.terrain.observed       : [False]
+  env_params.impl                   : ['warp']
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='terrain_observed'  (n=5)
+======================================================================
+  env                               : ['WalkerWalkTerrain']
+  net_params.delay_k                : [0.0, 10.0, 2.0, 5.0, 7.0]  *** VARIES ***
+  env_params.terrain.height         : [0.3]
+  env_params.terrain.irregularity   : [1.0]
+  env_params.terrain.observed       : [True]
+  env_params.impl                   : ['warp']
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='terrain_periodic'  (n=1)
+======================================================================
+  env                               : ['WalkerWalkTerrain']
+  net_params.delay_k                : [0.0]
+  env_params.terrain.height         : [0.1]
+  env_params.terrain.irregularity   : [0.0]
+  env_params.terrain.observed       : [False]
+  env_params.impl                   : ['warp']
+  config.ppo.total_steps            : [480000000.0]
+  config.eval.every_steps           : [4800000]
+  state                             : ['finished']
+  git_commit                        : ['7b03e9aecde81747c8bbd13fa6060c579faca41a']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA H200']
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+All runs  (n=88)
+======================================================================
+  env                               : ['WalkerWalk', 'WalkerWalkTerrain']  *** VARIES ***
+  net_params.delay_k                : [0.0, 10.0, 12.0, 15.0, 2.0, 20.0, 25.0, 3.0, 5.0, 7.0]  *** VARIES ***
+  env_params.terrain.height         : [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4]  *** VARIES ***
+  env_params.terrain.irregularity   : [0.0, 1.0]  *** VARIES ***
+  env_params.terrain.observed       : [False, True]  *** VARIES ***
+  env_params.impl                   : ['jax', 'warp']  *** VARIES ***
+  config.ppo.total_steps            : [1000000000.0, 2000000000.0, 4000000000.0, 480000000.0]  *** VARIES ***
+  config.eval.every_steps           : [4800000, 600000]  *** VARIES ***
+  state                             : ['finished']
+  git_commit                        : ['2f668350bc26b6ca3c81b03075cf3011ff52baec', '5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b', '7b03e9aecde81747c8bbd13fa6060c579faca41a', '7bedb5cc4b735c7c93790c39113e7cb6295039d2', '971ab99eb3a6d6f27c375a229796d9c40cc92f04', '9e216aee027f43dcd7a40157e9cad7e727a9c3e2', 'b4012b30fe456a352c13ac8f7aab9405bfc36e25', 'b487eedf7f11e8ce4118a14e48070e487258be86', 'f9c8960df44b196f8a6cb9f5ec2b49780d9ab360']  *** VARIES ***
+  repos.nnx_ppo.commit              : ['1725d2009c78a18a8b5bc9e8e236800c5320e966', '21d664318fbf57fafe538a36d56b397d4c145402', '531427933bbca8a1558974319720c55b32659a76']  *** VARIES ***
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA A40', 'NVIDIA H200', 'NVIDIA RTX PRO 6000 Blackwell Server Edition']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+  config.seed                       : [1234, 12345, 43, 44, 45, 46, 47, 49, 50, 51, 52]  *** VARIES ***
+
+flat_ground by delay (mean over seed pairs; range; n seeds):
+         reward     lo     hi  n  slope          t90   rinf  backtest
+delay_k                                                              
+0         977.7  976.5  979.3  6    1.5   21585920.0  972.5      -7.5
+2         971.3  968.0  974.1  3   -0.2   57671680.0  969.7      -1.4
+3         967.4  963.4  970.8  4    2.2  113049600.0  967.0       0.8
+5         964.0  956.2  967.0  9    2.7   86999040.0  961.4      -4.5
+7         954.4  938.6  962.4  5   22.2  197050368.0  981.4     -23.1
+10        747.6  671.1  909.3  4   60.7  327628800.0  803.1     -47.4
+12        658.1  507.8  842.4  4   76.0  365690880.0  845.4     -40.6
+15        549.0  407.7  664.8  4   66.3  299028480.0  737.1     -91.0
+20        525.3  499.0  543.4  7   25.1  286064640.0  575.6     -32.5
+25        450.5  429.4  481.4  3   42.6  341688320.0  501.2     -51.4
+
+terrain runs:
+       condition  delay_k  height seed_pair  reward  late_gain  late_slope  late_slope_se         t50         t90  fit_rinf      fit_tau  backtest_err  fit_at_bound
+   terrain_blind        0    0.10 i42/p1234  974.47       1.47        1.32           0.78  14499840.0  19415040.0    970.65 5.335086e+06         -5.49         False
+   terrain_blind        0    0.20 i42/p1234  972.64       1.63        1.79           0.40  14499840.0  24084480.0    966.83 7.591012e+06         -8.43         False
+   terrain_blind        0    0.30 i42/p1234  947.99       7.79        7.51           1.32  28999680.0  67338240.0    930.82 2.803547e+07        -27.20         False
+   terrain_blind        0    0.30   i43/p43  948.61       6.38        6.81           1.29  28999680.0  76922880.0    932.84 2.722851e+07        -24.66         False
+   terrain_blind        0    0.40   i43/p43  876.96      10.65       11.38           2.31  67338240.0 192184320.0    890.19 9.915013e+07         24.08         False
+   terrain_blind        2    0.10 i42/p1234  969.85      -0.35       -0.25           0.40  19415040.0  38584320.0    967.00 1.124544e+07         -4.50         False
+   terrain_blind        2    0.30 i42/p1234  904.12      15.18       16.47           2.45  52838400.0 177684480.0    894.71 6.711035e+07        -21.37         False
+   terrain_blind        3    0.10 i42/p1234  968.49       3.21        3.22           0.34  24084480.0  52838400.0    963.53 2.131530e+07         -7.14         False
+   terrain_blind        3    0.30 i42/p1234  866.10      27.32       26.60           2.32  86507520.0 230522880.0    891.79 1.247634e+08         29.57         False
+   terrain_blind        5    0.05 i42/p1234  964.74       2.23        2.25           0.29  38584320.0  67338240.0    965.25 3.222567e+07          1.85         False
+   terrain_blind        5    0.10 i42/p1234  958.34       4.86        5.06           0.56  33669120.0  91422720.0    953.18 3.608188e+07         -7.22         False
+   terrain_blind        5    0.15 i42/p1234  942.44      10.71       12.26           1.20  48168960.0 158515200.0    933.35 6.478432e+07        -20.72         False
+   terrain_blind        5    0.20 i42/p1234  904.48      19.20       19.77           2.17  62423040.0 201768960.0    918.32 1.072626e+08         11.21         False
+   terrain_blind        5    0.25 i42/p1234  842.16      30.86       29.33           3.42  91422720.0 264192000.0    912.44 1.725231e+08         57.88         False
+   terrain_blind        5    0.30 i42/p1234  718.46      48.62       51.21           4.38 105676800.0 340869120.0    832.70 2.582076e+08        -53.62         False
+   terrain_blind        5    0.30   i43/p43  738.92      47.90       50.88           4.64  96092160.0 317030400.0    903.29 2.913480e+08         34.81         False
+   terrain_blind        5    0.30   i43/p43  744.53      41.40       43.19           4.15 105676800.0 278446080.0    825.57 1.973332e+08         72.35         False
+   terrain_blind        7    0.10 i42/p1234  933.11      20.03       20.51           1.27  57753600.0 225607680.0    952.15 1.159325e+08          9.40         False
+   terrain_blind        7    0.30 i42/p1234  560.46      42.25       44.56           2.89  72007680.0 326615040.0    738.13 4.016541e+08        -14.61         False
+   terrain_blind       10    0.10 i42/p1234  522.33      15.11       15.41           3.98  52838400.0 173015040.0    502.95 6.255514e+07        -32.97         False
+   terrain_blind       10    0.30   i43/p43  435.21      21.76       23.36           2.07  43253760.0 254607360.0    427.90 1.030079e+08        -27.48         False
+   terrain_blind       12    0.10 i42/p1234  540.68      27.89       27.48           2.24  67338240.0 297615360.0    543.74 1.290782e+08        -31.74         False
+   terrain_blind       12    0.30 i42/p1234  335.68      14.98       15.06           1.57  48168960.0 245022720.0    330.13 1.037729e+08        -27.62         False
+   terrain_blind       15    0.10 i42/p1234  405.83      30.32       29.14           2.66  91422720.0 288030720.0    418.24 1.632364e+08          6.79         False
+   terrain_blind       15    0.30 i42/p1234  300.15      36.68       37.04           1.81  57753600.0 379207680.0    273.71 5.536902e+07        -37.39         False
+   terrain_blind       20    0.10 i42/p1234  402.87       4.82        5.14           1.38  43253760.0 168099840.0    401.54 7.976810e+07         -6.26         False
+   terrain_blind       20    0.30 i42/p1234  256.41       0.67        0.24           5.17  33669120.0  96092160.0    258.87 5.132882e+07          4.30         False
+   terrain_blind       25    0.10 i42/p1234  369.42      42.76       43.41           1.63 115261440.0 364953600.0   1000.00 1.404300e+09          5.20          True
+   terrain_blind       25    0.30 i42/p1234  272.68      31.07       27.62           9.00  52838400.0 201768960.0    260.60 7.462222e+07        -12.65         False
+terrain_observed        0    0.30 i42/p1234  965.75       7.29        8.12           1.07  28999680.0 139345920.0    962.33 6.624524e+07         -9.05         False
+terrain_observed        2    0.30 i42/p1234  946.25      11.91       12.71           1.74  48168960.0 120176640.0    936.75 4.821716e+07        -14.78         False
+terrain_observed        5    0.30 i42/p1234  727.49       2.17        8.22           8.96  76922880.0 268861440.0    788.13 1.584977e+08         30.87         False
+terrain_observed        7    0.30 i42/p1234  634.39      42.88       46.37           3.82  91422720.0 336199680.0    741.88 2.566779e+08         29.12         False
+terrain_observed       10    0.30 i42/p1234  464.08      64.82       65.45           4.56  38584320.0 307200000.0    463.42 1.713362e+08        -45.73         False
+terrain_periodic        0    0.10 i42/p1234  976.10       1.45        1.56           0.14  14499840.0  19415040.0    972.14 5.318626e+06         -5.59         False

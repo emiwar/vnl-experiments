@@ -1,0 +1,8 @@
+# collage_2x2_walker_terrain_factors_h0.3_d5.mp4: blind/observed random blocks 0.3 m, delay 5 (125 ms); one WandB eval video per tile.
+# reward = reward_480M from factors.csv (430-480 M mean).
+tile,wandb_id,seed_pair,attributes,video_step,reward_480M
+0,sog4k5xi,i43/p43,efference copy,479969280,744.5
+1,u8xdfjid,i42/p1234,efference copy+servo,479969280,789.2
+2,d7ytv3fx,i42/p1234,efference copy+block sensor,479969280,727.5
+3,0xmqmajf,i42/p1234,forward model,479969280,771.5
+# frames per input video: [1001]; played at 40 fps (1 / ctrl_dt, real time)

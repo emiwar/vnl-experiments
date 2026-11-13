@@ -1,0 +1,8 @@
+# collage_2x2_walker_terrain_h0.3.mp4: blind random blocks, 0.3 m; one WandB eval video per tile.
+# label reward = the run's last eval point (history artifact); endpoint = 430-480 M mean (data.csv, the report's number).
+delay_k,delay_ms,wandb_id,seed_pair,video_step,eval_step,final_eval_reward,endpoint_reward
+0,0,xz3pzgo1,i42/p1234,479969280,480215040,951.8,948.0
+5,125,i5dr3ysp,i42/p1234,479969280,480215040,733.8,718.5
+7,175,qifrob8q,i42/p1234,479969280,480215040,559.4,560.5
+10,250,hk6kjx0f,i43/p43,479969280,480215040,444.2,435.2
+# frames per input video: [1001]; played at 40 fps (1 / ctrl_dt, real time)

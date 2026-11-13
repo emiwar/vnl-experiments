@@ -161,6 +161,12 @@ CONDITION_STYLE: dict[str, dict[str, str]] = {
                          "label": "Copy + motor noise, unseen (post)"},
     "motor_noise_no_copy": {"color": "C9", "marker": "s",
                             "label": "No copy + motor noise"},
+    # WalkerWalkTerrain (2026-11-11). Flat ground is the plain-WalkerWalk reference, in
+    # the neutral grey `undelayed` uses for a reference level.
+    "flat_ground": {"color": "0.35", "marker": "o", "label": "Flat ground (WalkerWalk)"},
+    "terrain_blind": {"color": "C5", "marker": "s", "label": "Random blocks, unseen"},
+    "terrain_observed": {"color": "C2", "marker": "^", "label": "Random blocks, observed"},
+    "terrain_periodic": {"color": "C8", "marker": "D", "label": "Periodic blocks, unseen"},
     # Per-behaviour failure modes (2026-09-21). The marker carries the actuator (filled
     # circle = position, open triangle = torque). The hue was initially the decoder input,
     # so that the two axes of the cohort stayed separable on an x-axis already spent on

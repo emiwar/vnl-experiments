@@ -232,6 +232,17 @@ The shared preference for raw reward (§7) still holds — resolve it with **sma
 one panel per task**, not by dividing through by a per-task ceiling. If an across-task
 summary really is needed, normalise there and only there, and say so in the caption.
 
+**Reward differences are not comparable across starting levels, because the score is
+bounded.** WalkerWalk saturates near 970 at short delays and floors near 250–500 at
+long ones. The marginal "performance" needed to move the score by 100 therefore depends
+strongly on where it starts, and a 30-point gap near the ceiling says nothing about
+whether the effect is smaller than a 200-point gap mid-range. Interaction claims read
+off reward differences ("terrain hurts more at long delays") can be created or erased
+by the scale alone unless the curves actually cross. Plot raw rewards, make ordinal
+claims (higher/lower, below every baseline seed, still rising, steps to first reach a
+fixed level), and leave effect sizes to a non-saturating readout
+(`walker-terrain-first-look/` is the worked example).
+
 **There is no clip split, so there is no held-out set.** No `TrainEvalSplit` tag, no
 `old_eval` / `new_eval`: an eval episode is a fresh episode of the same task, differing
 only in its seed. That makes "eval" a weaker word here than in the rodent track — it
