@@ -1,0 +1,1498 @@
+======================================================================
+Group condition='eff'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+fm+priv'  (n=6)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+fm+sensor+priv'  (n=3)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+fm+servo+priv'  (n=7)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+fm+servo+sensor+priv'  (n=3)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+priv'  (n=6)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+sensor'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+sensor+priv'  (n=7)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+servo'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+servo+priv'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+servo+sensor'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='eff+servo+sensor+priv'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='fm+priv'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='fm+sensor+priv'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='fm+servo+priv'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='fm+servo+sensor+priv'  (n=3)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='none'  (n=3)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='priv'  (n=4)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='sensor'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='sensor+priv'  (n=4)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='servo'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='servo+priv'  (n=1)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='servo+sensor'  (n=2)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+Group condition='servo+sensor+priv'  (n=5)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+======================================================================
+All runs  (n=70)
+======================================================================
+  config.ppo.n_envs                 : [8192.0]
+  config.ppo.rollout_length         : [30.0]
+  config.ppo.learning_rate          : [0.0001]
+  config.ppo.n_epochs               : [4.0]
+  config.ppo.n_minibatches          : [8.0]
+  config.ppo.clip_range             : [0.3]
+  config.ppo.discounting_factor     : [0.99]
+  config.ppo.gae_lambda             : [0.95]
+  config.ppo.normalize_advantages   : [True]
+  env_params.reward_scale           : [10.0]
+  env_params.episode_length         : [1000.0]
+  env_params.ctrl_dt                : [0.025]
+  env_params.action_repeat          : [1.0]
+  net_params.min_std                : [0.001]
+  net_params.entropy_weight         : [0.01]
+  net_params.actor_hidden_sizes     : ['[256, 256, 256, 256]']
+  net_params.critic_hidden_sizes    : ['[256, 256, 256, 256, 256]']
+  net_params.normalize_obs          : [True]
+  net_params.std_scale              : [1.0]
+  config.eval.n_envs                : [256]
+  config.eval.max_episode_length    : [1000]
+  env_params.terrain.gap            : [1.0]
+  env_params.terrain.block_length   : [0.25]
+  env_params.terrain.block_width    : [0.5]
+  env_params.terrain.block_halfheight: [0.5]
+  env_params.terrain.num_blocks     : [12.0]
+  env_params.terrain.start_gap      : [2.0]
+  env_params.terrain.back_margin    : [2.0]
+  env_params.terrain.obs_blocks     : [2.0]
+  env_params.terrain.relative_stand_height: [False]
+  env_params.naconmax               : [50000.0]
+  env_params.njmax                  : [100.0]
+  env_params.impl                   : ['warp']
+  git_commit                        : ['5ec507aa2a309c8bfe0e3d15af2a45c6c2c2ea8b']
+  repos.nnx_ppo.commit              : ['21d664318fbf57fafe538a36d56b397d4c145402']
+  repos.vnl_playground.commit       : ['293156c8631363fa683607c52828dd28e4bffbec']
+
+--- DESIGN AXES: expected to vary ---
+======================================================================
+Group condition='eff'  (n=2)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [131973120.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [42, 43]  *** VARIES ***
+  config.seed                       : [1234, 43]  *** VARIES ***
+
+======================================================================
+Group condition='eff+fm+priv'  (n=6)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [2000240640.0, 202752000.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [42, 43, 44, 45]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='eff+fm+sensor+priv'  (n=3)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [2000240640.0, 480215040.0]  *** VARIES ***
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [44, 45, 46]  *** VARIES ***
+  config.seed                       : [44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+fm+servo+priv'  (n=7)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [173506560.0, 2000240640.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+fm+servo+sensor+priv'  (n=3)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [44, 45, 46]  *** VARIES ***
+  config.seed                       : [44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+priv'  (n=6)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [2000240640.0, 480215040.0, 557875200.0]  *** VARIES ***
+  state                             : ['finished', 'running']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+sensor'  (n=2)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [45, 46]  *** VARIES ***
+  config.seed                       : [45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+sensor+priv'  (n=7)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [1203978240.0, 2000240640.0, 480215040.0]  *** VARIES ***
+  state                             : ['finished', 'running']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [1234, 44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='eff+servo'  (n=1)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-PCIE-40GB']
+  seed                              : [44]
+  config.seed                       : [44]
+
+======================================================================
+Group condition='eff+servo+priv'  (n=1)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='eff+servo+sensor'  (n=1)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [44]
+  config.seed                       : [44]
+
+======================================================================
+Group condition='eff+servo+sensor+priv'  (n=2)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [5.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  seed                              : [44, 45]  *** VARIES ***
+  config.seed                       : [44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='fm+priv'  (n=1)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='fm+sensor+priv'  (n=2)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [43, 44]  *** VARIES ***
+  config.seed                       : [43, 44]  *** VARIES ***
+
+======================================================================
+Group condition='fm+servo+priv'  (n=1)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='fm+servo+sensor+priv'  (n=3)
+======================================================================
+  net_params.network_class          : ['FlatForwardModel']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : []
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [43, 44, 45]  *** VARIES ***
+  config.seed                       : [43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='none'  (n=3)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [114769920.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA H200']  *** VARIES ***
+  seed                              : [42, 43, 44]  *** VARIES ***
+  config.seed                       : [1234, 43, 44]  *** VARIES ***
+
+======================================================================
+Group condition='priv'  (n=4)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [42, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [1234, 44, 45, 46]  *** VARIES ***
+
+======================================================================
+Group condition='sensor'  (n=2)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-PCIE-40GB']
+  seed                              : [43, 44]  *** VARIES ***
+  config.seed                       : [43, 44]  *** VARIES ***
+
+======================================================================
+Group condition='sensor+priv'  (n=4)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [0.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [2000240640.0, 45957120.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-80GB', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [43, 44, 45]  *** VARIES ***
+  config.seed                       : [43, 44, 45]  *** VARIES ***
+
+======================================================================
+Group condition='servo'  (n=1)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [True]
+  gpu                               : ['NVIDIA A100-PCIE-40GB']
+  seed                              : [44]
+  config.seed                       : [44]
+
+======================================================================
+Group condition='servo+priv'  (n=1)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [False]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB']
+  seed                              : [42]
+  config.seed                       : [1234]
+
+======================================================================
+Group condition='servo+sensor'  (n=2)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [False]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [480000000.0]
+  summary._step                     : [480215040.0]
+  state                             : ['finished']
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
+  seed                              : [43, 44]  *** VARIES ***
+  config.seed                       : [43, 44]  *** VARIES ***
+
+======================================================================
+Group condition='servo+sensor+priv'  (n=5)
+======================================================================
+  net_params.network_class          : ['DelayedMLP']
+  net_params.efference_length       : [0.0]
+  net_params.privileged_critic      : [True]
+  env_params.servo_kp               : [64.0]
+  env_params.terrain.observed       : [True]
+  net_params.predictor_hidden_sizes : []
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [15728640.0, 2000240640.0, 43499520.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False]
+  gpu                               : ['NVIDIA A100-SXM4-80GB']
+  seed                              : [43, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [43, 44, 45, 46]  *** VARIES ***
+
+======================================================================
+All runs  (n=70)
+======================================================================
+  net_params.network_class          : ['DelayedMLP', 'FlatForwardModel']  *** VARIES ***
+  net_params.efference_length       : [0.0, 5.0]  *** VARIES ***
+  net_params.privileged_critic      : [False, True]  *** VARIES ***
+  env_params.servo_kp               : [0.0, 64.0]  *** VARIES ***
+  env_params.terrain.observed       : [False, True]  *** VARIES ***
+  net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
+  config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
+  summary._step                     : [114769920.0, 1203978240.0, 131973120.0, 15728640.0, 173506560.0, 2000240640.0, 202752000.0, 43499520.0, 45957120.0, 480215040.0, 557875200.0]  *** VARIES ***
+  state                             : ['crashed', 'finished', 'running']  *** VARIES ***
+  repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
+  gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
+  seed                              : [42, 43, 44, 45, 46]  *** VARIES ***
+  config.seed                       : [1234, 43, 44, 45, 46]  *** VARIES ***
+                   condition  seed_pair  reward_480M  steps_to_900  steps_to_800  steps_to_700  steps_to_600     state  steps_trained  wandb_id
+0                   eff+priv  i42/p1234   718.457898           NaN           NaN   393707520.0   235438080.0  finished   4.802150e+08  i5dr3ysp
+1                   eff+priv    i43/p43   738.917676           NaN           NaN   360038400.0   245022720.0  finished   4.802150e+08  77va16yb
+2                   eff+priv    i43/p43   744.530414           NaN           NaN   336199680.0   216023040.0  finished   1.996800e+09  sog4k5xi
+3                   eff+priv    i44/p44   729.508105           NaN           NaN   364953600.0   249692160.0  finished   4.802150e+08  97x0w3zh
+4                   eff+priv    i45/p45   763.512982           NaN           NaN   312115200.0   216023040.0  finished   4.802150e+08  zuli03xv
+5                   eff+priv    i46/p46   721.907306           NaN           NaN   422461440.0   273776640.0   running   5.568922e+08  icdm2seo
+6             eff+servo+priv  i42/p1234   789.216699           NaN           NaN   278446080.0   201768960.0  finished   4.802150e+08  u8xdfjid
+7                        eff  i42/p1234          NaN           NaN           NaN           NaN           NaN   crashed   1.297613e+08  tsmtpb80
+8                        eff    i43/p43   680.704736           NaN           NaN           NaN   288030720.0  finished   4.802150e+08  k7f5z3e2
+9                  eff+servo    i44/p44   729.678552           NaN           NaN   225607680.0   144015360.0  finished   4.802150e+08  ktfnpinb
+10           eff+sensor+priv  i42/p1234   727.493158           NaN           NaN   326615040.0   211353600.0  finished   4.802150e+08  d7ytv3fx
+11           eff+sensor+priv    i44/p44   783.558801           NaN           NaN   288030720.0   182599680.0  finished   4.802150e+08  f3eani0z
+12           eff+sensor+priv    i44/p44   790.410944           NaN   456130560.0   283361280.0   182599680.0  finished   4.802150e+08  h1800i1b
+13           eff+sensor+priv    i45/p45   834.968176           NaN   355368960.0   254607360.0   182599680.0  finished   4.802150e+08  2mxf1piw
+14           eff+sensor+priv    i45/p45   824.861102           NaN   393707520.0   249692160.0   192184320.0  finished   4.802150e+08  kfld9i6s
+15           eff+sensor+priv    i46/p46   790.995416           NaN   470630400.0   283361280.0   206438400.0   running   4.897997e+08  40w5wtaw
+16           eff+sensor+priv    i46/p46   812.628387           NaN   422461440.0   321699840.0   225607680.0  finished   1.996800e+09  u8z1oecr
+17     eff+servo+sensor+priv    i44/p44   839.962329           NaN   292945920.0   168099840.0   124846080.0  finished   4.802150e+08  czyahwd8
+18     eff+servo+sensor+priv    i45/p45   866.818616           NaN   216023040.0   144015360.0   115261440.0  finished   4.802150e+08  2v0xd776
+19                eff+sensor    i45/p45   769.027313           NaN           NaN   331284480.0   240107520.0  finished   4.802150e+08  fwumjubs
+20                eff+sensor    i46/p46   763.294714           NaN           NaN   321699840.0   216023040.0  finished   4.802150e+08  irf6aqn8
+21          eff+servo+sensor    i44/p44   800.114465           NaN   422461440.0   206438400.0   139345920.0  finished   4.802150e+08  hqd7gsvc
+22               eff+fm+priv  i42/p1234          NaN           NaN           NaN           NaN   139345920.0   crashed   2.017690e+08  loaln8fh
+23               eff+fm+priv    i43/p43   827.892529           NaN   345784320.0   211353600.0   139345920.0  finished   4.802150e+08  4vvryasn
+24               eff+fm+priv    i44/p44   841.037756           NaN   350453760.0   177684480.0   134430720.0  finished   4.802150e+08  j70fn2g7
+25               eff+fm+priv    i44/p44   829.687445           NaN   360038400.0   206438400.0   144015360.0  finished   4.802150e+08  zz0reqyq
+26               eff+fm+priv    i45/p45   841.039954           NaN   312115200.0   187269120.0   134430720.0  finished   1.996800e+09  lptmmkvi
+27               eff+fm+priv    i45/p45   838.035187           NaN   340869120.0   192184320.0   153600000.0  finished   4.802150e+08  o2zf70hu
+28         eff+fm+servo+priv  i42/p1234          NaN           NaN           NaN           NaN   153600000.0   crashed   1.730150e+08  jxeblbis
+29         eff+fm+servo+priv    i43/p43   838.082379           NaN   326615040.0   240107520.0   211353600.0  finished   4.802150e+08  5tiufunj
+30         eff+fm+servo+priv    i43/p43   845.617554           NaN   278446080.0   182599680.0   153600000.0  finished   4.802150e+08  u10wy89i
+31         eff+fm+servo+priv    i44/p44   834.011963           NaN   292945920.0   163430400.0   124846080.0  finished   4.802150e+08  4u3vdp6y
+32         eff+fm+servo+priv    i45/p45   828.430298           NaN   345784320.0   206438400.0   177684480.0  finished   4.802150e+08  c5arx0qj
+33         eff+fm+servo+priv    i45/p45   827.089771           NaN   317030400.0   206438400.0   168099840.0  finished   1.996800e+09  suzrcsxy
+34         eff+fm+servo+priv    i46/p46   836.494427           NaN   268861440.0   187269120.0   168099840.0  finished   4.802150e+08  n4a78q9l
+35        eff+fm+sensor+priv    i44/p44   915.437933   360038400.0   201768960.0   139345920.0   115261440.0  finished   4.802150e+08  hd8hctae
+36        eff+fm+sensor+priv    i45/p45   917.547986   345784320.0   211353600.0   129761280.0   110592000.0  finished   4.802150e+08  t7k5z2vm
+37        eff+fm+sensor+priv    i46/p46   895.087598   456130560.0   268861440.0   177684480.0   124846080.0  finished   7.778304e+08  w632zie8
+38  eff+fm+servo+sensor+priv    i44/p44   911.078607   345784320.0   173015040.0   120176640.0    96092160.0  finished   4.802150e+08  da7hn33k
+39  eff+fm+servo+sensor+priv    i45/p45   911.391473   408207360.0   177684480.0   120176640.0    96092160.0  finished   4.802150e+08  2j48qvpr
+40  eff+fm+servo+sensor+priv    i46/p46   927.301147   336199680.0   144015360.0   110592000.0    86507520.0  finished   4.802150e+08  e3rowege
+41                      priv  i42/p1234   703.618243           NaN           NaN   417792000.0   264192000.0  finished   4.802150e+08  oljpt79a
+42                      priv    i44/p44   690.914740           NaN           NaN   441630720.0   264192000.0  finished   4.802150e+08  20qm2p6x
+43                      priv    i45/p45   703.837903           NaN           NaN   427376640.0   254607360.0  finished   4.802150e+08  ng04upc0
+44                      priv    i46/p46   668.332654           NaN           NaN           NaN   312115200.0  finished   4.802150e+08  wm8x4eda
+45                servo+priv  i42/p1234   667.862457           NaN           NaN           NaN   321699840.0  finished   4.802150e+08  es8cg6rj
+46                      none  i42/p1234          NaN           NaN           NaN           NaN           NaN   crashed   1.105920e+08  wmuke3n2
+47                      none    i43/p43   548.601758           NaN           NaN           NaN           NaN  finished   4.802150e+08  pixbjisa
+48                      none    i44/p44   540.308044           NaN           NaN           NaN           NaN  finished   4.802150e+08  4kslt39i
+49                     servo    i44/p44   531.676004           NaN           NaN           NaN           NaN  finished   4.802150e+08  9w7v65x5
+50               sensor+priv    i43/p43   742.337903           NaN           NaN   379207680.0   245022720.0  finished   4.802150e+08  6bhvc12c
+51               sensor+priv    i44/p44          NaN           NaN           NaN           NaN           NaN   crashed   4.325376e+07  bibwqkdw
+52               sensor+priv    i45/p45   737.348016           NaN           NaN   350453760.0   192184320.0  finished   4.802150e+08  06fy8xrb
+53               sensor+priv    i45/p45   735.423022           NaN           NaN   384122880.0   254607360.0  finished   1.996800e+09  ygy5tbhf
+54         servo+sensor+priv    i43/p43          NaN           NaN           NaN           NaN           NaN   crashed   1.449984e+07  83io4eew
+55         servo+sensor+priv    i43/p43   836.384680           NaN   403292160.0   268861440.0   230522880.0  finished   4.802150e+08  umfqdtn2
+56         servo+sensor+priv    i44/p44          NaN           NaN           NaN           NaN           NaN   crashed   4.325376e+07  edla22oh
+57         servo+sensor+priv    i45/p45          NaN           NaN           NaN           NaN           NaN   crashed   1.449984e+07  10ws69ur
+58         servo+sensor+priv    i46/p46   860.869891           NaN   336199680.0   216023040.0   173015040.0  finished   1.531331e+09  kvxc6ij4
+59                    sensor    i43/p43   639.776733           NaN           NaN           NaN   369623040.0  finished   4.802150e+08  g6frznog
+60                    sensor    i44/p44   620.594189           NaN           NaN           NaN   389038080.0  finished   4.802150e+08  c34p08hy
+61              servo+sensor    i43/p43   513.007617           NaN           NaN           NaN           NaN  finished   4.802150e+08  rlgkinux
+62              servo+sensor    i44/p44   568.481415           NaN           NaN           NaN           NaN  finished   4.802150e+08  tzp7655l
+63                   fm+priv  i42/p1234   771.465393           NaN           NaN   317030400.0   206438400.0  finished   4.802150e+08  0xmqmajf
+64             fm+servo+priv  i42/p1234   812.173334           NaN   403292160.0   326615040.0   288030720.0  finished   4.802150e+08  t6srdx8w
+65            fm+sensor+priv    i43/p43   831.653436           NaN   326615040.0   196853760.0   148930560.0  finished   4.802150e+08  tijio74v
+66            fm+sensor+priv    i44/p44   836.503174           NaN   336199680.0   187269120.0   144015360.0  finished   4.802150e+08  f1alm9y1
+67      fm+servo+sensor+priv    i43/p43   905.502692   393707520.0   201768960.0   153600000.0   129761280.0  finished   4.802150e+08  s5lt23ld
+68      fm+servo+sensor+priv    i44/p44   914.962152   389038080.0   187269120.0   120176640.0    91422720.0  finished   4.802150e+08  476uchc2
+69      fm+servo+sensor+priv    i45/p45   903.558508   384122880.0   196853760.0   134430720.0    96092160.0  finished   4.802150e+08  crr2pjup
+
+70 runs, 62 complete, 24 of 24 possible cells with a complete run
