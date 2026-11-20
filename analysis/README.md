@@ -101,7 +101,7 @@ python -m vnl_experiments.artifacts pull   --kind eval --runs analysis/<q>/runs.
 python -m vnl_experiments.artifacts verify
 ```
 
-### The seven kinds
+### The eight kinds
 
 | kind | what | cost | where it can run |
 |---|---|---|---|
@@ -112,6 +112,7 @@ python -m vnl_experiments.artifacts verify
 | `activations` | per-layer unit activations on one dataset | minutes, 1–2 GB each | needs a checkpoint |
 | `video` | rendered rollout mp4 + qpos h5 + stats | minutes, GPU | needs a checkpoint |
 | `weights` | network weights of **one checkpoint step** as flat `.npz` | seconds, CPU, 0.1–30 MB each | needs a checkpoint |
+| `activations_dmc` | walker-terrain unit activations + state on a **fixed course set** | seconds, GPU, 14–20 MB each | needs a checkpoint |
 
 `eval` and `trace` are the same rollout at two resolutions, and the boundary between them
 is worth knowing before reaching for one. `eval` reduces each dataset to cross-clip
@@ -210,6 +211,44 @@ python -m vnl_experiments.artifacts pull --kind eval --runs analysis/<q>/runs.cs
 `pull` rsyncs whole `<kind>/<wandb_id>/` directories and reindexes from the sidecars that
 arrive with them. `plan` separates the runs it could produce locally from the ones that
 need the cluster, so the split is explicit.
+
+### Walker-terrain activations: fixed courses
+
+`activations` is rodent-only (mocap clip sets). For `WalkerWalkTerrain` runs use
+`activations_dmc`, which records `[T, N]` per-step arrays for `N` episodes:
+- every layer's activations;
+- the observation (`target_proprio`), `qpos`, `qvel`, `actions`, `reward`, `reward_terms`;
+- `foot_pos` and `foot_ground_height`, the height of the ground under each foot;
+- `block_sensor`, the `(dist, top)` of the next two blocks, recorded even for blind runs.
+
+The file layout matches `activations` where they overlap, so
+`probes.linear_decoding.Recording` reads both. (`Recording.action_leaf_name()` assumes 4
+hidden actor layers, which every walker run has.)
+
+**Why fixed courses.** In training, a recycled block's height comes from the rng split of
+the step it is recycled on. So the blocks a walker meets depend on its own trajectory, and a
+fixed seed does *not* give two runs the same ground. Instead, each episode walks a
+precomputed 400 m course, placed by absolute position: `envs/walker_courses.py`,
+`envs/terrain_courses/`. The walkers manage about 1.2 m/s, about 30 m per 25 s episode, so
+running off the end is a hard error that should never fire. The `course` spec value names a
+*set*:
+
+| set | episode i walks | |
+|---|---|---|
+| `h0.3_irr1` | `h0.3_irr1_s{i}` | three independent samples of the training terrain |
+| `flat` | `flat` | episodes differ only in starting pose |
+| `stairs_h0.3` | `stairs_h0.3` | regular 0.3 m staircase: the training height without the irregularity |
+
+```bash
+# cluster, once per course set
+sbatch slurm_eval.sh runs.csv activations_dmc --set step=480215040 --set course=h0.3_irr1
+# laptop
+python -m vnl_experiments.artifacts pull --kind activations_dmc --runs analysis/<q>/runs.csv
+```
+
+The step is required and concrete. `resolved.weights_spec_id` joins a recording to the
+`weights` artifact of the same checkpoint. A course file that has been regenerated changes
+`course_sha256`, and with it the spec_id.
 
 ### Weights: one artifact per checkpoint step
 

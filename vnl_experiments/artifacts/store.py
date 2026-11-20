@@ -11,6 +11,7 @@ keyed by ``(kind, wandb_id, spec_id)`` and live under a single root::
       activations/<wandb_id>/<spec_id>.h5
       video/<wandb_id>/<spec_id>.mp4
       weights/<wandb_id>/<spec_id>.npz         <- one per checkpoint step
+      activations_dmc/<wandb_id>/<spec_id>.h5  <- walker-terrain, fixed courses
 
 Every artifact carries a **sidecar** ``.meta.json`` holding its full spec plus the
 producer (module, version, git commit, host, GPU) and a checksum. The sidecar -- not any
@@ -61,7 +62,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "analysis" / "_artifacts" / "manifest.jsonl"
 DEFAULT_ROOT = REPO_ROOT / "artifacts"
 
-KINDS = ("history", "timing", "eval", "activations", "video", "trace", "weights")
+KINDS = ("history", "timing", "eval", "activations", "video", "trace", "weights",
+         "activations_dmc")
 
 #: Kinds with one artifact per checkpoint step, so potentially ~100 per run. Their
 #: manifest rows carry only the identifying part of the producer stamp (see

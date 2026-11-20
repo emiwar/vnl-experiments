@@ -1,0 +1,15 @@
+{
+  "_comment": "Recipes for the fixed walker-terrain courses (see vnl_experiments/envs/walker_courses.py). Unlisted terrain keys take default_terrain_config() values, which match the walker-terrain-factors runs (block_length 0.25, block_halfheight 0.5, start_gap 2). Regenerate the .npz files with `python -m vnl_experiments.envs.walker_courses make`; changing a recipe changes the course sha and so every activations_dmc spec_id that uses it.",
+  "courses": {
+    "h0.3_irr1_s0": {"height": 0.3, "irregularity": 1.0, "gap": 1.0, "seed": 0},
+    "h0.3_irr1_s1": {"height": 0.3, "irregularity": 1.0, "gap": 1.0, "seed": 1},
+    "h0.3_irr1_s2": {"height": 0.3, "irregularity": 1.0, "gap": 1.0, "seed": 2},
+    "flat": {"height": 0.0, "irregularity": 0.0, "gap": 1.0, "seed": 0},
+    "stairs_h0.3": {"height": 0.3, "irregularity": 0.0, "gap": 1.0, "seed": 0}
+  },
+  "sets": {
+    "h0.3_irr1": ["h0.3_irr1_s0", "h0.3_irr1_s1", "h0.3_irr1_s2"],
+    "flat": ["flat"],
+    "stairs_h0.3": ["stairs_h0.3"]
+  }
+}
