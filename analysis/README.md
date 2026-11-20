@@ -101,7 +101,7 @@ python -m vnl_experiments.artifacts pull   --kind eval --runs analysis/<q>/runs.
 python -m vnl_experiments.artifacts verify
 ```
 
-### The six kinds
+### The seven kinds
 
 | kind | what | cost | where it can run |
 |---|---|---|---|
@@ -111,6 +111,7 @@ python -m vnl_experiments.artifacts verify
 | `trace` | per-step rollout traces on one dataset | minutes, 3–10 MB each | needs a checkpoint |
 | `activations` | per-layer unit activations on one dataset | minutes, 1–2 GB each | needs a checkpoint |
 | `video` | rendered rollout mp4 + qpos h5 + stats | minutes, GPU | needs a checkpoint |
+| `weights` | network weights of **one checkpoint step** as flat `.npz` | seconds, CPU, 0.1–30 MB each | needs a checkpoint |
 
 `eval` and `trace` are the same rollout at two resolutions, and the boundary between them
 is worth knowing before reaching for one. `eval` reduces each dataset to cross-clip
@@ -209,6 +210,57 @@ python -m vnl_experiments.artifacts pull --kind eval --runs analysis/<q>/runs.cs
 `pull` rsyncs whole `<kind>/<wandb_id>/` directories and reindexes from the sidecars that
 arrive with them. `plan` separates the runs it could produce locally from the ones that
 need the cluster, so the split is explicit.
+
+### Weights: one artifact per checkpoint step
+
+`weights` is the only kind with an artifact per *checkpoint* rather than per run. Its spec
+is the concrete step (`{"step": 450007040}`, spec_id `w-s0450007040-<hash>`), so every
+checkpoint has its own identity and provenance, and an eval's `resolved.checkpoint_step`
+joins to the weights it measured via `weights.weights_spec_id(step)`. The file holds every
+non-`RngKey` network variable, observation-normaliser statistics included, keyed by nnx
+path (`afferents/arm_L/linear/kernel`), plus the run's `config.json` under `__config__`.
+It does not hold the optimizer or env state, so it cannot be used to resume training.
+The format is documented in `vnl_experiments/artifacts/weights.py`.
+
+`--steps` chooses checkpoints for `plan`, `ensure` and `pull`: `last` (the default),
+`all`, `every:N` (every N-th checkpoint, plus the last), or explicit integer steps.
+
+```bash
+# cluster: export every checkpoint (CPU only, seconds per step; already-exported steps are skipped)
+sbatch slurm_weights.sh todo.txt                 # = ensure --kind weights --steps all
+
+# laptop
+python -m vnl_experiments.artifacts pull --kind weights --runs analysis/<q>/runs.csv               # newest step per run
+python -m vnl_experiments.artifacts pull --kind weights --runs ... --steps 480002048               # one step
+python -m vnl_experiments.artifacts pull --kind weights --runs ... --steps all                     # the whole series
+```
+
+```python
+from vnl_experiments.artifacts.weights import load_weights, iter_weights, restore_into
+w = load_weights(wandb_id)               # latest step held locally; or load_weights(id, step)
+w.arrays["afferents/arm_L/linear/kernel"], w.net_params, w.entry.resolved
+for w in iter_weights(wandb_id, "all"):  # ascending by step
+    ...
+restore_into(network, w)                 # into a built network, e.g. for a forward pass
+```
+
+Things to keep in mind:
+
+- **"last" means last exported or pulled, not last trained.** For `pull --steps last`,
+  "last" is the newest step that has been exported on the cluster. For `load_weights` it
+  is the newest step pulled to the laptop. Run `ensure`, then `pull`, again for runs that
+  are still training.
+- **Steps can be rewritten.** When a requeued run rewinds, it re-saves `step_*` directories
+  that already exist. `resolved.source_sha256` records the `networks/` that was exported,
+  and `ensure` re-exports any step whose checkpoint has changed since. Analyses should
+  still select finished runs.
+- **Diverged runs export faithfully.** `resolved.n_nonfinite` counts NaN/inf values, so
+  weights from a run that blew up can be filtered out from the manifest.
+- **The keys follow the nnx module tree.** Renaming a submodule changes them. Reading the
+  raw arrays still works, but `restore_into` on an old export would need a mapping.
+- Weights rows in the committed manifest keep only `module`/`version`/`git_commit`/`host`
+  of the producer stamp; the full stamp stays in each sidecar. With ~100 steps per run,
+  repeating the ~1 KB stamp on every row would bloat the manifest.
 
 ## 3. The question folder
 

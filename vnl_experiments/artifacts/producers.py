@@ -18,6 +18,7 @@ from typing import Any, Mapping
 
 import pandas as pd
 
+from vnl_experiments.artifacts import weights as weights_mod
 from vnl_experiments.artifacts.store import Entry, Store, producer_stamp, spec_id
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +38,9 @@ class Producer:
     #: Whether several runs may be produced concurrently. True only for producers that
     #: are pure I/O; anything touching the GPU stays serial.
     PARALLEL_SAFE: bool = False
+    #: One artifact per checkpoint step rather than per run. Such kinds take the step
+    #: from ``--steps`` (see :meth:`expand_specs`) instead of a single spec for all runs.
+    PER_STEP: bool = False
 
     def spec(self, **overrides: Any) -> dict[str, Any]:
         """Fill a partial spec out with this producer's defaults."""
@@ -62,12 +66,27 @@ class Producer:
         """Write the artifact to ``out_path``; return the ``resolved`` facts block."""
         raise NotImplementedError
 
+    def expand_specs(self, spec: Mapping[str, Any], ctx: Mapping[str, Any],
+                     steps: Any = None) -> list[dict[str, Any]]:
+        """The concrete specs to produce for one run.
+
+        One, for every kind with a single artifact per run. Per-checkpoint kinds
+        (``weights``) override this to fan a step selector out over the run's checkpoints,
+        which can only be listed where the checkpoints are.
+        """
+        return [dict(spec)]
+
+    def is_stale(self, entry: Entry, ctx: Mapping[str, Any]) -> bool:
+        """Whether an artifact already in the store no longer describes its source."""
+        return False
+
     def ensure(self, store: Store, wandb_id: str, spec: Mapping[str, Any], *,
                ctx: Mapping[str, Any] | None = None, override: bool = False) -> Entry:
         """Produce the artifact unless it is already in the store; record the sidecar."""
         sid = self.spec_id(spec)
         existing = store.lookup(self.KIND, wandb_id, sid)
-        if existing is not None and not override:
+        if existing is not None and not override \
+                and not self.is_stale(existing, ctx or {}):
             return existing
         out_path = store.path_for(self.KIND, wandb_id, sid, self.EXT)
         out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -646,9 +665,74 @@ class TraceProducer(Producer):
         return {**meta, **_asset_provenance(Path(ckpt_dir), ctx.get("env_class"))}
 
 
+class WeightsProducer(Producer):
+    """A checkpoint's network weights as a flat ``.npz``: one artifact per (run, step).
+
+    Delegates to :mod:`vnl_experiments.artifacts.weights`, which documents the format.
+    Unlike every other kind the spec names a **concrete** step, never ``"last"``: each
+    checkpoint needs its own identity, and a spec_id that depends only on the step is
+    what lets the laptop compute which files to pull. ``expand_specs`` turns a
+    ``--steps`` selector (``last`` / ``all`` / ``every:N`` / explicit ints) into those
+    specs, by listing the run's ``step_*`` directories.
+
+    CPU only and cheap (seconds per step); no env is built. ``is_stale`` re-exports a
+    step whose ``networks/`` was rewritten after export, which a requeue rewind does.
+
+    ``VERSION = 1`` (2026-11-20): new kind.
+    """
+
+    KIND = weights_mod.KIND
+    VERSION = weights_mod.VERSION
+    EXT = weights_mod.EXT
+    NEEDS_CHECKPOINT = True
+    PER_STEP = True
+    DEFAULTS = {"step": None}
+
+    def spec(self, **overrides: Any) -> dict[str, Any]:
+        spec = super().spec(**overrides)
+        if spec["step"] is not None:
+            spec["step"] = int(spec["step"])
+        return spec
+
+    def prefix(self, spec: Mapping[str, Any]) -> str:
+        if spec.get("step") is None:
+            raise ValueError("a weights spec needs a concrete step; use --steps")
+        return weights_mod.weights_prefix(spec["step"])
+
+    def expand_specs(self, spec: Mapping[str, Any], ctx: Mapping[str, Any],
+                     steps: Any = None) -> list[dict[str, Any]]:
+        selector = (steps if isinstance(steps, weights_mod.StepSelector)
+                    else weights_mod.StepSelector.parse(steps))
+        ckpt_dir = ctx.get("checkpoint_dir")
+        if ckpt_dir is None:
+            raise FileNotFoundError(
+                "no checkpoint found; weights must be exported where the checkpoints "
+                "live (see `artifacts plan --kind weights`)")
+        available = weights_mod.checkpoint_steps(ckpt_dir)
+        chosen = selector.select(available)
+        if selector.is_explicit:
+            absent = sorted(set(selector.steps) - set(chosen))
+            if absent:
+                raise FileNotFoundError(
+                    f"steps {absent} not among this run's checkpoints "
+                    f"({len(available)} held, last {available[-1] if available else None})")
+        return [self.spec(step=s) for s in chosen]
+
+    def is_stale(self, entry: Entry, ctx: Mapping[str, Any]) -> bool:
+        return weights_mod.is_stale(entry, ctx.get("checkpoint_dir"))
+
+    def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
+                ctx: Mapping[str, Any]) -> dict[str, Any]:
+        ckpt_dir = ctx.get("checkpoint_dir")
+        if ckpt_dir is None:
+            raise FileNotFoundError(f"no checkpoint found for {wandb_id}")
+        return weights_mod.export_step(Path(ckpt_dir), spec["step"], out_path)
+
+
 PRODUCERS: dict[str, Producer] = {
     p.KIND: p() for p in (HistoryProducer, TimingProducer, EvalProducer,
-                          ActivationsProducer, VideoProducer, TraceProducer)
+                          ActivationsProducer, VideoProducer, TraceProducer,
+                          WeightsProducer)
 }
 
 

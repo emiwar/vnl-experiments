@@ -10,6 +10,7 @@ keyed by ``(kind, wandb_id, spec_id)`` and live under a single root::
       history/<wandb_id>/<spec_id>.parquet
       activations/<wandb_id>/<spec_id>.h5
       video/<wandb_id>/<spec_id>.mp4
+      weights/<wandb_id>/<spec_id>.npz         <- one per checkpoint step
 
 Every artifact carries a **sidecar** ``.meta.json`` holding its full spec plus the
 producer (module, version, git commit, host, GPU) and a checksum. The sidecar -- not any
@@ -60,7 +61,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "analysis" / "_artifacts" / "manifest.jsonl"
 DEFAULT_ROOT = REPO_ROOT / "artifacts"
 
-KINDS = ("history", "timing", "eval", "activations", "video", "trace")
+KINDS = ("history", "timing", "eval", "activations", "video", "trace", "weights")
+
+#: Kinds with one artifact per checkpoint step, so potentially ~100 per run. Their
+#: manifest rows carry only the identifying part of the producer stamp (see
+#: :func:`manifest_row`); the sidecar keeps the full stamp.
+COMPACT_MANIFEST_KINDS = frozenset({"weights"})
+#: The producer fields kept in a compact manifest row.
+COMPACT_PRODUCER_KEYS = ("module", "version", "git_commit", "host")
 
 #: Files larger than this are recorded by size only. Checksumming the 22 GB of
 #: activations on every reindex is not worth the minutes it costs.
@@ -330,9 +338,24 @@ class Store:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         with manifest_path.open("w") as fh:
             for entry in entries:
-                json.dump(entry.to_json(), fh, sort_keys=True, separators=(",", ":"))
+                json.dump(manifest_row(entry), fh, sort_keys=True, separators=(",", ":"))
                 fh.write("\n")
         return entries
+
+
+def manifest_row(entry: Entry) -> dict[str, Any]:
+    """The manifest line for ``entry``: its sidecar, slimmed for per-step kinds.
+
+    The full producer stamp (packages, three repos' git state, platform...) is ~1 KB. For
+    a kind with one artifact per checkpoint step, repeating it on every row would grow the
+    committed manifest by megabytes and churn it on every reindex, for information that is
+    identical across a run's steps and still sits in each sidecar.
+    """
+    row = entry.to_json()
+    if entry.kind in COMPACT_MANIFEST_KINDS:
+        row["producer"] = {k: entry.producer[k] for k in COMPACT_PRODUCER_KEYS
+                           if k in entry.producer}
+    return row
 
 
 def read_manifest(manifest_path: Path = MANIFEST_PATH) -> list[Entry]:

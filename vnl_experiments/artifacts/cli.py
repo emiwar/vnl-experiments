@@ -5,6 +5,7 @@
     plan    --kind eval --runs analysis/<q>/runs.csv [--out todo.txt]
     ensure  --kind history --runs analysis/<q>/runs.csv
     pull    --kind eval --runs analysis/<q>/runs.csv
+    pull    --kind weights --runs ... [--steps last|all|every:N|<int>,<int>]
     verify  [--kind eval]
     reindex
     ls      [--kind eval]
@@ -20,6 +21,12 @@ The intended cluster loop is::
     python -m vnl_experiments.artifacts pull --kind eval --runs analysis/q/runs.csv
 
 so that checkpoints stay on the cluster and only the (small) results come down.
+
+``weights`` is the one kind with an artifact per *checkpoint step*. ``--steps`` picks
+which: ``last`` (the default), ``all``, ``every:N`` (every N-th checkpoint plus the
+last), or explicit integer steps. On the cluster ``ensure --kind weights --steps all``
+exports every checkpoint (``slurm_weights.sh``); on the laptop ``pull --kind weights``
+fetches only the newest exported step of each run unless asked for more.
 """
 
 from __future__ import annotations
@@ -29,11 +36,13 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pandas as pd
 
+from vnl_experiments.artifacts import weights as weights_mod
 from vnl_experiments.artifacts.producers import PRODUCERS, get_producer
 from vnl_experiments.artifacts.store import (
     KINDS,
@@ -97,10 +106,20 @@ def run_context(wandb_ids: list[str]) -> dict[str, dict]:
     """Per-run context (name, env class, checkpoint dir) looked up in the run index."""
     from vnl_experiments.wandb_utils import index
 
-    try:
-        df = index.load().set_index("wandb_id")
-    except FileNotFoundError:
-        df = pd.DataFrame()
+    # Every committed project index, the default (rodent) one first. Looking only in the
+    # default made every dm_control run fall back to name == wandb_id, so no checkpoint
+    # was ever found for it.
+    projects = [index.DEFAULT_PROJECT] + sorted(
+        p.stem for p in index.INDEX_DIR.glob("*.jsonl")
+        if p.stem != index.project_slug(index.DEFAULT_PROJECT))
+    frames = []
+    for project in projects:
+        try:
+            frames.append(index.load(project))
+        except FileNotFoundError:
+            continue
+    df = (pd.concat(frames, ignore_index=True).drop_duplicates("wandb_id")
+          .set_index("wandb_id") if frames else pd.DataFrame())
     ctx = {}
     for wid in wandb_ids:
         row = df.loc[wid] if wid in df.index else None
@@ -132,9 +151,50 @@ def _spec_from_args(kind: str, overrides: list[str] | None) -> dict:
 # --------------------------------------------------------------------------------------
 
 
+def _plan_per_step(args, store: Store, producer) -> int:
+    """`plan` for a per-step kind. Which step is "last" on the cluster cannot be known
+    from here, so only explicit steps give a missing list; otherwise show what is held."""
+    selector = weights_mod.StepSelector.parse(args.steps)
+    wandb_ids = read_run_ids(args.runs)
+    print(f"kind={args.kind}  steps={selector}")
+    if selector.is_explicit:
+        missing = {}
+        for step in selector.steps:
+            sid = producer.spec_id(producer.spec(step=step))
+            missing[step] = store.missing(args.kind, sid, wandb_ids)
+            print(f"  step {step} ({sid}): "
+                  f"{len(wandb_ids) - len(missing[step])}/{len(wandb_ids)} present")
+        todo = [w for w in wandb_ids if any(w in m for m in missing.values())]
+    else:
+        todo = []
+        ctx = run_context(wandb_ids)
+        for wid in wandb_ids:
+            held = weights_mod.available_steps(wid, store)
+            ckpt = ctx[wid]["checkpoint_dir"]
+            on_disk = weights_mod.checkpoint_steps(ckpt) if ckpt else None
+            wanted = selector.select(on_disk) if on_disk else None
+            lacking = sorted(set(wanted) - set(held)) if wanted is not None else None
+            if not held or lacking:
+                todo.append(wid)
+            print(f"  {wid}\t{ctx[wid]['wandb_name']}\theld {len(held)}"
+                  + (f" (last {held[-1]})" if held else "")
+                  + (f"\tlocal checkpoint: {len(lacking)} of {len(wanted)} selected "
+                     f"steps to export" if lacking is not None else
+                     "\tno local checkpoint"))
+        print("\n(`last` here means last held locally; the cluster may have newer steps.)")
+    if args.out and todo:
+        ctx = run_context(todo)
+        lines = [f"{w}\t{ctx[w]['wandb_name']}\t{ctx[w]['env_class']}" for w in todo]
+        Path(args.out).write_text("\n".join(lines) + "\n")
+        print(f"\nwrote {args.out} ({len(lines)} runs)")
+    return 0
+
+
 def cmd_plan(args) -> int:
     store = Store()
     producer = get_producer(args.kind)
+    if producer.PER_STEP:
+        return _plan_per_step(args, store, producer)
     spec = _spec_from_args(args.kind, args.set)
     sid = producer.spec_id(spec)
     wandb_ids = read_run_ids(args.runs)
@@ -182,9 +242,50 @@ def cmd_plan(args) -> int:
     return 0
 
 
+def _ensure_per_step(args, store: Store, producer) -> int:
+    """`ensure` for a per-step kind: fan ``--steps`` out over each run's checkpoints."""
+    base = _spec_from_args(args.kind, args.set)
+    wandb_ids = read_run_ids(args.runs)
+    ctx = run_context(wandb_ids)
+    jobs, present, failed = [], 0, 0
+    for wid in wandb_ids:
+        try:
+            specs = producer.expand_specs(base, ctx[wid], args.steps)
+        except Exception as exc:  # noqa: BLE001
+            failed += 1
+            print(f"  {wid}: FAILED {type(exc).__name__}: {exc}")
+            continue
+        for spec in specs:
+            existing = store.lookup(args.kind, wid, producer.spec_id(spec))
+            if existing is not None and not args.override \
+                    and not producer.is_stale(existing, ctx[wid]):
+                present += 1
+            else:
+                jobs.append((wid, spec))
+    print(f"kind={args.kind} steps={args.steps or 'last'}: {len(jobs)} to produce, "
+          f"{present} present, over {len(wandb_ids)} runs")
+
+    made = 0
+    for i, (wid, spec) in enumerate(jobs, start=1):
+        try:
+            entry = producer.ensure(store, wid, spec, ctx=ctx[wid], override=True)
+        except Exception as exc:  # noqa: BLE001
+            failed += 1
+            print(f"  [{i}/{len(jobs)}] {wid} step {spec.get('step')}: FAILED "
+                  f"{type(exc).__name__}: {exc}")
+            continue
+        made += 1
+        print(f"  [{i}/{len(jobs)}] {wid}: {entry.path} ({entry.bytes / 1e3:.0f} kB)")
+    store.reindex()
+    print(f"produced {made}, failed {failed}; manifest reindexed")
+    return 1 if failed else 0
+
+
 def cmd_ensure(args) -> int:
     store = Store()
     producer = get_producer(args.kind)
+    if producer.PER_STEP:
+        return _ensure_per_step(args, store, producer)
     spec = _spec_from_args(args.kind, args.set)
     sid = producer.spec_id(spec)
     wandb_ids = read_run_ids(args.runs)
@@ -233,8 +334,14 @@ def cmd_pull(args) -> int:
     kinds = [args.kind] if args.kind else list(KINDS)
     # Ask rsync for whole <kind>/<wandb_id>/ directories: the sidecars travel with the
     # bytes, so provenance survives the copy and `reindex` can rebuild from them.
-    listing = [f"{kind}/{wid}/" for kind in kinds for wid in wandb_ids]
+    listing = [f"{kind}/{wid}/" for kind in kinds for wid in wandb_ids
+               if kind != weights_mod.KIND]
     list_file = Path(args.out or "/tmp/vnl_pull_list.txt")
+    if weights_mod.KIND in kinds:
+        listing += _weights_pull_listing(remote, wandb_ids, args.steps, list_file)
+    if not listing:
+        print("nothing to pull")
+        return 0
     list_file.write_text("\n".join(listing) + "\n")
 
     store.root.mkdir(parents=True, exist_ok=True)
@@ -250,6 +357,80 @@ def cmd_pull(args) -> int:
         entries = store.reindex()
         print(f"manifest reindexed: {len(entries)} artifacts")
     return 0
+
+
+def _remote_weights_steps(remote: str, wandb_ids: list[str],
+                          list_file: Path) -> dict[str, list[int]]:
+    """Steps whose weights (data file *and* sidecar) exist in the remote store, per run.
+
+    One ``rsync --list-only`` over every run's ``weights/<wid>/``. It goes through the
+    same ssh transport as the pull that follows, so with ssh connection sharing
+    (``ControlMaster``) it costs no second login.
+    """
+    kind = weights_mod.KIND
+    list_file.write_text("".join(f"{kind}/{wid}/\n" for wid in wandb_ids))
+    # With --files-from rsync insists on a destination even for --list-only; give it an
+    # empty throwaway directory (nothing is copied into it).
+    with tempfile.TemporaryDirectory(prefix="vnl_list_") as dest:
+        cmd = ["rsync", "-r", "--list-only", "--ignore-missing-args",
+               f"--files-from={list_file}", f"{remote.rstrip('/')}/", dest]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode not in (0, 23, 24):
+        raise SystemExit(f"listing the remote weights failed ({result.returncode}):\n"
+                         f"{result.stderr}")
+    files: dict[str, set[str]] = {}
+    for line in result.stdout.splitlines():
+        path = line.split()[-1] if line.strip() else ""
+        parts = path.split("/")
+        if len(parts) == 3 and parts[0] == kind:
+            files.setdefault(parts[1], set()).add(parts[2])
+    out: dict[str, list[int]] = {}
+    for wid, names in files.items():
+        steps = []
+        for name in names:
+            if not name.endswith(weights_mod.EXT):
+                continue
+            sid = name[: -len(weights_mod.EXT)]
+            step = weights_mod.step_from_spec_id(sid)
+            # The current version only: an older export of the same step would
+            # otherwise win "last" on a tie and be pulled in place of the current one.
+            if step is not None and f"{sid}.meta.json" in names \
+                    and sid == weights_mod.weights_spec_id(step):
+                steps.append(step)
+        out[wid] = sorted(steps)
+    return out
+
+
+def _weights_pull_listing(remote: str, wandb_ids: list[str], steps: str | None,
+                          list_file: Path) -> list[str]:
+    """The ``--files-from`` lines that fetch the selected weights steps."""
+    kind = weights_mod.KIND
+    selector = weights_mod.StepSelector.parse(steps)
+    if selector.mode == "all":
+        return [f"{kind}/{wid}/" for wid in wandb_ids]
+    if selector.is_explicit:
+        # spec_ids depend only on the step, so the file names are known without asking.
+        chosen = {wid: list(selector.steps) for wid in wandb_ids}
+    else:
+        remote_steps = _remote_weights_steps(remote, wandb_ids, list_file)
+        chosen = {wid: selector.select(remote_steps.get(wid, [])) for wid in wandb_ids}
+        absent = [wid for wid in wandb_ids if not remote_steps.get(wid)]
+        if absent:
+            print(f"no weights in the remote store for {len(absent)} run(s): "
+                  f"{', '.join(absent[:10])}{' ...' if len(absent) > 10 else ''}")
+    lines = []
+    for wid, picked in chosen.items():
+        for step in picked:
+            sid = weights_mod.weights_spec_id(step)
+            lines += [f"{kind}/{wid}/{sid}{weights_mod.EXT}",
+                      f"{kind}/{wid}/{sid}.meta.json"]
+    n_steps = sum(len(v) for v in chosen.values())
+    if selector.is_explicit:
+        print(f"weights: requesting step(s) {selector} for {len(chosen)} run(s); "
+              f"runs that lack a step are skipped silently")
+    else:
+        print(f"weights: {n_steps} step(s) over {len(chosen)} run(s) (steps={selector})")
+    return lines
 
 
 def cmd_verify(args) -> int:
@@ -492,19 +673,24 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--set", action="append", metavar="KEY=JSON",
                        help="override a spec field (repeatable)")
 
+    def add_steps(p):
+        p.add_argument("--steps", default=None, metavar="SEL",
+                       help="per-step kinds (weights) only: last (default), all, "
+                            "every:N, or comma-separated integer steps")
+
     p = sub.add_parser("plan", help="list runs missing an artifact")
-    add_kind(p); add_runs(p); p.add_argument("--out")
+    add_kind(p); add_runs(p); add_steps(p); p.add_argument("--out")
     p.set_defaults(func=cmd_plan)
 
     p = sub.add_parser("ensure", help="produce artifacts that are missing")
-    add_kind(p); add_runs(p)
+    add_kind(p); add_runs(p); add_steps(p)
     p.add_argument("--override", action="store_true", help="re-produce even if present")
     p.add_argument("--workers", type=int, default=8,
                    help="parallelism, honoured only by I/O-bound producers")
     p.set_defaults(func=cmd_ensure)
 
     p = sub.add_parser("pull", help="rsync artifacts from the cluster store")
-    add_kind(p, required=False); add_runs(p)
+    add_kind(p, required=False); add_runs(p); add_steps(p)
     p.add_argument("--remote", help="default: $VNL_CLUSTER_ARTIFACTS")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--out", help="where to write the rsync file list")
@@ -538,6 +724,14 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_adopt)
 
     args = parser.parse_args(argv)
+    if getattr(args, "steps", None) is not None:
+        try:
+            weights_mod.StepSelector.parse(args.steps)
+        except ValueError as exc:
+            parser.error(str(exc))
+        if getattr(args, "kind", None) and not get_producer(args.kind).PER_STEP:
+            parser.error(f"--steps applies only to per-step kinds (weights), "
+                         f"not {args.kind!r}")
     if getattr(args, "kind", None) and args.command in ("plan", "ensure") \
             and args.kind not in PRODUCERS:
         parser.error(f"no producer for kind {args.kind!r}; "

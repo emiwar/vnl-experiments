@@ -1,4 +1,5 @@
-"""Manifest-backed store for derived per-run data (evals, histories, activations, videos).
+"""Manifest-backed store for derived per-run data (evals, histories, activations, videos,
+per-checkpoint network weights).
 
 See :mod:`vnl_experiments.artifacts.store` for the layout and the provenance model, and
 ``analysis/README.md`` for how analyses declare what they need.
