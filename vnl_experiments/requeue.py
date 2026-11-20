@@ -325,6 +325,11 @@ def init_wandb_resumable(
                 print(f"  wandb: rewound {state.wandb_id} to step {resume_from_step}")
             return run
         except Exception as exc:  # noqa: BLE001 -- see docstring
+            # The rejected init has already registered a stream under this id in the
+            # wandb-core service, and wandb >= 0.31 refuses a second stream with the
+            # same id ("run ID ... is in use") instead of reusing it. Shutting the
+            # service down drops the stream; the next init starts a fresh one.
+            wandb.teardown()
             print(f"  wandb: could not rewind to step {resume_from_step} ({exc}); "
                   f"resuming without it. Metrics logged after step "
                   f"{resume_from_step} by the attempt that was killed stay in the "

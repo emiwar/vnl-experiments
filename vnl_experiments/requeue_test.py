@@ -12,6 +12,7 @@ import os
 import signal
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 from absl.testing import absltest
 
@@ -223,6 +224,48 @@ class RewindNeededTest(absltest.TestCase):
             {"attempt": 2},
         ])
         self.assertEqual(requeue.last_logged_step(state), 400640)
+
+
+class InitWandbResumableTest(absltest.TestCase):
+    """A rejected rewind must not leave the run id held by the wandb-core service.
+
+    wandb >= 0.31 registers the run's stream before the server answers, keeps it when
+    the server rejects the rewind, and then refuses the fallback ``resume="allow"`` init
+    with "run ID ... is in use" -- which is how a restart after a hard kill died.
+    """
+
+    def _state(self):
+        return requeue.RunState(wandb_id="abc12345", exp_name="r")
+
+    def test_failed_rewind_tears_down_before_resuming(self):
+        calls = []
+
+        def init(**kwargs):
+            calls.append(("init", kwargs))
+            if "resume_from" in kwargs:
+                raise RuntimeError("Rewind is in private preview")
+            return "run"
+
+        with mock.patch("wandb.init", side_effect=init), \
+             mock.patch("wandb.teardown",
+                        side_effect=lambda *a, **k: calls.append(("teardown", {}))):
+            run = requeue.init_wandb_resumable(
+                self._state(), project="p", config={}, tags=[], notes="",
+                first_attempt=False, resume_from_step=100, rewind=True, verbose=False)
+
+        self.assertEqual(run, "run")
+        self.assertEqual([c[0] for c in calls], ["init", "teardown", "init"])
+        self.assertEqual(calls[-1][1]["resume"], "allow")
+        self.assertEqual(calls[-1][1]["id"], "abc12345")
+
+    def test_successful_rewind_does_not_tear_down(self):
+        with mock.patch("wandb.init", return_value="run") as init, \
+             mock.patch("wandb.teardown") as teardown:
+            requeue.init_wandb_resumable(
+                self._state(), project="p", config={}, tags=[], notes="",
+                first_attempt=False, resume_from_step=100, rewind=True, verbose=False)
+        init.assert_called_once()
+        teardown.assert_not_called()
 
 
 class WandbConfigTest(absltest.TestCase):
