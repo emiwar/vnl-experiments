@@ -25,6 +25,10 @@ Each combination is its own condition, named by the factors that are on
 Readouts, the same definitions as ``walker-terrain-first-look/data.csv``:
 
 * ``reward_480M``: mean eval reward over (430 M, 480 M]; NaN if the run has not got there.
+* ``reward_2B``: mean eval reward over (1.95 G, 2 G], only for runs whose history reaches
+  1.99 G (2 G runs log their last eval at 1.9968 G); NaN otherwise, including for every
+  480 M run and for 2 G runs that stopped or are still running. Never compare it with
+  ``reward_480M`` across cells without checking which runs have it.
 * ``steps_to_{900,800,700,600}``: first eval step at or above that level, up to 480 M;
   NaN if not reached within ``min(steps_trained, 480 M)``. Read ``steps_trained`` before
   treating NaN as "never".
@@ -74,6 +78,9 @@ PRE_EVAL_FIX_COMMIT = "d168093"
 CTRL_DT = 0.025
 READ_AT = 480_000_000
 WINDOW = 50_000_000
+#: reward_2B's window end, and how far a run must get for it to count.
+LONG_READ_AT = 2_000_000_000
+LONG_REACHED = 1_990_000_000
 LEVELS = (900, 800, 700, 600)
 
 FACTORS = ["efference", "forward_model", "blind", "privileged_critic", "servo"]
@@ -246,12 +253,15 @@ def build(runs: pd.DataFrame, store: Store) -> pd.DataFrame:
             # coverage.txt names the gap and the command that closes it.
             s = None
         reward, n = _window(s, READ_AT)
+        long_done = s is not None and s.step.max() >= LONG_REACHED
+        reward_2b = _window(s, LONG_READ_AT)[0] if long_done else np.nan
         rows.append({
             "wandb_id": r["wandb_id"],
             "condition": r["condition"],
             **{f: bool(factors.at[i, f]) for f in FACTORS},
             "seed_pair": f"i{int(r['seed'])}/p{int(r['config.seed'])}",
             "reward_480M": reward,
+            "reward_2B": reward_2b,
             **{f"steps_to_{lv}": _first_at(s, lv) for lv in LEVELS},
             "efference_length": int(r["net_params.efference_length"]),
             "servo_kp": float(pd.to_numeric(r["env_params.servo_kp"]) or 0.0),

@@ -1094,8 +1094,8 @@ Group condition='eff+priv'  (n=6)
   env_params.terrain.observed       : [False]
   net_params.predictor_hidden_sizes : []
   config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
-  summary._step                     : [2000240640.0, 480215040.0, 557875200.0]  *** VARIES ***
-  state                             : ['finished', 'running']  *** VARIES ***
+  summary._step                     : [2000240640.0, 480215040.0, 883261440.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
   gpu                               : ['NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB']  *** VARIES ***
   seed                              : [42, 43, 44, 45, 46]  *** VARIES ***
@@ -1128,8 +1128,8 @@ Group condition='eff+sensor+priv'  (n=7)
   env_params.terrain.observed       : [True]
   net_params.predictor_hidden_sizes : []
   config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
-  summary._step                     : [1203978240.0, 2000240640.0, 480215040.0]  *** VARIES ***
-  state                             : ['finished', 'running']  *** VARIES ***
+  summary._step                     : [1754234880.0, 2000240640.0, 480215040.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
   gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
   seed                              : [42, 44, 45, 46]  *** VARIES ***
@@ -1417,8 +1417,8 @@ All runs  (n=70)
   env_params.terrain.observed       : [False, True]  *** VARIES ***
   net_params.predictor_hidden_sizes : ['[256, 256, 256, 256]']
   config.ppo.total_steps            : [2000000000.0, 480000000.0]  *** VARIES ***
-  summary._step                     : [114769920.0, 1203978240.0, 131973120.0, 15728640.0, 173506560.0, 2000240640.0, 202752000.0, 43499520.0, 45957120.0, 480215040.0, 557875200.0]  *** VARIES ***
-  state                             : ['crashed', 'finished', 'running']  *** VARIES ***
+  summary._step                     : [114769920.0, 131973120.0, 15728640.0, 173506560.0, 1754234880.0, 2000240640.0, 202752000.0, 43499520.0, 45957120.0, 480215040.0, 883261440.0]  *** VARIES ***
+  state                             : ['crashed', 'finished']  *** VARIES ***
   repos.vnl_experiments.dirty       : [False, True]  *** VARIES ***
   gpu                               : ['NVIDIA A100-PCIE-40GB', 'NVIDIA A100-SXM4-40GB', 'NVIDIA A100-SXM4-80GB', 'NVIDIA H200', 'NVIDIA RTX A6000']  *** VARIES ***
   seed                              : [42, 43, 44, 45, 46]  *** VARIES ***
@@ -1429,7 +1429,7 @@ All runs  (n=70)
 2                   eff+priv    i43/p43   744.530414           NaN           NaN   336199680.0   216023040.0  finished   1.996800e+09  sog4k5xi
 3                   eff+priv    i44/p44   729.508105           NaN           NaN   364953600.0   249692160.0  finished   4.802150e+08  97x0w3zh
 4                   eff+priv    i45/p45   763.512982           NaN           NaN   312115200.0   216023040.0  finished   4.802150e+08  zuli03xv
-5                   eff+priv    i46/p46   721.907306           NaN           NaN   422461440.0   273776640.0   running   5.568922e+08  icdm2seo
+5                   eff+priv    i46/p46   721.907306           NaN           NaN   422461440.0   273776640.0   crashed   8.832614e+08  icdm2seo
 6             eff+servo+priv  i42/p1234   789.216699           NaN           NaN   278446080.0   201768960.0  finished   4.802150e+08  u8xdfjid
 7                        eff  i42/p1234          NaN           NaN           NaN           NaN           NaN   crashed   1.297613e+08  tsmtpb80
 8                        eff    i43/p43   680.704736           NaN           NaN           NaN   288030720.0  finished   4.802150e+08  k7f5z3e2
@@ -1439,7 +1439,7 @@ All runs  (n=70)
 12           eff+sensor+priv    i44/p44   790.410944           NaN   456130560.0   283361280.0   182599680.0  finished   4.802150e+08  h1800i1b
 13           eff+sensor+priv    i45/p45   834.968176           NaN   355368960.0   254607360.0   182599680.0  finished   4.802150e+08  2mxf1piw
 14           eff+sensor+priv    i45/p45   824.861102           NaN   393707520.0   249692160.0   192184320.0  finished   4.802150e+08  kfld9i6s
-15           eff+sensor+priv    i46/p46   790.995416           NaN   470630400.0   283361280.0   206438400.0   running   4.897997e+08  40w5wtaw
+15           eff+sensor+priv    i46/p46   790.995416           NaN   470630400.0   283361280.0   206438400.0   crashed   1.752023e+09  40w5wtaw
 16           eff+sensor+priv    i46/p46   812.628387           NaN   422461440.0   321699840.0   225607680.0  finished   1.996800e+09  u8z1oecr
 17     eff+servo+sensor+priv    i44/p44   839.962329           NaN   292945920.0   168099840.0   124846080.0  finished   4.802150e+08  czyahwd8
 18     eff+servo+sensor+priv    i45/p45   866.818616           NaN   216023040.0   144015360.0   115261440.0  finished   4.802150e+08  2v0xd776
@@ -1461,7 +1461,7 @@ All runs  (n=70)
 34         eff+fm+servo+priv    i46/p46   836.494427           NaN   268861440.0   187269120.0   168099840.0  finished   4.802150e+08  n4a78q9l
 35        eff+fm+sensor+priv    i44/p44   915.437933   360038400.0   201768960.0   139345920.0   115261440.0  finished   4.802150e+08  hd8hctae
 36        eff+fm+sensor+priv    i45/p45   917.547986   345784320.0   211353600.0   129761280.0   110592000.0  finished   4.802150e+08  t7k5z2vm
-37        eff+fm+sensor+priv    i46/p46   895.087598   456130560.0   268861440.0   177684480.0   124846080.0  finished   7.778304e+08  w632zie8
+37        eff+fm+sensor+priv    i46/p46   895.087598   456130560.0   268861440.0   177684480.0   124846080.0  finished   1.996800e+09  w632zie8
 38  eff+fm+servo+sensor+priv    i44/p44   911.078607   345784320.0   173015040.0   120176640.0    96092160.0  finished   4.802150e+08  da7hn33k
 39  eff+fm+servo+sensor+priv    i45/p45   911.391473   408207360.0   177684480.0   120176640.0    96092160.0  finished   4.802150e+08  2j48qvpr
 40  eff+fm+servo+sensor+priv    i46/p46   927.301147   336199680.0   144015360.0   110592000.0    86507520.0  finished   4.802150e+08  e3rowege
@@ -1482,7 +1482,7 @@ All runs  (n=70)
 55         servo+sensor+priv    i43/p43   836.384680           NaN   403292160.0   268861440.0   230522880.0  finished   4.802150e+08  umfqdtn2
 56         servo+sensor+priv    i44/p44          NaN           NaN           NaN           NaN           NaN   crashed   4.325376e+07  edla22oh
 57         servo+sensor+priv    i45/p45          NaN           NaN           NaN           NaN           NaN   crashed   1.449984e+07  10ws69ur
-58         servo+sensor+priv    i46/p46   860.869891           NaN   336199680.0   216023040.0   173015040.0  finished   1.531331e+09  kvxc6ij4
+58         servo+sensor+priv    i46/p46   860.869891           NaN   336199680.0   216023040.0   173015040.0  finished   1.996800e+09  kvxc6ij4
 59                    sensor    i43/p43   639.776733           NaN           NaN           NaN   369623040.0  finished   4.802150e+08  g6frznog
 60                    sensor    i44/p44   620.594189           NaN           NaN           NaN   389038080.0  finished   4.802150e+08  c34p08hy
 61              servo+sensor    i43/p43   513.007617           NaN           NaN           NaN           NaN  finished   4.802150e+08  rlgkinux
