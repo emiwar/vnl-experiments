@@ -49,6 +49,19 @@ Things that differ from WalkerWalk at nonzero height
 * ``terrain.observed=True`` appends ``(distance, height)`` of the next
   ``terrain.obs_blocks`` blocks ahead of the torso. Blind (the default) makes blocks an
   unforeseen perturbation; observed makes them anticipatable.
+
+Fixed courses (offline recording only)
+--------------------------------------
+Training draws a fresh layout per episode, and a recycled block's height comes from the
+rng split of the step it is recycled on -- so *which* blocks a walker meets depends on its
+own trajectory, and a fixed seed does not give two policies the same ground.
+:meth:`WalkerTerrain.reset_on_course` instead takes a precomputed course (absolute block
+centres and heights, see :mod:`vnl_experiments.envs.walker_courses`): the first ``K``
+course blocks are placed at reset and every recycle takes the next course blocks *by
+absolute position*, so every policy, at every speed, walks the same ground. The course
+rides in ``state.info``, so a vmapped batch can walk different courses. Whether it is
+there is a pytree-structure fact, so plain ``reset``/``step`` -- the training path --
+trace exactly as before.
 """
 
 from __future__ import annotations
@@ -58,6 +71,7 @@ from typing import Any
 import jax
 import jax.numpy as jp
 import mujoco
+import numpy as np
 from ml_collections import config_dict
 from mujoco import mjx
 from mujoco_playground._src import mjx_env, reward
@@ -66,6 +80,30 @@ from mujoco_playground._src.dm_control_suite import walker
 #: How far below the floor a zero-height block's top sits. Anything below the floor plane
 #: is only reachable by a foot that is already penetrating it, so 1 cm is plenty.
 _BURY_DEPTH = 0.01
+
+#: Where a block goes once a fixed course has run out: far behind the start and buried.
+#: The recorder treats any block here as an error (the course was too short).
+PARK_X = -1000.0
+
+
+def sample_blocks(terrain, rng: jax.Array, n: int) -> tuple[jax.Array, jax.Array]:
+    """``n`` (top height, period) pairs, where period = block length + the gap before it.
+
+    Module-level so that fixed courses (:mod:`walker_courses`) are drawn by exactly the
+    formula training uses.
+    """
+    sigma = terrain.irregularity
+    k_h, k_g = jax.random.split(rng)
+    u_h = jax.random.uniform(k_h, (n,), minval=-1.0, maxval=1.0)
+    u_g = jax.random.uniform(k_g, (n,), minval=-1.0, maxval=1.0)
+    heights = terrain.height * (1 + sigma * u_h)
+    gaps = terrain.gap * (1 + sigma * u_g)
+    return heights, 2 * float(terrain.block_length) + gaps
+
+
+def max_block_top(terrain) -> float:
+    """The tallest top a block can have before it would float (see ``_check_config``)."""
+    return 2 * float(terrain.block_halfheight) - _BURY_DEPTH
 
 
 def default_terrain_config() -> config_dict.ConfigDict:
@@ -149,7 +187,7 @@ class WalkerTerrain(walker.PlanarWalker):
         if t.height < 0 or t.gap < 0:
             raise ValueError("terrain.height and terrain.gap must be >= 0")
         max_h = t.height * (1 + sigma)
-        if max_h > 2 * t.block_halfheight - _BURY_DEPTH:
+        if max_h > max_block_top(t):
             raise ValueError(
                 f"the tallest block ({max_h:g} m) would float: raise "
                 f"terrain.block_halfheight above {max_h / 2:g}"
@@ -177,14 +215,7 @@ class WalkerTerrain(walker.PlanarWalker):
 
     def _sample_blocks(self, rng: jax.Array, n: int) -> tuple[jax.Array, jax.Array]:
         """``n`` (top height, period) pairs, where period = block length + the gap before it."""
-        t = self._terrain
-        sigma = t.irregularity
-        k_h, k_g = jax.random.split(rng)
-        u_h = jax.random.uniform(k_h, (n,), minval=-1.0, maxval=1.0)
-        u_g = jax.random.uniform(k_g, (n,), minval=-1.0, maxval=1.0)
-        heights = t.height * (1 + sigma * u_h)
-        gaps = t.gap * (1 + sigma * u_g)
-        return heights, 2 * self._L + gaps
+        return sample_blocks(self._terrain, rng, n)
 
     def _block_z(self, heights: jax.Array) -> jax.Array:
         """Centre z for a block whose top is at ``heights`` (buried when ~0)."""
@@ -215,6 +246,57 @@ class WalkerTerrain(walker.PlanarWalker):
         new_z = jp.where(behind, self._block_z(heights), mocap_pos[:, 2])
         return jp.stack([new_x, mocap_pos[:, 1], new_z], axis=-1)
 
+    # ------------------------------------------------------------------------------
+    # Fixed courses
+    # ------------------------------------------------------------------------------
+
+    def check_course(self, x, top) -> None:
+        """Refuse a course this env cannot place (wrong length, too tall, too short)."""
+        x, top = np.asarray(x), np.asarray(top)
+        finite = np.isfinite(x)
+        if finite.sum() < self._K:
+            raise ValueError(f"course has {int(finite.sum())} blocks; this env places "
+                             f"{self._K} at reset")
+        if np.any(np.diff(x[finite]) <= 0):
+            raise ValueError("course block centres must be strictly ascending")
+        limit = max_block_top(self._terrain)
+        if np.max(top[finite]) > limit:
+            raise ValueError(f"course block of height {np.max(top[finite]):g} m would float "
+                             f"(block_halfheight {self._H}: max {limit:g} m)")
+
+    def _course_mocap_pos(self, course_x: jax.Array, course_top: jax.Array) -> jax.Array:
+        x = course_x[: self._K]
+        return jp.stack([x, jp.zeros_like(x), self._block_z(course_top[: self._K])], axis=-1)
+
+    def _recycle_course(self, mocap_pos: jax.Array, torso_x: jax.Array,
+                        course_x: jax.Array, course_top: jax.Array) -> jax.Array:
+        """``_recycle`` on a fixed course: recycled blocks take the next course entries.
+
+        Stateless. Positions are copied from the course exactly, so the front-most
+        block's course index is a ``searchsorted`` away; recycled blocks take the
+        entries after it, in any order (they all land at absolute course positions).
+        Past the end of the course (``+inf`` padding included) a block parks at
+        :data:`PARK_X`, buried.
+        """
+        x = mocap_pos[:, 0]
+        behind = x + self._L < torso_x - self._terrain.back_margin
+        m = course_x.shape[0]
+        # The front-most *live* block fixes the course index. Once every block is
+        # parked there is no live block, and the max would be PARK_X -- whose
+        # searchsorted is 0, silently restarting the course from its beginning.
+        live = x > PARK_X / 2
+        front = jp.max(jp.where(live, x, -jp.inf))
+        nxt = jp.where(live.any(), jp.searchsorted(course_x, front, side="right"), m)
+        idx = nxt + jp.cumsum(behind) - 1
+        idx_c = jp.minimum(idx, m - 1)
+        cx, ct = course_x[idx_c], course_top[idx_c]
+        valid = (idx < m) & jp.isfinite(cx)
+        new_x = jp.where(behind, jp.where(valid, cx, PARK_X), x)
+        new_z = jp.where(behind,
+                         jp.where(valid, self._block_z(ct), -2.0 * self._H),
+                         mocap_pos[:, 2])
+        return jp.stack([new_x, mocap_pos[:, 1], new_z], axis=-1)
+
     def block_tops(self, data: mjx.Data) -> jax.Array:
         """Top height of every block (negative for a buried one)."""
         return data.mocap_pos[:, 2] + self._H
@@ -224,6 +306,15 @@ class WalkerTerrain(walker.PlanarWalker):
     # ------------------------------------------------------------------------------
 
     def reset(self, rng: jax.Array) -> mjx_env.State:
+        return self._reset(rng, None)
+
+    def reset_on_course(self, rng: jax.Array, course_x: jax.Array,
+                        course_top: jax.Array) -> mjx_env.State:
+        """Reset onto a fixed course (see the module docstring). ``rng`` still sets the
+        initial pose, consumed exactly as :meth:`reset` does."""
+        return self._reset(rng, (course_x, course_top))
+
+    def _reset(self, rng: jax.Array, course) -> mjx_env.State:
         # The first three lines consume rng exactly as PlanarWalker.reset does, so the
         # initial pose matches the plain walker for the same key.
         rng, rng1, rng2 = jax.random.split(rng, 3)
@@ -239,7 +330,8 @@ class WalkerTerrain(walker.PlanarWalker):
         data = mjx_env.make_data(
             self.mj_model,
             qpos=qpos,
-            mocap_pos=self._initial_mocap_pos(rng_terrain),
+            mocap_pos=(self._initial_mocap_pos(rng_terrain) if course is None
+                       else self._course_mocap_pos(*course)),
             impl=self.mjx_model.impl.value,
             naconmax=self._config.naconmax,
             njmax=self._config.njmax,
@@ -253,6 +345,8 @@ class WalkerTerrain(walker.PlanarWalker):
             "reward/move": jp.zeros(()),
         }
         info = {"rng": rng}
+        if course is not None:
+            info["course_x"], info["course_top"] = course
         reward_, done = jp.zeros(2)
         obs = self._get_obs(data, info)
         return mjx_env.State(data, obs, reward_, done, metrics, info)
@@ -267,7 +361,12 @@ class WalkerTerrain(walker.PlanarWalker):
         # pass, which is fine because a recycled block is far from the walker either way.
         rng, rng_recycle = jax.random.split(state.info["rng"])
         torso_x = data.xpos[self._torso_id, 0]
-        data = data.replace(mocap_pos=self._recycle(data.mocap_pos, torso_x, rng_recycle))
+        if "course_x" in state.info:     # static: a pytree-structure fact
+            new_pos = self._recycle_course(data.mocap_pos, torso_x,
+                                           state.info["course_x"], state.info["course_top"])
+        else:
+            new_pos = self._recycle(data.mocap_pos, torso_x, rng_recycle)
+        data = data.replace(mocap_pos=new_pos)
         info = {**state.info, "rng": rng}
 
         obs = self._get_obs(data, info)

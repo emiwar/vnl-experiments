@@ -729,10 +729,98 @@ class WeightsProducer(Producer):
         return weights_mod.export_step(Path(ckpt_dir), spec["step"], out_path)
 
 
+class DmcActivationsProducer(Producer):
+    """Unit activations of a walker-terrain policy on a fixed course set, as HDF5.
+
+    Delegates to :func:`vnl_experiments.dmc.record_activations.record`. A separate kind
+    from ``activations`` (rodent, mocap clips) so that the two can never share a spec_id
+    or be read as one another; the file layout is the same where they overlap, so
+    :class:`~vnl_experiments.probes.linear_decoding.Recording` reads both.
+
+    Spec:
+
+    * ``course`` -- a course *set* from ``envs/terrain_courses/courses.json``
+      (``h0.3_irr1``: one training-distribution course per episode; ``flat``;
+      ``stairs_h0.3``). Fixed courses are what make the ground identical across runs;
+      see :mod:`vnl_experiments.envs.walker_courses` for why a seed is not enough.
+    * ``step`` -- the checkpoint step, required and concrete (no ``"last"``), so a
+      recording is pinned to exactly one set of weights; ``resolved.weights_spec_id``
+      joins it to the ``weights`` artifact of the same checkpoint.
+    * ``n_episodes`` / ``seed`` -- episodes per file and the key their starting poses
+      come from.
+    * ``course_sha256`` -- filled in from the committed course files, never passed: a
+      regenerated course is different ground, so it must mint a different spec_id.
+
+    The step's weights are read from ``networks/`` directly (no optimizer template, no
+    100+ MB ``metadata.pkl``), via the same path the ``weights`` kind exports with.
+
+    ``VERSION = 1`` (2026-11-20): new kind.
+    """
+
+    KIND = "activations_dmc"
+    VERSION = 1
+    EXT = ".h5"
+    NEEDS_CHECKPOINT = True
+    DEFAULTS = {"course": None, "step": None, "n_episodes": 3, "seed": 0,
+                "course_sha256": None}
+
+    def spec(self, **overrides: Any) -> dict[str, Any]:
+        from vnl_experiments.envs import walker_courses
+
+        given_sha = overrides.pop("course_sha256", None)
+        spec = super().spec(**overrides)
+        if spec["course"] is not None:
+            spec["course"] = str(spec["course"])
+            sha = walker_courses.set_sha256(spec["course"])
+            if given_sha is not None and given_sha != sha:
+                raise ValueError(
+                    f"course set {spec['course']!r} now hashes to {sha[:12]}, not the "
+                    f"requested {str(given_sha)[:12]}: its course files have changed")
+            spec["course_sha256"] = sha
+        if spec["step"] is not None:
+            spec["step"] = int(spec["step"])
+        spec["n_episodes"], spec["seed"] = int(spec["n_episodes"]), int(spec["seed"])
+        return spec
+
+    def prefix(self, spec: Mapping[str, Any]) -> str:
+        if spec.get("course") is None or spec.get("step") is None:
+            raise ValueError("activations_dmc needs --set course=<set> --set step=<int>")
+        return f"dact-{spec['course']}-s{spec['step']:010d}"
+
+    def produce(self, wandb_id: str, spec: Mapping[str, Any], out_path: Path,
+                ctx: Mapping[str, Any]) -> dict[str, Any]:
+        from vnl_experiments.dmc.record_activations import load_checkpoint_step, record
+
+        ckpt_dir = ctx.get("checkpoint_dir")
+        if ckpt_dir is None:
+            raise FileNotFoundError(
+                f"no checkpoint found for {wandb_id}; activations must be recorded where "
+                f"the checkpoints live (see `artifacts plan --kind activations_dmc`)")
+        task = ctx.get("env_class")
+        if not task:
+            raise ValueError(f"no task for {wandb_id} in the run index")
+        config, arrays, source_sha = load_checkpoint_step(ckpt_dir, spec["step"])
+        facts = record(out_path, task=task, config=config, arrays=arrays,
+                       step=spec["step"], course_set=spec["course"],
+                       n_episodes=spec["n_episodes"], seed=spec["seed"],
+                       run_name=ctx.get("wandb_name", wandb_id))
+        env_params = config.get("env_params", {})
+        return {
+            **facts,
+            "source_sha256": source_sha,
+            "weights_spec_id": weights_mod.weights_spec_id(spec["step"]),
+            # What was simulated, read back from the run's own config: the factors
+            # these runs differ in, so an analysis can check them against WandB.
+            "terrain": env_params.get("terrain"),
+            "servo_kp": env_params.get("servo_kp"),
+            "impl": env_params.get("impl"),
+        }
+
+
 PRODUCERS: dict[str, Producer] = {
     p.KIND: p() for p in (HistoryProducer, TimingProducer, EvalProducer,
                           ActivationsProducer, VideoProducer, TraceProducer,
-                          WeightsProducer)
+                          WeightsProducer, DmcActivationsProducer)
 }
 
 

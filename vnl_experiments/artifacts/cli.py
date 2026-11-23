@@ -459,8 +459,10 @@ def cmd_verify(args) -> int:
     for entry in entries:
         stems.setdefault((store.root / entry.path).parent.resolve(),
                          set()).add(entry.spec_id)
+    # Scan only the kinds being verified: with --kind, every other kind's files have no
+    # entry in `entries` and would all be reported as orphans.
     orphans = [
-        p for p in store.root.glob("*/*/*")
+        p for p in store.root.glob(f"{args.kind or '*'}/*/*")
         if p.is_file() and not p.name.endswith(".meta.json")
         and p.resolve() not in described
         and not any(p.name.startswith(s) for s in stems.get(p.parent.resolve(), ()))
