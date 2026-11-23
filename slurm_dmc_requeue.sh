@@ -4,6 +4,7 @@
 #SBATCH --requeue --open-mode=append
 #SBATCH -o slurm_logs/%j.out -e slurm_logs/%j.err
 #SBATCH --signal=USR1@120
+#SBATCH --exclude=holygpu8a19102,holygpu7c2313
 #
 # Preemption-safe dm_control_suite training on the requeue partition.
 #
