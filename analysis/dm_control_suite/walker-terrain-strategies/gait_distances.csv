@@ -1,0 +1,1892 @@
+a,b,relation,n_diff,diff,dist,dist_joints
+i5dr3ysp,77va16yb,same condition,0,-,0.09099,0.10431
+i5dr3ysp,sog4k5xi,same condition,0,-,0.20505,0.23728
+i5dr3ysp,97x0w3zh,same condition,0,-,0.88533,1.0496
+i5dr3ysp,zuli03xv,same condition,0,-,0.7804,0.90971
+i5dr3ysp,icdm2seo,same condition,0,-,0.18364,0.21513
+i5dr3ysp,u8xdfjid,same seed,1,servo,0.37687,0.45117
+i5dr3ysp,k7f5z3e2,neither,1,privileged_critic,0.30643,0.34716
+i5dr3ysp,ktfnpinb,neither,2,privileged_critic+servo,0.35878,0.43023
+i5dr3ysp,d7ytv3fx,same seed,1,sensor,0.8274,0.98471
+i5dr3ysp,f3eani0z,neither,1,sensor,0.71934,0.8581
+i5dr3ysp,h1800i1b,neither,1,sensor,0.68133,0.80175
+i5dr3ysp,2mxf1piw,neither,1,sensor,0.6742,0.79571
+i5dr3ysp,kfld9i6s,neither,1,sensor,0.42522,0.50448
+i5dr3ysp,40w5wtaw,neither,1,sensor,0.49337,0.56715
+i5dr3ysp,u8z1oecr,neither,1,sensor,0.54021,0.64182
+i5dr3ysp,czyahwd8,neither,2,sensor+servo,0.42965,0.505
+i5dr3ysp,2v0xd776,neither,2,sensor+servo,0.52701,0.62512
+i5dr3ysp,fwumjubs,neither,2,sensor+privileged_critic,0.69101,0.80914
+i5dr3ysp,irf6aqn8,neither,2,sensor+privileged_critic,0.75903,0.9005
+i5dr3ysp,hqd7gsvc,neither,3,sensor+privileged_critic+servo,0.56747,0.65707
+i5dr3ysp,4vvryasn,neither,1,forward_model,0.64455,0.74937
+i5dr3ysp,j70fn2g7,neither,1,forward_model,0.27487,0.32783
+i5dr3ysp,zz0reqyq,neither,1,forward_model,0.33592,0.39655
+i5dr3ysp,lptmmkvi,neither,1,forward_model,0.247,0.29932
+i5dr3ysp,o2zf70hu,neither,1,forward_model,0.29071,0.3366
+i5dr3ysp,5tiufunj,neither,2,forward_model+servo,0.47393,0.56494
+i5dr3ysp,u10wy89i,neither,2,forward_model+servo,0.49431,0.58301
+i5dr3ysp,4u3vdp6y,neither,2,forward_model+servo,0.76078,0.89229
+i5dr3ysp,c5arx0qj,neither,2,forward_model+servo,0.69501,0.81254
+i5dr3ysp,suzrcsxy,neither,2,forward_model+servo,0.4373,0.52364
+i5dr3ysp,n4a78q9l,neither,2,forward_model+servo,0.77712,0.91043
+i5dr3ysp,hd8hctae,neither,2,forward_model+sensor,0.65756,0.77803
+i5dr3ysp,t7k5z2vm,neither,2,forward_model+sensor,0.62893,0.74994
+i5dr3ysp,w632zie8,neither,2,forward_model+sensor,0.78689,0.93654
+i5dr3ysp,da7hn33k,neither,3,forward_model+sensor+servo,0.52089,0.60275
+i5dr3ysp,2j48qvpr,neither,3,forward_model+sensor+servo,0.52238,0.60625
+i5dr3ysp,e3rowege,neither,3,forward_model+sensor+servo,0.57101,0.67734
+i5dr3ysp,oljpt79a,same seed,1,efference,0.24204,0.28441
+i5dr3ysp,20qm2p6x,neither,1,efference,0.79569,0.92044
+i5dr3ysp,ng04upc0,neither,1,efference,0.75803,0.89039
+i5dr3ysp,wm8x4eda,neither,1,efference,0.73267,0.84101
+i5dr3ysp,es8cg6rj,same seed,2,efference+servo,0.83775,0.97596
+i5dr3ysp,pixbjisa,neither,2,efference+privileged_critic,0.29262,0.34728
+i5dr3ysp,4kslt39i,neither,2,efference+privileged_critic,0.74285,0.85896
+i5dr3ysp,9w7v65x5,neither,3,efference+privileged_critic+servo,0.72651,0.85039
+i5dr3ysp,6bhvc12c,neither,2,efference+sensor,0.38211,0.45532
+i5dr3ysp,06fy8xrb,neither,2,efference+sensor,0.40722,0.47711
+i5dr3ysp,ygy5tbhf,neither,2,efference+sensor,0.41031,0.4855
+i5dr3ysp,umfqdtn2,neither,3,efference+sensor+servo,0.47715,0.56923
+i5dr3ysp,kvxc6ij4,neither,3,efference+sensor+servo,0.65852,0.7678
+i5dr3ysp,g6frznog,neither,3,efference+sensor+privileged_critic,0.42403,0.50321
+i5dr3ysp,c34p08hy,neither,3,efference+sensor+privileged_critic,0.9235,1.1034
+i5dr3ysp,rlgkinux,neither,4,efference+sensor+privileged_critic+servo,0.61408,0.70691
+i5dr3ysp,tzp7655l,neither,4,efference+sensor+privileged_critic+servo,0.64685,0.75201
+i5dr3ysp,0xmqmajf,same seed,2,efference+forward_model,0.7564,0.88434
+i5dr3ysp,t6srdx8w,same seed,3,efference+forward_model+servo,0.46461,0.55497
+i5dr3ysp,tijio74v,neither,3,efference+forward_model+sensor,0.41301,0.49702
+i5dr3ysp,f1alm9y1,neither,3,efference+forward_model+sensor,0.70017,0.80838
+i5dr3ysp,s5lt23ld,neither,4,efference+forward_model+sensor+servo,0.52537,0.62433
+i5dr3ysp,476uchc2,neither,4,efference+forward_model+sensor+servo,0.62852,0.73616
+i5dr3ysp,crr2pjup,neither,4,efference+forward_model+sensor+servo,0.60209,0.70307
+77va16yb,sog4k5xi,replicate,0,-,0.1544,0.18128
+77va16yb,97x0w3zh,same condition,0,-,0.86051,1.0174
+77va16yb,zuli03xv,same condition,0,-,0.75329,0.87386
+77va16yb,icdm2seo,same condition,0,-,0.1251,0.14884
+77va16yb,u8xdfjid,neither,1,servo,0.34645,0.41412
+77va16yb,k7f5z3e2,same seed,1,privileged_critic,0.26217,0.30189
+77va16yb,ktfnpinb,neither,2,privileged_critic+servo,0.32867,0.39463
+77va16yb,d7ytv3fx,neither,1,sensor,0.79749,0.94658
+77va16yb,f3eani0z,neither,1,sensor,0.68346,0.81403
+77va16yb,h1800i1b,neither,1,sensor,0.64839,0.7601
+77va16yb,2mxf1piw,neither,1,sensor,0.63731,0.75056
+77va16yb,kfld9i6s,neither,1,sensor,0.39165,0.4687
+77va16yb,40w5wtaw,neither,1,sensor,0.46485,0.53364
+77va16yb,u8z1oecr,neither,1,sensor,0.49106,0.58642
+77va16yb,czyahwd8,neither,2,sensor+servo,0.39425,0.46369
+77va16yb,2v0xd776,neither,2,sensor+servo,0.48775,0.57818
+77va16yb,fwumjubs,neither,2,sensor+privileged_critic,0.65953,0.76881
+77va16yb,irf6aqn8,neither,2,sensor+privileged_critic,0.72721,0.85979
+77va16yb,hqd7gsvc,neither,3,sensor+privileged_critic+servo,0.53534,0.61585
+77va16yb,4vvryasn,same seed,1,forward_model,0.62283,0.72129
+77va16yb,j70fn2g7,neither,1,forward_model,0.24103,0.28614
+77va16yb,zz0reqyq,neither,1,forward_model,0.29074,0.34542
+77va16yb,lptmmkvi,neither,1,forward_model,0.22656,0.27471
+77va16yb,o2zf70hu,neither,1,forward_model,0.24863,0.29102
+77va16yb,5tiufunj,same seed,2,forward_model+servo,0.4309,0.51542
+77va16yb,u10wy89i,same seed,2,forward_model+servo,0.45183,0.53583
+77va16yb,4u3vdp6y,neither,2,forward_model+servo,0.72797,0.85185
+77va16yb,c5arx0qj,neither,2,forward_model+servo,0.65945,0.76958
+77va16yb,suzrcsxy,neither,2,forward_model+servo,0.39497,0.4742
+77va16yb,n4a78q9l,neither,2,forward_model+servo,0.74588,0.87164
+77va16yb,hd8hctae,neither,2,forward_model+sensor,0.62867,0.74256
+77va16yb,t7k5z2vm,neither,2,forward_model+sensor,0.58854,0.70179
+77va16yb,w632zie8,neither,2,forward_model+sensor,0.75828,0.90175
+77va16yb,da7hn33k,neither,3,forward_model+sensor+servo,0.4837,0.55764
+77va16yb,2j48qvpr,neither,3,forward_model+sensor+servo,0.4831,0.55797
+77va16yb,e3rowege,neither,3,forward_model+sensor+servo,0.52915,0.62667
+77va16yb,oljpt79a,neither,1,efference,0.22414,0.26764
+77va16yb,20qm2p6x,neither,1,efference,0.77024,0.88704
+77va16yb,ng04upc0,neither,1,efference,0.73204,0.85772
+77va16yb,wm8x4eda,neither,1,efference,0.70704,0.8088
+77va16yb,es8cg6rj,neither,2,efference+servo,0.80775,0.93808
+77va16yb,pixbjisa,same seed,2,efference+privileged_critic,0.26323,0.31319
+77va16yb,4kslt39i,neither,2,efference+privileged_critic,0.71527,0.824
+77va16yb,9w7v65x5,neither,3,efference+privileged_critic+servo,0.69719,0.81216
+77va16yb,6bhvc12c,same seed,2,efference+sensor,0.3401,0.40891
+77va16yb,06fy8xrb,neither,2,efference+sensor,0.35523,0.42027
+77va16yb,ygy5tbhf,neither,2,efference+sensor,0.36727,0.43734
+77va16yb,umfqdtn2,same seed,3,efference+sensor+servo,0.43915,0.52516
+77va16yb,kvxc6ij4,neither,3,efference+sensor+servo,0.62691,0.72788
+77va16yb,g6frznog,same seed,3,efference+sensor+privileged_critic,0.37808,0.45034
+77va16yb,c34p08hy,neither,3,efference+sensor+privileged_critic,0.89524,1.0682
+77va16yb,rlgkinux,same seed,4,efference+sensor+privileged_critic+servo,0.58739,0.6719
+77va16yb,tzp7655l,neither,4,efference+sensor+privileged_critic+servo,0.61695,0.71399
+77va16yb,0xmqmajf,neither,2,efference+forward_model,0.7286,0.84718
+77va16yb,t6srdx8w,neither,3,efference+forward_model+servo,0.41632,0.49942
+77va16yb,tijio74v,same seed,3,efference+forward_model+sensor,0.37561,0.45449
+77va16yb,f1alm9y1,neither,3,efference+forward_model+sensor,0.67978,0.78116
+77va16yb,s5lt23ld,same seed,4,efference+forward_model+sensor+servo,0.4885,0.58095
+77va16yb,476uchc2,neither,4,efference+forward_model+sensor+servo,0.5925,0.69326
+77va16yb,crr2pjup,neither,4,efference+forward_model+sensor+servo,0.56515,0.65875
+sog4k5xi,97x0w3zh,same condition,0,-,0.85379,1.0045
+sog4k5xi,zuli03xv,same condition,0,-,0.72674,0.83587
+sog4k5xi,icdm2seo,same condition,0,-,0.078024,0.089368
+sog4k5xi,u8xdfjid,neither,1,servo,0.40522,0.47973
+sog4k5xi,k7f5z3e2,same seed,1,privileged_critic,0.27698,0.32797
+sog4k5xi,ktfnpinb,neither,2,privileged_critic+servo,0.39244,0.46624
+sog4k5xi,d7ytv3fx,neither,1,sensor,0.79173,0.93494
+sog4k5xi,f3eani0z,neither,1,sensor,0.66034,0.78144
+sog4k5xi,h1800i1b,neither,1,sensor,0.62691,0.7279
+sog4k5xi,2mxf1piw,neither,1,sensor,0.60916,0.71159
+sog4k5xi,kfld9i6s,neither,1,sensor,0.34056,0.40508
+sog4k5xi,40w5wtaw,neither,1,sensor,0.47415,0.53839
+sog4k5xi,u8z1oecr,neither,1,sensor,0.42554,0.50718
+sog4k5xi,czyahwd8,neither,2,sensor+servo,0.41963,0.49022
+sog4k5xi,2v0xd776,neither,2,sensor+servo,0.50011,0.59028
+sog4k5xi,fwumjubs,neither,2,sensor+privileged_critic,0.63537,0.7327
+sog4k5xi,irf6aqn8,neither,2,sensor+privileged_critic,0.70712,0.83038
+sog4k5xi,hqd7gsvc,neither,3,sensor+privileged_critic+servo,0.55625,0.636
+sog4k5xi,4vvryasn,same seed,1,forward_model,0.61146,0.70185
+sog4k5xi,j70fn2g7,neither,1,forward_model,0.17972,0.20717
+sog4k5xi,zz0reqyq,neither,1,forward_model,0.18605,0.22043
+sog4k5xi,lptmmkvi,neither,1,forward_model,0.21247,0.25225
+sog4k5xi,o2zf70hu,neither,1,forward_model,0.2235,0.25912
+sog4k5xi,5tiufunj,same seed,2,forward_model+servo,0.43391,0.51661
+sog4k5xi,u10wy89i,same seed,2,forward_model+servo,0.472,0.5592
+sog4k5xi,4u3vdp6y,neither,2,forward_model+servo,0.7386,0.8601
+sog4k5xi,c5arx0qj,neither,2,forward_model+servo,0.66722,0.77491
+sog4k5xi,suzrcsxy,neither,2,forward_model+servo,0.38946,0.46566
+sog4k5xi,n4a78q9l,neither,2,forward_model+servo,0.75113,0.87321
+sog4k5xi,hd8hctae,neither,2,forward_model+sensor,0.60342,0.70531
+sog4k5xi,t7k5z2vm,neither,2,forward_model+sensor,0.55546,0.65725
+sog4k5xi,w632zie8,neither,2,forward_model+sensor,0.72971,0.8626
+sog4k5xi,da7hn33k,neither,3,forward_model+sensor+servo,0.51603,0.59322
+sog4k5xi,2j48qvpr,neither,3,forward_model+sensor+servo,0.5036,0.57789
+sog4k5xi,e3rowege,neither,3,forward_model+sensor+servo,0.50532,0.59397
+sog4k5xi,oljpt79a,neither,1,efference,0.23655,0.2856
+sog4k5xi,20qm2p6x,neither,1,efference,0.76854,0.8798
+sog4k5xi,ng04upc0,neither,1,efference,0.74066,0.86375
+sog4k5xi,wm8x4eda,neither,1,efference,0.71517,0.81459
+sog4k5xi,es8cg6rj,neither,2,efference+servo,0.81312,0.93969
+sog4k5xi,pixbjisa,same seed,2,efference+privileged_critic,0.32378,0.38271
+sog4k5xi,4kslt39i,neither,2,efference+privileged_critic,0.71986,0.82513
+sog4k5xi,9w7v65x5,neither,3,efference+privileged_critic+servo,0.71367,0.82709
+sog4k5xi,6bhvc12c,same seed,2,efference+sensor,0.31997,0.38648
+sog4k5xi,06fy8xrb,neither,2,efference+sensor,0.3015,0.36127
+sog4k5xi,ygy5tbhf,neither,2,efference+sensor,0.34358,0.40748
+sog4k5xi,umfqdtn2,same seed,3,efference+sensor+servo,0.45678,0.54418
+sog4k5xi,kvxc6ij4,neither,3,efference+sensor+servo,0.6447,0.74485
+sog4k5xi,g6frznog,same seed,3,efference+sensor+privileged_critic,0.35599,0.42125
+sog4k5xi,c34p08hy,neither,3,efference+sensor+privileged_critic,0.89117,1.0595
+sog4k5xi,rlgkinux,same seed,4,efference+sensor+privileged_critic+servo,0.61557,0.70088
+sog4k5xi,tzp7655l,neither,4,efference+sensor+privileged_critic+servo,0.63937,0.73669
+sog4k5xi,0xmqmajf,neither,2,efference+forward_model,0.71475,0.8242
+sog4k5xi,t6srdx8w,neither,3,efference+forward_model+servo,0.40222,0.48089
+sog4k5xi,tijio74v,same seed,3,efference+forward_model+sensor,0.32825,0.39633
+sog4k5xi,f1alm9y1,neither,3,efference+forward_model+sensor,0.66012,0.75017
+sog4k5xi,s5lt23ld,same seed,4,efference+forward_model+sensor+servo,0.47273,0.55821
+sog4k5xi,476uchc2,neither,4,efference+forward_model+sensor+servo,0.61424,0.71592
+sog4k5xi,crr2pjup,neither,4,efference+forward_model+sensor+servo,0.57804,0.66998
+97x0w3zh,zuli03xv,same condition,0,-,0.49423,0.57543
+97x0w3zh,icdm2seo,same condition,0,-,0.84229,0.9944
+97x0w3zh,u8xdfjid,neither,1,servo,0.76609,0.90613
+97x0w3zh,k7f5z3e2,neither,1,privileged_critic,0.95403,1.1178
+97x0w3zh,ktfnpinb,same seed,2,privileged_critic+servo,0.76957,0.90575
+97x0w3zh,d7ytv3fx,neither,1,sensor,0.31168,0.37003
+97x0w3zh,f3eani0z,same seed,1,sensor,0.47156,0.55947
+97x0w3zh,h1800i1b,same seed,1,sensor,0.46173,0.55298
+97x0w3zh,2mxf1piw,neither,1,sensor,0.451,0.53621
+97x0w3zh,kfld9i6s,neither,1,sensor,0.80259,0.94883
+97x0w3zh,40w5wtaw,neither,1,sensor,0.70455,0.83823
+97x0w3zh,u8z1oecr,neither,1,sensor,0.79227,0.93561
+97x0w3zh,czyahwd8,same seed,2,sensor+servo,0.61164,0.7234
+97x0w3zh,2v0xd776,neither,2,sensor+servo,0.56022,0.66115
+97x0w3zh,fwumjubs,neither,2,sensor+privileged_critic,0.50172,0.59907
+97x0w3zh,irf6aqn8,neither,2,sensor+privileged_critic,0.42955,0.51126
+97x0w3zh,hqd7gsvc,same seed,3,sensor+privileged_critic+servo,0.50556,0.60551
+97x0w3zh,4vvryasn,neither,1,forward_model,0.6291,0.75362
+97x0w3zh,j70fn2g7,same seed,1,forward_model,0.80701,0.95914
+97x0w3zh,zz0reqyq,same seed,1,forward_model,0.85802,1.0158
+97x0w3zh,lptmmkvi,neither,1,forward_model,0.84577,1.0018
+97x0w3zh,o2zf70hu,neither,1,forward_model,0.80738,0.9487
+97x0w3zh,5tiufunj,neither,2,forward_model+servo,0.74583,0.8841
+97x0w3zh,u10wy89i,neither,2,forward_model+servo,0.80642,0.95432
+97x0w3zh,4u3vdp6y,same seed,2,forward_model+servo,0.31548,0.35812
+97x0w3zh,c5arx0qj,neither,2,forward_model+servo,0.38769,0.44706
+97x0w3zh,suzrcsxy,neither,2,forward_model+servo,0.71729,0.84671
+97x0w3zh,n4a78q9l,neither,2,forward_model+servo,0.29957,0.33276
+97x0w3zh,hd8hctae,same seed,2,forward_model+sensor,0.69177,0.83007
+97x0w3zh,t7k5z2vm,neither,2,forward_model+sensor,0.70699,0.84418
+97x0w3zh,w632zie8,neither,2,forward_model+sensor,0.5778,0.68894
+97x0w3zh,da7hn33k,same seed,3,forward_model+sensor+servo,0.60062,0.7145
+97x0w3zh,2j48qvpr,neither,3,forward_model+sensor+servo,0.54108,0.64406
+97x0w3zh,e3rowege,neither,3,forward_model+sensor+servo,0.4985,0.58334
+97x0w3zh,oljpt79a,neither,1,efference,0.92461,1.0877
+97x0w3zh,20qm2p6x,same seed,1,efference,0.46473,0.54392
+97x0w3zh,ng04upc0,neither,1,efference,0.29216,0.34661
+97x0w3zh,wm8x4eda,neither,1,efference,0.43533,0.50405
+97x0w3zh,es8cg6rj,neither,2,efference+servo,0.40341,0.46377
+97x0w3zh,pixbjisa,neither,2,efference+privileged_critic,0.88617,1.0406
+97x0w3zh,4kslt39i,same seed,2,efference+privileged_critic,0.3889,0.44967
+97x0w3zh,9w7v65x5,same seed,3,efference+privileged_critic+servo,0.35967,0.42843
+97x0w3zh,6bhvc12c,neither,2,efference+sensor,0.83543,0.98487
+97x0w3zh,06fy8xrb,neither,2,efference+sensor,0.85927,1.0083
+97x0w3zh,ygy5tbhf,neither,2,efference+sensor,0.82776,0.98523
+97x0w3zh,umfqdtn2,neither,3,efference+sensor+servo,0.63522,0.74955
+97x0w3zh,kvxc6ij4,neither,3,efference+sensor+servo,0.45051,0.5376
+97x0w3zh,g6frznog,neither,3,efference+sensor+privileged_critic,0.78268,0.92942
+97x0w3zh,c34p08hy,same seed,3,efference+sensor+privileged_critic,0.25676,0.30267
+97x0w3zh,rlgkinux,neither,4,efference+sensor+privileged_critic+servo,0.48924,0.58245
+97x0w3zh,tzp7655l,same seed,4,efference+sensor+privileged_critic+servo,0.45617,0.54308
+97x0w3zh,0xmqmajf,neither,2,efference+forward_model,0.38019,0.45506
+97x0w3zh,t6srdx8w,neither,3,efference+forward_model+servo,0.75859,0.89288
+97x0w3zh,tijio74v,neither,3,efference+forward_model+sensor,0.86578,1.0285
+97x0w3zh,f1alm9y1,same seed,3,efference+forward_model+sensor,0.43523,0.51119
+97x0w3zh,s5lt23ld,neither,4,efference+forward_model+sensor+servo,0.62587,0.73766
+97x0w3zh,476uchc2,same seed,4,efference+forward_model+sensor+servo,0.52609,0.62217
+97x0w3zh,crr2pjup,neither,4,efference+forward_model+sensor+servo,0.50154,0.59208
+zuli03xv,icdm2seo,same condition,0,-,0.72548,0.83712
+zuli03xv,u8xdfjid,neither,1,servo,0.73556,0.85381
+zuli03xv,k7f5z3e2,neither,1,privileged_critic,0.8707,1.0024
+zuli03xv,ktfnpinb,neither,2,privileged_critic+servo,0.7448,0.85964
+zuli03xv,d7ytv3fx,neither,1,sensor,0.58035,0.66945
+zuli03xv,f3eani0z,neither,1,sensor,0.46504,0.53485
+zuli03xv,h1800i1b,neither,1,sensor,0.32029,0.36378
+zuli03xv,2mxf1piw,same seed,1,sensor,0.31639,0.36045
+zuli03xv,kfld9i6s,same seed,1,sensor,0.69509,0.80756
+zuli03xv,40w5wtaw,neither,1,sensor,0.64205,0.7589
+zuli03xv,u8z1oecr,neither,1,sensor,0.69958,0.80554
+zuli03xv,czyahwd8,neither,2,sensor+servo,0.58184,0.67285
+zuli03xv,2v0xd776,same seed,2,sensor+servo,0.59466,0.68486
+zuli03xv,fwumjubs,same seed,2,sensor+privileged_critic,0.25302,0.29573
+zuli03xv,irf6aqn8,neither,2,sensor+privileged_critic,0.53301,0.61015
+zuli03xv,hqd7gsvc,neither,3,sensor+privileged_critic+servo,0.49633,0.58183
+zuli03xv,4vvryasn,neither,1,forward_model,0.47564,0.57014
+zuli03xv,j70fn2g7,neither,1,forward_model,0.65339,0.75623
+zuli03xv,zz0reqyq,neither,1,forward_model,0.73085,0.84703
+zuli03xv,lptmmkvi,same seed,1,forward_model,0.71256,0.82783
+zuli03xv,o2zf70hu,same seed,1,forward_model,0.65441,0.75689
+zuli03xv,5tiufunj,neither,2,forward_model+servo,0.7163,0.83649
+zuli03xv,u10wy89i,neither,2,forward_model+servo,0.77716,0.91034
+zuli03xv,4u3vdp6y,neither,2,forward_model+servo,0.47279,0.55275
+zuli03xv,c5arx0qj,same seed,2,forward_model+servo,0.46367,0.53675
+zuli03xv,suzrcsxy,same seed,2,forward_model+servo,0.68021,0.78671
+zuli03xv,n4a78q9l,neither,2,forward_model+servo,0.42795,0.50249
+zuli03xv,hd8hctae,neither,2,forward_model+sensor,0.61636,0.73038
+zuli03xv,t7k5z2vm,same seed,2,forward_model+sensor,0.64829,0.75592
+zuli03xv,w632zie8,neither,2,forward_model+sensor,0.63028,0.74155
+zuli03xv,da7hn33k,neither,3,forward_model+sensor+servo,0.5884,0.6854
+zuli03xv,2j48qvpr,same seed,3,forward_model+sensor+servo,0.51264,0.59529
+zuli03xv,e3rowege,neither,3,forward_model+sensor+servo,0.51153,0.58221
+zuli03xv,oljpt79a,neither,1,efference,0.82532,0.95191
+zuli03xv,20qm2p6x,neither,1,efference,0.39933,0.45651
+zuli03xv,ng04upc0,same seed,1,efference,0.47972,0.56048
+zuli03xv,wm8x4eda,neither,1,efference,0.41302,0.47867
+zuli03xv,es8cg6rj,neither,2,efference+servo,0.5383,0.62358
+zuli03xv,pixbjisa,neither,2,efference+privileged_critic,0.82396,0.94929
+zuli03xv,4kslt39i,neither,2,efference+privileged_critic,0.36466,0.41984
+zuli03xv,9w7v65x5,neither,3,efference+privileged_critic+servo,0.48394,0.57316
+zuli03xv,6bhvc12c,neither,2,efference+sensor,0.75043,0.86557
+zuli03xv,06fy8xrb,same seed,2,efference+sensor,0.73825,0.84411
+zuli03xv,ygy5tbhf,same seed,2,efference+sensor,0.70284,0.81835
+zuli03xv,umfqdtn2,neither,3,efference+sensor+servo,0.62045,0.71806
+zuli03xv,kvxc6ij4,neither,3,efference+sensor+servo,0.4877,0.57503
+zuli03xv,g6frznog,neither,3,efference+sensor+privileged_critic,0.68416,0.79414
+zuli03xv,c34p08hy,neither,3,efference+sensor+privileged_critic,0.63669,0.74023
+zuli03xv,rlgkinux,neither,4,efference+sensor+privileged_critic+servo,0.49332,0.58731
+zuli03xv,tzp7655l,neither,4,efference+sensor+privileged_critic+servo,0.50854,0.60476
+zuli03xv,0xmqmajf,neither,2,efference+forward_model,0.28458,0.32921
+zuli03xv,t6srdx8w,neither,3,efference+forward_model+servo,0.7236,0.83692
+zuli03xv,tijio74v,neither,3,efference+forward_model+sensor,0.71224,0.82475
+zuli03xv,f1alm9y1,neither,3,efference+forward_model+sensor,0.24137,0.28282
+zuli03xv,s5lt23ld,neither,4,efference+forward_model+sensor+servo,0.60603,0.70356
+zuli03xv,476uchc2,neither,4,efference+forward_model+sensor+servo,0.5736,0.66648
+zuli03xv,crr2pjup,same seed,4,efference+forward_model+sensor+servo,0.50416,0.58793
+icdm2seo,u8xdfjid,neither,1,servo,0.375,0.44696
+icdm2seo,k7f5z3e2,neither,1,privileged_critic,0.2697,0.31491
+icdm2seo,ktfnpinb,neither,2,privileged_critic+servo,0.35771,0.42782
+icdm2seo,d7ytv3fx,neither,1,sensor,0.77233,0.91529
+icdm2seo,f3eani0z,neither,1,sensor,0.64754,0.76872
+icdm2seo,h1800i1b,neither,1,sensor,0.61107,0.71271
+icdm2seo,2mxf1piw,neither,1,sensor,0.59632,0.69906
+icdm2seo,kfld9i6s,neither,1,sensor,0.33358,0.39838
+icdm2seo,40w5wtaw,same seed,1,sensor,0.4537,0.51681
+icdm2seo,u8z1oecr,same seed,1,sensor,0.42002,0.50219
+icdm2seo,czyahwd8,neither,2,sensor+servo,0.3936,0.46209
+icdm2seo,2v0xd776,neither,2,sensor+servo,0.47875,0.56759
+icdm2seo,fwumjubs,neither,2,sensor+privileged_critic,0.62412,0.72269
+icdm2seo,irf6aqn8,same seed,2,sensor+privileged_critic,0.69167,0.81558
+icdm2seo,hqd7gsvc,neither,3,sensor+privileged_critic+servo,0.52859,0.60632
+icdm2seo,4vvryasn,neither,1,forward_model,0.6029,0.6953
+icdm2seo,j70fn2g7,neither,1,forward_model,0.18354,0.21592
+icdm2seo,zz0reqyq,neither,1,forward_model,0.20529,0.24469
+icdm2seo,lptmmkvi,neither,1,forward_model,0.19507,0.23438
+icdm2seo,o2zf70hu,neither,1,forward_model,0.22436,0.26056
+icdm2seo,5tiufunj,neither,2,forward_model+servo,0.41959,0.50193
+icdm2seo,u10wy89i,neither,2,forward_model+servo,0.45467,0.53967
+icdm2seo,4u3vdp6y,neither,2,forward_model+servo,0.72052,0.84174
+icdm2seo,c5arx0qj,neither,2,forward_model+servo,0.6501,0.75751
+icdm2seo,suzrcsxy,neither,2,forward_model+servo,0.38091,0.45741
+icdm2seo,n4a78q9l,same seed,2,forward_model+servo,0.73627,0.85831
+icdm2seo,hd8hctae,neither,2,forward_model+sensor,0.59321,0.69682
+icdm2seo,t7k5z2vm,neither,2,forward_model+sensor,0.53846,0.6407
+icdm2seo,w632zie8,same seed,2,forward_model+sensor,0.7185,0.85199
+icdm2seo,da7hn33k,neither,3,forward_model+sensor+servo,0.48364,0.55764
+icdm2seo,2j48qvpr,neither,3,forward_model+sensor+servo,0.47298,0.54485
+icdm2seo,e3rowege,same seed,3,forward_model+sensor+servo,0.4954,0.58504
+icdm2seo,oljpt79a,neither,1,efference,0.23111,0.27721
+icdm2seo,20qm2p6x,neither,1,efference,0.76151,0.87435
+icdm2seo,ng04upc0,neither,1,efference,0.72526,0.84863
+icdm2seo,wm8x4eda,same seed,1,efference,0.70392,0.80381
+icdm2seo,es8cg6rj,neither,2,efference+servo,0.79746,0.92451
+icdm2seo,pixbjisa,neither,2,efference+privileged_critic,0.2993,0.35435
+icdm2seo,4kslt39i,neither,2,efference+privileged_critic,0.70778,0.81327
+icdm2seo,9w7v65x5,neither,3,efference+privileged_critic+servo,0.69083,0.80326
+icdm2seo,6bhvc12c,neither,2,efference+sensor,0.30486,0.36909
+icdm2seo,06fy8xrb,neither,2,efference+sensor,0.30609,0.36485
+icdm2seo,ygy5tbhf,neither,2,efference+sensor,0.32767,0.39062
+icdm2seo,umfqdtn2,neither,3,efference+sensor+servo,0.43779,0.52356
+icdm2seo,kvxc6ij4,same seed,3,efference+sensor+servo,0.62015,0.7189
+icdm2seo,g6frznog,neither,3,efference+sensor+privileged_critic,0.33929,0.40391
+icdm2seo,c34p08hy,neither,3,efference+sensor+privileged_critic,0.87389,1.0419
+icdm2seo,rlgkinux,neither,4,efference+sensor+privileged_critic+servo,0.58984,0.67365
+icdm2seo,tzp7655l,neither,4,efference+sensor+privileged_critic+servo,0.61397,0.70938
+icdm2seo,0xmqmajf,neither,2,efference+forward_model,0.70587,0.81742
+icdm2seo,t6srdx8w,neither,3,efference+forward_model+servo,0.39365,0.47216
+icdm2seo,tijio74v,neither,3,efference+forward_model+sensor,0.32109,0.39015
+icdm2seo,f1alm9y1,neither,3,efference+forward_model+sensor,0.65245,0.74474
+icdm2seo,s5lt23ld,neither,4,efference+forward_model+sensor+servo,0.46349,0.54953
+icdm2seo,476uchc2,neither,4,efference+forward_model+sensor+servo,0.58918,0.68951
+icdm2seo,crr2pjup,neither,4,efference+forward_model+sensor+servo,0.55363,0.64396
+u8xdfjid,k7f5z3e2,neither,2,privileged_critic+servo,0.41458,0.47852
+u8xdfjid,ktfnpinb,neither,1,privileged_critic,0.092874,0.10719
+u8xdfjid,d7ytv3fx,same seed,2,sensor+servo,0.70471,0.84018
+u8xdfjid,f3eani0z,neither,2,sensor+servo,0.62427,0.7482
+u8xdfjid,h1800i1b,neither,2,sensor+servo,0.61223,0.72142
+u8xdfjid,2mxf1piw,neither,2,sensor+servo,0.58662,0.6927
+u8xdfjid,kfld9i6s,neither,2,sensor+servo,0.4138,0.49153
+u8xdfjid,40w5wtaw,neither,2,sensor+servo,0.38209,0.43782
+u8xdfjid,u8z1oecr,neither,2,sensor+servo,0.45405,0.53864
+u8xdfjid,czyahwd8,neither,1,sensor,0.23857,0.27483
+u8xdfjid,2v0xd776,neither,1,sensor,0.30747,0.35913
+u8xdfjid,fwumjubs,neither,3,sensor+privileged_critic+servo,0.61229,0.71587
+u8xdfjid,irf6aqn8,neither,3,sensor+privileged_critic+servo,0.6354,0.75509
+u8xdfjid,hqd7gsvc,neither,2,sensor+privileged_critic,0.46094,0.52769
+u8xdfjid,4vvryasn,neither,2,forward_model+servo,0.6575,0.76868
+u8xdfjid,j70fn2g7,neither,2,forward_model+servo,0.42726,0.51229
+u8xdfjid,zz0reqyq,neither,2,forward_model+servo,0.42611,0.50657
+u8xdfjid,lptmmkvi,neither,2,forward_model+servo,0.44399,0.5343
+u8xdfjid,o2zf70hu,neither,2,forward_model+servo,0.47806,0.57106
+u8xdfjid,5tiufunj,neither,1,forward_model,0.24029,0.2781
+u8xdfjid,u10wy89i,neither,1,forward_model,0.27809,0.31458
+u8xdfjid,4u3vdp6y,neither,1,forward_model,0.63368,0.73907
+u8xdfjid,c5arx0qj,neither,1,forward_model,0.58494,0.67952
+u8xdfjid,suzrcsxy,neither,1,forward_model,0.2171,0.2527
+u8xdfjid,n4a78q9l,neither,1,forward_model,0.65251,0.7592
+u8xdfjid,hd8hctae,neither,3,forward_model+sensor+servo,0.49953,0.58921
+u8xdfjid,t7k5z2vm,neither,3,forward_model+sensor+servo,0.47235,0.56453
+u8xdfjid,w632zie8,neither,3,forward_model+sensor+servo,0.63615,0.75788
+u8xdfjid,da7hn33k,neither,2,forward_model+sensor,0.41229,0.47054
+u8xdfjid,2j48qvpr,neither,2,forward_model+sensor,0.41942,0.48295
+u8xdfjid,e3rowege,neither,2,forward_model+sensor,0.38135,0.45005
+u8xdfjid,oljpt79a,same seed,2,efference+servo,0.41246,0.486
+u8xdfjid,20qm2p6x,neither,2,efference+servo,0.7294,0.83814
+u8xdfjid,ng04upc0,neither,2,efference+servo,0.66083,0.77305
+u8xdfjid,wm8x4eda,neither,2,efference+servo,0.65411,0.74368
+u8xdfjid,es8cg6rj,same seed,1,efference,0.7302,0.84316
+u8xdfjid,pixbjisa,neither,3,efference+privileged_critic+servo,0.34587,0.40875
+u8xdfjid,4kslt39i,neither,3,efference+privileged_critic+servo,0.66497,0.76292
+u8xdfjid,9w7v65x5,neither,2,efference+privileged_critic,0.60425,0.70047
+u8xdfjid,6bhvc12c,neither,3,efference+sensor+servo,0.36543,0.43019
+u8xdfjid,06fy8xrb,neither,3,efference+sensor+servo,0.41333,0.48064
+u8xdfjid,ygy5tbhf,neither,3,efference+sensor+servo,0.41107,0.48914
+u8xdfjid,umfqdtn2,neither,2,efference+sensor,0.25676,0.30241
+u8xdfjid,kvxc6ij4,neither,2,efference+sensor,0.55606,0.64438
+u8xdfjid,g6frznog,neither,4,efference+sensor+privileged_critic+servo,0.38853,0.46076
+u8xdfjid,c34p08hy,neither,4,efference+sensor+privileged_critic+servo,0.80484,0.96365
+u8xdfjid,rlgkinux,neither,3,efference+sensor+privileged_critic,0.50087,0.56869
+u8xdfjid,tzp7655l,neither,3,efference+sensor+privileged_critic,0.52993,0.6091
+u8xdfjid,0xmqmajf,same seed,3,efference+forward_model+servo,0.6944,0.80959
+u8xdfjid,t6srdx8w,same seed,2,efference+forward_model,0.24395,0.2855
+u8xdfjid,tijio74v,neither,4,efference+forward_model+sensor+servo,0.45043,0.54157
+u8xdfjid,f1alm9y1,neither,4,efference+forward_model+sensor+servo,0.66346,0.76534
+u8xdfjid,s5lt23ld,neither,3,efference+forward_model+sensor,0.30845,0.36221
+u8xdfjid,476uchc2,neither,3,efference+forward_model+sensor,0.52982,0.6179
+u8xdfjid,crr2pjup,neither,3,efference+forward_model+sensor,0.51961,0.60581
+k7f5z3e2,ktfnpinb,neither,1,servo,0.39294,0.45817
+k7f5z3e2,d7ytv3fx,neither,2,sensor+privileged_critic,0.89262,1.0507
+k7f5z3e2,f3eani0z,neither,2,sensor+privileged_critic,0.77575,0.91557
+k7f5z3e2,h1800i1b,neither,2,sensor+privileged_critic,0.76222,0.88563
+k7f5z3e2,2mxf1piw,neither,2,sensor+privileged_critic,0.72779,0.84863
+k7f5z3e2,kfld9i6s,neither,2,sensor+privileged_critic,0.41993,0.49765
+k7f5z3e2,40w5wtaw,neither,2,sensor+privileged_critic,0.53951,0.61165
+k7f5z3e2,u8z1oecr,neither,2,sensor+privileged_critic,0.50154,0.59735
+k7f5z3e2,czyahwd8,neither,3,sensor+privileged_critic+servo,0.47741,0.55316
+k7f5z3e2,2v0xd776,neither,3,sensor+privileged_critic+servo,0.54687,0.63874
+k7f5z3e2,fwumjubs,neither,1,sensor,0.76711,0.88454
+k7f5z3e2,irf6aqn8,neither,1,sensor,0.82184,0.96233
+k7f5z3e2,hqd7gsvc,neither,2,sensor+servo,0.62791,0.71349
+k7f5z3e2,4vvryasn,same seed,2,forward_model+privileged_critic,0.72767,0.83371
+k7f5z3e2,j70fn2g7,neither,2,forward_model+privileged_critic,0.36996,0.42689
+k7f5z3e2,zz0reqyq,neither,2,forward_model+privileged_critic,0.32368,0.37716
+k7f5z3e2,lptmmkvi,neither,2,forward_model+privileged_critic,0.35391,0.41208
+k7f5z3e2,o2zf70hu,neither,2,forward_model+privileged_critic,0.37655,0.44255
+k7f5z3e2,5tiufunj,same seed,3,forward_model+privileged_critic+servo,0.43378,0.50725
+k7f5z3e2,u10wy89i,same seed,3,forward_model+privileged_critic+servo,0.41743,0.48627
+k7f5z3e2,4u3vdp6y,neither,3,forward_model+privileged_critic+servo,0.81283,0.94391
+k7f5z3e2,c5arx0qj,neither,3,forward_model+privileged_critic+servo,0.73077,0.84611
+k7f5z3e2,suzrcsxy,neither,3,forward_model+privileged_critic+servo,0.42144,0.49438
+k7f5z3e2,n4a78q9l,neither,3,forward_model+privileged_critic+servo,0.83171,0.96424
+k7f5z3e2,hd8hctae,neither,3,forward_model+sensor+privileged_critic,0.70062,0.81544
+k7f5z3e2,t7k5z2vm,neither,3,forward_model+sensor+privileged_critic,0.63776,0.75094
+k7f5z3e2,w632zie8,neither,3,forward_model+sensor+privileged_critic,0.82923,0.97736
+k7f5z3e2,da7hn33k,neither,4,forward_model+sensor+privileged_critic+servo,0.55688,0.63539
+k7f5z3e2,2j48qvpr,neither,4,forward_model+sensor+privileged_critic+servo,0.56431,0.64405
+k7f5z3e2,e3rowege,neither,4,forward_model+sensor+privileged_critic+servo,0.60155,0.70331
+k7f5z3e2,oljpt79a,neither,2,efference+privileged_critic,0.18607,0.21638
+k7f5z3e2,20qm2p6x,neither,2,efference+privileged_critic,0.87257,0.99947
+k7f5z3e2,ng04upc0,neither,2,efference+privileged_critic,0.82064,0.95297
+k7f5z3e2,wm8x4eda,neither,2,efference+privileged_critic,0.79714,0.90698
+k7f5z3e2,es8cg6rj,neither,3,efference+privileged_critic+servo,0.87726,1.0104
+k7f5z3e2,pixbjisa,same seed,1,efference,0.21352,0.2358
+k7f5z3e2,4kslt39i,neither,1,efference,0.81466,0.93389
+k7f5z3e2,9w7v65x5,neither,2,efference+servo,0.78542,0.9031
+k7f5z3e2,6bhvc12c,same seed,3,efference+sensor+privileged_critic,0.32312,0.38473
+k7f5z3e2,06fy8xrb,neither,3,efference+sensor+privileged_critic,0.30203,0.35995
+k7f5z3e2,ygy5tbhf,neither,3,efference+sensor+privileged_critic,0.36705,0.42849
+k7f5z3e2,umfqdtn2,same seed,4,efference+sensor+privileged_critic+servo,0.50074,0.5897
+k7f5z3e2,kvxc6ij4,neither,4,efference+sensor+privileged_critic+servo,0.71024,0.81478
+k7f5z3e2,g6frznog,same seed,2,efference+sensor,0.38847,0.45379
+k7f5z3e2,c34p08hy,neither,2,efference+sensor,0.98758,1.1713
+k7f5z3e2,rlgkinux,same seed,3,efference+sensor+servo,0.67606,0.76196
+k7f5z3e2,tzp7655l,neither,3,efference+sensor+servo,0.7003,0.79996
+k7f5z3e2,0xmqmajf,neither,3,efference+forward_model+privileged_critic,0.83929,0.96598
+k7f5z3e2,t6srdx8w,neither,4,efference+forward_model+privileged_critic+servo,0.416,0.49036
+k7f5z3e2,tijio74v,same seed,4,efference+forward_model+sensor+privileged_critic,0.3904,0.46279
+k7f5z3e2,f1alm9y1,neither,4,efference+forward_model+sensor+privileged_critic,0.80196,0.91575
+k7f5z3e2,s5lt23ld,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.55134,0.64576
+k7f5z3e2,476uchc2,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.66188,0.76845
+k7f5z3e2,crr2pjup,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.63688,0.73509
+ktfnpinb,d7ytv3fx,neither,3,sensor+privileged_critic+servo,0.69968,0.83007
+ktfnpinb,f3eani0z,same seed,3,sensor+privileged_critic+servo,0.61664,0.73477
+ktfnpinb,h1800i1b,same seed,3,sensor+privileged_critic+servo,0.60994,0.71331
+ktfnpinb,2mxf1piw,neither,3,sensor+privileged_critic+servo,0.5884,0.68988
+ktfnpinb,kfld9i6s,neither,3,sensor+privileged_critic+servo,0.38479,0.45552
+ktfnpinb,40w5wtaw,neither,3,sensor+privileged_critic+servo,0.36124,0.4048
+ktfnpinb,u8z1oecr,neither,3,sensor+privileged_critic+servo,0.43548,0.51547
+ktfnpinb,czyahwd8,same seed,2,sensor+privileged_critic,0.23938,0.27139
+ktfnpinb,2v0xd776,neither,2,sensor+privileged_critic,0.3102,0.35823
+ktfnpinb,fwumjubs,neither,2,sensor+servo,0.61427,0.71215
+ktfnpinb,irf6aqn8,neither,2,sensor+servo,0.63266,0.7468
+ktfnpinb,hqd7gsvc,same seed,1,sensor,0.44693,0.50444
+ktfnpinb,4vvryasn,neither,3,forward_model+privileged_critic+servo,0.66226,0.76988
+ktfnpinb,j70fn2g7,same seed,3,forward_model+privileged_critic+servo,0.42641,0.51058
+ktfnpinb,zz0reqyq,same seed,3,forward_model+privileged_critic+servo,0.41672,0.49512
+ktfnpinb,lptmmkvi,neither,3,forward_model+privileged_critic+servo,0.42886,0.51596
+ktfnpinb,o2zf70hu,neither,3,forward_model+privileged_critic+servo,0.47,0.56135
+ktfnpinb,5tiufunj,neither,2,forward_model+privileged_critic,0.25492,0.29456
+ktfnpinb,u10wy89i,neither,2,forward_model+privileged_critic,0.27904,0.31531
+ktfnpinb,4u3vdp6y,same seed,2,forward_model+privileged_critic,0.63161,0.73197
+ktfnpinb,c5arx0qj,neither,2,forward_model+privileged_critic,0.58305,0.67343
+ktfnpinb,suzrcsxy,neither,2,forward_model+privileged_critic,0.23469,0.27196
+ktfnpinb,n4a78q9l,neither,2,forward_model+privileged_critic,0.65373,0.75572
+ktfnpinb,hd8hctae,same seed,4,forward_model+sensor+privileged_critic+servo,0.49379,0.57637
+ktfnpinb,t7k5z2vm,neither,4,forward_model+sensor+privileged_critic+servo,0.45333,0.53808
+ktfnpinb,w632zie8,neither,4,forward_model+sensor+privileged_critic+servo,0.62906,0.74426
+ktfnpinb,da7hn33k,same seed,3,forward_model+sensor+privileged_critic,0.40025,0.45233
+ktfnpinb,2j48qvpr,neither,3,forward_model+sensor+privileged_critic,0.40498,0.4612
+ktfnpinb,e3rowege,neither,3,forward_model+sensor+privileged_critic,0.38947,0.45514
+ktfnpinb,oljpt79a,neither,3,efference+privileged_critic+servo,0.38621,0.45793
+ktfnpinb,20qm2p6x,same seed,3,efference+privileged_critic+servo,0.73966,0.84616
+ktfnpinb,ng04upc0,neither,3,efference+privileged_critic+servo,0.6685,0.77827
+ktfnpinb,wm8x4eda,neither,3,efference+privileged_critic+servo,0.6603,0.74589
+ktfnpinb,es8cg6rj,neither,2,efference+privileged_critic,0.72828,0.8367
+ktfnpinb,pixbjisa,neither,2,efference+servo,0.31089,0.37156
+ktfnpinb,4kslt39i,same seed,2,efference+servo,0.66833,0.7619
+ktfnpinb,9w7v65x5,same seed,1,efference,0.59748,0.68617
+ktfnpinb,6bhvc12c,neither,4,efference+sensor+privileged_critic+servo,0.32617,0.38468
+ktfnpinb,06fy8xrb,neither,4,efference+sensor+privileged_critic+servo,0.39522,0.4612
+ktfnpinb,ygy5tbhf,neither,4,efference+sensor+privileged_critic+servo,0.37918,0.45042
+ktfnpinb,umfqdtn2,neither,3,efference+sensor+privileged_critic,0.26381,0.30786
+ktfnpinb,kvxc6ij4,neither,3,efference+sensor+privileged_critic,0.5397,0.61845
+ktfnpinb,g6frznog,neither,3,efference+sensor+servo,0.34524,0.40805
+ktfnpinb,c34p08hy,same seed,3,efference+sensor+servo,0.8003,0.95497
+ktfnpinb,rlgkinux,neither,2,efference+sensor,0.48423,0.54
+ktfnpinb,tzp7655l,same seed,2,efference+sensor,0.51427,0.58314
+ktfnpinb,0xmqmajf,neither,4,efference+forward_model+privileged_critic+servo,0.70386,0.8158
+ktfnpinb,t6srdx8w,neither,3,efference+forward_model+privileged_critic,0.2548,0.29851
+ktfnpinb,tijio74v,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.42021,0.50582
+ktfnpinb,f1alm9y1,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.66865,0.76553
+ktfnpinb,s5lt23ld,neither,4,efference+forward_model+sensor+privileged_critic,0.33309,0.38781
+ktfnpinb,476uchc2,same seed,4,efference+forward_model+sensor+privileged_critic,0.51916,0.60257
+ktfnpinb,crr2pjup,neither,4,efference+forward_model+sensor+privileged_critic,0.50338,0.58234
+d7ytv3fx,f3eani0z,same condition,0,-,0.33278,0.39199
+d7ytv3fx,h1800i1b,same condition,0,-,0.41332,0.48887
+d7ytv3fx,2mxf1piw,same condition,0,-,0.41922,0.49305
+d7ytv3fx,kfld9i6s,same condition,0,-,0.75365,0.89463
+d7ytv3fx,40w5wtaw,same condition,0,-,0.61344,0.72634
+d7ytv3fx,u8z1oecr,same condition,0,-,0.7155,0.84898
+d7ytv3fx,czyahwd8,neither,1,servo,0.55943,0.66725
+d7ytv3fx,2v0xd776,neither,1,servo,0.48482,0.58014
+d7ytv3fx,fwumjubs,neither,1,privileged_critic,0.4887,0.57365
+d7ytv3fx,irf6aqn8,neither,1,privileged_critic,0.23025,0.27608
+d7ytv3fx,hqd7gsvc,neither,2,privileged_critic+servo,0.48029,0.57402
+d7ytv3fx,4vvryasn,neither,2,forward_model+sensor,0.66958,0.79535
+d7ytv3fx,j70fn2g7,neither,2,forward_model+sensor,0.74372,0.88722
+d7ytv3fx,zz0reqyq,neither,2,forward_model+sensor,0.78964,0.93878
+d7ytv3fx,lptmmkvi,neither,2,forward_model+sensor,0.79068,0.93917
+d7ytv3fx,o2zf70hu,neither,2,forward_model+sensor,0.78156,0.92106
+d7ytv3fx,5tiufunj,neither,3,forward_model+sensor+servo,0.69073,0.82452
+d7ytv3fx,u10wy89i,neither,3,forward_model+sensor+servo,0.75608,0.89948
+d7ytv3fx,4u3vdp6y,neither,3,forward_model+sensor+servo,0.39654,0.4554
+d7ytv3fx,c5arx0qj,neither,3,forward_model+sensor+servo,0.47283,0.55117
+d7ytv3fx,suzrcsxy,neither,3,forward_model+sensor+servo,0.66775,0.79547
+d7ytv3fx,n4a78q9l,neither,3,forward_model+sensor+servo,0.40656,0.46191
+d7ytv3fx,hd8hctae,neither,1,forward_model,0.62075,0.74559
+d7ytv3fx,t7k5z2vm,neither,1,forward_model,0.61516,0.73965
+d7ytv3fx,w632zie8,neither,1,forward_model,0.45358,0.5409
+d7ytv3fx,da7hn33k,neither,2,forward_model+servo,0.56126,0.66959
+d7ytv3fx,2j48qvpr,neither,2,forward_model+servo,0.50448,0.60235
+d7ytv3fx,e3rowege,neither,2,forward_model+servo,0.43978,0.52279
+d7ytv3fx,oljpt79a,same seed,2,efference+sensor,0.86953,1.0284
+d7ytv3fx,20qm2p6x,neither,2,efference+sensor,0.56447,0.65361
+d7ytv3fx,ng04upc0,neither,2,efference+sensor,0.40286,0.47266
+d7ytv3fx,wm8x4eda,neither,2,efference+sensor,0.52938,0.60682
+d7ytv3fx,es8cg6rj,same seed,3,efference+sensor+servo,0.53074,0.6132
+d7ytv3fx,pixbjisa,neither,3,efference+sensor+privileged_critic,0.81959,0.96819
+d7ytv3fx,4kslt39i,neither,3,efference+sensor+privileged_critic,0.48208,0.55272
+d7ytv3fx,9w7v65x5,neither,4,efference+sensor+privileged_critic+servo,0.41657,0.48898
+d7ytv3fx,6bhvc12c,neither,1,efference,0.7571,0.89712
+d7ytv3fx,06fy8xrb,neither,1,efference,0.79382,0.93594
+d7ytv3fx,ygy5tbhf,neither,1,efference,0.74576,0.89121
+d7ytv3fx,umfqdtn2,neither,2,efference+servo,0.56211,0.66857
+d7ytv3fx,kvxc6ij4,neither,2,efference+servo,0.46142,0.54739
+d7ytv3fx,g6frznog,neither,2,efference+privileged_critic,0.70159,0.83778
+d7ytv3fx,c34p08hy,neither,2,efference+privileged_critic,0.2032,0.24504
+d7ytv3fx,rlgkinux,neither,3,efference+privileged_critic+servo,0.50314,0.59532
+d7ytv3fx,tzp7655l,neither,3,efference+privileged_critic+servo,0.48034,0.56827
+d7ytv3fx,0xmqmajf,same seed,3,efference+forward_model+sensor,0.46192,0.54198
+d7ytv3fx,t6srdx8w,same seed,4,efference+forward_model+sensor+servo,0.6967,0.82668
+d7ytv3fx,tijio74v,neither,2,efference+forward_model,0.80325,0.9596
+d7ytv3fx,f1alm9y1,neither,2,efference+forward_model,0.51486,0.59848
+d7ytv3fx,s5lt23ld,neither,3,efference+forward_model+servo,0.57013,0.67684
+d7ytv3fx,476uchc2,neither,3,efference+forward_model+servo,0.5306,0.62962
+d7ytv3fx,crr2pjup,neither,3,efference+forward_model+servo,0.51165,0.60463
+f3eani0z,h1800i1b,replicate,0,-,0.29667,0.35094
+f3eani0z,2mxf1piw,same condition,0,-,0.24891,0.29573
+f3eani0z,kfld9i6s,same condition,0,-,0.6017,0.71926
+f3eani0z,40w5wtaw,same condition,0,-,0.49608,0.59734
+f3eani0z,u8z1oecr,same condition,0,-,0.55714,0.6626
+f3eani0z,czyahwd8,same seed,1,servo,0.48287,0.58404
+f3eani0z,2v0xd776,neither,1,servo,0.44746,0.54021
+f3eani0z,fwumjubs,neither,1,privileged_critic,0.31701,0.37015
+f3eani0z,irf6aqn8,neither,1,privileged_critic,0.1887,0.2126
+f3eani0z,hqd7gsvc,same seed,2,privileged_critic+servo,0.45629,0.54898
+f3eani0z,4vvryasn,neither,2,forward_model+sensor,0.63567,0.7618
+f3eani0z,j70fn2g7,same seed,2,forward_model+sensor,0.62487,0.74629
+f3eani0z,zz0reqyq,same seed,2,forward_model+sensor,0.64865,0.77208
+f3eani0z,lptmmkvi,neither,2,forward_model+sensor,0.66746,0.79472
+f3eani0z,o2zf70hu,neither,2,forward_model+sensor,0.65435,0.77768
+f3eani0z,5tiufunj,neither,3,forward_model+sensor+servo,0.61362,0.7391
+f3eani0z,u10wy89i,neither,3,forward_model+sensor+servo,0.6799,0.81803
+f3eani0z,4u3vdp6y,same seed,3,forward_model+sensor+servo,0.44725,0.53283
+f3eani0z,c5arx0qj,neither,3,forward_model+sensor+servo,0.49194,0.58807
+f3eani0z,suzrcsxy,neither,3,forward_model+sensor+servo,0.57964,0.69533
+f3eani0z,n4a78q9l,neither,3,forward_model+sensor+servo,0.42885,0.50768
+f3eani0z,hd8hctae,same seed,1,forward_model,0.5013,0.60742
+f3eani0z,t7k5z2vm,neither,1,forward_model,0.45554,0.55005
+f3eani0z,w632zie8,neither,1,forward_model,0.34882,0.42251
+f3eani0z,da7hn33k,same seed,2,forward_model+servo,0.55128,0.66323
+f3eani0z,2j48qvpr,neither,2,forward_model+servo,0.46494,0.56051
+f3eani0z,e3rowege,neither,2,forward_model+servo,0.36779,0.44134
+f3eani0z,oljpt79a,neither,2,efference+sensor,0.74527,0.88233
+f3eani0z,20qm2p6x,same seed,2,efference+sensor,0.56537,0.66117
+f3eani0z,ng04upc0,neither,2,efference+sensor,0.51296,0.61205
+f3eani0z,wm8x4eda,neither,2,efference+sensor,0.53141,0.62078
+f3eani0z,es8cg6rj,neither,3,efference+sensor+servo,0.6021,0.70847
+f3eani0z,pixbjisa,neither,3,efference+sensor+privileged_critic,0.72596,0.8592
+f3eani0z,4kslt39i,same seed,3,efference+sensor+privileged_critic,0.48147,0.56251
+f3eani0z,9w7v65x5,same seed,4,efference+sensor+privileged_critic+servo,0.47065,0.55962
+f3eani0z,6bhvc12c,neither,1,efference,0.62647,0.74332
+f3eani0z,06fy8xrb,neither,1,efference,0.64401,0.75936
+f3eani0z,ygy5tbhf,neither,1,efference,0.60156,0.72202
+f3eani0z,umfqdtn2,neither,2,efference+servo,0.48516,0.58395
+f3eani0z,kvxc6ij4,neither,2,efference+servo,0.46577,0.5589
+f3eani0z,g6frznog,neither,2,efference+privileged_critic,0.55556,0.66549
+f3eani0z,c34p08hy,same seed,2,efference+privileged_critic,0.46598,0.55658
+f3eani0z,rlgkinux,neither,3,efference+privileged_critic+servo,0.48793,0.5832
+f3eani0z,tzp7655l,same seed,3,efference+privileged_critic+servo,0.4949,0.59416
+f3eani0z,0xmqmajf,neither,3,efference+forward_model+sensor,0.4661,0.5485
+f3eani0z,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.60948,0.72864
+f3eani0z,tijio74v,neither,2,efference+forward_model,0.63941,0.76369
+f3eani0z,f1alm9y1,same seed,2,efference+forward_model,0.44396,0.51765
+f3eani0z,s5lt23ld,neither,3,efference+forward_model+servo,0.50322,0.60559
+f3eani0z,476uchc2,same seed,3,efference+forward_model+servo,0.56847,0.6829
+f3eani0z,crr2pjup,neither,3,efference+forward_model+servo,0.49704,0.59749
+h1800i1b,2mxf1piw,same condition,0,-,0.20368,0.24184
+h1800i1b,kfld9i6s,same condition,0,-,0.54815,0.64384
+h1800i1b,40w5wtaw,same condition,0,-,0.47465,0.56694
+h1800i1b,u8z1oecr,same condition,0,-,0.5402,0.63075
+h1800i1b,czyahwd8,same seed,1,servo,0.4334,0.51219
+h1800i1b,2v0xd776,neither,1,servo,0.43922,0.51837
+h1800i1b,fwumjubs,neither,1,privileged_critic,0.20262,0.23649
+h1800i1b,irf6aqn8,neither,1,privileged_critic,0.35037,0.41178
+h1800i1b,hqd7gsvc,same seed,2,privileged_critic+servo,0.35509,0.42965
+h1800i1b,4vvryasn,neither,2,forward_model+sensor,0.40295,0.48547
+h1800i1b,j70fn2g7,same seed,2,forward_model+sensor,0.55058,0.64465
+h1800i1b,zz0reqyq,same seed,2,forward_model+sensor,0.61046,0.71456
+h1800i1b,lptmmkvi,neither,2,forward_model+sensor,0.59259,0.69247
+h1800i1b,o2zf70hu,neither,2,forward_model+sensor,0.58357,0.6802
+h1800i1b,5tiufunj,neither,3,forward_model+sensor+servo,0.60276,0.7165
+h1800i1b,u10wy89i,neither,3,forward_model+sensor+servo,0.66373,0.78906
+h1800i1b,4u3vdp6y,same seed,3,forward_model+sensor+servo,0.40834,0.49208
+h1800i1b,c5arx0qj,neither,3,forward_model+sensor+servo,0.40673,0.48953
+h1800i1b,suzrcsxy,neither,3,forward_model+sensor+servo,0.56632,0.66663
+h1800i1b,n4a78q9l,neither,3,forward_model+sensor+servo,0.40196,0.48317
+h1800i1b,hd8hctae,same seed,1,forward_model,0.46837,0.56549
+h1800i1b,t7k5z2vm,neither,1,forward_model,0.478,0.57005
+h1800i1b,w632zie8,neither,1,forward_model,0.475,0.57178
+h1800i1b,da7hn33k,same seed,2,forward_model+servo,0.44206,0.5297
+h1800i1b,2j48qvpr,neither,2,forward_model+servo,0.37316,0.44843
+h1800i1b,e3rowege,neither,2,forward_model+servo,0.38034,0.44155
+h1800i1b,oljpt79a,neither,2,efference+sensor,0.70947,0.82445
+h1800i1b,20qm2p6x,same seed,2,efference+sensor,0.39397,0.46019
+h1800i1b,ng04upc0,neither,2,efference+sensor,0.41903,0.50403
+h1800i1b,wm8x4eda,neither,2,efference+sensor,0.3622,0.42298
+h1800i1b,es8cg6rj,neither,3,efference+sensor+servo,0.49558,0.5897
+h1800i1b,pixbjisa,neither,3,efference+sensor+privileged_critic,0.71276,0.82835
+h1800i1b,4kslt39i,same seed,3,efference+sensor+privileged_critic,0.33807,0.3979
+h1800i1b,9w7v65x5,same seed,4,efference+sensor+privileged_critic+servo,0.41133,0.49826
+h1800i1b,6bhvc12c,neither,1,efference,0.59403,0.69037
+h1800i1b,06fy8xrb,neither,1,efference,0.60775,0.69964
+h1800i1b,ygy5tbhf,neither,1,efference,0.54931,0.64709
+h1800i1b,umfqdtn2,neither,2,efference+servo,0.48007,0.56484
+h1800i1b,kvxc6ij4,neither,2,efference+servo,0.38098,0.4629
+h1800i1b,g6frznog,neither,2,efference+privileged_critic,0.53273,0.62648
+h1800i1b,c34p08hy,same seed,2,efference+privileged_critic,0.50779,0.60491
+h1800i1b,rlgkinux,neither,3,efference+privileged_critic+servo,0.40195,0.48582
+h1800i1b,tzp7655l,same seed,3,efference+privileged_critic+servo,0.41082,0.49951
+h1800i1b,0xmqmajf,neither,3,efference+forward_model+sensor,0.29489,0.3491
+h1800i1b,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.60936,0.71457
+h1800i1b,tijio74v,neither,2,efference+forward_model,0.5751,0.67241
+h1800i1b,f1alm9y1,same seed,2,efference+forward_model,0.26575,0.3124
+h1800i1b,s5lt23ld,neither,3,efference+forward_model+servo,0.48291,0.56819
+h1800i1b,476uchc2,same seed,3,efference+forward_model+servo,0.45807,0.5489
+h1800i1b,crr2pjup,neither,3,efference+forward_model+servo,0.40257,0.48376
+2mxf1piw,kfld9i6s,replicate,0,-,0.55168,0.65447
+2mxf1piw,40w5wtaw,same condition,0,-,0.48284,0.58069
+2mxf1piw,u8z1oecr,same condition,0,-,0.52618,0.6194
+2mxf1piw,czyahwd8,neither,1,servo,0.42148,0.50219
+2mxf1piw,2v0xd776,same seed,1,servo,0.41382,0.48962
+2mxf1piw,fwumjubs,same seed,1,privileged_critic,0.14769,0.16923
+2mxf1piw,irf6aqn8,neither,1,privileged_critic,0.33173,0.38457
+2mxf1piw,hqd7gsvc,neither,2,privileged_critic+servo,0.37843,0.45336
+2mxf1piw,4vvryasn,neither,2,forward_model+sensor,0.50694,0.61079
+2mxf1piw,j70fn2g7,neither,2,forward_model+sensor,0.55136,0.6491
+2mxf1piw,zz0reqyq,neither,2,forward_model+sensor,0.59654,0.70226
+2mxf1piw,lptmmkvi,same seed,2,forward_model+sensor,0.59775,0.70327
+2mxf1piw,o2zf70hu,same seed,2,forward_model+sensor,0.57773,0.68126
+2mxf1piw,5tiufunj,neither,3,forward_model+sensor+servo,0.56656,0.67563
+2mxf1piw,u10wy89i,neither,3,forward_model+sensor+servo,0.62768,0.74954
+2mxf1piw,4u3vdp6y,neither,3,forward_model+sensor+servo,0.41194,0.4952
+2mxf1piw,c5arx0qj,same seed,3,forward_model+sensor+servo,0.40617,0.48735
+2mxf1piw,suzrcsxy,same seed,3,forward_model+sensor+servo,0.53489,0.63223
+2mxf1piw,n4a78q9l,neither,3,forward_model+sensor+servo,0.38102,0.45648
+2mxf1piw,hd8hctae,neither,1,forward_model,0.47482,0.57283
+2mxf1piw,t7k5z2vm,same seed,1,forward_model,0.46004,0.54984
+2mxf1piw,w632zie8,neither,1,forward_model,0.42956,0.51655
+2mxf1piw,da7hn33k,neither,2,forward_model+servo,0.46669,0.55781
+2mxf1piw,2j48qvpr,same seed,2,forward_model+servo,0.37296,0.44621
+2mxf1piw,e3rowege,neither,2,forward_model+servo,0.33256,0.38761
+2mxf1piw,oljpt79a,neither,2,efference+sensor,0.69387,0.81034
+2mxf1piw,20qm2p6x,neither,2,efference+sensor,0.47457,0.55523
+2mxf1piw,ng04upc0,same seed,2,efference+sensor,0.44717,0.53592
+2mxf1piw,wm8x4eda,neither,2,efference+sensor,0.43799,0.51535
+2mxf1piw,es8cg6rj,neither,3,efference+sensor+servo,0.52798,0.6233
+2mxf1piw,pixbjisa,neither,3,efference+sensor+privileged_critic,0.67977,0.79128
+2mxf1piw,4kslt39i,neither,3,efference+sensor+privileged_critic,0.39835,0.4689
+2mxf1piw,9w7v65x5,neither,4,efference+sensor+privileged_critic+servo,0.41744,0.49992
+2mxf1piw,6bhvc12c,neither,1,efference,0.58382,0.6832
+2mxf1piw,06fy8xrb,same seed,1,efference,0.58464,0.67883
+2mxf1piw,ygy5tbhf,same seed,1,efference,0.53743,0.63773
+2mxf1piw,umfqdtn2,neither,2,efference+servo,0.44944,0.53257
+2mxf1piw,kvxc6ij4,neither,2,efference+servo,0.39746,0.47875
+2mxf1piw,g6frznog,neither,2,efference+privileged_critic,0.51721,0.61192
+2mxf1piw,c34p08hy,neither,2,efference+privileged_critic,0.52047,0.61991
+2mxf1piw,rlgkinux,neither,3,efference+privileged_critic+servo,0.41054,0.4923
+2mxf1piw,tzp7655l,neither,3,efference+privileged_critic+servo,0.42651,0.51483
+2mxf1piw,0xmqmajf,neither,3,efference+forward_model+sensor,0.34861,0.41009
+2mxf1piw,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.56921,0.67066
+2mxf1piw,tijio74v,neither,2,efference+forward_model,0.57169,0.67326
+2mxf1piw,f1alm9y1,neither,2,efference+forward_model,0.30493,0.35508
+2mxf1piw,s5lt23ld,neither,3,efference+forward_model+servo,0.45241,0.53699
+2mxf1piw,476uchc2,neither,3,efference+forward_model+servo,0.48527,0.5813
+2mxf1piw,crr2pjup,same seed,3,efference+forward_model+servo,0.40019,0.48107
+kfld9i6s,40w5wtaw,same condition,0,-,0.33899,0.3911
+kfld9i6s,u8z1oecr,same condition,0,-,0.20124,0.23785
+kfld9i6s,czyahwd8,neither,1,servo,0.36346,0.43404
+kfld9i6s,2v0xd776,same seed,1,servo,0.43899,0.52302
+kfld9i6s,fwumjubs,same seed,1,privileged_critic,0.56985,0.66515
+kfld9i6s,irf6aqn8,neither,1,privileged_critic,0.64332,0.75892
+kfld9i6s,hqd7gsvc,neither,2,privileged_critic+servo,0.4929,0.57436
+kfld9i6s,4vvryasn,neither,2,forward_model+sensor,0.59487,0.69589
+kfld9i6s,j70fn2g7,neither,2,forward_model+sensor,0.37983,0.45137
+kfld9i6s,zz0reqyq,neither,2,forward_model+sensor,0.25498,0.30034
+kfld9i6s,lptmmkvi,same seed,2,forward_model+sensor,0.36477,0.43341
+kfld9i6s,o2zf70hu,same seed,2,forward_model+sensor,0.41815,0.5048
+kfld9i6s,5tiufunj,neither,3,forward_model+sensor+servo,0.37391,0.45175
+kfld9i6s,u10wy89i,neither,3,forward_model+sensor+servo,0.40331,0.48794
+kfld9i6s,4u3vdp6y,neither,3,forward_model+sensor+servo,0.68486,0.81103
+kfld9i6s,c5arx0qj,same seed,3,forward_model+sensor+servo,0.61633,0.731
+kfld9i6s,suzrcsxy,same seed,3,forward_model+sensor+servo,0.33798,0.40428
+kfld9i6s,n4a78q9l,neither,3,forward_model+sensor+servo,0.69781,0.82438
+kfld9i6s,hd8hctae,neither,1,forward_model,0.40231,0.46696
+kfld9i6s,t7k5z2vm,same seed,1,forward_model,0.35019,0.413
+kfld9i6s,w632zie8,neither,1,forward_model,0.59111,0.70311
+kfld9i6s,da7hn33k,neither,2,forward_model+servo,0.4788,0.56678
+kfld9i6s,2j48qvpr,same seed,2,forward_model+servo,0.46485,0.54899
+kfld9i6s,e3rowege,neither,2,forward_model+servo,0.42965,0.50659
+kfld9i6s,oljpt79a,neither,2,efference+sensor,0.35749,0.41893
+kfld9i6s,20qm2p6x,neither,2,efference+sensor,0.73695,0.85553
+kfld9i6s,ng04upc0,same seed,2,efference+sensor,0.72228,0.85468
+kfld9i6s,wm8x4eda,neither,2,efference+sensor,0.65137,0.75332
+kfld9i6s,es8cg6rj,neither,3,efference+sensor+servo,0.74569,0.87249
+kfld9i6s,pixbjisa,neither,3,efference+sensor+privileged_critic,0.43701,0.51475
+kfld9i6s,4kslt39i,neither,3,efference+sensor+privileged_critic,0.67297,0.78381
+kfld9i6s,9w7v65x5,neither,4,efference+sensor+privileged_critic+servo,0.65504,0.76816
+kfld9i6s,6bhvc12c,neither,1,efference,0.21895,0.25724
+kfld9i6s,06fy8xrb,same seed,1,efference,0.25229,0.295
+kfld9i6s,ygy5tbhf,same seed,1,efference,0.23656,0.28504
+kfld9i6s,umfqdtn2,neither,2,efference+servo,0.41201,0.49581
+kfld9i6s,kvxc6ij4,neither,2,efference+servo,0.57529,0.67536
+kfld9i6s,g6frznog,neither,2,efference+privileged_critic,0.22133,0.26175
+kfld9i6s,c34p08hy,neither,2,efference+privileged_critic,0.85083,1.016
+kfld9i6s,rlgkinux,neither,3,efference+privileged_critic+servo,0.53637,0.61969
+kfld9i6s,tzp7655l,neither,3,efference+privileged_critic+servo,0.56254,0.65804
+kfld9i6s,0xmqmajf,neither,3,efference+forward_model+sensor,0.6933,0.80886
+kfld9i6s,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.35497,0.42484
+kfld9i6s,tijio74v,neither,2,efference+forward_model,0.22253,0.26088
+kfld9i6s,f1alm9y1,neither,2,efference+forward_model,0.6065,0.69849
+kfld9i6s,s5lt23ld,neither,3,efference+forward_model+servo,0.40158,0.47821
+kfld9i6s,476uchc2,neither,3,efference+forward_model+servo,0.57793,0.68865
+kfld9i6s,crr2pjup,same seed,3,efference+forward_model+servo,0.53128,0.63153
+40w5wtaw,u8z1oecr,replicate,0,-,0.36078,0.40927
+40w5wtaw,czyahwd8,neither,1,servo,0.30392,0.36017
+40w5wtaw,2v0xd776,neither,1,servo,0.36114,0.42215
+40w5wtaw,fwumjubs,neither,1,privileged_critic,0.4878,0.58202
+40w5wtaw,irf6aqn8,same seed,1,privileged_critic,0.5051,0.593
+40w5wtaw,hqd7gsvc,neither,2,privileged_critic+servo,0.37593,0.44599
+40w5wtaw,4vvryasn,neither,2,forward_model+sensor,0.59158,0.7056
+40w5wtaw,j70fn2g7,neither,2,forward_model+sensor,0.4707,0.5429
+40w5wtaw,zz0reqyq,neither,2,forward_model+sensor,0.43271,0.49061
+40w5wtaw,lptmmkvi,neither,2,forward_model+sensor,0.48725,0.56322
+40w5wtaw,o2zf70hu,neither,2,forward_model+sensor,0.50756,0.59671
+40w5wtaw,5tiufunj,neither,3,forward_model+sensor+servo,0.35695,0.41895
+40w5wtaw,u10wy89i,neither,3,forward_model+sensor+servo,0.38651,0.45818
+40w5wtaw,4u3vdp6y,neither,3,forward_model+sensor+servo,0.58162,0.70068
+40w5wtaw,c5arx0qj,neither,3,forward_model+sensor+servo,0.53724,0.64759
+40w5wtaw,suzrcsxy,neither,3,forward_model+sensor+servo,0.37219,0.42842
+40w5wtaw,n4a78q9l,same seed,3,forward_model+sensor+servo,0.59595,0.71776
+40w5wtaw,hd8hctae,neither,1,forward_model,0.31228,0.37494
+40w5wtaw,t7k5z2vm,neither,1,forward_model,0.3597,0.42502
+40w5wtaw,w632zie8,same seed,1,forward_model,0.4548,0.5464
+40w5wtaw,da7hn33k,neither,2,forward_model+servo,0.38808,0.46251
+40w5wtaw,2j48qvpr,neither,2,forward_model+servo,0.37621,0.44986
+40w5wtaw,e3rowege,same seed,2,forward_model+servo,0.36827,0.42897
+40w5wtaw,oljpt79a,neither,2,efference+sensor,0.51344,0.57996
+40w5wtaw,20qm2p6x,neither,2,efference+sensor,0.67029,0.79145
+40w5wtaw,ng04upc0,neither,2,efference+sensor,0.62959,0.75264
+40w5wtaw,wm8x4eda,same seed,2,efference+sensor,0.57765,0.6823
+40w5wtaw,es8cg6rj,neither,3,efference+sensor+servo,0.67157,0.7968
+40w5wtaw,pixbjisa,neither,3,efference+sensor+privileged_critic,0.4976,0.56491
+40w5wtaw,4kslt39i,neither,3,efference+sensor+privileged_critic,0.57774,0.68443
+40w5wtaw,9w7v65x5,neither,4,efference+sensor+privileged_critic+servo,0.54303,0.64581
+40w5wtaw,6bhvc12c,neither,1,efference,0.39152,0.43685
+40w5wtaw,06fy8xrb,neither,1,efference,0.43967,0.49112
+40w5wtaw,ygy5tbhf,neither,1,efference,0.34719,0.40006
+40w5wtaw,umfqdtn2,neither,2,efference+servo,0.35605,0.41775
+40w5wtaw,kvxc6ij4,same seed,2,efference+servo,0.4664,0.55733
+40w5wtaw,g6frznog,neither,2,efference+privileged_critic,0.33942,0.38872
+40w5wtaw,c34p08hy,neither,2,efference+privileged_critic,0.73645,0.87947
+40w5wtaw,rlgkinux,neither,3,efference+privileged_critic+servo,0.40903,0.48515
+40w5wtaw,tzp7655l,neither,3,efference+privileged_critic+servo,0.44672,0.53362
+40w5wtaw,0xmqmajf,neither,3,efference+forward_model+sensor,0.62348,0.73771
+40w5wtaw,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.37851,0.43409
+40w5wtaw,tijio74v,neither,2,efference+forward_model,0.45291,0.52318
+40w5wtaw,f1alm9y1,neither,2,efference+forward_model,0.54984,0.64952
+40w5wtaw,s5lt23ld,neither,3,efference+forward_model+servo,0.35795,0.42164
+40w5wtaw,476uchc2,neither,3,efference+forward_model+servo,0.49784,0.59701
+40w5wtaw,crr2pjup,neither,3,efference+forward_model+servo,0.45262,0.54622
+u8z1oecr,czyahwd8,neither,1,servo,0.40519,0.48213
+u8z1oecr,2v0xd776,neither,1,servo,0.43679,0.5208
+u8z1oecr,fwumjubs,neither,1,privileged_critic,0.55706,0.64296
+u8z1oecr,irf6aqn8,same seed,1,privileged_critic,0.58287,0.68582
+u8z1oecr,hqd7gsvc,neither,2,privileged_critic+servo,0.51385,0.59666
+u8z1oecr,4vvryasn,neither,2,forward_model+sensor,0.65879,0.77045
+u8z1oecr,j70fn2g7,neither,2,forward_model+sensor,0.45888,0.54718
+u8z1oecr,zz0reqyq,neither,2,forward_model+sensor,0.3163,0.37717
+u8z1oecr,lptmmkvi,neither,2,forward_model+sensor,0.47549,0.56514
+u8z1oecr,o2zf70hu,neither,2,forward_model+sensor,0.52125,0.62506
+u8z1oecr,5tiufunj,neither,3,forward_model+sensor+servo,0.37523,0.45081
+u8z1oecr,u10wy89i,neither,3,forward_model+sensor+servo,0.41632,0.4997
+u8z1oecr,4u3vdp6y,neither,3,forward_model+sensor+servo,0.68846,0.81114
+u8z1oecr,c5arx0qj,neither,3,forward_model+sensor+servo,0.63475,0.74983
+u8z1oecr,suzrcsxy,neither,3,forward_model+sensor+servo,0.35,0.41766
+u8z1oecr,n4a78q9l,same seed,3,forward_model+sensor+servo,0.70065,0.82228
+u8z1oecr,hd8hctae,neither,1,forward_model,0.3462,0.38908
+u8z1oecr,t7k5z2vm,neither,1,forward_model,0.24115,0.2762
+u8z1oecr,w632zie8,same seed,1,forward_model,0.50594,0.59671
+u8z1oecr,da7hn33k,neither,2,forward_model+servo,0.51213,0.60477
+u8z1oecr,2j48qvpr,neither,2,forward_model+servo,0.4867,0.5727
+u8z1oecr,e3rowege,same seed,2,forward_model+servo,0.39582,0.46455
+u8z1oecr,oljpt79a,neither,2,efference+sensor,0.47724,0.56614
+u8z1oecr,20qm2p6x,neither,2,efference+sensor,0.76247,0.88259
+u8z1oecr,ng04upc0,neither,2,efference+sensor,0.7454,0.88075
+u8z1oecr,wm8x4eda,same seed,2,efference+sensor,0.68841,0.79406
+u8z1oecr,es8cg6rj,neither,3,efference+sensor+servo,0.75929,0.88636
+u8z1oecr,pixbjisa,neither,3,efference+sensor+privileged_critic,0.51914,0.61325
+u8z1oecr,4kslt39i,neither,3,efference+sensor+privileged_critic,0.698,0.80971
+u8z1oecr,9w7v65x5,neither,4,efference+sensor+privileged_critic+servo,0.66346,0.77462
+u8z1oecr,6bhvc12c,neither,1,efference,0.2923,0.34916
+u8z1oecr,06fy8xrb,neither,1,efference,0.29583,0.3523
+u8z1oecr,ygy5tbhf,neither,1,efference,0.28269,0.33998
+u8z1oecr,umfqdtn2,neither,2,efference+servo,0.42277,0.50692
+u8z1oecr,kvxc6ij4,same seed,2,efference+servo,0.59161,0.69217
+u8z1oecr,g6frznog,neither,2,efference+privileged_critic,0.25299,0.29885
+u8z1oecr,c34p08hy,neither,2,efference+privileged_critic,0.82517,0.98574
+u8z1oecr,rlgkinux,neither,3,efference+privileged_critic+servo,0.56864,0.65435
+u8z1oecr,tzp7655l,neither,3,efference+privileged_critic+servo,0.58455,0.68066
+u8z1oecr,0xmqmajf,neither,3,efference+forward_model+sensor,0.7009,0.81483
+u8z1oecr,t6srdx8w,neither,4,efference+forward_model+sensor+servo,0.34375,0.40952
+u8z1oecr,tijio74v,neither,2,efference+forward_model,0.30722,0.36533
+u8z1oecr,f1alm9y1,neither,2,efference+forward_model,0.62486,0.71538
+u8z1oecr,s5lt23ld,neither,3,efference+forward_model+servo,0.39573,0.46756
+u8z1oecr,476uchc2,neither,3,efference+forward_model+servo,0.60409,0.71823
+u8z1oecr,crr2pjup,neither,3,efference+forward_model+servo,0.55542,0.65713
+czyahwd8,2v0xd776,same condition,0,-,0.15487,0.18159
+czyahwd8,fwumjubs,neither,2,privileged_critic+servo,0.45743,0.53586
+czyahwd8,irf6aqn8,neither,2,privileged_critic+servo,0.5015,0.59674
+czyahwd8,hqd7gsvc,same seed,1,privileged_critic,0.29038,0.33148
+czyahwd8,4vvryasn,neither,3,forward_model+sensor+servo,0.50924,0.59482
+czyahwd8,j70fn2g7,same seed,3,forward_model+sensor+servo,0.3952,0.46628
+czyahwd8,zz0reqyq,same seed,3,forward_model+sensor+servo,0.42144,0.49698
+czyahwd8,lptmmkvi,neither,3,forward_model+sensor+servo,0.43035,0.50858
+czyahwd8,o2zf70hu,neither,3,forward_model+sensor+servo,0.43886,0.52035
+czyahwd8,5tiufunj,neither,2,forward_model+sensor,0.27914,0.33617
+czyahwd8,u10wy89i,neither,2,forward_model+sensor,0.31955,0.38303
+czyahwd8,4u3vdp6y,same seed,2,forward_model+sensor,0.4813,0.56748
+czyahwd8,c5arx0qj,neither,2,forward_model+sensor,0.43459,0.51118
+czyahwd8,suzrcsxy,neither,2,forward_model+sensor,0.24076,0.28329
+czyahwd8,n4a78q9l,neither,2,forward_model+sensor,0.49898,0.58621
+czyahwd8,hd8hctae,same seed,2,forward_model+servo,0.40429,0.48517
+czyahwd8,t7k5z2vm,neither,2,forward_model+servo,0.41025,0.4963
+czyahwd8,w632zie8,neither,2,forward_model+servo,0.52582,0.63405
+czyahwd8,da7hn33k,same seed,1,forward_model,0.27008,0.31323
+czyahwd8,2j48qvpr,neither,1,forward_model,0.26357,0.30808
+czyahwd8,e3rowege,neither,1,forward_model,0.23872,0.28259
+czyahwd8,oljpt79a,neither,3,efference+sensor+servo,0.45097,0.52331
+czyahwd8,20qm2p6x,same seed,3,efference+sensor+servo,0.56783,0.64905
+czyahwd8,ng04upc0,neither,3,efference+sensor+servo,0.49662,0.58192
+czyahwd8,wm8x4eda,neither,3,efference+sensor+servo,0.47799,0.53911
+czyahwd8,es8cg6rj,neither,2,efference+sensor,0.58693,0.6793
+czyahwd8,pixbjisa,neither,4,efference+sensor+privileged_critic+servo,0.40635,0.4705
+czyahwd8,4kslt39i,same seed,4,efference+sensor+privileged_critic+servo,0.49568,0.56765
+czyahwd8,9w7v65x5,same seed,3,efference+sensor+privileged_critic,0.45695,0.53041
+czyahwd8,6bhvc12c,neither,2,efference+servo,0.34103,0.39618
+czyahwd8,06fy8xrb,neither,2,efference+servo,0.39005,0.45014
+czyahwd8,ygy5tbhf,neither,2,efference+servo,0.36522,0.43896
+czyahwd8,umfqdtn2,neither,1,efference,0.13447,0.15963
+czyahwd8,kvxc6ij4,neither,1,efference,0.39252,0.45731
+czyahwd8,g6frznog,neither,3,efference+privileged_critic+servo,0.34717,0.41656
+czyahwd8,c34p08hy,same seed,3,efference+privileged_critic+servo,0.64619,0.77457
+czyahwd8,rlgkinux,neither,2,efference+privileged_critic,0.34071,0.38593
+czyahwd8,tzp7655l,same seed,2,efference+privileged_critic,0.37683,0.43606
+czyahwd8,0xmqmajf,neither,4,efference+forward_model+sensor+servo,0.52713,0.61072
+czyahwd8,t6srdx8w,neither,3,efference+forward_model+sensor,0.28917,0.34121
+czyahwd8,tijio74v,neither,3,efference+forward_model+servo,0.42138,0.5024
+czyahwd8,f1alm9y1,same seed,3,efference+forward_model+servo,0.49949,0.57473
+czyahwd8,s5lt23ld,neither,2,efference+forward_model,0.20088,0.23856
+czyahwd8,476uchc2,same seed,2,efference+forward_model,0.37926,0.4478
+czyahwd8,crr2pjup,neither,2,efference+forward_model,0.35921,0.42459
+2v0xd776,fwumjubs,same seed,2,privileged_critic+servo,0.4654,0.54131
+2v0xd776,irf6aqn8,neither,2,privileged_critic+servo,0.4412,0.52832
+2v0xd776,hqd7gsvc,neither,1,privileged_critic,0.30815,0.35299
+2v0xd776,4vvryasn,neither,3,forward_model+sensor+servo,0.56957,0.66692
+2v0xd776,j70fn2g7,neither,3,forward_model+sensor+servo,0.48207,0.57558
+2v0xd776,zz0reqyq,neither,3,forward_model+sensor+servo,0.49072,0.58456
+2v0xd776,lptmmkvi,same seed,3,forward_model+sensor+servo,0.52654,0.62634
+2v0xd776,o2zf70hu,same seed,3,forward_model+sensor+servo,0.53342,0.6319
+2v0xd776,5tiufunj,neither,2,forward_model+sensor,0.29622,0.35435
+2v0xd776,u10wy89i,neither,2,forward_model+sensor,0.34192,0.40459
+2v0xd776,4u3vdp6y,neither,2,forward_model+sensor,0.44988,0.52198
+2v0xd776,c5arx0qj,same seed,2,forward_model+sensor,0.42754,0.49602
+2v0xd776,suzrcsxy,same seed,2,forward_model+sensor,0.25957,0.30736
+2v0xd776,n4a78q9l,neither,2,forward_model+sensor,0.46864,0.54117
+2v0xd776,hd8hctae,neither,2,forward_model+servo,0.40895,0.48864
+2v0xd776,t7k5z2vm,same seed,2,forward_model+servo,0.41207,0.49868
+2v0xd776,w632zie8,neither,2,forward_model+servo,0.47654,0.57414
+2v0xd776,da7hn33k,neither,1,forward_model,0.30752,0.35845
+2v0xd776,2j48qvpr,same seed,1,forward_model,0.28719,0.33507
+2v0xd776,e3rowege,neither,1,forward_model,0.1817,0.21693
+2v0xd776,oljpt79a,neither,3,efference+sensor+servo,0.53435,0.62773
+2v0xd776,20qm2p6x,neither,3,efference+sensor+servo,0.58037,0.66149
+2v0xd776,ng04upc0,same seed,3,efference+sensor+servo,0.48043,0.55935
+2v0xd776,wm8x4eda,neither,3,efference+sensor+servo,0.49298,0.55219
+2v0xd776,es8cg6rj,neither,2,efference+sensor,0.57244,0.65608
+2v0xd776,pixbjisa,neither,4,efference+sensor+privileged_critic+servo,0.47195,0.55068
+2v0xd776,4kslt39i,neither,4,efference+sensor+privileged_critic+servo,0.50617,0.5767
+2v0xd776,9w7v65x5,neither,3,efference+sensor+privileged_critic,0.43319,0.49729
+2v0xd776,6bhvc12c,neither,2,efference+servo,0.39014,0.45791
+2v0xd776,06fy8xrb,same seed,2,efference+servo,0.4427,0.51712
+2v0xd776,ygy5tbhf,same seed,2,efference+servo,0.41898,0.5038
+2v0xd776,umfqdtn2,neither,1,efference,0.12038,0.13871
+2v0xd776,kvxc6ij4,neither,1,efference,0.38186,0.44101
+2v0xd776,g6frznog,neither,3,efference+privileged_critic+servo,0.38491,0.46244
+2v0xd776,c34p08hy,neither,3,efference+privileged_critic+servo,0.57333,0.68839
+2v0xd776,rlgkinux,neither,2,efference+privileged_critic,0.34615,0.38877
+2v0xd776,tzp7655l,neither,2,efference+privileged_critic,0.37586,0.43093
+2v0xd776,0xmqmajf,neither,4,efference+forward_model+sensor+servo,0.52848,0.61165
+2v0xd776,t6srdx8w,neither,3,efference+forward_model+sensor,0.30184,0.35514
+2v0xd776,tijio74v,neither,3,efference+forward_model+servo,0.48648,0.58268
+2v0xd776,f1alm9y1,neither,3,efference+forward_model+servo,0.52903,0.61005
+2v0xd776,s5lt23ld,neither,2,efference+forward_model,0.19528,0.22848
+2v0xd776,476uchc2,neither,2,efference+forward_model,0.3782,0.44242
+2v0xd776,crr2pjup,same seed,2,efference+forward_model,0.36876,0.4305
+fwumjubs,irf6aqn8,same condition,0,-,0.39978,0.46203
+fwumjubs,hqd7gsvc,neither,1,servo,0.40152,0.47912
+fwumjubs,4vvryasn,neither,3,forward_model+sensor+privileged_critic,0.48325,0.5845
+fwumjubs,j70fn2g7,neither,3,forward_model+sensor+privileged_critic,0.57437,0.66914
+fwumjubs,zz0reqyq,neither,3,forward_model+sensor+privileged_critic,0.62298,0.72387
+fwumjubs,lptmmkvi,same seed,3,forward_model+sensor+privileged_critic,0.61963,0.72255
+fwumjubs,o2zf70hu,same seed,3,forward_model+sensor+privileged_critic,0.59623,0.69583
+fwumjubs,5tiufunj,neither,4,forward_model+sensor+privileged_critic+servo,0.59503,0.70054
+fwumjubs,u10wy89i,neither,4,forward_model+sensor+privileged_critic+servo,0.65627,0.77436
+fwumjubs,4u3vdp6y,neither,4,forward_model+sensor+privileged_critic+servo,0.44585,0.53563
+fwumjubs,c5arx0qj,same seed,4,forward_model+sensor+privileged_critic+servo,0.43381,0.51731
+fwumjubs,suzrcsxy,same seed,4,forward_model+sensor+privileged_critic+servo,0.56758,0.66119
+fwumjubs,n4a78q9l,neither,4,forward_model+sensor+privileged_critic+servo,0.41027,0.49374
+fwumjubs,hd8hctae,neither,2,forward_model+privileged_critic,0.46892,0.56173
+fwumjubs,t7k5z2vm,same seed,2,forward_model+privileged_critic,0.48483,0.57025
+fwumjubs,w632zie8,neither,2,forward_model+privileged_critic,0.47182,0.56136
+fwumjubs,da7hn33k,neither,3,forward_model+privileged_critic+servo,0.49444,0.58466
+fwumjubs,2j48qvpr,same seed,3,forward_model+privileged_critic+servo,0.39845,0.47041
+fwumjubs,e3rowege,neither,3,forward_model+privileged_critic+servo,0.38702,0.44376
+fwumjubs,oljpt79a,neither,3,efference+sensor+privileged_critic,0.72356,0.83578
+fwumjubs,20qm2p6x,neither,3,efference+sensor+privileged_critic,0.46767,0.55064
+fwumjubs,ng04upc0,same seed,3,efference+sensor+privileged_critic,0.4888,0.58611
+fwumjubs,wm8x4eda,neither,3,efference+sensor+privileged_critic,0.43902,0.51919
+fwumjubs,es8cg6rj,neither,4,efference+sensor+privileged_critic+servo,0.542,0.64152
+fwumjubs,pixbjisa,neither,2,efference+sensor,0.71465,0.82507
+fwumjubs,4kslt39i,neither,2,efference+sensor,0.39842,0.47142
+fwumjubs,9w7v65x5,neither,3,efference+sensor+servo,0.43892,0.52895
+fwumjubs,6bhvc12c,neither,2,efference+privileged_critic,0.61756,0.71202
+fwumjubs,06fy8xrb,same seed,2,efference+privileged_critic,0.61904,0.70649
+fwumjubs,ygy5tbhf,same seed,2,efference+privileged_critic,0.55838,0.65155
+fwumjubs,umfqdtn2,neither,3,efference+privileged_critic+servo,0.49607,0.579
+fwumjubs,kvxc6ij4,neither,3,efference+privileged_critic+servo,0.41256,0.49614
+fwumjubs,g6frznog,neither,1,efference,0.54042,0.62848
+fwumjubs,c34p08hy,neither,1,efference,0.59417,0.70552
+fwumjubs,rlgkinux,neither,2,efference+servo,0.41319,0.49843
+fwumjubs,tzp7655l,neither,2,efference+servo,0.44391,0.53656
+fwumjubs,0xmqmajf,neither,4,efference+forward_model+sensor+privileged_critic,0.3391,0.4052
+fwumjubs,t6srdx8w,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.60331,0.70159
+fwumjubs,tijio74v,neither,3,efference+forward_model+privileged_critic,0.58738,0.68143
+fwumjubs,f1alm9y1,neither,3,efference+forward_model+privileged_critic,0.2849,0.33961
+fwumjubs,s5lt23ld,neither,4,efference+forward_model+privileged_critic+servo,0.49357,0.57873
+fwumjubs,476uchc2,neither,4,efference+forward_model+privileged_critic+servo,0.51352,0.60943
+fwumjubs,crr2pjup,same seed,4,efference+forward_model+privileged_critic+servo,0.42175,0.50216
+irf6aqn8,hqd7gsvc,neither,1,servo,0.46288,0.55277
+irf6aqn8,4vvryasn,neither,3,forward_model+sensor+privileged_critic,0.66842,0.79476
+irf6aqn8,j70fn2g7,neither,3,forward_model+sensor+privileged_critic,0.66582,0.79192
+irf6aqn8,zz0reqyq,neither,3,forward_model+sensor+privileged_critic,0.68435,0.80969
+irf6aqn8,lptmmkvi,neither,3,forward_model+sensor+privileged_critic,0.71877,0.85052
+irf6aqn8,o2zf70hu,neither,3,forward_model+sensor+privileged_critic,0.72195,0.84792
+irf6aqn8,5tiufunj,neither,4,forward_model+sensor+privileged_critic+servo,0.61025,0.72662
+irf6aqn8,u10wy89i,neither,4,forward_model+sensor+privileged_critic+servo,0.68663,0.8149
+irf6aqn8,4u3vdp6y,neither,4,forward_model+sensor+privileged_critic+servo,0.45617,0.53144
+irf6aqn8,c5arx0qj,neither,4,forward_model+sensor+privileged_critic+servo,0.51,0.5988
+irf6aqn8,suzrcsxy,neither,4,forward_model+sensor+privileged_critic+servo,0.58531,0.69523
+irf6aqn8,n4a78q9l,same seed,4,forward_model+sensor+privileged_critic+servo,0.45159,0.52108
+irf6aqn8,hd8hctae,neither,2,forward_model+privileged_critic,0.49403,0.59187
+irf6aqn8,t7k5z2vm,neither,2,forward_model+privileged_critic,0.46975,0.56225
+irf6aqn8,w632zie8,same seed,2,forward_model+privileged_critic,0.30831,0.36611
+irf6aqn8,da7hn33k,neither,3,forward_model+privileged_critic+servo,0.55212,0.65856
+irf6aqn8,2j48qvpr,neither,3,forward_model+privileged_critic+servo,0.48424,0.57747
+irf6aqn8,e3rowege,same seed,3,forward_model+privileged_critic+servo,0.35873,0.42436
+irf6aqn8,oljpt79a,neither,3,efference+sensor+privileged_critic,0.79418,0.93495
+irf6aqn8,20qm2p6x,neither,3,efference+sensor+privileged_critic,0.58974,0.68503
+irf6aqn8,ng04upc0,neither,3,efference+sensor+privileged_critic,0.49802,0.58884
+irf6aqn8,wm8x4eda,same seed,3,efference+sensor+privileged_critic,0.55359,0.63761
+irf6aqn8,es8cg6rj,neither,4,efference+sensor+privileged_critic+servo,0.59549,0.69427
+irf6aqn8,pixbjisa,neither,2,efference+sensor,0.76478,0.8994
+irf6aqn8,4kslt39i,neither,2,efference+sensor,0.50445,0.58138
+irf6aqn8,9w7v65x5,neither,3,efference+sensor+servo,0.46325,0.5461
+irf6aqn8,6bhvc12c,neither,2,efference+privileged_critic,0.66659,0.78546
+irf6aqn8,06fy8xrb,neither,2,efference+privileged_critic,0.69399,0.81229
+irf6aqn8,ygy5tbhf,neither,2,efference+privileged_critic,0.64568,0.7683
+irf6aqn8,umfqdtn2,neither,3,efference+privileged_critic+servo,0.4965,0.58868
+irf6aqn8,kvxc6ij4,same seed,3,efference+privileged_critic+servo,0.47832,0.56867
+irf6aqn8,g6frznog,neither,1,efference,0.5989,0.71115
+irf6aqn8,c34p08hy,neither,1,efference,0.39685,0.47667
+irf6aqn8,rlgkinux,neither,2,efference+servo,0.50171,0.59392
+irf6aqn8,tzp7655l,neither,2,efference+servo,0.49568,0.58807
+irf6aqn8,0xmqmajf,neither,4,efference+forward_model+sensor+privileged_critic,0.47969,0.56309
+irf6aqn8,t6srdx8w,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.61174,0.7225
+irf6aqn8,tijio74v,neither,3,efference+forward_model+privileged_critic,0.70163,0.83434
+irf6aqn8,f1alm9y1,neither,3,efference+forward_model+privileged_critic,0.47637,0.55098
+irf6aqn8,s5lt23ld,neither,4,efference+forward_model+privileged_critic+servo,0.49209,0.58175
+irf6aqn8,476uchc2,neither,4,efference+forward_model+privileged_critic+servo,0.56961,0.67702
+irf6aqn8,crr2pjup,neither,4,efference+forward_model+privileged_critic+servo,0.52327,0.61937
+hqd7gsvc,4vvryasn,neither,4,forward_model+sensor+privileged_critic+servo,0.45773,0.54751
+hqd7gsvc,j70fn2g7,same seed,4,forward_model+sensor+privileged_critic+servo,0.51627,0.59971
+hqd7gsvc,zz0reqyq,same seed,4,forward_model+sensor+privileged_critic+servo,0.56537,0.65587
+hqd7gsvc,lptmmkvi,neither,4,forward_model+sensor+privileged_critic+servo,0.543,0.62826
+hqd7gsvc,o2zf70hu,neither,4,forward_model+sensor+privileged_critic+servo,0.53102,0.61043
+hqd7gsvc,5tiufunj,neither,3,forward_model+sensor+privileged_critic,0.43151,0.50233
+hqd7gsvc,u10wy89i,neither,3,forward_model+sensor+privileged_critic,0.4602,0.53496
+hqd7gsvc,4u3vdp6y,same seed,3,forward_model+sensor+privileged_critic,0.34485,0.41362
+hqd7gsvc,c5arx0qj,neither,3,forward_model+sensor+privileged_critic,0.28147,0.33511
+hqd7gsvc,suzrcsxy,neither,3,forward_model+sensor+privileged_critic,0.43071,0.49415
+hqd7gsvc,n4a78q9l,neither,3,forward_model+sensor+privileged_critic,0.36815,0.43991
+hqd7gsvc,hd8hctae,same seed,3,forward_model+privileged_critic+servo,0.44653,0.54009
+hqd7gsvc,t7k5z2vm,neither,3,forward_model+privileged_critic+servo,0.47352,0.56493
+hqd7gsvc,w632zie8,neither,3,forward_model+privileged_critic+servo,0.51587,0.62314
+hqd7gsvc,da7hn33k,same seed,2,forward_model+privileged_critic,0.15251,0.17397
+hqd7gsvc,2j48qvpr,neither,2,forward_model+privileged_critic,0.12294,0.14172
+hqd7gsvc,e3rowege,neither,2,forward_model+privileged_critic,0.33572,0.38385
+hqd7gsvc,oljpt79a,neither,4,efference+sensor+privileged_critic+servo,0.60879,0.69541
+hqd7gsvc,20qm2p6x,same seed,4,efference+sensor+privileged_critic+servo,0.42605,0.49836
+hqd7gsvc,ng04upc0,neither,4,efference+sensor+privileged_critic+servo,0.38312,0.45865
+hqd7gsvc,wm8x4eda,neither,4,efference+sensor+privileged_critic+servo,0.34032,0.39181
+hqd7gsvc,es8cg6rj,neither,3,efference+sensor+privileged_critic,0.41801,0.49242
+hqd7gsvc,pixbjisa,neither,3,efference+sensor+servo,0.55782,0.63227
+hqd7gsvc,4kslt39i,same seed,3,efference+sensor+servo,0.33456,0.39102
+hqd7gsvc,9w7v65x5,same seed,2,efference+sensor,0.25818,0.30735
+hqd7gsvc,6bhvc12c,neither,3,efference+privileged_critic+servo,0.5055,0.57819
+hqd7gsvc,06fy8xrb,neither,3,efference+privileged_critic+servo,0.54563,0.61924
+hqd7gsvc,ygy5tbhf,neither,3,efference+privileged_critic+servo,0.4661,0.54448
+hqd7gsvc,umfqdtn2,neither,2,efference+privileged_critic,0.3674,0.42201
+hqd7gsvc,kvxc6ij4,neither,2,efference+privileged_critic,0.15767,0.18921
+hqd7gsvc,g6frznog,neither,2,efference+servo,0.44691,0.52127
+hqd7gsvc,c34p08hy,same seed,2,efference+servo,0.55378,0.66354
+hqd7gsvc,rlgkinux,neither,1,efference,0.14538,0.16741
+hqd7gsvc,tzp7655l,same seed,1,efference,0.14421,0.17125
+hqd7gsvc,0xmqmajf,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.42012,0.49939
+hqd7gsvc,t6srdx8w,neither,4,efference+forward_model+sensor+privileged_critic,0.46908,0.53648
+hqd7gsvc,tijio74v,neither,4,efference+forward_model+privileged_critic+servo,0.54231,0.63154
+hqd7gsvc,f1alm9y1,same seed,4,efference+forward_model+privileged_critic+servo,0.38915,0.46098
+hqd7gsvc,s5lt23ld,neither,3,efference+forward_model+privileged_critic,0.38882,0.44879
+hqd7gsvc,476uchc2,same seed,3,efference+forward_model+privileged_critic,0.20501,0.23791
+hqd7gsvc,crr2pjup,neither,3,efference+forward_model+privileged_critic,0.17587,0.20472
+4vvryasn,j70fn2g7,same condition,0,-,0.51068,0.58674
+4vvryasn,zz0reqyq,same condition,0,-,0.6084,0.70418
+4vvryasn,lptmmkvi,same condition,0,-,0.54447,0.62606
+4vvryasn,o2zf70hu,same condition,0,-,0.5171,0.59249
+4vvryasn,5tiufunj,same seed,1,servo,0.65656,0.77408
+4vvryasn,u10wy89i,same seed,1,servo,0.69603,0.82014
+4vvryasn,4u3vdp6y,neither,1,servo,0.53053,0.6386
+4vvryasn,c5arx0qj,neither,1,servo,0.47218,0.56591
+4vvryasn,suzrcsxy,neither,1,servo,0.62131,0.72509
+4vvryasn,n4a78q9l,neither,1,servo,0.5467,0.66017
+4vvryasn,hd8hctae,neither,1,sensor,0.66135,0.79535
+4vvryasn,t7k5z2vm,neither,1,sensor,0.69666,0.83084
+4vvryasn,w632zie8,neither,1,sensor,0.77999,0.93786
+4vvryasn,da7hn33k,neither,2,sensor+servo,0.46415,0.54669
+4vvryasn,2j48qvpr,neither,2,sensor+servo,0.45289,0.53682
+4vvryasn,e3rowege,neither,2,sensor+servo,0.56161,0.65643
+4vvryasn,oljpt79a,neither,2,efference+forward_model,0.66367,0.75786
+4vvryasn,20qm2p6x,neither,2,efference+forward_model,0.38783,0.45829
+4vvryasn,ng04upc0,neither,2,efference+forward_model,0.44624,0.53392
+4vvryasn,wm8x4eda,neither,2,efference+forward_model,0.35772,0.42265
+4vvryasn,es8cg6rj,neither,3,efference+forward_model+servo,0.53282,0.63526
+4vvryasn,pixbjisa,same seed,3,efference+forward_model+privileged_critic,0.69123,0.79205
+4vvryasn,4kslt39i,neither,3,efference+forward_model+privileged_critic,0.39647,0.47381
+4vvryasn,9w7v65x5,neither,4,efference+forward_model+privileged_critic+servo,0.52305,0.63334
+4vvryasn,6bhvc12c,same seed,3,efference+forward_model+sensor,0.64032,0.73976
+4vvryasn,06fy8xrb,neither,3,efference+forward_model+sensor,0.62851,0.71673
+4vvryasn,ygy5tbhf,neither,3,efference+forward_model+sensor,0.61398,0.7189
+4vvryasn,umfqdtn2,same seed,4,efference+forward_model+sensor+servo,0.59068,0.69249
+4vvryasn,kvxc6ij4,neither,4,efference+forward_model+sensor+servo,0.49096,0.59183
+4vvryasn,g6frznog,same seed,4,efference+forward_model+sensor+privileged_critic,0.62884,0.737
+4vvryasn,c34p08hy,neither,4,efference+forward_model+sensor+privileged_critic,0.71318,0.84891
+4vvryasn,rlgkinux,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.49268,0.59291
+4vvryasn,tzp7655l,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.50254,0.60765
+4vvryasn,0xmqmajf,neither,1,efference,0.357,0.42736
+4vvryasn,t6srdx8w,neither,2,efference+servo,0.66871,0.77956
+4vvryasn,tijio74v,same seed,2,efference+sensor,0.62027,0.7215
+4vvryasn,f1alm9y1,neither,2,efference+sensor,0.39554,0.47744
+4vvryasn,s5lt23ld,same seed,3,efference+sensor+servo,0.5844,0.68546
+4vvryasn,476uchc2,neither,3,efference+sensor+servo,0.47334,0.55971
+4vvryasn,crr2pjup,neither,3,efference+sensor+servo,0.45843,0.54642
+j70fn2g7,zz0reqyq,replicate,0,-,0.23101,0.27508
+j70fn2g7,lptmmkvi,same condition,0,-,0.19081,0.22689
+j70fn2g7,o2zf70hu,same condition,0,-,0.22154,0.24918
+j70fn2g7,5tiufunj,neither,1,servo,0.46084,0.55336
+j70fn2g7,u10wy89i,neither,1,servo,0.51214,0.60821
+j70fn2g7,4u3vdp6y,same seed,1,servo,0.70665,0.82981
+j70fn2g7,c5arx0qj,neither,1,servo,0.63585,0.74379
+j70fn2g7,suzrcsxy,neither,1,servo,0.41373,0.49893
+j70fn2g7,n4a78q9l,neither,1,servo,0.71938,0.84338
+j70fn2g7,hd8hctae,same seed,1,sensor,0.60093,0.71396
+j70fn2g7,t7k5z2vm,neither,1,sensor,0.57454,0.68895
+j70fn2g7,w632zie8,neither,1,sensor,0.72802,0.86978
+j70fn2g7,da7hn33k,same seed,2,sensor+servo,0.47527,0.55098
+j70fn2g7,2j48qvpr,neither,2,sensor+servo,0.47229,0.54957
+j70fn2g7,e3rowege,neither,2,sensor+servo,0.48073,0.57317
+j70fn2g7,oljpt79a,neither,2,efference+forward_model,0.3043,0.35733
+j70fn2g7,20qm2p6x,same seed,2,efference+forward_model,0.68738,0.78824
+j70fn2g7,ng04upc0,neither,2,efference+forward_model,0.67275,0.78943
+j70fn2g7,wm8x4eda,neither,2,efference+forward_model,0.65134,0.74344
+j70fn2g7,es8cg6rj,neither,3,efference+forward_model+servo,0.77585,0.90324
+j70fn2g7,pixbjisa,neither,3,efference+forward_model+privileged_critic,0.37086,0.43693
+j70fn2g7,4kslt39i,same seed,3,efference+forward_model+privileged_critic,0.65286,0.75063
+j70fn2g7,9w7v65x5,same seed,4,efference+forward_model+privileged_critic+servo,0.67845,0.79697
+j70fn2g7,6bhvc12c,neither,3,efference+forward_model+sensor,0.36401,0.43576
+j70fn2g7,06fy8xrb,neither,3,efference+forward_model+sensor,0.33824,0.3956
+j70fn2g7,ygy5tbhf,neither,3,efference+forward_model+sensor,0.36921,0.44009
+j70fn2g7,umfqdtn2,neither,4,efference+forward_model+sensor+servo,0.44088,0.52894
+j70fn2g7,kvxc6ij4,neither,4,efference+forward_model+sensor+servo,0.61474,0.71994
+j70fn2g7,g6frznog,neither,4,efference+forward_model+sensor+privileged_critic,0.40279,0.48152
+j70fn2g7,c34p08hy,same seed,4,efference+forward_model+sensor+privileged_critic,0.84238,1.0086
+j70fn2g7,rlgkinux,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.58845,0.68221
+j70fn2g7,tzp7655l,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.61099,0.71415
+j70fn2g7,0xmqmajf,neither,1,efference,0.62914,0.73133
+j70fn2g7,t6srdx8w,neither,2,efference+servo,0.43438,0.52186
+j70fn2g7,tijio74v,neither,2,efference+sensor,0.35285,0.42717
+j70fn2g7,f1alm9y1,same seed,2,efference+sensor,0.58653,0.67131
+j70fn2g7,s5lt23ld,neither,3,efference+sensor+servo,0.44628,0.53224
+j70fn2g7,476uchc2,same seed,3,efference+sensor+servo,0.57937,0.6799
+j70fn2g7,crr2pjup,neither,3,efference+sensor+servo,0.55117,0.64478
+zz0reqyq,lptmmkvi,same condition,0,-,0.27468,0.32583
+zz0reqyq,o2zf70hu,same condition,0,-,0.31849,0.37693
+zz0reqyq,5tiufunj,neither,1,servo,0.40995,0.49103
+zz0reqyq,u10wy89i,neither,1,servo,0.45268,0.53762
+zz0reqyq,4u3vdp6y,same seed,1,servo,0.75177,0.88253
+zz0reqyq,c5arx0qj,neither,1,servo,0.67974,0.79672
+zz0reqyq,suzrcsxy,neither,1,servo,0.36753,0.44194
+zz0reqyq,n4a78q9l,neither,1,servo,0.76369,0.89463
+zz0reqyq,hd8hctae,same seed,1,sensor,0.53993,0.63221
+zz0reqyq,t7k5z2vm,neither,1,sensor,0.48781,0.58004
+zz0reqyq,w632zie8,neither,1,sensor,0.68596,0.81488
+zz0reqyq,da7hn33k,same seed,2,sensor+servo,0.52907,0.61728
+zz0reqyq,2j48qvpr,neither,2,sensor+servo,0.51849,0.60456
+zz0reqyq,e3rowege,neither,2,sensor+servo,0.48021,0.56951
+zz0reqyq,oljpt79a,neither,2,efference+forward_model,0.28079,0.32982
+zz0reqyq,20qm2p6x,same seed,2,efference+forward_model,0.78166,0.90189
+zz0reqyq,ng04upc0,neither,2,efference+forward_model,0.75685,0.88974
+zz0reqyq,wm8x4eda,neither,2,efference+forward_model,0.72066,0.82761
+zz0reqyq,es8cg6rj,neither,3,efference+forward_model+servo,0.81875,0.95267
+zz0reqyq,pixbjisa,neither,3,efference+forward_model+privileged_critic,0.38203,0.44793
+zz0reqyq,4kslt39i,same seed,3,efference+forward_model+privileged_critic,0.72938,0.84312
+zz0reqyq,9w7v65x5,same seed,4,efference+forward_model+privileged_critic+servo,0.72265,0.84534
+zz0reqyq,6bhvc12c,neither,3,efference+forward_model+sensor,0.27027,0.32532
+zz0reqyq,06fy8xrb,neither,3,efference+forward_model+sensor,0.22539,0.26649
+zz0reqyq,ygy5tbhf,neither,3,efference+forward_model+sensor,0.29245,0.34813
+zz0reqyq,umfqdtn2,neither,4,efference+forward_model+sensor+servo,0.45085,0.54034
+zz0reqyq,kvxc6ij4,neither,4,efference+forward_model+sensor+servo,0.65351,0.76365
+zz0reqyq,g6frznog,neither,4,efference+forward_model+sensor+privileged_critic,0.3138,0.37235
+zz0reqyq,c34p08hy,same seed,4,efference+forward_model+sensor+privileged_critic,0.89691,1.0719
+zz0reqyq,rlgkinux,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.62421,0.72044
+zz0reqyq,tzp7655l,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.64718,0.75409
+zz0reqyq,0xmqmajf,neither,1,efference,0.71764,0.83457
+zz0reqyq,t6srdx8w,neither,2,efference+servo,0.37268,0.44719
+zz0reqyq,tijio74v,neither,2,efference+sensor,0.27672,0.3348
+zz0reqyq,f1alm9y1,same seed,2,efference+sensor,0.65898,0.75645
+zz0reqyq,s5lt23ld,neither,3,efference+sensor+servo,0.44359,0.5271
+zz0reqyq,476uchc2,same seed,3,efference+sensor+servo,0.63244,0.74503
+zz0reqyq,crr2pjup,neither,3,efference+sensor+servo,0.5924,0.69465
+lptmmkvi,o2zf70hu,replicate,0,-,0.23474,0.27459
+lptmmkvi,5tiufunj,neither,1,servo,0.49536,0.59486
+lptmmkvi,u10wy89i,neither,1,servo,0.53065,0.63238
+lptmmkvi,4u3vdp6y,neither,1,servo,0.73565,0.86384
+lptmmkvi,c5arx0qj,same seed,1,servo,0.6653,0.77869
+lptmmkvi,suzrcsxy,same seed,1,servo,0.4512,0.54315
+lptmmkvi,n4a78q9l,neither,1,servo,0.75105,0.88097
+lptmmkvi,hd8hctae,neither,1,sensor,0.63284,0.74933
+lptmmkvi,t7k5z2vm,same seed,1,sensor,0.59082,0.70492
+lptmmkvi,w632zie8,neither,1,sensor,0.76768,0.91421
+lptmmkvi,da7hn33k,neither,2,sensor+servo,0.49804,0.57655
+lptmmkvi,2j48qvpr,same seed,2,sensor+servo,0.49424,0.5734
+lptmmkvi,e3rowege,neither,2,sensor+servo,0.53849,0.63898
+lptmmkvi,oljpt79a,neither,2,efference+forward_model,0.24201,0.284
+lptmmkvi,20qm2p6x,neither,2,efference+forward_model,0.73794,0.84907
+lptmmkvi,ng04upc0,same seed,2,efference+forward_model,0.71522,0.83909
+lptmmkvi,wm8x4eda,neither,2,efference+forward_model,0.68491,0.78387
+lptmmkvi,es8cg6rj,neither,3,efference+forward_model+servo,0.80126,0.93243
+lptmmkvi,pixbjisa,neither,3,efference+forward_model+privileged_critic,0.34964,0.41522
+lptmmkvi,4kslt39i,neither,3,efference+forward_model+privileged_critic,0.69402,0.79996
+lptmmkvi,9w7v65x5,neither,4,efference+forward_model+privileged_critic+servo,0.70052,0.82035
+lptmmkvi,6bhvc12c,neither,3,efference+forward_model+sensor,0.35671,0.42603
+lptmmkvi,06fy8xrb,same seed,3,efference+forward_model+sensor,0.35014,0.40955
+lptmmkvi,ygy5tbhf,same seed,3,efference+forward_model+sensor,0.35933,0.42504
+lptmmkvi,umfqdtn2,neither,4,efference+forward_model+sensor+servo,0.48928,0.58673
+lptmmkvi,kvxc6ij4,neither,4,efference+forward_model+sensor+servo,0.63311,0.73867
+lptmmkvi,g6frznog,neither,4,efference+forward_model+sensor+privileged_critic,0.39476,0.46884
+lptmmkvi,c34p08hy,neither,4,efference+forward_model+sensor+privileged_critic,0.88177,1.0521
+lptmmkvi,rlgkinux,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.60457,0.69833
+lptmmkvi,tzp7655l,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.62909,0.73288
+lptmmkvi,0xmqmajf,neither,1,efference,0.68805,0.80042
+lptmmkvi,t6srdx8w,neither,2,efference+servo,0.47789,0.57433
+lptmmkvi,tijio74v,neither,2,efference+sensor,0.32128,0.38613
+lptmmkvi,f1alm9y1,neither,2,efference+sensor,0.63478,0.72845
+lptmmkvi,s5lt23ld,neither,3,efference+sensor+servo,0.5082,0.60625
+lptmmkvi,476uchc2,neither,3,efference+sensor+servo,0.60246,0.70658
+lptmmkvi,crr2pjup,same seed,3,efference+sensor+servo,0.56879,0.66461
+o2zf70hu,5tiufunj,neither,1,servo,0.51799,0.62328
+o2zf70hu,u10wy89i,neither,1,servo,0.54822,0.65929
+o2zf70hu,4u3vdp6y,neither,1,servo,0.68265,0.79898
+o2zf70hu,c5arx0qj,same seed,1,servo,0.60643,0.70718
+o2zf70hu,suzrcsxy,same seed,1,servo,0.48073,0.57662
+o2zf70hu,n4a78q9l,neither,1,servo,0.69367,0.81159
+o2zf70hu,hd8hctae,neither,1,sensor,0.66223,0.78701
+o2zf70hu,t7k5z2vm,same seed,1,sensor,0.62809,0.75097
+o2zf70hu,w632zie8,neither,1,sensor,0.78174,0.93134
+o2zf70hu,da7hn33k,neither,2,sensor+servo,0.49849,0.5767
+o2zf70hu,2j48qvpr,same seed,2,sensor+servo,0.48001,0.55492
+o2zf70hu,e3rowege,neither,2,sensor+servo,0.53724,0.63608
+o2zf70hu,oljpt79a,neither,2,efference+forward_model,0.34017,0.3989
+o2zf70hu,20qm2p6x,neither,2,efference+forward_model,0.69243,0.78963
+o2zf70hu,ng04upc0,same seed,2,efference+forward_model,0.67344,0.78483
+o2zf70hu,wm8x4eda,neither,2,efference+forward_model,0.64386,0.73488
+o2zf70hu,es8cg6rj,neither,3,efference+forward_model+servo,0.75581,0.87387
+o2zf70hu,pixbjisa,neither,3,efference+forward_model+privileged_critic,0.40486,0.47588
+o2zf70hu,4kslt39i,neither,3,efference+forward_model+privileged_critic,0.64619,0.74055
+o2zf70hu,9w7v65x5,neither,4,efference+forward_model+privileged_critic+servo,0.66956,0.77863
+o2zf70hu,6bhvc12c,neither,3,efference+forward_model+sensor,0.42386,0.50684
+o2zf70hu,06fy8xrb,same seed,3,efference+forward_model+sensor,0.40201,0.47799
+o2zf70hu,ygy5tbhf,same seed,3,efference+forward_model+sensor,0.42439,0.50812
+o2zf70hu,umfqdtn2,neither,4,efference+forward_model+sensor+servo,0.50052,0.60058
+o2zf70hu,kvxc6ij4,neither,4,efference+forward_model+sensor+servo,0.60215,0.69865
+o2zf70hu,g6frznog,neither,4,efference+forward_model+sensor+privileged_critic,0.4457,0.53194
+o2zf70hu,c34p08hy,neither,4,efference+forward_model+sensor+privileged_critic,0.85926,1.0191
+o2zf70hu,rlgkinux,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.57644,0.66248
+o2zf70hu,tzp7655l,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.60161,0.6982
+o2zf70hu,0xmqmajf,neither,1,efference,0.6486,0.74696
+o2zf70hu,t6srdx8w,neither,2,efference+servo,0.50106,0.60311
+o2zf70hu,tijio74v,neither,2,efference+sensor,0.40608,0.48786
+o2zf70hu,f1alm9y1,neither,2,efference+sensor,0.59942,0.68398
+o2zf70hu,s5lt23ld,neither,3,efference+sensor+servo,0.52372,0.62723
+o2zf70hu,476uchc2,neither,3,efference+sensor+servo,0.57185,0.66859
+o2zf70hu,crr2pjup,same seed,3,efference+sensor+servo,0.52837,0.6166
+5tiufunj,u10wy89i,replicate,0,-,0.13269,0.15306
+5tiufunj,4u3vdp6y,same condition,0,-,0.6108,0.72031
+5tiufunj,c5arx0qj,same condition,0,-,0.54151,0.6376
+5tiufunj,suzrcsxy,same condition,0,-,0.12068,0.14088
+5tiufunj,n4a78q9l,same condition,0,-,0.62699,0.73728
+5tiufunj,hd8hctae,neither,2,sensor+servo,0.43703,0.51981
+5tiufunj,t7k5z2vm,neither,2,sensor+servo,0.42021,0.50515
+5tiufunj,w632zie8,neither,2,sensor+servo,0.58203,0.6986
+5tiufunj,da7hn33k,neither,1,sensor,0.37916,0.44565
+5tiufunj,2j48qvpr,neither,1,sensor,0.38763,0.4561
+5tiufunj,e3rowege,neither,1,sensor,0.3356,0.39961
+5tiufunj,oljpt79a,neither,3,efference+forward_model+servo,0.45247,0.53391
+5tiufunj,20qm2p6x,neither,3,efference+forward_model+servo,0.70953,0.82243
+5tiufunj,ng04upc0,neither,3,efference+forward_model+servo,0.64577,0.76233
+5tiufunj,wm8x4eda,neither,3,efference+forward_model+servo,0.6266,0.72254
+5tiufunj,es8cg6rj,neither,2,efference+forward_model,0.68519,0.79643
+5tiufunj,pixbjisa,same seed,4,efference+forward_model+privileged_critic+servo,0.38812,0.45493
+5tiufunj,4kslt39i,neither,4,efference+forward_model+privileged_critic+servo,0.63937,0.74272
+5tiufunj,9w7v65x5,neither,3,efference+forward_model+privileged_critic,0.56958,0.66374
+5tiufunj,6bhvc12c,same seed,4,efference+forward_model+sensor+servo,0.35228,0.41939
+5tiufunj,06fy8xrb,neither,4,efference+forward_model+sensor+servo,0.37506,0.44203
+5tiufunj,ygy5tbhf,neither,4,efference+forward_model+sensor+servo,0.36215,0.43898
+5tiufunj,umfqdtn2,same seed,3,efference+forward_model+sensor,0.28926,0.35076
+5tiufunj,kvxc6ij4,neither,3,efference+forward_model+sensor,0.51716,0.60562
+5tiufunj,g6frznog,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.33341,0.40144
+5tiufunj,c34p08hy,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.79828,0.95773
+5tiufunj,rlgkinux,same seed,4,efference+forward_model+sensor+privileged_critic,0.46898,0.53934
+5tiufunj,tzp7655l,neither,4,efference+forward_model+sensor+privileged_critic,0.48885,0.56815
+5tiufunj,0xmqmajf,neither,2,efference+servo,0.6745,0.78945
+5tiufunj,t6srdx8w,neither,1,efference,0.10417,0.11643
+5tiufunj,tijio74v,same seed,3,efference+sensor+servo,0.43696,0.52681
+5tiufunj,f1alm9y1,neither,3,efference+sensor+servo,0.64567,0.75225
+5tiufunj,s5lt23ld,same seed,2,efference+sensor,0.25796,0.30956
+5tiufunj,476uchc2,neither,2,efference+sensor,0.48762,0.57806
+5tiufunj,crr2pjup,neither,2,efference+sensor,0.47909,0.56783
+u10wy89i,4u3vdp6y,same condition,0,-,0.65277,0.77371
+u10wy89i,c5arx0qj,same condition,0,-,0.57835,0.68553
+u10wy89i,suzrcsxy,same condition,0,-,0.20646,0.23724
+u10wy89i,n4a78q9l,same condition,0,-,0.67221,0.79516
+u10wy89i,hd8hctae,neither,2,sensor+servo,0.48303,0.57361
+u10wy89i,t7k5z2vm,neither,2,sensor+servo,0.47378,0.56685
+u10wy89i,w632zie8,neither,2,sensor+servo,0.63816,0.7656
+u10wy89i,da7hn33k,neither,1,sensor,0.39299,0.46234
+u10wy89i,2j48qvpr,neither,1,sensor,0.41691,0.49102
+u10wy89i,e3rowege,neither,1,sensor,0.41827,0.49553
+u10wy89i,oljpt79a,neither,3,efference+forward_model+servo,0.45721,0.53483
+u10wy89i,20qm2p6x,neither,3,efference+forward_model+servo,0.75702,0.88143
+u10wy89i,ng04upc0,neither,3,efference+forward_model+servo,0.69389,0.8202
+u10wy89i,wm8x4eda,neither,3,efference+forward_model+servo,0.65966,0.76582
+u10wy89i,es8cg6rj,neither,2,efference+forward_model,0.72414,0.84576
+u10wy89i,pixbjisa,same seed,4,efference+forward_model+privileged_critic+servo,0.37497,0.43146
+u10wy89i,4kslt39i,neither,4,efference+forward_model+privileged_critic+servo,0.68345,0.79888
+u10wy89i,9w7v65x5,neither,3,efference+forward_model+privileged_critic,0.61088,0.71212
+u10wy89i,6bhvc12c,same seed,4,efference+forward_model+sensor+servo,0.35427,0.41707
+u10wy89i,06fy8xrb,neither,4,efference+forward_model+sensor+servo,0.38291,0.44982
+u10wy89i,ygy5tbhf,neither,4,efference+forward_model+sensor+servo,0.36611,0.44124
+u10wy89i,umfqdtn2,same seed,3,efference+forward_model+sensor,0.32901,0.39468
+u10wy89i,kvxc6ij4,neither,3,efference+forward_model+sensor,0.5435,0.63648
+u10wy89i,g6frznog,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.35008,0.41889
+u10wy89i,c34p08hy,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.85344,1.0213
+u10wy89i,rlgkinux,same seed,4,efference+forward_model+sensor+privileged_critic,0.48863,0.56142
+u10wy89i,tzp7655l,neither,4,efference+forward_model+sensor+privileged_critic,0.51365,0.59744
+u10wy89i,0xmqmajf,neither,2,efference+servo,0.73751,0.86364
+u10wy89i,t6srdx8w,neither,1,efference,0.18768,0.21316
+u10wy89i,tijio74v,same seed,3,efference+sensor+servo,0.45996,0.54924
+u10wy89i,f1alm9y1,neither,3,efference+sensor+servo,0.70613,0.8261
+u10wy89i,s5lt23ld,same seed,2,efference+sensor,0.3366,0.4015
+u10wy89i,476uchc2,neither,2,efference+sensor,0.50413,0.59898
+u10wy89i,crr2pjup,neither,2,efference+sensor,0.49905,0.59348
+4u3vdp6y,c5arx0qj,same condition,0,-,0.16675,0.19885
+4u3vdp6y,suzrcsxy,same condition,0,-,0.59148,0.68895
+4u3vdp6y,n4a78q9l,same condition,0,-,0.10316,0.12115
+4u3vdp6y,hd8hctae,same seed,2,sensor+servo,0.62258,0.75111
+4u3vdp6y,t7k5z2vm,neither,2,sensor+servo,0.6146,0.73302
+4u3vdp6y,w632zie8,neither,2,sensor+servo,0.58175,0.6994
+4u3vdp6y,da7hn33k,same seed,1,sensor,0.43002,0.51412
+4u3vdp6y,2j48qvpr,neither,1,sensor,0.36461,0.43577
+4u3vdp6y,e3rowege,neither,1,sensor,0.43583,0.50042
+4u3vdp6y,oljpt79a,neither,3,efference+forward_model+servo,0.80007,0.93109
+4u3vdp6y,20qm2p6x,same seed,3,efference+forward_model+servo,0.36172,0.42304
+4u3vdp6y,ng04upc0,neither,3,efference+forward_model+servo,0.25294,0.29624
+4u3vdp6y,wm8x4eda,neither,3,efference+forward_model+servo,0.32399,0.38252
+4u3vdp6y,es8cg6rj,neither,2,efference+forward_model,0.24185,0.27432
+4u3vdp6y,pixbjisa,neither,4,efference+forward_model+privileged_critic+servo,0.74662,0.86448
+4u3vdp6y,4kslt39i,same seed,4,efference+forward_model+privileged_critic+servo,0.27642,0.32492
+4u3vdp6y,9w7v65x5,same seed,3,efference+forward_model+privileged_critic,0.18509,0.21357
+4u3vdp6y,6bhvc12c,neither,4,efference+forward_model+sensor+servo,0.71363,0.83409
+4u3vdp6y,06fy8xrb,neither,4,efference+forward_model+sensor+servo,0.74172,0.86327
+4u3vdp6y,ygy5tbhf,neither,4,efference+forward_model+sensor+servo,0.70243,0.83409
+4u3vdp6y,umfqdtn2,neither,3,efference+forward_model+sensor,0.52577,0.61487
+4u3vdp6y,kvxc6ij4,neither,3,efference+forward_model+sensor,0.25334,0.30437
+4u3vdp6y,g6frznog,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.64926,0.76712
+4u3vdp6y,c34p08hy,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.41046,0.47435
+4u3vdp6y,rlgkinux,neither,4,efference+forward_model+sensor+privileged_critic,0.31762,0.37979
+4u3vdp6y,tzp7655l,same seed,4,efference+forward_model+sensor+privileged_critic,0.27579,0.33209
+4u3vdp6y,0xmqmajf,neither,2,efference+servo,0.36289,0.42557
+4u3vdp6y,t6srdx8w,neither,1,efference,0.63986,0.74551
+4u3vdp6y,tijio74v,neither,3,efference+sensor+servo,0.7405,0.87247
+4u3vdp6y,f1alm9y1,same seed,3,efference+sensor+servo,0.41497,0.49351
+4u3vdp6y,s5lt23ld,neither,2,efference+sensor,0.54447,0.6391
+4u3vdp6y,476uchc2,same seed,2,efference+sensor,0.32815,0.39078
+4u3vdp6y,crr2pjup,neither,2,efference+sensor,0.30073,0.36066
+c5arx0qj,suzrcsxy,replicate,0,-,0.5332,0.61919
+c5arx0qj,n4a78q9l,same condition,0,-,0.1945,0.2289
+c5arx0qj,hd8hctae,neither,2,sensor+servo,0.59152,0.71365
+c5arx0qj,t7k5z2vm,same seed,2,sensor+servo,0.59683,0.71308
+c5arx0qj,w632zie8,neither,2,sensor+servo,0.60415,0.7276
+c5arx0qj,da7hn33k,neither,1,sensor,0.34307,0.41032
+c5arx0qj,2j48qvpr,same seed,1,sensor,0.2859,0.34008
+c5arx0qj,e3rowege,neither,1,sensor,0.41925,0.47952
+c5arx0qj,oljpt79a,neither,3,efference+forward_model+servo,0.7224,0.83752
+c5arx0qj,20qm2p6x,neither,3,efference+forward_model+servo,0.33792,0.39195
+c5arx0qj,ng04upc0,same seed,3,efference+forward_model+servo,0.26249,0.30776
+c5arx0qj,wm8x4eda,neither,3,efference+forward_model+servo,0.28467,0.33368
+c5arx0qj,es8cg6rj,neither,2,efference+forward_model,0.21339,0.23986
+c5arx0qj,pixbjisa,neither,4,efference+forward_model+privileged_critic+servo,0.67332,0.77491
+c5arx0qj,4kslt39i,neither,4,efference+forward_model+privileged_critic+servo,0.2505,0.29205
+c5arx0qj,9w7v65x5,neither,3,efference+forward_model+privileged_critic,0.17537,0.19523
+c5arx0qj,6bhvc12c,neither,4,efference+forward_model+sensor+servo,0.64983,0.75932
+c5arx0qj,06fy8xrb,same seed,4,efference+forward_model+sensor+servo,0.66519,0.77261
+c5arx0qj,ygy5tbhf,same seed,4,efference+forward_model+sensor+servo,0.62222,0.73835
+c5arx0qj,umfqdtn2,neither,3,efference+forward_model+sensor,0.50053,0.58614
+c5arx0qj,kvxc6ij4,neither,3,efference+forward_model+sensor,0.20083,0.23777
+c5arx0qj,g6frznog,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.5854,0.69124
+c5arx0qj,c34p08hy,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.50283,0.59028
+c5arx0qj,rlgkinux,neither,4,efference+forward_model+sensor+privileged_critic,0.26462,0.30892
+c5arx0qj,tzp7655l,neither,4,efference+forward_model+sensor+privileged_critic,0.2136,0.2532
+c5arx0qj,0xmqmajf,neither,2,efference+servo,0.35313,0.40869
+c5arx0qj,t6srdx8w,neither,1,efference,0.57695,0.66973
+c5arx0qj,tijio74v,neither,3,efference+sensor+servo,0.66825,0.78567
+c5arx0qj,f1alm9y1,neither,3,efference+sensor+servo,0.38462,0.45245
+c5arx0qj,s5lt23ld,neither,2,efference+sensor,0.50585,0.59202
+c5arx0qj,476uchc2,neither,2,efference+sensor,0.24085,0.28652
+c5arx0qj,crr2pjup,same seed,2,efference+sensor,0.20972,0.25129
+suzrcsxy,n4a78q9l,same condition,0,-,0.60699,0.70518
+suzrcsxy,hd8hctae,neither,2,sensor+servo,0.43355,0.50943
+suzrcsxy,t7k5z2vm,same seed,2,sensor+servo,0.40393,0.48117
+suzrcsxy,w632zie8,neither,2,sensor+servo,0.57387,0.68526
+suzrcsxy,da7hn33k,neither,1,sensor,0.39067,0.45142
+suzrcsxy,2j48qvpr,same seed,1,sensor,0.39152,0.45303
+suzrcsxy,e3rowege,neither,1,sensor,0.29336,0.34661
+suzrcsxy,oljpt79a,neither,3,efference+forward_model+servo,0.41643,0.49389
+suzrcsxy,20qm2p6x,neither,3,efference+forward_model+servo,0.67867,0.77754
+suzrcsxy,ng04upc0,same seed,3,efference+forward_model+servo,0.62212,0.72814
+suzrcsxy,wm8x4eda,neither,3,efference+forward_model+servo,0.60126,0.68211
+suzrcsxy,es8cg6rj,neither,2,efference+forward_model,0.67393,0.77473
+suzrcsxy,pixbjisa,neither,4,efference+forward_model+privileged_critic+servo,0.37885,0.44709
+suzrcsxy,4kslt39i,neither,4,efference+forward_model+privileged_critic+servo,0.61848,0.70953
+suzrcsxy,9w7v65x5,neither,3,efference+forward_model+privileged_critic,0.56368,0.6509
+suzrcsxy,6bhvc12c,neither,4,efference+forward_model+sensor+servo,0.31355,0.37288
+suzrcsxy,06fy8xrb,same seed,4,efference+forward_model+sensor+servo,0.33823,0.39814
+suzrcsxy,ygy5tbhf,same seed,4,efference+forward_model+sensor+servo,0.35356,0.4261
+suzrcsxy,umfqdtn2,neither,3,efference+forward_model+sensor,0.24035,0.28971
+suzrcsxy,kvxc6ij4,neither,3,efference+forward_model+sensor,0.51566,0.59698
+suzrcsxy,g6frznog,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.31572,0.37731
+suzrcsxy,c34p08hy,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.76758,0.91895
+suzrcsxy,rlgkinux,neither,4,efference+forward_model+sensor+privileged_critic,0.473,0.53635
+suzrcsxy,tzp7655l,neither,4,efference+forward_model+sensor+privileged_critic,0.49336,0.56666
+suzrcsxy,0xmqmajf,neither,2,efference+servo,0.64182,0.74489
+suzrcsxy,t6srdx8w,neither,1,efference,0.10605,0.12248
+suzrcsxy,tijio74v,neither,3,efference+sensor+servo,0.39396,0.4751
+suzrcsxy,f1alm9y1,neither,3,efference+sensor+servo,0.61696,0.7104
+suzrcsxy,s5lt23ld,neither,2,efference+sensor,0.21906,0.25903
+suzrcsxy,476uchc2,neither,2,efference+sensor,0.48865,0.57155
+suzrcsxy,crr2pjup,same seed,2,efference+sensor,0.47932,0.56
+n4a78q9l,hd8hctae,neither,2,sensor+servo,0.62162,0.7488
+n4a78q9l,t7k5z2vm,neither,2,sensor+servo,0.62272,0.73918
+n4a78q9l,w632zie8,same seed,2,sensor+servo,0.56998,0.68284
+n4a78q9l,da7hn33k,neither,1,sensor,0.46649,0.55529
+n4a78q9l,2j48qvpr,neither,1,sensor,0.38594,0.45812
+n4a78q9l,e3rowege,same seed,1,sensor,0.43855,0.50031
+n4a78q9l,oljpt79a,neither,3,efference+forward_model+servo,0.81747,0.94985
+n4a78q9l,20qm2p6x,neither,3,efference+forward_model+servo,0.37249,0.43936
+n4a78q9l,ng04upc0,neither,3,efference+forward_model+servo,0.27601,0.32262
+n4a78q9l,wm8x4eda,same seed,3,efference+forward_model+servo,0.33362,0.39773
+n4a78q9l,es8cg6rj,neither,2,efference+forward_model,0.28211,0.32242
+n4a78q9l,pixbjisa,neither,4,efference+forward_model+privileged_critic+servo,0.76749,0.88721
+n4a78q9l,4kslt39i,neither,4,efference+forward_model+privileged_critic+servo,0.27523,0.32685
+n4a78q9l,9w7v65x5,neither,3,efference+forward_model+privileged_critic,0.20638,0.23841
+n4a78q9l,6bhvc12c,neither,4,efference+forward_model+sensor+servo,0.73294,0.85446
+n4a78q9l,06fy8xrb,neither,4,efference+forward_model+sensor+servo,0.7544,0.87569
+n4a78q9l,ygy5tbhf,neither,4,efference+forward_model+sensor+servo,0.71669,0.8486
+n4a78q9l,umfqdtn2,neither,3,efference+forward_model+sensor,0.54048,0.63012
+n4a78q9l,kvxc6ij4,same seed,3,efference+forward_model+sensor,0.28136,0.33655
+n4a78q9l,g6frznog,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.66443,0.78241
+n4a78q9l,c34p08hy,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.42731,0.48935
+n4a78q9l,rlgkinux,neither,4,efference+forward_model+sensor+privileged_critic,0.32994,0.39566
+n4a78q9l,tzp7655l,neither,4,efference+forward_model+sensor+privileged_critic,0.30166,0.36344
+n4a78q9l,0xmqmajf,neither,2,efference+servo,0.34819,0.40878
+n4a78q9l,t6srdx8w,neither,1,efference,0.65592,0.76241
+n4a78q9l,tijio74v,neither,3,efference+sensor+servo,0.75386,0.88583
+n4a78q9l,f1alm9y1,neither,3,efference+sensor+servo,0.3862,0.46175
+n4a78q9l,s5lt23ld,neither,2,efference+sensor,0.554,0.64895
+n4a78q9l,476uchc2,neither,2,efference+sensor,0.38209,0.45214
+n4a78q9l,crr2pjup,neither,2,efference+sensor,0.3305,0.39389
+hd8hctae,t7k5z2vm,same condition,0,-,0.25577,0.2981
+hd8hctae,w632zie8,same condition,0,-,0.33543,0.4042
+hd8hctae,da7hn33k,same seed,1,servo,0.49714,0.60009
+hd8hctae,2j48qvpr,neither,1,servo,0.46429,0.56179
+hd8hctae,e3rowege,neither,1,servo,0.3625,0.42933
+hd8hctae,oljpt79a,neither,3,efference+forward_model+sensor,0.66475,0.77502
+hd8hctae,20qm2p6x,same seed,3,efference+forward_model+sensor,0.69497,0.8257
+hd8hctae,ng04upc0,neither,3,efference+forward_model+sensor,0.68665,0.82667
+hd8hctae,wm8x4eda,neither,3,efference+forward_model+sensor,0.61243,0.72586
+hd8hctae,es8cg6rj,neither,4,efference+forward_model+sensor+servo,0.69603,0.82951
+hd8hctae,pixbjisa,neither,4,efference+forward_model+sensor+privileged_critic,0.66342,0.77732
+hd8hctae,4kslt39i,same seed,4,efference+forward_model+sensor+privileged_critic,0.62411,0.74427
+hd8hctae,9w7v65x5,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.58299,0.70098
+hd8hctae,6bhvc12c,neither,2,efference+forward_model,0.48425,0.55851
+hd8hctae,06fy8xrb,neither,2,efference+forward_model,0.52037,0.59558
+hd8hctae,ygy5tbhf,neither,2,efference+forward_model,0.43503,0.51186
+hd8hctae,umfqdtn2,neither,3,efference+forward_model+servo,0.42586,0.50701
+hd8hctae,kvxc6ij4,neither,3,efference+forward_model+servo,0.51803,0.62565
+hd8hctae,g6frznog,neither,3,efference+forward_model+privileged_critic,0.41531,0.48699
+hd8hctae,c34p08hy,same seed,3,efference+forward_model+privileged_critic,0.73475,0.8842
+hd8hctae,rlgkinux,neither,4,efference+forward_model+privileged_critic+servo,0.47535,0.57264
+hd8hctae,tzp7655l,same seed,4,efference+forward_model+privileged_critic+servo,0.50816,0.61366
+hd8hctae,0xmqmajf,neither,2,efference+sensor,0.63724,0.76269
+hd8hctae,t6srdx8w,neither,3,efference+sensor+servo,0.44341,0.51707
+hd8hctae,tijio74v,neither,1,efference,0.5054,0.59203
+hd8hctae,f1alm9y1,same seed,1,efference,0.5428,0.64645
+hd8hctae,s5lt23ld,neither,2,efference+servo,0.38376,0.45568
+hd8hctae,476uchc2,same seed,2,efference+servo,0.57321,0.69051
+hd8hctae,crr2pjup,neither,2,efference+servo,0.52558,0.6352
+t7k5z2vm,w632zie8,same condition,0,-,0.36278,0.43372
+t7k5z2vm,da7hn33k,neither,1,servo,0.51644,0.62102
+t7k5z2vm,2j48qvpr,same seed,1,servo,0.46506,0.56007
+t7k5z2vm,e3rowege,neither,1,servo,0.35438,0.42474
+t7k5z2vm,oljpt79a,neither,3,efference+forward_model+sensor,0.61508,0.72637
+t7k5z2vm,20qm2p6x,neither,3,efference+forward_model+sensor,0.73436,0.86054
+t7k5z2vm,ng04upc0,same seed,3,efference+forward_model+sensor,0.71149,0.85032
+t7k5z2vm,wm8x4eda,neither,3,efference+forward_model+sensor,0.6628,0.77402
+t7k5z2vm,es8cg6rj,neither,4,efference+forward_model+sensor+servo,0.70919,0.83551
+t7k5z2vm,pixbjisa,neither,4,efference+forward_model+sensor+privileged_critic,0.6158,0.72842
+t7k5z2vm,4kslt39i,neither,4,efference+forward_model+sensor+privileged_critic,0.65963,0.77449
+t7k5z2vm,9w7v65x5,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.59543,0.70655
+t7k5z2vm,6bhvc12c,neither,2,efference+forward_model,0.42134,0.49684
+t7k5z2vm,06fy8xrb,same seed,2,efference+forward_model,0.46481,0.54353
+t7k5z2vm,ygy5tbhf,same seed,2,efference+forward_model,0.39853,0.47855
+t7k5z2vm,umfqdtn2,neither,3,efference+forward_model+servo,0.42181,0.50884
+t7k5z2vm,kvxc6ij4,neither,3,efference+forward_model+servo,0.53513,0.63854
+t7k5z2vm,g6frznog,neither,3,efference+forward_model+privileged_critic,0.33079,0.39457
+t7k5z2vm,c34p08hy,neither,3,efference+forward_model+privileged_critic,0.73586,0.8871
+t7k5z2vm,rlgkinux,neither,4,efference+forward_model+privileged_critic+servo,0.51268,0.60593
+t7k5z2vm,tzp7655l,neither,4,efference+forward_model+privileged_critic+servo,0.53083,0.63105
+t7k5z2vm,0xmqmajf,neither,2,efference+sensor,0.66798,0.79036
+t7k5z2vm,t6srdx8w,neither,3,efference+sensor+servo,0.4074,0.48329
+t7k5z2vm,tijio74v,neither,1,efference,0.42502,0.50594
+t7k5z2vm,f1alm9y1,neither,1,efference,0.58211,0.6798
+t7k5z2vm,s5lt23ld,neither,2,efference+servo,0.40874,0.4897
+t7k5z2vm,476uchc2,neither,2,efference+servo,0.59254,0.71288
+t7k5z2vm,crr2pjup,same seed,2,efference+servo,0.53544,0.64333
+w632zie8,da7hn33k,neither,1,servo,0.60478,0.73071
+w632zie8,2j48qvpr,neither,1,servo,0.5426,0.65609
+w632zie8,e3rowege,same seed,1,servo,0.3967,0.4735
+w632zie8,oljpt79a,neither,3,efference+forward_model+sensor,0.80851,0.95568
+w632zie8,20qm2p6x,neither,3,efference+forward_model+sensor,0.72621,0.86314
+w632zie8,ng04upc0,neither,3,efference+forward_model+sensor,0.66177,0.79516
+w632zie8,wm8x4eda,same seed,3,efference+forward_model+sensor,0.65816,0.78087
+w632zie8,es8cg6rj,neither,4,efference+forward_model+sensor+servo,0.69583,0.82759
+w632zie8,pixbjisa,neither,4,efference+forward_model+sensor+privileged_critic,0.78936,0.93303
+w632zie8,4kslt39i,neither,4,efference+forward_model+sensor+privileged_critic,0.63712,0.75834
+w632zie8,9w7v65x5,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.56604,0.67725
+w632zie8,6bhvc12c,neither,2,efference+forward_model,0.64631,0.76407
+w632zie8,06fy8xrb,neither,2,efference+forward_model,0.67864,0.79893
+w632zie8,ygy5tbhf,neither,2,efference+forward_model,0.60867,0.72841
+w632zie8,umfqdtn2,neither,3,efference+forward_model+servo,0.52152,0.6253
+w632zie8,kvxc6ij4,same seed,3,efference+forward_model+servo,0.54505,0.65711
+w632zie8,g6frznog,neither,3,efference+forward_model+privileged_critic,0.56771,0.67759
+w632zie8,c34p08hy,neither,3,efference+forward_model+privileged_critic,0.578,0.69252
+w632zie8,rlgkinux,neither,4,efference+forward_model+privileged_critic+servo,0.54056,0.64875
+w632zie8,tzp7655l,neither,4,efference+forward_model+privileged_critic+servo,0.54988,0.66203
+w632zie8,0xmqmajf,neither,2,efference+sensor,0.64179,0.7657
+w632zie8,t6srdx8w,neither,3,efference+sensor+servo,0.58343,0.69272
+w632zie8,tijio74v,neither,1,efference,0.68422,0.81488
+w632zie8,f1alm9y1,neither,1,efference,0.56955,0.67505
+w632zie8,s5lt23ld,neither,2,efference+servo,0.49538,0.59299
+w632zie8,476uchc2,neither,2,efference+servo,0.63862,0.7697
+w632zie8,crr2pjup,neither,2,efference+servo,0.57811,0.69737
+da7hn33k,2j48qvpr,same condition,0,-,0.14288,0.17087
+da7hn33k,e3rowege,same condition,0,-,0.37521,0.43628
+da7hn33k,oljpt79a,neither,4,efference+forward_model+sensor+servo,0.54855,0.62763
+da7hn33k,20qm2p6x,same seed,4,efference+forward_model+sensor+servo,0.48651,0.56268
+da7hn33k,ng04upc0,neither,4,efference+forward_model+sensor+servo,0.43347,0.51393
+da7hn33k,wm8x4eda,neither,4,efference+forward_model+sensor+servo,0.39965,0.4582
+da7hn33k,es8cg6rj,neither,3,efference+forward_model+sensor,0.48064,0.56465
+da7hn33k,pixbjisa,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.48477,0.54753
+da7hn33k,4kslt39i,same seed,5,efference+forward_model+sensor+privileged_critic+servo,0.4135,0.48067
+da7hn33k,9w7v65x5,same seed,4,efference+forward_model+sensor+privileged_critic,0.35045,0.40985
+da7hn33k,6bhvc12c,neither,3,efference+forward_model+servo,0.46324,0.53552
+da7hn33k,06fy8xrb,neither,3,efference+forward_model+servo,0.49985,0.5729
+da7hn33k,ygy5tbhf,neither,3,efference+forward_model+servo,0.42981,0.50829
+da7hn33k,umfqdtn2,neither,2,efference+forward_model,0.35288,0.41087
+da7hn33k,kvxc6ij4,neither,2,efference+forward_model,0.26025,0.30626
+da7hn33k,g6frznog,neither,4,efference+forward_model+privileged_critic+servo,0.42922,0.50798
+da7hn33k,c34p08hy,same seed,4,efference+forward_model+privileged_critic+servo,0.63401,0.75951
+da7hn33k,rlgkinux,neither,3,efference+forward_model+privileged_critic,0.24068,0.27341
+da7hn33k,tzp7655l,same seed,3,efference+forward_model+privileged_critic,0.23882,0.27692
+da7hn33k,0xmqmajf,neither,3,efference+sensor+servo,0.49162,0.57479
+da7hn33k,t6srdx8w,neither,2,efference+sensor,0.42214,0.48603
+da7hn33k,tijio74v,neither,2,efference+servo,0.51465,0.60413
+da7hn33k,f1alm9y1,same seed,2,efference+servo,0.48149,0.56421
+da7hn33k,s5lt23ld,neither,1,efference,0.37585,0.43721
+da7hn33k,476uchc2,same seed,1,efference,0.19314,0.23168
+da7hn33k,crr2pjup,neither,1,efference,0.22441,0.26844
+2j48qvpr,e3rowege,same condition,0,-,0.3224,0.37343
+2j48qvpr,oljpt79a,neither,4,efference+forward_model+sensor+servo,0.55334,0.63425
+2j48qvpr,20qm2p6x,neither,4,efference+forward_model+sensor+servo,0.46931,0.5428
+2j48qvpr,ng04upc0,same seed,4,efference+forward_model+sensor+servo,0.4081,0.48449
+2j48qvpr,wm8x4eda,neither,4,efference+forward_model+sensor+servo,0.38873,0.44551
+2j48qvpr,es8cg6rj,neither,3,efference+forward_model+sensor,0.44307,0.51706
+2j48qvpr,pixbjisa,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.49103,0.55647
+2j48qvpr,4kslt39i,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.38289,0.4437
+2j48qvpr,9w7v65x5,neither,4,efference+forward_model+sensor+privileged_critic,0.29531,0.34453
+2j48qvpr,6bhvc12c,neither,3,efference+forward_model+servo,0.46144,0.53345
+2j48qvpr,06fy8xrb,same seed,3,efference+forward_model+servo,0.49325,0.56422
+2j48qvpr,ygy5tbhf,same seed,3,efference+forward_model+servo,0.41836,0.49437
+2j48qvpr,umfqdtn2,neither,2,efference+forward_model,0.34501,0.40341
+2j48qvpr,kvxc6ij4,neither,2,efference+forward_model,0.19796,0.23258
+2j48qvpr,g6frznog,neither,4,efference+forward_model+privileged_critic+servo,0.3995,0.47159
+2j48qvpr,c34p08hy,neither,4,efference+forward_model+privileged_critic+servo,0.59029,0.70822
+2j48qvpr,rlgkinux,neither,3,efference+forward_model+privileged_critic,0.18938,0.21348
+2j48qvpr,tzp7655l,neither,3,efference+forward_model+privileged_critic,0.20634,0.24104
+2j48qvpr,0xmqmajf,neither,3,efference+sensor+servo,0.43379,0.50716
+2j48qvpr,t6srdx8w,neither,2,efference+sensor,0.42468,0.49017
+2j48qvpr,tijio74v,neither,2,efference+servo,0.49441,0.5801
+2j48qvpr,f1alm9y1,neither,2,efference+servo,0.4192,0.4899
+2j48qvpr,s5lt23ld,neither,1,efference,0.37476,0.43858
+2j48qvpr,476uchc2,neither,1,efference,0.21245,0.25456
+2j48qvpr,crr2pjup,same seed,1,efference,0.152,0.18067
+e3rowege,oljpt79a,neither,4,efference+forward_model+sensor+servo,0.57887,0.68009
+e3rowege,20qm2p6x,neither,4,efference+forward_model+sensor+servo,0.55776,0.62822
+e3rowege,ng04upc0,neither,4,efference+forward_model+sensor+servo,0.47198,0.54552
+e3rowege,wm8x4eda,same seed,4,efference+forward_model+sensor+servo,0.49268,0.54798
+e3rowege,es8cg6rj,neither,3,efference+forward_model+sensor,0.55741,0.62992
+e3rowege,pixbjisa,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.54283,0.63717
+e3rowege,4kslt39i,neither,5,efference+forward_model+sensor+privileged_critic+servo,0.4837,0.54337
+e3rowege,9w7v65x5,neither,4,efference+forward_model+sensor+privileged_critic,0.42641,0.48606
+e3rowege,6bhvc12c,neither,3,efference+forward_model+servo,0.43882,0.51476
+e3rowege,06fy8xrb,neither,3,efference+forward_model+servo,0.46238,0.53865
+e3rowege,ygy5tbhf,neither,3,efference+forward_model+servo,0.443,0.53029
+e3rowege,umfqdtn2,neither,2,efference+forward_model,0.22898,0.27343
+e3rowege,kvxc6ij4,same seed,2,efference+forward_model,0.39805,0.45813
+e3rowege,g6frznog,neither,4,efference+forward_model+privileged_critic+servo,0.40006,0.47719
+e3rowege,c34p08hy,neither,4,efference+forward_model+privileged_critic+servo,0.53767,0.64301
+e3rowege,rlgkinux,neither,3,efference+forward_model+privileged_critic,0.37733,0.429
+e3rowege,tzp7655l,neither,3,efference+forward_model+privileged_critic,0.39403,0.45151
+e3rowege,0xmqmajf,neither,3,efference+sensor+servo,0.47175,0.53934
+e3rowege,t6srdx8w,neither,2,efference+sensor,0.32167,0.3791
+e3rowege,tijio74v,neither,2,efference+servo,0.49402,0.59004
+e3rowege,f1alm9y1,neither,2,efference+servo,0.45759,0.51746
+e3rowege,s5lt23ld,neither,1,efference,0.18741,0.2222
+e3rowege,476uchc2,neither,1,efference,0.42599,0.49598
+e3rowege,crr2pjup,neither,1,efference,0.38818,0.45025
+oljpt79a,20qm2p6x,same condition,0,-,0.83235,0.95316
+oljpt79a,ng04upc0,same condition,0,-,0.79356,0.92353
+oljpt79a,wm8x4eda,same condition,0,-,0.76065,0.86299
+oljpt79a,es8cg6rj,same seed,1,servo,0.86154,0.99419
+oljpt79a,pixbjisa,neither,1,privileged_critic,0.22325,0.26055
+oljpt79a,4kslt39i,neither,1,privileged_critic,0.78148,0.89511
+oljpt79a,9w7v65x5,neither,2,privileged_critic+servo,0.76789,0.88813
+oljpt79a,6bhvc12c,neither,1,sensor,0.28237,0.33681
+oljpt79a,06fy8xrb,neither,1,sensor,0.27195,0.31909
+oljpt79a,ygy5tbhf,neither,1,sensor,0.33135,0.38485
+oljpt79a,umfqdtn2,neither,2,sensor+servo,0.48502,0.5739
+oljpt79a,kvxc6ij4,neither,2,sensor+servo,0.69402,0.79959
+oljpt79a,g6frznog,neither,2,sensor+privileged_critic,0.36048,0.42147
+oljpt79a,c34p08hy,neither,2,sensor+privileged_critic,0.96276,1.1452
+oljpt79a,rlgkinux,neither,3,sensor+privileged_critic+servo,0.65707,0.74459
+oljpt79a,tzp7655l,neither,3,sensor+privileged_critic+servo,0.68585,0.78725
+oljpt79a,0xmqmajf,same seed,1,forward_model,0.79449,0.91715
+oljpt79a,t6srdx8w,same seed,2,forward_model+servo,0.43224,0.51377
+oljpt79a,tijio74v,neither,2,forward_model+sensor,0.31829,0.37867
+oljpt79a,f1alm9y1,neither,2,forward_model+sensor,0.74947,0.85498
+oljpt79a,s5lt23ld,neither,3,forward_model+sensor+servo,0.52987,0.62293
+oljpt79a,476uchc2,neither,3,forward_model+sensor+servo,0.65609,0.76284
+oljpt79a,crr2pjup,neither,3,forward_model+sensor+servo,0.62783,0.72587
+20qm2p6x,ng04upc0,same condition,0,-,0.2891,0.33697
+20qm2p6x,wm8x4eda,same condition,0,-,0.21105,0.24976
+20qm2p6x,es8cg6rj,neither,1,servo,0.34629,0.4142
+20qm2p6x,pixbjisa,neither,1,privileged_critic,0.81755,0.93312
+20qm2p6x,4kslt39i,same seed,1,privileged_critic,0.17208,0.20239
+20qm2p6x,9w7v65x5,same seed,2,privileged_critic+servo,0.37454,0.44561
+20qm2p6x,6bhvc12c,neither,1,sensor,0.77908,0.89533
+20qm2p6x,06fy8xrb,neither,1,sensor,0.77874,0.88752
+20qm2p6x,ygy5tbhf,neither,1,sensor,0.7534,0.87598
+20qm2p6x,umfqdtn2,neither,2,sensor+servo,0.6248,0.71445
+20qm2p6x,kvxc6ij4,neither,2,sensor+servo,0.40308,0.47488
+20qm2p6x,g6frznog,neither,2,sensor+privileged_critic,0.74014,0.85835
+20qm2p6x,c34p08hy,same seed,2,sensor+privileged_critic,0.57076,0.66189
+20qm2p6x,rlgkinux,neither,3,sensor+privileged_critic+servo,0.45368,0.53352
+20qm2p6x,tzp7655l,same seed,3,sensor+privileged_critic+servo,0.41727,0.49414
+20qm2p6x,0xmqmajf,neither,1,forward_model,0.26272,0.30201
+20qm2p6x,t6srdx8w,neither,2,forward_model+servo,0.73406,0.84079
+20qm2p6x,tijio74v,neither,2,forward_model+sensor,0.77519,0.89481
+20qm2p6x,f1alm9y1,same seed,2,forward_model+sensor,0.33435,0.39207
+20qm2p6x,s5lt23ld,neither,3,forward_model+sensor+servo,0.61632,0.7036
+20qm2p6x,476uchc2,same seed,3,forward_model+sensor+servo,0.42112,0.48222
+20qm2p6x,crr2pjup,neither,3,forward_model+sensor+servo,0.43023,0.49789
+ng04upc0,wm8x4eda,same condition,0,-,0.26122,0.30412
+ng04upc0,es8cg6rj,neither,1,servo,0.30989,0.36399
+ng04upc0,pixbjisa,neither,1,privileged_critic,0.74888,0.86719
+ng04upc0,4kslt39i,neither,1,privileged_critic,0.23022,0.2675
+ng04upc0,9w7v65x5,neither,2,privileged_critic+servo,0.27642,0.3323
+ng04upc0,6bhvc12c,neither,1,sensor,0.73997,0.86665
+ng04upc0,06fy8xrb,same seed,1,sensor,0.75506,0.8793
+ng04upc0,ygy5tbhf,same seed,1,sensor,0.73434,0.87154
+ng04upc0,umfqdtn2,neither,2,sensor+servo,0.54527,0.63719
+ng04upc0,kvxc6ij4,neither,2,sensor+servo,0.34794,0.41775
+ng04upc0,g6frznog,neither,2,sensor+privileged_critic,0.70938,0.83981
+ng04upc0,c34p08hy,neither,2,sensor+privileged_critic,0.38779,0.45635
+ng04upc0,rlgkinux,neither,3,sensor+privileged_critic+servo,0.39073,0.46508
+ng04upc0,tzp7655l,neither,3,sensor+privileged_critic+servo,0.35211,0.42221
+ng04upc0,0xmqmajf,neither,1,forward_model,0.27777,0.3273
+ng04upc0,t6srdx8w,neither,2,forward_model+servo,0.67167,0.78467
+ng04upc0,tijio74v,neither,2,forward_model+sensor,0.77654,0.9174
+ng04upc0,f1alm9y1,neither,2,forward_model+sensor,0.38551,0.45599
+ng04upc0,s5lt23ld,neither,3,forward_model+sensor+servo,0.54546,0.63717
+ng04upc0,476uchc2,neither,3,forward_model+sensor+servo,0.35782,0.42238
+ng04upc0,crr2pjup,same seed,3,forward_model+sensor+servo,0.36961,0.43831
+wm8x4eda,es8cg6rj,neither,1,servo,0.32524,0.38746
+wm8x4eda,pixbjisa,neither,1,privileged_critic,0.74475,0.8409
+wm8x4eda,4kslt39i,neither,1,privileged_critic,0.16132,0.19458
+wm8x4eda,9w7v65x5,neither,2,privileged_critic+servo,0.31707,0.3733
+wm8x4eda,6bhvc12c,neither,1,sensor,0.69025,0.78489
+wm8x4eda,06fy8xrb,neither,1,sensor,0.69918,0.7904
+wm8x4eda,ygy5tbhf,neither,1,sensor,0.66404,0.76771
+wm8x4eda,umfqdtn2,neither,2,sensor+servo,0.54294,0.61429
+wm8x4eda,kvxc6ij4,same seed,2,sensor+servo,0.3254,0.38054
+wm8x4eda,g6frznog,neither,2,sensor+privileged_critic,0.64945,0.7474
+wm8x4eda,c34p08hy,neither,2,sensor+privileged_critic,0.54644,0.6305
+wm8x4eda,rlgkinux,neither,3,sensor+privileged_critic+servo,0.34864,0.40555
+wm8x4eda,tzp7655l,neither,3,sensor+privileged_critic+servo,0.3288,0.38731
+wm8x4eda,0xmqmajf,neither,1,forward_model,0.28167,0.32207
+wm8x4eda,t6srdx8w,neither,2,forward_model+servo,0.65908,0.74954
+wm8x4eda,tijio74v,neither,2,forward_model+sensor,0.70586,0.8097
+wm8x4eda,f1alm9y1,neither,2,forward_model+sensor,0.32862,0.38834
+wm8x4eda,s5lt23ld,neither,3,forward_model+sensor+servo,0.5451,0.61853
+wm8x4eda,476uchc2,neither,3,forward_model+sensor+servo,0.35166,0.40056
+wm8x4eda,crr2pjup,neither,3,forward_model+sensor+servo,0.35951,0.41657
+es8cg6rj,pixbjisa,neither,2,privileged_critic+servo,0.82201,0.94324
+es8cg6rj,4kslt39i,neither,2,privileged_critic+servo,0.31118,0.36956
+es8cg6rj,9w7v65x5,neither,1,privileged_critic,0.26388,0.30619
+es8cg6rj,6bhvc12c,neither,2,sensor+servo,0.79311,0.91967
+es8cg6rj,06fy8xrb,neither,2,sensor+servo,0.81074,0.93469
+es8cg6rj,ygy5tbhf,neither,2,sensor+servo,0.76603,0.89834
+es8cg6rj,umfqdtn2,neither,1,sensor,0.65234,0.75412
+es8cg6rj,kvxc6ij4,neither,1,sensor,0.32458,0.3797
+es8cg6rj,g6frznog,neither,3,sensor+privileged_critic+servo,0.7236,0.84357
+es8cg6rj,c34p08hy,neither,3,sensor+privileged_critic+servo,0.53108,0.6149
+es8cg6rj,rlgkinux,neither,2,sensor+privileged_critic,0.40348,0.47028
+es8cg6rj,tzp7655l,neither,2,sensor+privileged_critic,0.34114,0.39959
+es8cg6rj,0xmqmajf,same seed,2,forward_model+servo,0.40021,0.46897
+es8cg6rj,t6srdx8w,same seed,1,forward_model,0.72246,0.82995
+es8cg6rj,tijio74v,neither,3,forward_model+sensor+servo,0.80092,0.93282
+es8cg6rj,f1alm9y1,neither,3,forward_model+sensor+servo,0.46533,0.54959
+es8cg6rj,s5lt23ld,neither,2,forward_model+sensor,0.64952,0.74913
+es8cg6rj,476uchc2,neither,2,forward_model+sensor,0.35275,0.40762
+es8cg6rj,crr2pjup,neither,2,forward_model+sensor,0.35942,0.41584
+pixbjisa,4kslt39i,same condition,0,-,0.75786,0.86348
+pixbjisa,9w7v65x5,neither,1,servo,0.71224,0.8182
+pixbjisa,6bhvc12c,same seed,2,sensor+privileged_critic,0.31358,0.36845
+pixbjisa,06fy8xrb,neither,2,sensor+privileged_critic,0.33623,0.38732
+pixbjisa,ygy5tbhf,neither,2,sensor+privileged_critic,0.35326,0.4107
+pixbjisa,umfqdtn2,same seed,3,sensor+privileged_critic+servo,0.428,0.5043
+pixbjisa,kvxc6ij4,neither,3,sensor+privileged_critic+servo,0.64058,0.73214
+pixbjisa,g6frznog,same seed,1,sensor,0.36199,0.42229
+pixbjisa,c34p08hy,neither,1,sensor,0.91579,1.0888
+pixbjisa,rlgkinux,same seed,2,sensor+servo,0.59934,0.67295
+pixbjisa,tzp7655l,neither,2,sensor+servo,0.6296,0.71615
+pixbjisa,0xmqmajf,neither,2,forward_model+privileged_critic,0.776,0.89348
+pixbjisa,t6srdx8w,neither,3,forward_model+privileged_critic+servo,0.37843,0.44925
+pixbjisa,tijio74v,same seed,3,forward_model+sensor+privileged_critic,0.39572,0.47198
+pixbjisa,f1alm9y1,neither,3,forward_model+sensor+privileged_critic,0.75395,0.86015
+pixbjisa,s5lt23ld,same seed,4,forward_model+sensor+privileged_critic+servo,0.49491,0.58233
+pixbjisa,476uchc2,neither,4,forward_model+sensor+privileged_critic+servo,0.59451,0.68632
+pixbjisa,crr2pjup,neither,4,forward_model+sensor+privileged_critic+servo,0.57183,0.65586
+4kslt39i,9w7v65x5,same seed,1,servo,0.26846,0.31639
+4kslt39i,6bhvc12c,neither,2,sensor+privileged_critic,0.71607,0.82346
+4kslt39i,06fy8xrb,neither,2,sensor+privileged_critic,0.72353,0.82658
+4kslt39i,ygy5tbhf,neither,2,sensor+privileged_critic,0.6885,0.80325
+4kslt39i,umfqdtn2,neither,3,sensor+privileged_critic+servo,0.5564,0.63745
+4kslt39i,kvxc6ij4,neither,3,sensor+privileged_critic+servo,0.30384,0.35863
+4kslt39i,g6frznog,neither,1,sensor,0.66541,0.77303
+4kslt39i,c34p08hy,same seed,1,sensor,0.50704,0.58562
+4kslt39i,rlgkinux,neither,2,sensor+servo,0.34041,0.40029
+4kslt39i,tzp7655l,same seed,2,sensor+servo,0.30633,0.36386
+4kslt39i,0xmqmajf,neither,2,forward_model+privileged_critic,0.23548,0.26879
+4kslt39i,t6srdx8w,neither,3,forward_model+privileged_critic+servo,0.67077,0.76916
+4kslt39i,tijio74v,neither,3,forward_model+sensor+privileged_critic,0.72781,0.84293
+4kslt39i,f1alm9y1,same seed,3,forward_model+sensor+privileged_critic,0.27286,0.32234
+4kslt39i,s5lt23ld,neither,4,forward_model+sensor+privileged_critic+servo,0.55583,0.63715
+4kslt39i,476uchc2,same seed,4,forward_model+sensor+privileged_critic+servo,0.36523,0.42175
+4kslt39i,crr2pjup,neither,4,forward_model+sensor+privileged_critic+servo,0.34893,0.40642
+9w7v65x5,6bhvc12c,neither,3,sensor+privileged_critic+servo,0.68388,0.79334
+9w7v65x5,06fy8xrb,neither,3,sensor+privileged_critic+servo,0.71354,0.82249
+9w7v65x5,ygy5tbhf,neither,3,sensor+privileged_critic+servo,0.6571,0.77317
+9w7v65x5,umfqdtn2,neither,2,sensor+privileged_critic,0.5139,0.59547
+9w7v65x5,kvxc6ij4,neither,2,sensor+privileged_critic,0.15797,0.1866
+9w7v65x5,g6frznog,neither,2,sensor+servo,0.61456,0.71951
+9w7v65x5,c34p08hy,same seed,2,sensor+servo,0.4548,0.53675
+9w7v65x5,rlgkinux,neither,1,sensor,0.22672,0.26765
+9w7v65x5,tzp7655l,same seed,1,sensor,0.16473,0.19452
+9w7v65x5,0xmqmajf,neither,3,forward_model+privileged_critic+servo,0.36855,0.44538
+9w7v65x5,t6srdx8w,neither,2,forward_model+privileged_critic,0.6091,0.70203
+9w7v65x5,tijio74v,neither,4,forward_model+sensor+privileged_critic+servo,0.71022,0.83323
+9w7v65x5,f1alm9y1,same seed,4,forward_model+sensor+privileged_critic+servo,0.40028,0.48114
+9w7v65x5,s5lt23ld,neither,3,forward_model+sensor+privileged_critic,0.5222,0.60656
+9w7v65x5,476uchc2,same seed,3,forward_model+sensor+privileged_critic,0.2684,0.30784
+9w7v65x5,crr2pjup,neither,3,forward_model+sensor+privileged_critic,0.23638,0.27054
+6bhvc12c,06fy8xrb,same condition,0,-,0.15924,0.18739
+6bhvc12c,ygy5tbhf,same condition,0,-,0.17743,0.2082
+6bhvc12c,umfqdtn2,same seed,1,servo,0.34588,0.40883
+6bhvc12c,kvxc6ij4,neither,1,servo,0.59561,0.68859
+6bhvc12c,g6frznog,same seed,1,privileged_critic,0.17671,0.20563
+6bhvc12c,c34p08hy,neither,1,privileged_critic,0.85539,1.0198
+6bhvc12c,rlgkinux,same seed,2,privileged_critic+servo,0.55418,0.62689
+6bhvc12c,tzp7655l,neither,2,privileged_critic+servo,0.58797,0.67637
+6bhvc12c,0xmqmajf,neither,2,forward_model+sensor,0.72907,0.84424
+6bhvc12c,t6srdx8w,neither,3,forward_model+sensor+servo,0.32056,0.38178
+6bhvc12c,tijio74v,same seed,1,forward_model,0.20939,0.2523
+6bhvc12c,f1alm9y1,neither,1,forward_model,0.67771,0.77544
+6bhvc12c,s5lt23ld,same seed,2,forward_model+servo,0.39618,0.46399
+6bhvc12c,476uchc2,neither,2,forward_model+servo,0.57659,0.67676
+6bhvc12c,crr2pjup,neither,2,forward_model+servo,0.54554,0.63663
+06fy8xrb,ygy5tbhf,replicate,0,-,0.19279,0.21851
+06fy8xrb,umfqdtn2,neither,1,servo,0.39821,0.46868
+06fy8xrb,kvxc6ij4,neither,1,servo,0.63165,0.726
+06fy8xrb,g6frznog,neither,1,privileged_critic,0.23523,0.26957
+06fy8xrb,c34p08hy,neither,1,privileged_critic,0.89379,1.0621
+06fy8xrb,rlgkinux,neither,2,privileged_critic+servo,0.59975,0.67595
+06fy8xrb,tzp7655l,neither,2,privileged_critic+servo,0.62876,0.72006
+06fy8xrb,0xmqmajf,neither,2,forward_model+sensor,0.72314,0.82838
+06fy8xrb,t6srdx8w,neither,3,forward_model+sensor+servo,0.33847,0.40003
+06fy8xrb,tijio74v,neither,1,forward_model,0.22533,0.26296
+06fy8xrb,f1alm9y1,neither,1,forward_model,0.67652,0.76591
+06fy8xrb,s5lt23ld,neither,2,forward_model+servo,0.42288,0.49271
+06fy8xrb,476uchc2,neither,2,forward_model+servo,0.60743,0.70853
+06fy8xrb,crr2pjup,same seed,2,forward_model+servo,0.56959,0.6599
+ygy5tbhf,umfqdtn2,neither,1,servo,0.39676,0.48025
+ygy5tbhf,kvxc6ij4,neither,1,servo,0.55612,0.6538
+ygy5tbhf,g6frznog,neither,1,privileged_critic,0.14464,0.1752
+ygy5tbhf,c34p08hy,neither,1,privileged_critic,0.85877,1.0315
+ygy5tbhf,rlgkinux,neither,2,privileged_critic+servo,0.51898,0.60085
+ygy5tbhf,tzp7655l,neither,2,privileged_critic+servo,0.55524,0.65107
+ygy5tbhf,0xmqmajf,neither,2,forward_model+sensor,0.69804,0.81726
+ygy5tbhf,t6srdx8w,neither,3,forward_model+sensor+servo,0.34987,0.42124
+ygy5tbhf,tijio74v,neither,1,forward_model,0.201,0.2383
+ygy5tbhf,f1alm9y1,neither,1,forward_model,0.63311,0.73387
+ygy5tbhf,s5lt23ld,neither,2,forward_model+servo,0.42159,0.50641
+ygy5tbhf,476uchc2,neither,2,forward_model+servo,0.5452,0.64996
+ygy5tbhf,crr2pjup,same seed,2,forward_model+servo,0.50244,0.59691
+umfqdtn2,kvxc6ij4,same condition,0,-,0.45808,0.53261
+umfqdtn2,g6frznog,same seed,2,privileged_critic+servo,0.3723,0.44983
+umfqdtn2,c34p08hy,neither,2,privileged_critic+servo,0.65017,0.77769
+umfqdtn2,rlgkinux,same seed,1,privileged_critic,0.4101,0.4664
+umfqdtn2,tzp7655l,neither,1,privileged_critic,0.44643,0.51641
+umfqdtn2,0xmqmajf,neither,3,forward_model+sensor+servo,0.57558,0.66725
+umfqdtn2,t6srdx8w,neither,2,forward_model+sensor,0.2794,0.33578
+umfqdtn2,tijio74v,same seed,2,forward_model+servo,0.45556,0.5494
+umfqdtn2,f1alm9y1,neither,2,forward_model+servo,0.55956,0.64516
+umfqdtn2,s5lt23ld,same seed,1,forward_model,0.17771,0.21269
+umfqdtn2,476uchc2,neither,1,forward_model,0.4489,0.52836
+umfqdtn2,crr2pjup,neither,1,forward_model,0.43536,0.51293
+kvxc6ij4,g6frznog,neither,2,privileged_critic+servo,0.52364,0.61326
+kvxc6ij4,c34p08hy,neither,2,privileged_critic+servo,0.51521,0.61359
+kvxc6ij4,rlgkinux,neither,1,privileged_critic,0.13068,0.15083
+kvxc6ij4,tzp7655l,neither,1,privileged_critic,0.096011,0.11551
+kvxc6ij4,0xmqmajf,neither,3,forward_model+sensor+servo,0.4077,0.48769
+kvxc6ij4,t6srdx8w,neither,2,forward_model+sensor,0.55719,0.64365
+kvxc6ij4,tijio74v,neither,2,forward_model+servo,0.62004,0.72534
+kvxc6ij4,f1alm9y1,neither,2,forward_model+servo,0.4005,0.47958
+kvxc6ij4,s5lt23ld,neither,1,forward_model,0.48403,0.56533
+kvxc6ij4,476uchc2,neither,1,forward_model,0.18948,0.21652
+kvxc6ij4,crr2pjup,neither,1,forward_model,0.13167,0.14781
+g6frznog,c34p08hy,same condition,0,-,0.81726,0.98117
+g6frznog,rlgkinux,same seed,1,servo,0.48744,0.56135
+g6frznog,tzp7655l,neither,1,servo,0.52034,0.60711
+g6frznog,0xmqmajf,neither,3,forward_model+sensor+privileged_critic,0.6799,0.79441
+g6frznog,t6srdx8w,neither,4,forward_model+sensor+privileged_critic+servo,0.31956,0.38108
+g6frznog,tijio74v,same seed,2,forward_model+privileged_critic,0.21066,0.24976
+g6frznog,f1alm9y1,neither,2,forward_model+privileged_critic,0.62081,0.71814
+g6frznog,s5lt23ld,same seed,3,forward_model+privileged_critic+servo,0.40631,0.48621
+g6frznog,476uchc2,neither,3,forward_model+privileged_critic+servo,0.53241,0.6339
+g6frznog,crr2pjup,neither,3,forward_model+privileged_critic+servo,0.48401,0.57356
+c34p08hy,rlgkinux,neither,1,servo,0.5664,0.67279
+c34p08hy,tzp7655l,same seed,1,servo,0.53111,0.63066
+c34p08hy,0xmqmajf,neither,3,forward_model+sensor+privileged_critic,0.50422,0.59448
+c34p08hy,t6srdx8w,neither,4,forward_model+sensor+privileged_critic+servo,0.80103,0.95667
+c34p08hy,tijio74v,neither,2,forward_model+privileged_critic,0.90539,1.0859
+c34p08hy,f1alm9y1,same seed,2,forward_model+privileged_critic,0.57062,0.66729
+c34p08hy,s5lt23ld,neither,3,forward_model+privileged_critic+servo,0.65869,0.7866
+c34p08hy,476uchc2,same seed,3,forward_model+privileged_critic+servo,0.56564,0.67456
+c34p08hy,crr2pjup,neither,3,forward_model+privileged_critic+servo,0.56401,0.67082
+rlgkinux,tzp7655l,same condition,0,-,0.11252,0.13192
+rlgkinux,0xmqmajf,neither,4,forward_model+sensor+privileged_critic+servo,0.43918,0.52546
+rlgkinux,t6srdx8w,neither,3,forward_model+sensor+privileged_critic,0.51426,0.58341
+rlgkinux,tijio74v,same seed,3,forward_model+privileged_critic+servo,0.58989,0.68167
+rlgkinux,f1alm9y1,neither,3,forward_model+privileged_critic+servo,0.40483,0.48718
+rlgkinux,s5lt23ld,same seed,2,forward_model+privileged_critic,0.43966,0.50742
+rlgkinux,476uchc2,neither,2,forward_model+privileged_critic,0.24105,0.27149
+rlgkinux,crr2pjup,neither,2,forward_model+privileged_critic,0.1853,0.20821
+tzp7655l,0xmqmajf,neither,4,forward_model+sensor+privileged_critic+servo,0.42672,0.51218
+tzp7655l,t6srdx8w,neither,3,forward_model+sensor+privileged_critic,0.53256,0.61027
+tzp7655l,tijio74v,neither,3,forward_model+privileged_critic+servo,0.6224,0.72671
+tzp7655l,f1alm9y1,same seed,3,forward_model+privileged_critic+servo,0.40472,0.48753
+tzp7655l,s5lt23ld,neither,2,forward_model+privileged_critic,0.46253,0.53758
+tzp7655l,476uchc2,same seed,2,forward_model+privileged_critic,0.20082,0.22746
+tzp7655l,crr2pjup,neither,2,forward_model+privileged_critic,0.17114,0.19781
+0xmqmajf,t6srdx8w,same seed,1,servo,0.68819,0.79673
+0xmqmajf,tijio74v,neither,1,sensor,0.72864,0.85111
+0xmqmajf,f1alm9y1,neither,1,sensor,0.23797,0.28186
+0xmqmajf,s5lt23ld,neither,2,sensor+servo,0.56017,0.64862
+0xmqmajf,476uchc2,neither,2,sensor+servo,0.45823,0.53397
+0xmqmajf,crr2pjup,neither,2,sensor+servo,0.42133,0.49207
+t6srdx8w,tijio74v,neither,2,sensor+servo,0.41062,0.49588
+t6srdx8w,f1alm9y1,neither,2,sensor+servo,0.6629,0.76173
+t6srdx8w,s5lt23ld,neither,1,sensor,0.24212,0.28661
+t6srdx8w,476uchc2,neither,1,sensor,0.52443,0.61286
+t6srdx8w,crr2pjup,neither,1,sensor,0.51266,0.59851
+tijio74v,f1alm9y1,same condition,0,-,0.6575,0.75683
+tijio74v,s5lt23ld,same seed,1,servo,0.47756,0.57191
+tijio74v,476uchc2,neither,1,servo,0.61227,0.7244
+tijio74v,crr2pjup,neither,1,servo,0.56882,0.6698
+f1alm9y1,s5lt23ld,neither,1,servo,0.53905,0.62089
+f1alm9y1,476uchc2,same seed,1,servo,0.48237,0.5648
+f1alm9y1,crr2pjup,neither,1,servo,0.41969,0.49275
+s5lt23ld,476uchc2,same condition,0,-,0.46541,0.54673
+s5lt23ld,crr2pjup,same condition,0,-,0.45803,0.54032
+476uchc2,crr2pjup,same condition,0,-,0.15657,0.18635

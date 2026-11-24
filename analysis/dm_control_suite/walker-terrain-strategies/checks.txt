@@ -1,0 +1,13 @@
+FM/eff/blind                 4vvryasn  delayed-leaf err 0.00e+00  worst rel layer err 5.44e-03  action err 5.32e-03
+FM/eff/sensor                hd8hctae  delayed-leaf err 0.00e+00  worst rel layer err 8.84e-03  action err 8.83e-03
+FM/noeff/blind               0xmqmajf  delayed-leaf err 0.00e+00  worst rel layer err 4.10e-03  action err 4.05e-03
+FM/noeff/sensor              tijio74v  delayed-leaf err 0.00e+00  worst rel layer err 7.55e-03  action err 7.39e-03
+MLP/eff/blind+delayedC       k7f5z3e2  delayed-leaf err 0.00e+00  worst rel layer err 2.05e-03  action err 2.01e-03
+MLP/eff/blind+privC          i5dr3ysp  delayed-leaf err 0.00e+00  worst rel layer err 1.82e-03  action err 1.86e-03
+MLP/eff/sensor+delayedC      fwumjubs  delayed-leaf err 0.00e+00  worst rel layer err 1.91e-03  action err 1.88e-03
+MLP/eff/sensor+privC         d7ytv3fx  delayed-leaf err 0.00e+00  worst rel layer err 1.86e-03  action err 1.86e-03
+MLP/noeff/blind              oljpt79a  delayed-leaf err 0.00e+00  worst rel layer err 1.35e-03  action err 1.32e-03
+MLP/noeff/sensor             6bhvc12c  delayed-leaf err 0.00e+00  worst rel layer err 1.55e-03  action err 1.49e-03
+init i5dr3ysp on/layers/1/inner/layers/1/linear/kernel cos(trained, own init) 0.890  cos(trained, other init) -0.002
+init 4vvryasn s/1/inner/decoder/layers/1/linear/kernel cos(trained, own init) 0.858  cos(trained, other init) -0.004
+init pixbjisa rs/2/inner/action/layers/1/linear/kernel cos(trained, own init) 0.888  cos(trained, other init) -0.005
