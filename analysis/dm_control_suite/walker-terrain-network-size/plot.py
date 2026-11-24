@@ -41,7 +41,8 @@ WIDTH_COLOR = {64: "#86b6ef", 128: "#5598e7", 256: "#2a78d6", 512: "#1c5cab",
                1024: "#104281"}
 WIDTH_MARKER = {64: "v", 128: "s", 256: "o", 512: "D", 1024: "^"}
 #: Long-run shapes, fixed categorical order.
-LONG_COLOR = {"4x128": "#2a78d6", "8x512": "#eb6834", "8x1024": "#1baf7a"}
+LONG_COLOR = {"4x128": "#2a78d6", "8x512": "#eb6834", "8x1024": "#1baf7a",
+              "4x512": "#eda100"}
 
 
 def _sweep(df: pd.DataFrame) -> pd.DataFrame:

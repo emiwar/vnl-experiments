@@ -1,10 +1,10 @@
-Coverage for 116 runs in walker-terrain-network-size
+Coverage for 123 runs in walker-terrain-network-size
 
-index  (spec_id=-): 116/116
-    eff+fm+priv|4x128               1/1   
+index  (spec_id=-): 123/123
+    eff+fm+priv|4x128               2/2   
     eff+fm+priv|4x256               6/6   
     eff+fm+priv|4x512               1/1   
-    eff+fm+sensor+priv|4x128        1/1   
+    eff+fm+sensor+priv|4x128        2/2   
     eff+fm+sensor+priv|4x256        3/3   
     eff+fm+sensor+priv|4x512        1/1   
     eff+fm+servo+priv|4x128         1/1   
@@ -31,6 +31,7 @@ index  (spec_id=-): 116/116
     eff+priv|4x128                  2/2   
     eff+priv|4x2048                 1/1   
     eff+priv|4x256                  7/7   
+    eff+priv|4x512                  1/1   
     eff+priv|4x64                   1/1   
     eff+priv|8x1024                 2/2   
     eff+priv|8x128                  1/1   
@@ -47,6 +48,7 @@ index  (spec_id=-): 116/116
     eff+servo+sensor+priv|4x128     1/1   
     eff+servo+sensor+priv|4x256     2/2   
     eff+servo+sensor+priv|4x512     2/2   
+    fm+priv|4x128                   1/1   
     fm+priv|4x256                   1/1   
     fm+priv|4x512                   1/1   
     fm+sensor+priv|4x256            2/2   
@@ -55,8 +57,10 @@ index  (spec_id=-): 116/116
     fm+servo+priv|4x512             1/1   
     fm+servo+sensor+priv|4x256      3/3   
     fm+servo+sensor+priv|4x512      1/1   
+    priv|4x128                      1/1   
     priv|4x256                      5/5   
-    priv|4x512                      1/1   
+    priv|4x512                      2/2   
+    sensor+priv|4x128               1/1   
     sensor+priv|4x256               4/4   
     sensor+priv|4x512               2/2   
     servo+priv|4x256                1/1   
@@ -64,11 +68,11 @@ index  (spec_id=-): 116/116
     servo+sensor+priv|4x256         5/5   
     servo+sensor+priv|4x512         2/2   
 
-history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 116/116
-    eff+fm+priv|4x128               1/1   
+history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 123/123
+    eff+fm+priv|4x128               2/2   
     eff+fm+priv|4x256               6/6   
     eff+fm+priv|4x512               1/1   
-    eff+fm+sensor+priv|4x128        1/1   
+    eff+fm+sensor+priv|4x128        2/2   
     eff+fm+sensor+priv|4x256        3/3   
     eff+fm+sensor+priv|4x512        1/1   
     eff+fm+servo+priv|4x128         1/1   
@@ -95,6 +99,7 @@ history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 116/116
     eff+priv|4x128                  2/2   
     eff+priv|4x2048                 1/1   
     eff+priv|4x256                  7/7   
+    eff+priv|4x512                  1/1   
     eff+priv|4x64                   1/1   
     eff+priv|8x1024                 2/2   
     eff+priv|8x128                  1/1   
@@ -111,6 +116,7 @@ history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 116/116
     eff+servo+sensor+priv|4x128     1/1   
     eff+servo+sensor+priv|4x256     2/2   
     eff+servo+sensor+priv|4x512     2/2   
+    fm+priv|4x128                   1/1   
     fm+priv|4x256                   1/1   
     fm+priv|4x512                   1/1   
     fm+sensor+priv|4x256            2/2   
@@ -119,8 +125,10 @@ history:hist2000-8b97281e  (spec_id=hist2000-8b97281e): 116/116
     fm+servo+priv|4x512             1/1   
     fm+servo+sensor+priv|4x256      3/3   
     fm+servo+sensor+priv|4x512      1/1   
+    priv|4x128                      1/1   
     priv|4x256                      5/5   
-    priv|4x512                      1/1   
+    priv|4x512                      2/2   
+    sensor+priv|4x128               1/1   
     sensor+priv|4x256               4/4   
     sensor+priv|4x512               2/2   
     servo+priv|4x256                1/1   

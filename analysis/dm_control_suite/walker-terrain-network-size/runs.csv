@@ -1,5 +1,6 @@
 condition,wandb_id,wandb_name,created_at,state
 eff+fm+priv|4x128,912s9qcr,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job62373693,2026-11-20T17:03:59Z,finished
+eff+fm+priv|4x128,mbtjd8xc,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job63048711,2026-11-23T11:00:30Z,finished
 eff+fm+priv|4x256,4vvryasn,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-20261112-080310,2026-11-12T13:03:45Z,finished
 eff+fm+priv|4x256,j70fn2g7,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job59999727,2026-11-12T16:13:11Z,finished
 eff+fm+priv|4x256,loaln8fh,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job59749389,2026-11-11T22:31:03Z,crashed
@@ -8,6 +9,7 @@ eff+fm+priv|4x256,o2zf70hu,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_i
 eff+fm+priv|4x256,zz0reqyq,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job61113503,2026-11-16T13:21:08Z,finished
 eff+fm+priv|4x512,huxbl5gp,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1-job62790132,2026-11-22T16:55:48Z,finished
 eff+fm+sensor+priv|4x128,bhh1ty87,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1_obs-job62373796,2026-11-20T16:54:52Z,finished
+eff+fm+sensor+priv|4x128,qw0vtlqz,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1_obs-job63048748,2026-11-23T11:03:53Z,finished
 eff+fm+sensor+priv|4x256,hd8hctae,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1_obs-job61086578,2026-11-16T11:05:45Z,finished
 eff+fm+sensor+priv|4x256,t7k5z2vm,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1_obs-job61086638,2026-11-16T11:05:45Z,finished
 eff+fm+sensor+priv|4x256,w632zie8,WalkerWalkTerrain_FlatForwardModel_delay5_eff5_h0.3_irr1_obs-job61086720,2026-11-16T11:05:45Z,finished
@@ -55,6 +57,7 @@ eff+priv|4x256,i5dr3ysp,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job59
 eff+priv|4x256,icdm2seo,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job61114083,2026-11-16T13:23:43Z,finished
 eff+priv|4x256,sog4k5xi,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job59746213,2026-11-11T22:30:12Z,finished
 eff+priv|4x256,zuli03xv,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job61114124,2026-11-16T13:24:05Z,finished
+eff+priv|4x512,dk2s0ru4,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job63048095,2026-11-23T11:00:49Z,finished
 eff+priv|4x64,4igvhpal,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job62372933,2026-11-20T16:48:46Z,finished
 eff+priv|8x1024,a4s5y4cv,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job62768226,2026-11-22T16:07:57Z,finished
 eff+priv|8x1024,ni0wcfpd,WalkerWalkTerrain_DelayedMLP_delay5_eff5_h0.3_irr1-job62751469,2026-11-22T13:01:34Z,crashed
@@ -83,6 +86,7 @@ eff+servo+sensor+priv|4x256,2v0xd776,WalkerWalkTerrain_DelayedMLP_delay5_eff5_kp
 eff+servo+sensor+priv|4x256,czyahwd8,WalkerWalkTerrain_DelayedMLP_delay5_eff5_kp64_h0.3_irr1_obs-job60000933,2026-11-12T16:22:19Z,finished
 eff+servo+sensor+priv|4x512,cjsmr9ac,WalkerWalkTerrain_DelayedMLP_delay5_eff5_kp64_h0.3_irr1_obs-job62791255,2026-11-22T17:08:28Z,finished
 eff+servo+sensor+priv|4x512,i8btvr6n,WalkerWalkTerrain_DelayedMLP_delay5_eff5_kp64_h0.3_irr1_obs-job62769641,2026-11-22T16:07:57Z,finished
+fm+priv|4x128,jadfp0mc,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_h0.3_irr1-job63048700,2026-11-23T11:00:30Z,finished
 fm+priv|4x256,0xmqmajf,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_h0.3_irr1-job59749649,2026-11-11T22:35:17Z,finished
 fm+priv|4x512,9slaek6p,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_h0.3_irr1-job62790247,2026-11-22T16:59:27Z,finished
 fm+sensor+priv|4x256,f1alm9y1,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_h0.3_irr1_obs-job61106498,2026-11-16T12:59:38Z,finished
@@ -94,12 +98,15 @@ fm+servo+sensor+priv|4x256,476uchc2,WalkerWalkTerrain_FlatForwardModel_delay5_ef
 fm+servo+sensor+priv|4x256,crr2pjup,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_kp64_h0.3_irr1_obs-job61106819,2026-11-16T13:00:45Z,finished
 fm+servo+sensor+priv|4x256,s5lt23ld,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_kp64_h0.3_irr1_obs-job61106729,2026-11-16T13:02:49Z,finished
 fm+servo+sensor+priv|4x512,lccpunc5,WalkerWalkTerrain_FlatForwardModel_delay5_eff0_kp64_h0.3_irr1_obs-job62789643,2026-11-22T16:50:02Z,finished
+priv|4x128,www99y6n,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job63048380,2026-11-23T11:00:30Z,finished
 priv|4x256,20qm2p6x,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job61068616,2026-11-16T10:02:25Z,finished
 priv|4x256,bg0w2x2y,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job62341224,2026-11-20T13:54:38Z,finished
 priv|4x256,ng04upc0,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job61068682,2026-11-16T10:02:22Z,finished
 priv|4x256,oljpt79a,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job59747349,2026-11-11T22:30:12Z,finished
 priv|4x256,wm8x4eda,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job61068774,2026-11-16T10:02:58Z,finished
 priv|4x512,d0idn1tf,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job62791396,2026-11-22T17:29:08Z,finished
+priv|4x512,fcvjbzfg,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1-job63048302,2026-11-23T11:00:30Z,running
+sensor+priv|4x128,lxebvw7s,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1_obs-job63048586,2026-11-23T11:00:30Z,finished
 sensor+priv|4x256,06fy8xrb,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1_obs-job61066728,2026-11-16T09:53:57Z,finished
 sensor+priv|4x256,6bhvc12c,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1_obs-job60269515,2026-11-14T08:20:55Z,finished
 sensor+priv|4x256,bibwqkdw,WalkerWalkTerrain_DelayedMLP_delay5_eff0_h0.3_irr1_obs-job60269536,2026-11-14T08:20:55Z,crashed
